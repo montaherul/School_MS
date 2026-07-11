@@ -1,0 +1,100 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Transfer Certificates";
+    var token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-arrow-right-circle"></i></div>
+            <div>
+                <h1 class="adm-header__title">Transfer Certificates</h1>
+                <p class="adm-header__sub">Manage student transfer certificates and TC records.</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a asp-action="Create" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg"></i> New TC</a>
+        </div>
+    </div>
+
+    <div class="adm-filters__row">
+        <div class="adm-filters__group">
+            <input type="text" id="searchBox" class="adm-input adm-input--search" placeholder="Search by certificate no, school, student..." />
+        </div>
+    </div>
+
+    <div class="adm-table-container">
+        <table class="adm-table" id="tcTable">
+            <thead>
+                <tr>
+                    <th>Certificate No</th>
+                    <th>Student</th>
+                    <th>New School</th>
+                    <th>Issue Date</th>
+                    <th>Status</th>
+                    <th class="adm-table__actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="adm-pagination" id="pagination"></div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPage = 1, pageSize = 20;
+        const antiForgeryToken = '@token';
+
+        function loadTCs() {
+            const search = document.getElementById('searchBox').value;
+            fetch(`@Url.Action("GetList")?page=${currentPage}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.querySelector('#tcTable tbody');
+                    tbody.innerHTML = '';
+                    const rows = data.rows || [];
+                    rows.forEach(tc => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${tc.certificateNo || '-'}</strong></td>
+                            <td>Student #${tc.studentId}</td>
+                            <td>${tc.newSchoolName}</td>
+                            <td>${new Date(tc.issueDate).toLocaleDateString()}</td>
+                            <td><span class="adm-badge ${tc.isActive ? 'adm-badge--success' : 'adm-badge--secondary'}">${tc.isActive ? 'Active' : 'Inactive'}</span></td>
+                            <td class="adm-table__actions">
+                                <a href="@Url.Action("Edit")/${tc.id}" class="adm-btn adm-btn--sm adm-btn--secondary"><i class="bi bi-pencil"></i></a>
+                                <button class="adm-btn adm-btn--sm adm-btn--danger" onclick="deleteTC(${tc.id})"><i class="bi bi-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    renderPagination(data.total || 0);
+                });
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / pageSize) || 1;
+            const el = document.getElementById('pagination');
+            let html = `<span class="adm-pagination__info">${total} records</span><div class="adm-pagination__pages">`;
+            if (currentPage > 1) html += `<button class="adm-btn adm-btn--sm adm-btn--secondary" onclick="goPage(${currentPage - 1})">Prev</button>`;
+            html += `<span class="adm-pagination__current">Page ${currentPage} of ${totalPages}</span>`;
+            if (currentPage < totalPages) html += `<button class="adm-btn adm-btn--sm adm-btn--secondary" onclick="goPage(${currentPage + 1})">Next</button>`;
+            html += `</div>`;
+            el.innerHTML = html;
+        }
+
+        function goPage(p) { currentPage = p; loadTCs(); }
+
+        function deleteTC(id) {
+            if (!confirm('Delete this transfer certificate?')) return;
+            fetch('@Url.Action("Delete")', { method: 'POST', headers: { 'RequestVerificationToken': antiForgeryToken }, body: new URLSearchParams({ id }) })
+                .then(r => r.json()).then(d => { if (d.success) loadTCs(); else alert(d.message); });
+        }
+
+        document.getElementById('searchBox').addEventListener('input', function() { currentPage = 1; loadTCs(); });
+        loadTCs();
+    </script>
+}

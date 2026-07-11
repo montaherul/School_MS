@@ -1,0 +1,353 @@
+@{
+    ViewData["Title"] = "Holiday Master";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 3a6 6 0 0 0 6 6v0a6 6 0 0 0-6-6Z"/>
+                    <path d="M12 3a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6"/>
+                    <path d="M12 15v6"/>
+                    <path d="M8 21h8"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Holiday Master</h1>
+                <p class="adm-header__sub">Manage holidays and generate Bangladesh national holidays</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <div class="adm-btn-group">
+                <a asp-action="Export" class="adm-btn adm-btn--ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export
+                </a>
+                <a asp-action="Create" class="adm-btn adm-btn--primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Holiday
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Holiday Type</label>
+                <select id="filterType" class="adm-select">
+                    <option value="">All Types</option>
+                    @foreach (var t in (string[])ViewBag.HolidayTypes)
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Religion</label>
+                <select id="filterReligion" class="adm-select">
+                    <option value="">All</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Hinduism">Hinduism</option>
+                    <option value="Buddhism">Buddhism</option>
+                    <option value="Christianity">Christianity</option>
+                    <option value="Secular">Secular</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Search holidays...">
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">&nbsp;</label>
+                <button type="button" class="adm-btn adm-btn--primary" id="searchBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Search
+                </button>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36A9 9 0 0 1 20.49 15"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-flex ws-gap-2 ws-mb-3 ws-flex-wrap">
+        <button type="button" class="adm-btn adm-btn--primary" id="generateHolidaysBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36A9 9 0 0 1 20.49 15"/>
+            </svg>
+            Generate Bangladesh Holidays
+        </button>
+        <span class="ws-flex ws-items-center ws-gap-1" id="generateYearWrapper" style="display:none;">
+            <label class="ws-fs-13 ws-fw-600">Year:</label>
+            <input type="number" id="generateYear" class="adm-input" style="width:100px;" value="@DateTime.Today.Year" />
+            <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" id="confirmGenerateBtn">Generate</button>
+            <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" id="cancelGenerateBtn">Cancel</button>
+        </span>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="deleteModal" style="display: none;">
+        <div class="adm-modal">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M10.29 13.29 16.59 7"/>
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="2" x2="12" y2="4"/>
+                            <line x1="20" y1="12" x2="18" y2="12"/>
+                            <line x1="12" y1="20" x2="12" y2="22"/>
+                            <line x1="4" y1="12" x2="2" y2="12"/>
+                            <line x1="17" y1="17" x2="7" y2="7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="adm-modal__title">Confirm Delete</h6>
+                        <p class="adm-modal__subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="deleteModal.hide()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <p>Are you sure you want to delete <strong id="deleteName"></strong>? This action cannot be undone.</p>
+            </div>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--ghost" onclick="deleteModal.hide()">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete Holiday</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = {
+            show: function() { document.getElementById('deleteModal').style.display = 'flex'; },
+            hide: function() { document.getElementById('deleteModal').style.display = 'none'; }
+        };
+
+        var table = new Tabulator("#data-table", {
+            height: "calc(100vh - 350px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: '@Url.Action("GetList", "HolidayMaster")',
+            paginationSize: 15,
+            paginationSizeSelector: [15, 25, 50, 100],
+            ajaxParams: {
+                search: document.getElementById('searchInput').value,
+                type: document.getElementById('filterType').value,
+                religion: document.getElementById('filterReligion').value
+            },
+            ajaxResponse: function(url, params, response) {
+                var rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, data: rows };
+            },
+            ajaxError: function(xhr, textStatus, errorThrown) {
+                document.getElementById('data-table').innerHTML =
+                    '<div style="padding:40px;text-align:center;color:var(--adm-rejected);">' +
+                    '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-bottom:12px;">' +
+                    '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>' +
+                    '</svg><br/><strong>Failed to load data</strong><br/>' +
+                    (xhr.status ? 'HTTP ' + xhr.status + ': ' + xhr.statusText : textStatus) +
+                    '</div>';
+            },
+            columns: [
+                { title: "Holiday Name", field: "name", widthGrow: 2,
+                    formatter: function(cell) {
+                        return '<span class="ws-fw-600">' + (cell.getValue() || '') + '</span>';
+                    }
+                },
+                { title: "Date", field: "holidayDate", width: 120, hozAlign: "center",
+                    formatter: function(cell) {
+                        var val = cell.getValue();
+                        if (!val) return '—';
+                        var parts = val.split('-');
+                        var d = new Date(parts[0], parts[1] - 1, parts[2]);
+                        return '<span>' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</span>';
+                    }
+                },
+                { title: "Type", field: "holidayType", width: 130, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = cell.getValue();
+                        var map = { National: 'danger', Religious: 'primary', Public: 'warning', Academic: 'info' };
+                        var cls = map[v] || 'neutral';
+                        return v ? '<span class="adm-badge adm-badge--' + cls + '">' + v + '</span>' : '—';
+                    }
+                },
+                { title: "Religion", field: "religion", width: 110, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = cell.getValue();
+                        return v ? '<span class="ws-fs-13">' + v + '</span>' : '<span class="ws-text-muted ws-fs-13">—</span>';
+                    }
+                },
+                { title: "Description", field: "description", widthGrow: 2,
+                    formatter: function(cell) {
+                        return cell.getValue() ? '<span class="ws-text-muted ws-fs-13">' + cell.getValue() + '</span>' : '—';
+                    }
+                },
+                { title: "Active", field: "isActive", width: 90, hozAlign: "center",
+                    formatter: function(cell) {
+                        var row = cell.getRow().getData();
+                        var id = row.id;
+                        var active = cell.getValue();
+                        if (active) {
+                            return '<button class="adm-btn adm-btn--sm adm-btn--success deactivate-btn" data-id="' + id + '" title="Deactivate">Active</button>';
+                        }
+                        return '<button class="adm-btn adm-btn--sm adm-btn--ghost activate-btn" data-id="' + id + '" title="Activate">Inactive</button>';
+                    }
+                },
+                { title: "Actions", field: "id", hozAlign: "right", headerSort: false, width: 120,
+                    formatter: function(cell) {
+                        var id = cell.getValue();
+                        return '<div class="adm-actions">' +
+                            '<a href="/HolidayMaster/Edit/' + id + '" class="adm-action adm-action--edit" title="Edit">' +
+                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+                            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>' +
+                            '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>' +
+                            '</svg></a>' +
+                            '<button class="adm-action adm-action--delete delete-btn" title="Delete" data-id="' + id + '">' +
+                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+                            '<polyline points="3 6 5 6 21 6"/>' +
+                            '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2V6"/>' +
+                            '</svg></button></div>';
+                    }
+                }
+            ],
+            cellClick: function(e, cell) {
+                if (e.target.closest('.delete-btn')) {
+                    pendingDeleteId = cell.getValue();
+                    document.getElementById('deleteName').textContent = cell.getRow().getData().name || 'this holiday';
+                    deleteModal.show();
+                }
+                if (e.target.closest('.activate-btn')) {
+                    var id = e.target.closest('.activate-btn').getAttribute('data-id');
+                    fetch('/HolidayMaster/Activate/' + id, {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+                    }).then(function(r) { return r.json(); }).then(function(res) {
+                        if (res.success) { toastr.success(res.message || 'Activated'); table.setData(); }
+                        else { toastr.error(res.message || 'Error'); }
+                    }).catch(function() { toastr.error('Network error'); });
+                }
+                if (e.target.closest('.deactivate-btn')) {
+                    var id = e.target.closest('.deactivate-btn').getAttribute('data-id');
+                    fetch('/HolidayMaster/Deactivate/' + id, {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+                    }).then(function(r) { return r.json(); }).then(function(res) {
+                        if (res.success) { toastr.success(res.message || 'Deactivated'); table.setData(); }
+                        else { toastr.error(res.message || 'Error'); }
+                    }).catch(function() { toastr.error('Network error'); });
+                }
+            },
+            placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading holidays...</div></div>"
+        });
+
+        function refreshTable() {
+            table.setData('@Url.Action("GetList", "HolidayMaster")', {
+                search: document.getElementById('searchInput').value,
+                type: document.getElementById('filterType').value,
+                religion: document.getElementById('filterReligion').value
+            });
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', refreshTable);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') refreshTable();
+        });
+        document.getElementById('filterType').addEventListener('change', refreshTable);
+        document.getElementById('filterReligion').addEventListener('change', refreshTable);
+        document.getElementById('refreshBtn').addEventListener('click', function() { table.setData(); });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch('/HolidayMaster/Delete/' + pendingDeleteId, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                deleteModal.hide();
+                if (res.success) { toastr.success(res.message || 'Deleted'); refreshTable(); }
+                else { toastr.error(res.message || 'Error'); }
+            }).catch(function() { deleteModal.hide(); toastr.error('Network error'); });
+        });
+
+        document.getElementById('generateHolidaysBtn').addEventListener('click', function() {
+            document.getElementById('generateYearWrapper').style.display = 'flex';
+            this.style.display = 'none';
+        });
+        document.getElementById('cancelGenerateBtn').addEventListener('click', function() {
+            document.getElementById('generateYearWrapper').style.display = 'none';
+            document.getElementById('generateHolidaysBtn').style.display = 'inline-flex';
+        });
+        document.getElementById('confirmGenerateBtn').addEventListener('click', function() {
+            var year = document.getElementById('generateYear').value;
+            if (!year) { toastr.warning('Please enter a year'); return; }
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = 'Generating...';
+            fetch('/HolidayMaster/GenerateBangladeshHolidays?year=' + year, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+            }).then(function(r) { return r.json(); }).then(function(res) {
+                btn.disabled = false;
+                btn.innerHTML = 'Generate';
+                document.getElementById('generateYearWrapper').style.display = 'none';
+                document.getElementById('generateHolidaysBtn').style.display = 'inline-flex';
+                if (res.success) { toastr.success(res.message || 'Holidays generated'); refreshTable(); }
+                else { toastr.error(res.message || 'Error generating holidays'); }
+            }).catch(function() {
+                btn.disabled = false;
+                btn.innerHTML = 'Generate';
+                toastr.error('Network error');
+            });
+        });
+    </script>
+}

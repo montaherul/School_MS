@@ -1,0 +1,751 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.AcademicDashboardDto
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Academic Dashboard";
+    bool Can(string c) => User.IsInRole("Super Admin") || User.HasClaim("Permission", c);
+}
+
+<div class="adm-page">
+
+    @* ── Quick Navigation Hub ── *@
+    <div class="dash-section ws-mb-4">
+        <div class="dash-actions">
+            @if (Can("Classes.View"))
+            {
+                <a asp-controller="SchoolClass" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2" /><line x1="4" y1="10" x2="20" y2="10" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Classes</span>
+                        <span class="dash-action-card__sub">Manage class levels</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="Section" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--teal">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Sections</span>
+                        <span class="dash-action-card__sub">Manage class sections</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Subjects.View"))
+            {
+                <a asp-controller="Subject" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--warning">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Subjects</span>
+                        <span class="dash-action-card__sub">Manage curriculum subjects</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Classes.View"))
+            {
+                <a asp-controller="ClassSubjectMapping" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--info">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Subject Mapping</span>
+                        <span class="dash-action-card__sub">Map subjects to classes</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="AcademicYear" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--success">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Academic Years</span>
+                        <span class="dash-action-card__sub">Manage school sessions</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="AcademicCalendar" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><line x1="8" y1="14" x2="8" y2="18" /><line x1="12" y1="14" x2="12" y2="18" /><line x1="16" y1="14" x2="16" y2="18" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Academic Calendar</span>
+                        <span class="dash-action-card__sub">View & manage calendar</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="HolidayMaster" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--danger">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 6 6v0a6 6 0 0 0-6-6Z" /><path d="M12 3a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6" /><path d="M12 15v6" /><path d="M8 21h8" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Holidays</span>
+                        <span class="dash-action-card__sub">Manage holiday calendar</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="Syllabus" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--teal">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Syllabus</span>
+                        <span class="dash-action-card__sub">Manage syllabus documents</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="LessonPlan" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--warning">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Lesson Plans</span>
+                        <span class="dash-action-card__sub">Create & manage lesson plans</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="StudyMaterial" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--info">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M12 6v7" /><path d="M9 9l3-3 3 3" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Study Materials</span>
+                        <span class="dash-action-card__sub">Manage notes & references</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="StudentGroup" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--success">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Student Groups</span>
+                        <span class="dash-action-card__sub">Manage academic groups</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="Transfer" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--danger">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Transfer Certs</span>
+                        <span class="dash-action-card__sub">Manage TC records</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Promotion.View"))
+            {
+                <a asp-controller="Promotion" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Promotion</span>
+                        <span class="dash-action-card__sub">Manage student promotions</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Assignments.View"))
+            {
+                <a asp-controller="TeacherAssignment" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--teal">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Assignments</span>
+                        <span class="dash-action-card__sub">Teacher class & subject assignments</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Routine.View"))
+            {
+                <a href="/Routine/Dashboard" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--warning">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Routine</span>
+                        <span class="dash-action-card__sub">Class timetable management</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Academic.View"))
+            {
+                <a asp-controller="NctbCompliance" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--info">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">NCTB Compliance</span>
+                        <span class="dash-action-card__sub">Curriculum compliance dashboard</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+            @if (Can("Reports.View"))
+            {
+                <a asp-controller="AcademicReport" asp-action="Index" class="dash-action-card">
+                    <div class="dash-action-card__icon dash-action-card__icon--danger">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <span class="dash-action-card__title">Academic Reports</span>
+                        <span class="dash-action-card__sub">Generate & export reports</span>
+                    </div>
+                    <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Dashboard</h1>
+                <p class="adm-header__sub">KPIs, trends, and distribution analytics</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Students</span>
+                <span class="dash-stat-card__value">@Model.TotalStudents</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Teachers</span>
+                <span class="dash-stat-card__value">@Model.TotalTeachers</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Classes</span>
+                <span class="dash-stat-card__value">@Model.TotalClasses</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Sections</span>
+                <span class="dash-stat-card__value">@Model.TotalSections</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Subjects</span>
+                <span class="dash-stat-card__value">@Model.TotalSubjects</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">S/T Ratio</span>
+                <span class="dash-stat-card__value">@Model.StudentTeacherRatio:1</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M3 12h18" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Acad. Years</span>
+                <span class="dash-stat-card__value">@Model.ActiveAcademicYears</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Groups</span>
+                <span class="dash-stat-card__value">@Model.ActiveGroups</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Routines</span>
+                <span class="dash-stat-card__value">@Model.TotalRoutines</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Classrooms</span>
+                <span class="dash-stat-card__value">@Model.TotalClassrooms</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Capacity</span>
+                <span class="dash-stat-card__value">@Model.CapacityUtilizationPercent%</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Avg Load</span>
+                <span class="dash-stat-card__value">@Model.TeacherLoadAverage</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Syllabus</span>
+                <span class="dash-stat-card__value">@Model.SyllabusTotal</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Syllabus %</span>
+                <span class="dash-stat-card__value">@Model.SyllabusCompletionPercent%</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Today Classes</span>
+                <span class="dash-stat-card__value">@Model.TodayClasses</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Events Today</span>
+                <span class="dash-stat-card__value">@Model.CalendarEventsToday</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Monthly Trend</h2>
+            </div>
+            <div class="dash-panel__body">
+                <canvas id="monthlyTrendChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Student Distribution by Class</h2>
+            </div>
+            <div class="dash-panel__body">
+                <canvas id="studentDistChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Subject Categories</h2>
+            </div>
+            <div class="dash-panel__body">
+                <canvas id="subjectCatChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Upcoming Events</h2>
+            </div>
+            <div class="dash-panel__body">
+                @if (Model.UpcomingExamList.Count == 0 && Model.UpcomingHolidayList.Count == 0)
+                {
+                    <div class="dash-calendar-empty">No upcoming events</div>
+                }
+                else
+                {
+                    @if (Model.UpcomingExamList.Count > 0)
+                    {
+                        <h3 class="ws-title-label ws-mb-2">Exams</h3>
+                        <ul class="dash-calendar-list">
+                            @foreach (var exam in Model.UpcomingExamList)
+                            {
+                                <li class="dash-calendar-item">
+                                    <strong>@exam.ExamName</strong>
+                                    <span>@exam.Date.ToString("MMM dd, yyyy")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    @if (Model.UpcomingHolidayList.Count > 0)
+                    {
+                        <h3 class="ws-title-label ws-mt-4 ws-mb-2">Holidays</h3>
+                        <ul class="dash-calendar-list">
+                            @foreach (var holiday in Model.UpcomingHolidayList)
+                            {
+                                <li class="dash-calendar-item">
+                                    <strong>@holiday.Name</strong>
+                                    <span>@holiday.Date.ToString("MMM dd, yyyy") (@holiday.HolidayType)</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Exam Distribution</h2>
+            </div>
+            <div class="dash-panel__body">
+                <canvas id="examDistChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Section Capacity</h2>
+            </div>
+            <div class="dash-panel__body">
+                <canvas id="capacityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Upcoming Exams</h2>
+            </div>
+            <div class="adm-table-card__body">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Exam Name</th>
+                            <th>Date</th>
+                            <th>Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpcomingExamList.Count == 0)
+                        {
+                            <tr><td colspan="3" class="adm-table__empty">No upcoming exams</td></tr>
+                        }
+                        @foreach (var exam in Model.UpcomingExamList)
+                        {
+                            <tr>
+                                <td>@exam.ExamName</td>
+                                <td>@exam.Date.ToString("MMM dd, yyyy")</td>
+                                <td>@exam.Subject</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Upcoming Holidays</h2>
+            </div>
+            <div class="adm-table-card__body">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpcomingHolidayList.Count == 0)
+                        {
+                            <tr><td colspan="3" class="adm-table__empty">No upcoming holidays</td></tr>
+                        }
+                        @foreach (var holiday in Model.UpcomingHolidayList)
+                        {
+                            <tr>
+                                <td>@holiday.Name</td>
+                                <td>@holiday.Date.ToString("MMM dd, yyyy")</td>
+                                <td>@holiday.HolidayType</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            var trendData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrend));
+            if (trendData && trendData.length) {
+                new Chart(document.getElementById('monthlyTrendChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: trendData.map(function(t) { return t.month; }),
+                        datasets: [
+                            {
+                                label: 'Working Days',
+                                data: trendData.map(function(t) { return t.workingDays; }),
+                                backgroundColor: 'var(--adm-converted)',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Holidays',
+                                data: trendData.map(function(t) { return t.holidays; }),
+                                backgroundColor: 'var(--adm-rejected)',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Exam Days',
+                                data: trendData.map(function(t) { return t.examDays; }),
+                                backgroundColor: 'var(--adm-pending)',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'var(--adm-border-light)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            var studentData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StudentDistribution));
+            if (studentData && studentData.length) {
+                new Chart(document.getElementById('studentDistChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: studentData.map(function(s) { return s.className; }),
+                        datasets: [{
+                            data: studentData.map(function(s) { return s.studentCount; }),
+                            backgroundColor: ['var(--adm-primary)', 'var(--adm-secondary)', 'var(--adm-converted)', 'var(--adm-pending)', 'var(--adm-rejected)', 'var(--adm-info)']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            var subjectData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SubjectCategories));
+            if (subjectData && subjectData.length) {
+                new Chart(document.getElementById('subjectCatChart'), {
+                    type: 'polarArea',
+                    data: {
+                        labels: subjectData.map(function(s) { return s.category; }),
+                        datasets: [{
+                            data: subjectData.map(function(s) { return s.count; }),
+                            backgroundColor: ['var(--adm-primary)', 'var(--adm-secondary)', 'var(--adm-converted)', 'var(--adm-pending)', 'var(--adm-rejected)']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            var examDistData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExamDistribution));
+            if (examDistData && examDistData.length) {
+                new Chart(document.getElementById('examDistChart'), {
+                    type: 'line',
+                    data: {
+                        labels: examDistData.map(function(e) { return e.month; }),
+                        datasets: [{
+                            label: 'Exams',
+                            data: examDistData.map(function(e) { return e.examCount; }),
+                            borderColor: 'var(--adm-primary)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'var(--adm-border-light)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            var capacityData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SectionCapacity));
+            if (capacityData && capacityData.length) {
+                new Chart(document.getElementById('capacityChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: capacityData.map(function(c) { return c.className + ' ' + c.sectionName; }),
+                        datasets: [
+                            {
+                                label: 'Capacity',
+                                data: capacityData.map(function(c) { return c.capacity; }),
+                                backgroundColor: 'var(--adm-converted)',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Occupied',
+                                data: capacityData.map(function(c) { return c.occupied; }),
+                                backgroundColor: 'var(--adm-primary)',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'var(--adm-border-light)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+}

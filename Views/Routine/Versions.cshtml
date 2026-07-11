@@ -7,14 +7,14 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #9333EA, #C084FC); box-shadow: 0 4px 12px rgba(147,51,234,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-tags"></i>
             </div>
             <div>
@@ -34,7 +34,7 @@
     </div>
 </div>
 
-<div class="adm-modal-backdrop d-none" id="createVersionModalBackdrop">
+<div class="adm-modal-backdrop ws-d-none" id="createVersionModalBackdrop">
     <div class="adm-modal">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
@@ -51,11 +51,11 @@
             </button>
         </div>
         <div class="adm-modal__body">
-            <div class="mb-3">
+            <div>
                 <label class="adm-form-label">Version Name <span class="adm-required">*</span></label>
                 <input type="text" id="versionName" class="adm-input" placeholder="e.g. Term 1 Timetable" maxlength="100" />
             </div>
-            <div class="mb-3">
+            <div>
                 <label class="adm-form-label">Academic Year <span class="adm-required">*</span></label>
                 <select id="versionAcademicYearId" class="adm-select"><option value="">Select Year</option></select>
             </div>

@@ -1,0 +1,93 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.SchoolClassViewModel
+@{ 
+    ViewData["Title"] = Model.IsEditMode ? "Edit Class" : "Add Class";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Class" : "Add Class")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify class details, capacity, and settings" : "Create a new school class")</p>
+            </div>
+        </div>
+        <a href="/Academic/SchoolClass/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-8">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Name" class="adm-label">Class Name <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Name" class="adm-input" placeholder="e.g. Class One, Grade 1" />
+                                <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="NameBn" class="adm-label">Name (Bangla)</label>
+                                <input asp-for="NameBn" class="adm-input" placeholder="e.g. প্রথম শ্রেণি" />
+                                <span asp-validation-for="NameBn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="Code" class="adm-label">Code</label>
+                                <input asp-for="Code" class="adm-input" placeholder="e.g. CLS-01" />
+                                <span asp-validation-for="Code" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="SortOrder" class="adm-label">Sort Order <span class="ws-text-danger">*</span></label>
+                                <input asp-for="SortOrder" class="adm-input" type="number" min="0" />
+                                <span asp-validation-for="SortOrder" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="Capacity" class="adm-label">Capacity</label>
+                                <input asp-for="Capacity" class="adm-input" type="number" min="0" placeholder="Max students" />
+                                <span asp-validation-for="Capacity" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <div class="ws-mb-3">
+                            <label asp-for="Description" class="adm-label">Description</label>
+                            <textarea asp-for="Description" class="adm-input" rows="2" placeholder="Optional description"></textarea>
+                            <span asp-validation-for="Description" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-row ws-mb-4">
+                            <div class="ws-col-md-6">
+                                <div class="adm-form-check">
+                                    <input asp-for="IsGroupBased" class="adm-form-check-input" />
+                                    <label asp-for="IsGroupBased" class="adm-form-check-label">Group Based (Science/Business/Humanities)</label>
+                                </div>
+                            </div>
+                            <div class="ws-col-md-6">
+                                <div class="adm-form-check">
+                                    <input asp-for="IsActive" class="adm-form-check-input" />
+                                    <label asp-for="IsActive" class="adm-form-check-label">Active</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Academic/SchoolClass/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0891B2, #22D3EE); box-shadow: 0 4px 12px rgba(8,145,178,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-clock"></i>
             </div>
             <div>
@@ -19,49 +19,49 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditPeriod" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Name <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" placeholder="e.g. Period 1, Morning Break" />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        <div class="ws-mb-3">
+                            <label asp-for="Name" class="adm-label">Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. Period 1, Morning Break" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="StartTime" class="form-label">Start Time <span class="text-danger">*</span></label>
-                                <input asp-for="StartTime" type="time" class="form-control" />
-                                <span asp-validation-for="StartTime" class="text-danger small"></span>
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="StartTime" class="adm-label">Start Time <span class="ws-text-danger">*</span></label>
+                                <input asp-for="StartTime" type="time" class="adm-input" />
+                                <span asp-validation-for="StartTime" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="EndTime" class="form-label">End Time <span class="text-danger">*</span></label>
-                                <input asp-for="EndTime" type="time" class="form-control" />
-                                <span asp-validation-for="EndTime" class="text-danger small"></span>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="EndTime" class="adm-label">End Time <span class="ws-text-danger">*</span></label>
+                                <input asp-for="EndTime" type="time" class="adm-input" />
+                                <span asp-validation-for="EndTime" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="PeriodNumber" class="form-label">Period Number <span class="text-danger">*</span></label>
-                            <input asp-for="PeriodNumber" type="number" class="form-control" min="1" placeholder="e.g. 1, 2, 3..." />
-                            <span asp-validation-for="PeriodNumber" class="text-danger small"></span>
+                        <div class="ws-mb-3">
+                            <label asp-for="PeriodNumber" class="adm-label">Period Number <span class="ws-text-danger">*</span></label>
+                            <input asp-for="PeriodNumber" type="number" class="adm-input" min="1" placeholder="e.g. 1, 2, 3..." />
+                            <span asp-validation-for="PeriodNumber" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input asp-for="IsBreak" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsBreak" class="form-check-label fw-semibold">Is Break Slot</label>
+                        <div class="ws-mb-3 adm-form-check">
+                            <input asp-for="IsBreak" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsBreak" class="adm-form-check-label ws-fw-600">Is Break Slot</label>
                         </div>
 
-                        <div class="mb-4 form-check">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsActive" class="form-check-label fw-semibold">Active</label>
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Active</label>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/Periods" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

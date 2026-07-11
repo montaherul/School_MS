@@ -1,0 +1,77 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.TransferCertificateUpsertDto
+@{
+    ViewData["Title"] = "Edit Transfer Certificate";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-arrow-right-circle"></i></div>
+            <div>
+                <h1 class="adm-header__title">Edit Transfer Certificate</h1>
+                <p class="adm-header__sub">Update transfer certificate details.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title">TC Details</h3></div>
+        <div class="adm-card__body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="adm-form-grid">
+                    <div>
+                        <label class="adm-label">Student ID <span class="adm-required">*</span></label>
+                        <input asp-for="StudentId" type="number" class="adm-input" required />
+                        <span asp-validation-for="StudentId" class="adm-field-error"></span>
+                    </div>
+                    <div>
+                        <label class="adm-label">Certificate No</label>
+                        <input asp-for="CertificateNo" class="adm-input" placeholder="TC-2026-001" />
+                        <span asp-validation-for="CertificateNo" class="adm-field-error"></span>
+                    </div>
+                    <div>
+                        <label class="adm-label">Issue Date <span class="adm-required">*</span></label>
+                        <input asp-for="IssueDate" type="date" class="adm-input" required />
+                        <span asp-validation-for="IssueDate" class="adm-field-error"></span>
+                    </div>
+                    <div>
+                        <label class="adm-label">Old Class ID <span class="adm-required">*</span></label>
+                        <input asp-for="OldClassId" type="number" class="adm-input" required />
+                        <span asp-validation-for="OldClassId" class="adm-field-error"></span>
+                    </div>
+                    <div>
+                        <label class="adm-label">Old Section ID</label>
+                        <input asp-for="OldSectionId" type="number" class="adm-input" />
+                        <span asp-validation-for="OldSectionId" class="adm-field-error"></span>
+                    </div>
+                    <div>
+                        <label class="adm-check-label">
+                            <input class="adm-form-check-input" type="checkbox" asp-for="IsActive" />
+                            <span>Is Active</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="adm-field-spacer">
+                    <label class="adm-label">New School Name <span class="adm-required">*</span></label>
+                    <input asp-for="NewSchoolName" class="adm-input" required />
+                    <span asp-validation-for="NewSchoolName" class="adm-field-error"></span>
+                </div>
+
+                <div class="adm-field-spacer">
+                    <label class="adm-label">Reason for Transfer</label>
+                    <textarea asp-for="Reason" class="adm-textarea" rows="3"></textarea>
+                    <span asp-validation-for="Reason" class="adm-field-error"></span>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-cloud-arrow-up"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

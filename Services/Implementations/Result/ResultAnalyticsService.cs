@@ -67,13 +67,13 @@ public class ResultAnalyticsService : IResultAnalyticsService
 
     public async Task<TabulationSheetDto> GetTabulationSheetAsync(int examId, int? classId, int? sectionId)
     {
-        var exam = await _examRepository.Query()
+        var exam = await _examRepository.QueryNoTracking()
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId);
 
         if (exam == null) return new TabulationSheetDto();
 
-        var query = _examResultRepository.Query()
+        var query = _examResultRepository.QueryNoTracking()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId && !r.IsDeleted);
 
@@ -83,7 +83,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
         var examResults = await query.ToListAsync();
         var studentIds = examResults.Select(r => r.StudentId).ToList();
 
-        var subjectResults = await _subjectResultRepository.Query()
+        var subjectResults = await _subjectResultRepository.QueryNoTracking()
             .Include(sr => sr.Subject)
             .Where(sr => sr.ExamId == examId && studentIds.Contains(sr.StudentId))
             .ToListAsync();
@@ -152,7 +152,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
 
     public async Task<IEnumerable<SubjectPerformanceDto>> GetSubjectAnalysisAsync(int examId)
     {
-        var exam = await _examRepository.Query()
+        var exam = await _examRepository.QueryNoTracking()
             .Include(e => e.ExamSubjects).ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId);
 
@@ -179,7 +179,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
 
     public async Task<ResultSummaryDto> GetClassPerformanceAsync(int examId, int classId)
     {
-        var results = await _examResultRepository.Query()
+        var results = await _examResultRepository.QueryNoTracking()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId && r.Student.ClassId == classId && !r.IsDeleted)
             .ToListAsync();

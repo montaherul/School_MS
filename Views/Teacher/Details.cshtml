@@ -19,7 +19,7 @@
                 <p class="adm-header__sub">Detailed academic record and workforce information</p>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="ws-flex ws-gap-2">
             <a asp-action="Index" class="adm-btn adm-btn--ghost">
                 <i class="bi bi-arrow-left"></i>
                 <span>Back</span>
@@ -31,116 +31,116 @@
         </div>
     </div>
 
-    <div class="row g-4 mt-1">
+    <div class="ws-row ws-g-4 ws-mt-1">
 
         <!-- ── LEFT PANEL ─────────────────────────────────────────── -->
-        <div class="col-lg-4">
+        <div class="ws-col-lg-4">
 
             <!-- Profile Card -->
-            <div class="card border-0 shadow-sm text-center mb-4 overflow-hidden">
-                <div style="height:90px;background:linear-gradient(135deg,var(--adm-primary,#4f46e5),#7c3aed)"></div>
-                <div class="card-body pt-0" style="margin-top:-50px">
-                    <div class="mb-3">
+            <div class="adm-card ws-text-center ws-mb-4" style="overflow:hidden">
+                <div style="height:90px;background:linear-gradient(135deg,var(--adm-primary),var(--adm-primary))"></div>
+                <div class="adm-card__body ws-pt-0" style="margin-top:-50px">
+                    <div class="ws-mb-3">
                         @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
                         {
                             <img src="@Model.ProfilePicturePath"
-                                 class="rounded-circle border border-4 border-white shadow"
-                                 style="width:100px;height:100px;object-fit:cover" alt="Profile" />
+                                 class="ws-rounded-circle ws-shadow"
+                                 style="border:4px solid #fff;width:100px;height:100px;object-fit:cover" alt="Profile" />
                         }
                         else
                         {
-                            <div class="rounded-circle border border-4 border-white shadow d-inline-flex align-items-center justify-content-center fw-bold text-white"
-                                 style="width:100px;height:100px;background:var(--adm-primary,#4f46e5);font-size:2rem">
+                            <div class="ws-rounded-circle ws-shadow ws-inline-flex ws-items-center ws-justify-center ws-fw-700 ws-text-white"
+                                 style="width:100px;height:100px;background:var(--adm-primary);font-size:2rem;border:4px solid #fff">
                                 @(Model.FullName.Length > 0 ? Model.FullName.Substring(0, 1).ToUpper() : "T")
                             </div>
                         }
                     </div>
 
-                    <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                    <h4 class="ws-fw-700 ws-mb-1">@Model.FullName</h4>
                     @if (!string.IsNullOrEmpty(Model.FullNameBangla))
                     {
-                        <div class="text-muted small mb-1">@Model.FullNameBangla</div>
+                        <div class="ws-text-muted ws-fs-13 ws-mb-1">@Model.FullNameBangla</div>
                     }
-                    <p class="fw-semibold mb-1" style="color:var(--adm-primary,#4f46e5)">@Model.Designation</p>
-                    <p class="text-muted small mb-3">@Model.Department Department</p>
+                    <p class="ws-fw-600 ws-mb-1 ws-text-primary">@Model.Designation</p>
+                    <p class="ws-text-muted ws-fs-13 ws-mb-3">@Model.Department Department</p>
 
-                    <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
-                        <span class="badge rounded-pill px-3 py-2" style="background:rgba(79,70,229,.1);color:var(--adm-primary,#4f46e5)">
-                            <i class="bi bi-person-badge me-1"></i>@Model.TeacherNo
+                    <div class="ws-flex ws-justify-center ws-gap-2 ws-mb-3 ws-flex-wrap">
+                        <span style="background:rgba(79,70,229,.1);color:var(--adm-primary);padding:.375rem .75rem;border-radius:999px;font-size:.8125rem">
+                            <i class="bi bi-person-badge ws-me-1"></i>@Model.TeacherNo
                         </span>
                         <span class="adm-status @statusClass">@Model.Status</span>
                     </div>
                 </div>
 
-                <div class="card-footer bg-light border-0 py-3">
-                    <div class="row g-0 text-center">
-                        <div class="col-4 border-end">
-                            <div class="fw-bold text-dark">@joiningYear</div>
-                            <div class="text-muted" style="font-size:.7rem">JOINING</div>
+                <div class="ws-py-3" style="background:var(--ws-bg-light,#f8f9fa)">
+                    <div class="ws-row ws-g-0 ws-text-center">
+                        <div class="ws-col-4" style="border-right:1px solid var(--ws-border,#e2e8f0)">
+                            <div class="ws-fw-700 ws-text-dark">@joiningYear</div>
+                            <div style="font-size:.7rem;color:var(--ws-muted,#64748b)">JOINING</div>
                         </div>
-                        <div class="col-4 border-end">
-                            <div class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.Specialization) ? "—" : Model.Specialization.Split(',')[0].Trim())</div>
-                            <div class="text-muted" style="font-size:.7rem">SUBJECT</div>
+                        <div class="ws-col-4" style="border-right:1px solid var(--ws-border,#e2e8f0)">
+                            <div class="ws-fw-700 ws-text-dark">@(string.IsNullOrEmpty(Model.Specialization) ? "\u2014" : Model.Specialization.Split(',')[0].Trim())</div>
+                            <div style="font-size:.7rem;color:var(--ws-muted,#64748b)">SUBJECT</div>
                         </div>
-                        <div class="col-4">
-                            <div class="fw-bold text-dark">@Model.Gender</div>
-                            <div class="text-muted" style="font-size:.7rem">GENDER</div>
+                        <div class="ws-col-4">
+                            <div class="ws-fw-700 ws-text-dark">@Model.Gender</div>
+                            <div style="font-size:.7rem;color:var(--ws-muted,#64748b)">GENDER</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Contact Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white fw-bold py-3">
-                    <i class="bi bi-telephone-fill me-2 text-primary"></i>Contact Information
+            <div class="adm-card ws-mb-4">
+                <div class="adm-card__header ws-fw-700 ws-py-3" style="background:var(--ws-white,#fff)">
+                    <i class="bi bi-telephone-fill ws-me-2 ws-text-primary"></i>Contact Information
                 </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                <div class="adm-card__body">
+                    <div class="ws-flex ws-items-center ws-mb-3">
+                        <div class="ws-rounded-circle ws-bg-light ws-text-primary ws-flex ws-items-center ws-justify-center ws-me-3" style="width:36px;height:36px">
                             <i class="bi bi-phone"></i>
                         </div>
                         <div>
-                            <div class="text-muted" style="font-size:.72rem">Primary Mobile</div>
-                            <div class="fw-bold">@(string.IsNullOrEmpty(Model.MobileNumber) ? "N/A" : Model.MobileNumber)</div>
+                            <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Primary Mobile</div>
+                            <div class="ws-fw-700">@(string.IsNullOrEmpty(Model.MobileNumber) ? "N/A" : Model.MobileNumber)</div>
                         </div>
                     </div>
                     @if (!string.IsNullOrEmpty(Model.AlternativeNumber))
                     {
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                        <div class="ws-flex ws-items-center ws-mb-3">
+                            <div class="ws-rounded-circle ws-bg-light ws-text-primary ws-flex ws-items-center ws-justify-center ws-me-3" style="width:36px;height:36px">
                                 <i class="bi bi-telephone"></i>
                             </div>
                             <div>
-                                <div class="text-muted" style="font-size:.72rem">Alternative Number</div>
-                                <div class="fw-bold">@Model.AlternativeNumber</div>
+                                <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Alternative Number</div>
+                                <div class="ws-fw-700">@Model.AlternativeNumber</div>
                             </div>
                         </div>
                     }
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                    <div class="ws-flex ws-items-center">
+                        <div class="ws-rounded-circle ws-bg-light ws-text-primary ws-flex ws-items-center ws-justify-center ws-me-3" style="width:36px;height:36px">
                             <i class="bi bi-envelope"></i>
                         </div>
                         <div>
-                            <div class="text-muted" style="font-size:.72rem">Email Address</div>
-                            <div class="fw-bold" style="word-break:break-all">@(string.IsNullOrEmpty(Model.EmailAddress) ? "N/A" : Model.EmailAddress)</div>
+                            <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Email Address</div>
+                            <div class="ws-fw-700" style="word-break:break-all">@(string.IsNullOrEmpty(Model.EmailAddress) ? "N/A" : Model.EmailAddress)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Academic Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white fw-bold py-3">
-                    <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Academic Details
+            <div class="adm-card ws-mb-4">
+                <div class="adm-card__header ws-fw-700 ws-py-3" style="background:var(--ws-white,#fff)">
+                    <i class="bi bi-mortarboard-fill ws-me-2 ws-text-primary"></i>Academic Details
                 </div>
-                <div class="card-body">
+                <div class="adm-card__body">
                     @{
                         void DetailRow(string label, string? value)
                         {
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted small">@label</span>
-                                <span class="fw-semibold small text-end">@(string.IsNullOrEmpty(value) ? "N/A" : value)</span>
+                            <div class="ws-flex ws-flex-between ws-py-2 ws-border-bottom">
+                                <span class="ws-text-muted ws-fs-13">@label</span>
+                                <span class="ws-fw-600 ws-fs-13 ws-text-end">@(string.IsNullOrEmpty(value) ? "N/A" : value)</span>
                             </div>
                         }
                     }
@@ -155,106 +155,106 @@
         </div>
 
         <!-- ── RIGHT PANEL ────────────────────────────────────────── -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white p-0 border-bottom">
-                    <ul class="nav nav-tabs border-0 px-3" id="profileTabs" role="tablist">
+        <div class="ws-col-lg-8">
+            <div class="adm-card">
+                <div class="adm-card__header ws-p-0 ws-border-bottom" style="background:var(--ws-white,#fff)">
+                    <ul class="nav nav-tabs" style="border:none;padding:0 1rem" id="profileTabs" role="tablist">
                         <li class="nav-item">
-                            <button class="nav-link active py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-info" type="button">
-                                <i class="bi bi-person me-1"></i>Personal Info
+                            <button class="nav-link active ws-py-3" data-bs-toggle="tab" data-bs-target="#pane-info" type="button" style="border:none">
+                                <i class="bi bi-person ws-me-1"></i>Personal Info
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-address" type="button">
-                                <i class="bi bi-geo-alt me-1"></i>Address
+                            <button class="nav-link ws-py-3" data-bs-toggle="tab" data-bs-target="#pane-address" type="button" style="border:none">
+                                <i class="bi bi-geo-alt ws-me-1"></i>Address
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-identity" type="button">
-                                <i class="bi bi-card-text me-1"></i>Family
+                            <button class="nav-link ws-py-3" data-bs-toggle="tab" data-bs-target="#pane-identity" type="button" style="border:none">
+                                <i class="bi bi-card-text ws-me-1"></i>Family
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-assignments" type="button">
-                                <i class="bi bi-diagram-3 me-1"></i>Assignments
+                            <button class="nav-link ws-py-3" data-bs-toggle="tab" data-bs-target="#pane-assignments" type="button" style="border:none">
+                                <i class="bi bi-diagram-3 ws-me-1"></i>Assignments
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-documents" type="button">
-                                <i class="bi bi-file-earmark-text me-1"></i>Documents
+                            <button class="nav-link ws-py-3" data-bs-toggle="tab" data-bs-target="#pane-documents" type="button" style="border:none">
+                                <i class="bi bi-file-earmark-text ws-me-1"></i>Documents
                             </button>
                         </li>
                     </ul>
                 </div>
 
-                <div class="card-body p-4">
+                <div class="adm-card__body ws-p-4">
                     <div class="tab-content">
 
                         <!-- Tab: Personal Info -->
                         <div class="tab-pane fade show active" id="pane-info" role="tabpanel">
-                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">General Information</h6>
-                            <div class="row g-4">
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Full Name</div>
-                                    <div class="fw-semibold">@Model.FullName</div>
+                            <h6 class="ws-fw-700 ws-text-uppercase ws-text-muted ws-mb-4" style="font-size:.72rem;letter-spacing:.05em">General Information</h6>
+                            <div class="ws-row ws-g-4">
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Full Name</div>
+                                    <div class="ws-fw-600">@Model.FullName</div>
                                 </div>
                                 @if (!string.IsNullOrEmpty(Model.FullNameBangla))
                                 {
-                                    <div class="col-md-4">
-                                        <div class="text-muted" style="font-size:.72rem">Name (Bangla)</div>
-                                        <div class="fw-semibold">@Model.FullNameBangla</div>
+                                    <div class="ws-col-md-4">
+                                        <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Name (Bangla)</div>
+                                        <div class="ws-fw-600">@Model.FullNameBangla</div>
                                     </div>
                                 }
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Date of Birth</div>
-                                    <div class="fw-semibold">@(Model.DateOfBirth != default ? Model.DateOfBirth.ToString("dd MMM yyyy") : "N/A")</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Date of Birth</div>
+                                    <div class="ws-fw-600">@(Model.DateOfBirth != default ? Model.DateOfBirth.ToString("dd MMM yyyy") : "N/A")</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Gender</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Gender</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Blood Group</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.BloodGroup) ? "N/A" : Model.BloodGroup)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Blood Group</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.BloodGroup) ? "N/A" : Model.BloodGroup)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Religion</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Religion) ? "N/A" : Model.Religion)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Religion</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Religion) ? "N/A" : Model.Religion)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Marital Status</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Marital Status</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Nationality</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Nationality) ? "N/A" : Model.Nationality)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Nationality</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Nationality) ? "N/A" : Model.Nationality)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Country</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Country) ? "N/A" : Model.Country)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Country</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Country) ? "N/A" : Model.Country)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Designation</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Designation) ? "N/A" : Model.Designation)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Designation</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Designation) ? "N/A" : Model.Designation)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Department</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Department) ? "N/A" : Model.Department)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Department</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Department) ? "N/A" : Model.Department)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Joining Date</div>
-                                    <div class="fw-semibold">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Joining Date</div>
+                                    <div class="ws-fw-600">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Qualification</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Qualification) ? "N/A" : Model.Qualification)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Qualification</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Qualification) ? "N/A" : Model.Qualification)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Specialization</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Specialization) ? "N/A" : Model.Specialization)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Specialization</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.Specialization) ? "N/A" : Model.Specialization)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Status</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Status</div>
                                     <div><span class="adm-status @statusClass">@Model.Status</span></div>
                                 </div>
                             </div>
@@ -262,12 +262,12 @@
 
                         <!-- Tab: Address -->
                         <div class="tab-pane fade" id="pane-address" role="tabpanel">
-                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Address Details</h6>
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <div class="p-3 bg-light rounded-3">
-                                        <div class="fw-bold small mb-2"><i class="bi bi-house me-1 text-primary"></i>Present Address</div>
-                                        <div class="small text-muted">
+                            <h6 class="ws-fw-700 ws-text-uppercase ws-text-muted ws-mb-4" style="font-size:.72rem;letter-spacing:.05em">Address Details</h6>
+                            <div class="ws-row ws-g-4">
+                                <div class="ws-col-md-6">
+                                    <div class="ws-p-3 ws-rounded-lg" style="background:var(--ws-bg-light,#f8f9fa)">
+                                        <div class="ws-fw-700 ws-fs-13 ws-mb-2"><i class="bi bi-house ws-me-1 ws-text-primary"></i>Present Address</div>
+                                        <div class="ws-fs-13 ws-text-muted">
                                             @{
                                                 var present = string.Join(", ", new[] { Model.PresentVillage, Model.PresentPostOffice, Model.PresentThana, Model.PresentDistrict }
                                                     .Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -276,10 +276,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="p-3 bg-light rounded-3">
-                                        <div class="fw-bold small mb-2"><i class="bi bi-house-door me-1 text-success"></i>Permanent Address</div>
-                                        <div class="small text-muted">
+                                <div class="ws-col-md-6">
+                                    <div class="ws-p-3 ws-rounded-lg" style="background:var(--ws-bg-light,#f8f9fa)">
+                                        <div class="ws-fw-700 ws-fs-13 ws-mb-2"><i class="bi bi-house-door ws-me-1 ws-text-success"></i>Permanent Address</div>
+                                        <div class="ws-fs-13 ws-text-muted">
                                             @{
                                                 var permanent = string.Join(", ", new[] { Model.PermanentVillage, Model.PermanentPostOffice, Model.PermanentThana, Model.PermanentDistrict }
                                                     .Where(s => !string.IsNullOrWhiteSpace(s)));
@@ -293,60 +293,60 @@
 
                         <!-- Tab: Identity & Family -->
                         <div class="tab-pane fade" id="pane-identity" role="tabpanel">
-                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Family Information</h6>
-                            <div class="row g-4">
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Father's Name</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.FatherName) ? "N/A" : Model.FatherName)</div>
+                            <h6 class="ws-fw-700 ws-text-uppercase ws-text-muted ws-mb-4" style="font-size:.72rem;letter-spacing:.05em">Family Information</h6>
+                            <div class="ws-row ws-g-4">
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Father's Name</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.FatherName) ? "N/A" : Model.FatherName)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Mother's Name</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MotherName) ? "N/A" : Model.MotherName)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Mother's Name</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.MotherName) ? "N/A" : Model.MotherName)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Spouse Name</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.SpouseName) ? "N/A" : Model.SpouseName)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Spouse Name</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.SpouseName) ? "N/A" : Model.SpouseName)</div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Marital Status</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
+                                <div class="ws-col-md-4">
+                                    <div style="font-size:.72rem;color:var(--ws-muted,#64748b)">Marital Status</div>
+                                    <div class="ws-fw-600">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Tab: Assignments -->
                         <div class="tab-pane fade" id="pane-assignments" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h6 class="mb-0 fw-bold">Assigned Classes & Subjects</h6>
+                            <div class="ws-flex ws-flex-between ws-items-center ws-mb-4">
+                                <h6 class="ws-mb-0 ws-fw-700">Assigned Classes & Subjects</h6>
                                 <a href="/TeacherAssignment/@Model.Id" class="adm-btn adm-btn--primary" style="font-size:.8rem;padding:.35rem .85rem">
-                                    <i class="bi bi-plus-lg me-1"></i>Manage Assignments
+                                    <i class="bi bi-plus-lg ws-me-1"></i>Manage Assignments
                                 </a>
                             </div>
 
                             <!-- Filter Controls -->
-                            <div class="card bg-light border-0 mb-4 shadow-none">
-                                <div class="card-body p-3">
-                                    <div class="row g-2 align-items-end">
-                                        <div class="col-md-3">
-                                            <label class="form-label small fw-semibold text-muted mb-1">Class</label>
+                            <div class="adm-card ws-mb-4" style="background:var(--ws-bg-light,#f8f9fa)">
+                                <div class="adm-card__body ws-p-3">
+                                    <div class="ws-row ws-g-2 ws-items-end">
+                                        <div class="ws-col-md-3">
+                                            <label class="ws-fs-13 ws-fw-600 ws-text-muted ws-mb-1">Class</label>
                                             <select id="filterClass" class="form-select form-select-sm" data-placeholder="All Classes">
                                                 <option value="">All Classes</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3 d-none" id="filterGroupContainer">
-                                            <label class="form-label small fw-semibold text-muted mb-1">Group</label>
+                                        <div class="ws-col-md-3 ws-d-none" id="filterGroupContainer">
+                                            <label class="ws-fs-13 ws-fw-600 ws-text-muted ws-mb-1">Group</label>
                                             <select id="filterGroup" class="form-select form-select-sm" data-placeholder="All Groups">
                                                 <option value="">All Groups</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small fw-semibold text-muted mb-1">Section</label>
+                                        <div class="ws-col-md-3">
+                                            <label class="ws-fs-13 ws-fw-600 ws-text-muted ws-mb-1">Section</label>
                                             <select id="filterSection" class="form-select form-select-sm" disabled data-placeholder="All Sections">
                                                 <option value="">All Sections</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small fw-semibold text-muted mb-1">Subject</label>
+                                        <div class="ws-col-md-3">
+                                            <label class="ws-fs-13 ws-fw-600 ws-text-muted ws-mb-1">Subject</label>
                                             <select id="filterSubject" class="form-select form-select-sm" disabled data-placeholder="All Subjects">
                                                 <option value="">All Subjects</option>
                                             </select>
@@ -356,8 +356,8 @@
                             </div>
 
                             <div id="assignments-container">
-                                <div class="text-center py-5 text-muted">
-                                    <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                                <div class="ws-text-center ws-py-5 ws-text-muted">
+                                    <i class="bi bi-hourglass-split ws-fs-2 ws-mb-2" style="display:block"></i>
                                     Loading assignments...
                                 </div>
                             </div>
@@ -365,10 +365,10 @@
 
                         <!-- Tab: Documents -->
                         <div class="tab-pane fade" id="pane-documents" role="tabpanel">
-                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Employee Documents</h6>
+                            <h6 class="ws-fw-700 ws-text-uppercase ws-text-muted ws-mb-4" style="font-size:.72rem;letter-spacing:.05em">Employee Documents</h6>
                             <div id="documents-container">
-                                <div class="text-center py-5 text-muted">
-                                    <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                                <div class="ws-text-center ws-py-5 ws-text-muted">
+                                    <i class="bi bi-hourglass-split ws-fs-2 ws-mb-2" style="display:block"></i>
                                     Loading documents...
                                 </div>
                             </div>
@@ -383,8 +383,8 @@
 
 <style>
     .nav-tabs .nav-link.active {
-        color: var(--adm-primary, #4f46e5);
-        border-bottom: 2px solid var(--adm-primary, #4f46e5) !important;
+        color: var(--adm-primary);
+        border-bottom: 2px solid var(--adm-primary) !important;
         font-weight: 700;
         background: transparent;
     }
@@ -394,7 +394,7 @@
         border: none;
     }
     .nav-tabs .nav-link:hover {
-        color: var(--adm-primary, #4f46e5);
+        color: var(--adm-primary);
         border-color: transparent;
     }
 </style>
@@ -442,8 +442,8 @@
         const subjectId = $('#filterSubject').val() || '';
 
         container.innerHTML = `
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+            <div class="ws-text-center ws-py-5 ws-text-muted">
+                <i class="bi bi-hourglass-split ws-fs-2 ws-mb-2" style="display:block"></i>
                 Loading assignments...
             </div>`;
 
@@ -454,8 +454,8 @@
             .then(data => {
                 if (!data || data.length === 0) {
                     container.innerHTML = `
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
+                        <div class="ws-text-center ws-py-5 ws-text-muted">
+                            <i class="bi bi-diagram-3 ws-fs-2 ws-mb-2" style="display:block"></i>
                             <div>No matching assignments found.</div>
                         </div>`;
                     return;
@@ -463,28 +463,28 @@
                 let rows = data.map(a => `
                     <tr>
                         <td>
-                            <div class="fw-bold">${a.className ?? '-'}</div>
-                            <div class="text-muted" style="font-size:.75rem">
+                            <div class="ws-fw-700">${a.className ?? '-'}</div>
+                            <div style="font-size:.75rem;color:var(--ws-muted,#64748b)">
                                 ${a.sectionName ?? ''} ${a.groupName ? `(${a.groupName})` : ''}
                             </div>
                         </td>
                         <td>${a.subjectName ?? '-'}</td>
-                        <td><span class="badge bg-light text-primary border rounded-pill">${a.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}</span></td>
+                        <td><span style="display:inline-block;padding:0.25em 0.5em;border-radius:999px;font-size:.8125rem;background:var(--ws-bg-light,#f8f9fa);color:var(--ws-primary,#4f46e5);border:1px solid var(--ws-border,#e2e8f0)">${a.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}</span></td>
                     </tr>`).join('');
                 container.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="bg-light"><tr>
-                                <th class="small py-3">Class & Section</th>
-                                <th class="small py-3">Subject</th>
-                                <th class="small py-3">Role</th>
+                    <div style="overflow-x:auto">
+                        <table class="adm-table">
+                            <thead><tr>
+                                <th class="ws-fs-13 ws-py-3">Class & Section</th>
+                                <th class="ws-fs-13 ws-py-3">Subject</th>
+                                <th class="ws-fs-13 ws-py-3">Role</th>
                             </tr></thead>
                             <tbody>${rows}</tbody>
                         </table>
                     </div>`;
             })
             .catch(() => {
-                container.innerHTML = `<div class="alert alert-warning">Could not load assignments. <a href="/TeacherAssignment/@Model.Id">Manage here</a>.</div>`;
+                container.innerHTML = `<div class="adm-alert adm-alert--warning" style="padding:.5rem .75rem;font-size:.8125rem;margin:0">Could not load assignments. <a href="/TeacherAssignment/@Model.Id">Manage here</a>.</div>`;
             });
     }
 </script>
@@ -498,8 +498,8 @@
         container.dataset.loaded = true;
 
         container.innerHTML = `
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+            <div class="ws-text-center ws-py-5 ws-text-muted">
+                <i class="bi bi-hourglass-split ws-fs-2 ws-mb-2" style="display:block"></i>
                 Loading documents...
             </div>`;
 
@@ -508,53 +508,53 @@
             .then(data => {
                 if (!data || data.length === 0) {
                     container.innerHTML = `
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-file-earmark-text fs-2 mb-2 d-block"></i>
+                        <div class="ws-text-center ws-py-5 ws-text-muted">
+                            <i class="bi bi-file-earmark-text ws-fs-2 ws-mb-2" style="display:block"></i>
                             <div>No documents attached. Manage documents from the Employee Profile.</div>
                         </div>`;
                     return;
                 }
-                const formatDate = (dt) => dt ? new Date(dt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                const formatDate = (dt) => dt ? new Date(dt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
                 const rows = data.map(d => {
                     const isExpired = d.expiryDate && new Date(d.expiryDate) < new Date();
                     const statusBadge = isExpired
-                        ? '<span class="badge bg-danger-subtle text-danger small">Expired</span>'
-                        : '<span class="badge bg-success-subtle text-success small">Active</span>';
+                        ? '<span style="display:inline-block;padding:0.25em 0.5em;border-radius:0.375rem;font-size:.8125rem;background:var(--clr-danger-bg,#fce4ec);color:var(--clr-danger,#dc2626)">Expired</span>'
+                        : '<span style="display:inline-block;padding:0.25em 0.5em;border-radius:0.375rem;font-size:.8125rem;background:var(--clr-success-bg,#e8f5e9);color:var(--clr-success,#16a34a)">Active</span>';
                     return `<tr>
-                        <td><span class="badge bg-secondary-subtle text-secondary">${d.documentType ?? '—'}</span></td>
-                        <td class="fw-semibold">${d.documentName ?? '—'}</td>
-                        <td class="small text-muted">${formatDate(d.uploadedDate)}</td>
-                        <td class="small text-muted">${formatDate(d.expiryDate)}</td>
+                        <td><span style="display:inline-block;padding:0.25em 0.5em;border-radius:0.375rem;font-size:.8125rem;background:var(--ws-bg-light,#f8f9fa);color:var(--ws-muted,#64748b)">${d.documentType ?? '\u2014'}</span></td>
+                        <td class="ws-fw-600">${d.documentName ?? '\u2014'}</td>
+                        <td style="font-size:.8125rem;color:var(--ws-muted,#64748b)">${formatDate(d.uploadedDate)}</td>
+                        <td style="font-size:.8125rem;color:var(--ws-muted,#64748b)">${formatDate(d.expiryDate)}</td>
                         <td>${statusBadge}</td>
                         <td>
-                            <a href="${d.filePath}" target="_blank" class="btn btn-sm btn-outline-primary rounded-circle p-1" title="View">
+                            <a href="${d.filePath}" target="_blank" class="adm-btn adm-btn--ghost" style="width:32px;height:32px;border-radius:50%;padding:4px;display:inline-flex;align-items:center;justify-content:center" title="View">
                                 <i class="bi bi-eye"></i>
                             </a>
                         </td>
                     </tr>`;
                 }).join('');
                 container.innerHTML = `
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="bg-light"><tr>
-                                <th class="small py-3">Type</th>
-                                <th class="small py-3">Name</th>
-                                <th class="small py-3">Uploaded</th>
-                                <th class="small py-3">Expiry</th>
-                                <th class="small py-3">Status</th>
-                                <th class="small py-3">Action</th>
+                    <div style="overflow-x:auto">
+                        <table class="adm-table">
+                            <thead><tr>
+                                <th class="ws-fs-13 ws-py-3">Type</th>
+                                <th class="ws-fs-13 ws-py-3">Name</th>
+                                <th class="ws-fs-13 ws-py-3">Uploaded</th>
+                                <th class="ws-fs-13 ws-py-3">Expiry</th>
+                                <th class="ws-fs-13 ws-py-3">Status</th>
+                                <th class="ws-fs-13 ws-py-3">Action</th>
                             </tr></thead>
                             <tbody>${rows}</tbody>
                         </table>
                     </div>
-                    <div class="mt-3">
-                        <a href="/Employee/Details/" + teacherEmployeeId class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-person-badge me-1"></i> Manage Documents from Employee Profile
+                    <div class="ws-mt-3">
+                        <a href="/Employee/Details/" + teacherEmployeeId class="adm-btn adm-btn--ghost adm-btn--sm">
+                            <i class="bi bi-person-badge ws-me-1"></i> Manage Documents from Employee Profile
                         </a>
                     </div>`;
             })
             .catch(() => {
-                container.innerHTML = `<div class="alert alert-warning py-2 small mb-0">Could not load documents.</div>`;
+                container.innerHTML = `<div class="adm-alert adm-alert--warning" style="padding:.5rem .75rem;font-size:.8125rem;margin:0">Could not load documents.</div>`;
             });
     });
 </script>

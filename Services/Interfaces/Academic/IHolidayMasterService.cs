@@ -12,7 +12,10 @@ public interface IHolidayMasterService
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
     Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default);
     Task DeactivateAsync(int id, string updatedBy, CancellationToken ct = default);
+    Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default);
+    Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default);
     Task<int> ImportAsync(List<HolidayMasterUpsertDto> holidays, string createdBy, CancellationToken ct = default);
     Task<byte[]> ExportAsync(CancellationToken ct = default);
     Task<List<HolidayMasterDto>> GetAllAsync(CancellationToken ct = default);
+    Task<int> GenerateBangladeshHolidaysAsync(int year, string createdBy, CancellationToken ct = default);
 }

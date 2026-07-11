@@ -4,23 +4,23 @@
     ViewData["Title"] = isEdit ? "Edit Employee Records" : "New Employee Registration";
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-11">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div class="d-flex align-items-center">
-                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back to List</a>
-                <h2 class="mb-0 text-gradient"><i class="bi bi-people-fill me-2"></i>@(isEdit ? "Edit Employee: " + Model.FullName : "Register New Employee")</h2>
+<div class="ws-row ws-justify-center">
+    <div class="ws-col-lg-11">
+        <div class="ws-flex ws-items-center ws-flex-between ws-mb-4">
+            <div class="ws-flex ws-items-center">
+                <a asp-action="Index" class="adm-btn adm-btn--ghost ws-me-3"><i class="bi bi-arrow-left"></i> Back to List</a>
+                <h2 class="ws-mb-0"><i class="bi bi-people-fill ws-me-2"></i>@(isEdit ? "Edit Employee: " + Model.FullName : "Register New Employee")</h2>
             </div>
             @if (isEdit)
             {
-                <span class="badge bg-secondary p-2 fs-6">Code: @Model.EmployeeCode</span>
+                <span class="er-badge er-badge--neutral">Code: @Model.EmployeeCode</span>
             }
         </div>
 
         <form asp-action="Save" method="post" enctype="multipart/form-data" id="employeeForm">
             @Html.AntiForgeryToken()
             @await Html.PartialAsync("~/Views/Shared/Employee/_EmployeeTabs.cshtml", Model)
-            <button type="submit" class="btn btn-success">Save</button>
+            <button type="submit" class="adm-btn adm-btn--success"><i class="bi bi-check-lg"></i> Save</button>
         </form>
     </div>
 </div>

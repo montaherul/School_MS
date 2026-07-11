@@ -1,0 +1,158 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.NctbComplianceReportDto
+@{
+    ViewData["Title"] = "NCTB Compliance Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">NCTB Compliance Dashboard</h1>
+                <p class="adm-header__sub">Monitor Bangladesh National Curriculum & Textbook Board compliance status</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <label class="adm-label ws-mb-0">Academic Year:</label>
+            <select id="academicYearSelect" class="adm-input ws-w-auto"
+                    onchange="window.location.href = '/Academic/NctbCompliance?academicYearId=' + this.value;">
+                @foreach (var v in ViewBag.CurriculumVersions)
+                {
+                    <option value="@v.AcademicYearId" selected="@(v.AcademicYearId == Model.AcademicYearId)">
+                        @v.VersionName @(v.IsCurrent ? "(Current)" : "")
+                    </option>
+                }
+            </select>
+            <span class="adm-status adm-status--info">@Model.ComplianceScore%</span>
+        </div>
+    </div>
+
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.TotalSubjectCount</span>
+                <span class="dash-stat-card__label">Total Subjects</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <path d="M8 21h8M12 17v4"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.VocationalSubjectCount</span>
+                <span class="dash-stat-card__label">Vocational Subjects</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.MissingSubjects.Count</span>
+                <span class="dash-stat-card__label">Missing Subjects</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon @(Model.ComplianceScore >= 80 ? "dash-stat-card__icon--teal" : Model.ComplianceScore >= 60 ? "dash-stat-card__icon--warning" : "dash-stat-card__icon--danger")">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.ComplianceScore%</span>
+                <span class="dash-stat-card__label">Compliance Score</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h2 class="adm-card__title">Group Requirements</h2></div>
+        <div class="adm-card__body">
+            @foreach (var item in Model.Checklist)
+            {
+                <div class="ws-flex ws-items-center ws-justify-between ws-p-3 @(item.Passed ? "ws-bg-success-light" : "ws-bg-danger-light")">
+                    <div class="ws-flex ws-items-center ws-gap-3">
+                        <span class="ws-icon-circle @(item.Passed ? "ws-bg-success" : "ws-bg-danger") ws-text-white">@(item.Passed ? "✓" : "✗")</span>
+                        <div>
+                            <div class="ws-fw-600">@item.Label</div>
+                            <div class="ws-fs-13 ws-text-muted">@item.Description</div>
+                        </div>
+                    </div>
+                    <span class="adm-status @(item.Passed ? "adm-status--approved" : "adm-status--rejected")">
+                        @(item.Passed ? "Passed" : "Failed")
+                    </span>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.MissingSubjects.Any())
+    {
+        <div class="adm-card">
+            <div class="adm-card__header"><h2 class="adm-card__title">Missing NCTB-Required Subjects</h2></div>
+            <div class="adm-card__body">
+                @foreach (var subj in Model.MissingSubjects.Distinct())
+                {
+                    <span class="adm-status adm-status--rejected">@subj</span>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.Warnings.Any() || Model.Recommendations.Any())
+    {
+        <div class="dash-stats">
+            @if (Model.Warnings.Any())
+            {
+                <div class="adm-card">
+                    <div class="adm-card__header"><h2 class="adm-card__title">Warnings</h2></div>
+                    <div class="adm-card__body">
+                        <ul>
+                            @foreach (var w in Model.Warnings)
+                            {
+                                <li class="ws-flex ws-items-start ws-gap-2 ws-mb-2">
+                                    <span class="ws-fw-700 ws-text-danger">!</span>
+                                    <span>@w</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+            @if (Model.Recommendations.Any())
+            {
+                <div class="adm-card">
+                    <div class="adm-card__header"><h2 class="adm-card__title">Recommendations</h2></div>
+                    <div class="adm-card__body">
+                        <ul>
+                            @foreach (var r in Model.Recommendations)
+                            {
+                                <li class="ws-flex ws-items-start ws-gap-2 ws-mb-2">
+                                    <span class="ws-fw-700 ws-text-accent">→</span>
+                                    <span>@r</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

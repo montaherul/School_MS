@@ -98,55 +98,7 @@ public class Subject : BaseEntity
     public virtual ICollection<ClassSubject> ClassSubjects { get; set; } = [];
 }
 
-//public class TeacherProfile : BaseEntity
-//{
-//    [MaxLength(30)]
-//    public string EmployeeNo { get; set; } = string.Empty;
 
-//    [MaxLength(120)]
-//    public string FullName { get; set; } = string.Empty;
-
-//    [MaxLength(120)]
-//    public string Designation { get; set; } = "Lecturer";
-
-//    [MaxLength(100)]
-//    public string Department { get; set; } = string.Empty;
-
-//    [MaxLength(30)]
-//    public string Phone { get; set; } = string.Empty;
-
-//    [MaxLength(100)]
-//    public string Email { get; set; } = string.Empty;
-
-//    public DateTime? DateOfBirth { get; set; }
-//    public DateTime? JoiningDate { get; set; }
-
-//    [MaxLength(500)]
-//    public string Address { get; set; } = string.Empty;
-
-//    [MaxLength(100)]
-//    public string EmergencyContactName { get; set; } = string.Empty;
-
-//    [MaxLength(30)]
-//    public string EmergencyContactPhone { get; set; } = string.Empty;
-
-//    [MaxLength(20)]
-//    public string Status { get; set; } = "Active"; // Active, OnLeave, Resigned, Terminated
-
-//    [MaxLength(255)]
-//    public string ProfilePhotoPath { get; set; } = string.Empty;
-//}
-
-
-//public class ClassSubjectTeacher : BaseEntity
-//{
-//    public int SchoolClassId { get; set; }
-//    public int SectionId { get; set; }
-//    public int SubjectId { get; set; }
-//    public int TeacherProfileId { get; set; }
-//    public int AcademicYearId { get; set; }
-
-//}
 public class ClassSubjectTeacher : BaseEntity
 {
     public int ClassSubjectId { get; set; }
@@ -160,34 +112,109 @@ public class ClassSubjectTeacher : BaseEntity
 public class Syllabus : BaseEntity
 {
     public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
     public int SubjectId { get; set; }
+    public Subject? Subject { get; set; }
+    public int AcademicYearId { get; set; }
+    public AcademicYear? AcademicYear { get; set; }
+
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string? Description { get; set; }
 
     [MaxLength(260)]
     public string FilePath { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? FileName { get; set; }
+
+    public long? FileSize { get; set; }
+
+    [MaxLength(50)]
+    public string? FileType { get; set; }
+
+    [MaxLength(64)]
+    public string UploadedBy { get; set; } = string.Empty;
+
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+
+    public bool IsActive { get; set; } = true;
 }
 
 public class LessonPlan : BaseEntity
 {
-    public int TeacherId { get; set; }   // ✅ FIXED
+    public int TeacherId { get; set; }
     public Teacher? Teacher { get; set; }
 
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
     public int SubjectId { get; set; }
-    public DateTime LessonDate { get; set; }
+    public Subject? Subject { get; set; }
+    public int AcademicYearId { get; set; }
+    public AcademicYear? AcademicYear { get; set; }
 
-    public string Topic { get; set; } = string.Empty;
-    public string Plan { get; set; } = string.Empty;
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    public string? Objectives { get; set; }
+
+    public string? Materials { get; set; }
+
+    public string? Procedure { get; set; }
+
+    [MaxLength(500)]
+    public string? AssessmentMethod { get; set; }
+
+    public int? DurationMinutes { get; set; }
+
+    public DateTime LessonDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+
+    [MaxLength(30)]
+    public string Status { get; set; } = "Draft"; // Draft, Published, Archived
+
+    public bool IsActive { get; set; } = true;
 }
 
 public class StudyMaterial : BaseEntity
 {
     public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
     public int SubjectId { get; set; }
+    public Subject? Subject { get; set; }
+    public int AcademicYearId { get; set; }
+    public AcademicYear? AcademicYear { get; set; }
 
-    [MaxLength(160)]
+    [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string? Description { get; set; }
+
+    [MaxLength(30)]
+    public string MaterialType { get; set; } = "Note"; // Note, Video, Reference, Worksheet
+
+    [MaxLength(260)]
+    public string? FilePath { get; set; }
+
+    [MaxLength(200)]
+    public string? FileName { get; set; }
+
+    public long? FileSize { get; set; }
+
+    [MaxLength(50)]
+    public string? FileType { get; set; }
+
+    [MaxLength(500)]
+    public string? ExternalUrl { get; set; }
 
     [MaxLength(260)]
     public string ResourceUrl { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
 }
 public class StudentGroup : BaseEntity
 {
@@ -217,7 +244,7 @@ public class StudentGroup : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation
-    public virtual ICollection<ClassSubject> ClassSubjects { get; set; } = [];
+    public virtual ICollection<ClassSubjectGroup> ClassSubjectGroups { get; set; } = [];
     public virtual ICollection<StudentGroupAssignment> StudentAssignments { get; set; } = [];
 }
 

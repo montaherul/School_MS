@@ -1,411 +1,700 @@
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeDetailsViewModel
 @{
     ViewData["Title"] = "Employee Profile: " + Model.FullName;
+    var hasTeacher = ViewBag.TeacherProfile != null;
+    var teacher = hasTeacher ? ViewBag.TeacherProfile as SchoolManagementSystem.Models.Entities.Teachers.Teacher : null;
+    var schoolName = ViewBag.SchoolSetting?.SchoolName ?? "School Management ERP";
 }
 
-<div class="row g-4 mb-5">
-    <!-- Header Profile Card -->
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--bs-card-bg, #fff);">
-            <div class="card-body p-4">
-                <div class="row align-items-center g-3">
-                    <div class="col-auto">
-                        <div class="avatar-xl rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center shadow-sm" style="width:100px; height:100px; overflow:hidden;">
-                            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-                            {
-                                <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile" />
-                            }
-                            else
-                            {
-                                <span class="fs-1 fw-bold text-primary">@Model.FullName.Substring(0, 2).ToUpper()</span>
-                            }
-                        </div>
-                    </div>
-                    <div class="col">
-                        <h3 class="fw-bold mb-1">@Model.FullName</h3>
-                        <p class="text-muted mb-0 d-flex align-items-center flex-wrap gap-2">
-                            <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-danger") px-3 py-1">
-                                @Model.Status
-                            </span>
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1">
-                                @Model.EmployeeCode
-                            </span>
-                            @if (Model.IsTeachingStaff)
-                            {
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1">
-                                    Teaching Staff
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1">
-                                    Administration / Support Staff
-                                </span>
-                            }
-                        </p>
-                        <div class="text-secondary small mt-2">
-                            <i class="bi bi-briefcase me-1"></i> @Model.Designation in <strong>@Model.Department</strong>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <div class="d-flex align-items-center gap-2">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-3 rounded-pill">
-                                <i class="bi bi-pencil me-1"></i> Edit Profile
-                            </a>
+<div class="ws-container ws-py-6">
 
-                            @if (User.IsInRole("Super Admin") || User.HasClaim("Permission", "Users.Delete"))
-                            {
-                                <button type="button" class="btn btn-outline-danger px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i class="bi bi-trash me-1"></i> Delete
-                                </button>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- LEFT COLUMN: Key Details & Contact Info -->
-    <div class="col-lg-4 col-md-5">
-        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-person-lines-fill me-2"></i>Personal Info</h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Gender</label>
-                        <span class="fw-medium">@Model.Gender</span>
-                    </div>
-                    <div class="col-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Blood Group</label>
-                        <span class="fw-medium">@(Model.BloodGroup ?? "N/A")</span>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Date of Birth</label>
-                        <span class="fw-medium">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
-                    </div>
-                    <div class="col-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Religion</label>
-                        <span class="fw-medium">@(Model.Religion ?? "N/A")</span>
-                    </div>
-                    <div class="col-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Nationality</label>
-                        <span class="fw-medium">@(Model.Nationality ?? "N/A")</span>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase fw-bold d-block">NID / National ID</label>
-                        <span class="fw-medium">@(Model.NIDNumber ?? "N/A")</span>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Birth Certificate</label>
-                        <span class="fw-medium">@(Model.BirthCertificateNo ?? "N/A")</span>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Father's Name</label>
-                        <span class="fw-medium">@(Model.FatherName ?? "N/A")</span>
-                    </div>
-                    <div class="col-12">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Mother's Name</label>
-                        <span class="fw-medium">@(Model.MotherName ?? "N/A")</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0 text-success"><i class="bi bi-envelope-fill me-2"></i>Contact Details</h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Primary Phone</label>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-telephone text-success me-2 fs-5"></i>
-                        <span class="fw-bold text-success">@Model.Phone</span>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Email Address</label>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-envelope text-primary me-2 fs-5"></i>
-                        <span class="fw-medium">@(Model.Email ?? "N/A")</span>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Present Address</label>
-                    <p class="small mb-0 text-secondary">@(Model.PresentAddress ?? "N/A")</p>
-                </div>
-                <div class="mb-0">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Permanent Address</label>
-                    <p class="small mb-0 text-secondary">@(Model.PermanentAddress ?? "N/A")</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--bs-card-bg, #fff);">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-telephone-outbound-fill me-2"></i>Emergency Contact</h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="mb-2">
-                    <label class="text-muted small text-uppercase fw-bold d-block">Contact Name</label>
-                    <span class="fw-medium">@(Model.EmergencyContactName ?? "N/A")</span>
-                </div>
-                <div>
-                    <label class="text-muted small text-uppercase fw-bold d-block">Phone Number</label>
-                    <span class="fw-bold text-dark">@(Model.EmergencyContactPhone ?? "N/A")</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- RIGHT COLUMN: Qualifications, Experience, User Acc & Docs -->
-    <div class="col-lg-8 col-md-7">
-        
-        <!-- Quick Status & Employment Summary -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
-            <div class="card-body p-4">
-                <div class="row g-4 text-center">
-                    <div class="col-md-4 border-end">
-                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Employment Type</label>
-                        <h5 class="fw-bold text-dark mb-0">@Model.EmployeeType</h5>
-                    </div>
-                    <div class="col-md-4 border-end">
-                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Joining Date</label>
-                        <h5 class="fw-bold text-primary mb-0">@Model.JoiningDate.ToString("dd MMM yyyy")</h5>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Years of Service</label>
-                        @{
-                            var serviceDays = (DateTime.Today - Model.JoiningDate).Days;
-                            var serviceYears = (double)serviceDays / 365;
+    <!-- Profile Header -->
+    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-mb-6">
+        <div class="adm-card__body ws-p-6">
+            <div class="ws-row ws-items-center ws-g-4">
+                <div class="ws-col-lg-1 ws-col-md-2 ws-col-3">
+                    <div class="ws-w-100 ws-relative" style="max-width:100px;">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                        {
+                            <img src="@Model.ProfilePicturePath" class="ws-avatar ws-avatar--140 ws-w-100 ws-h-100" alt="Profile" style="width:100px;height:100px;" />
                         }
-                        <h5 class="fw-bold text-success mb-0">@serviceYears.ToString("0.0") Years</h5>
+                        else
+                        {
+                            <div class="ws-icon-circle" style="width:100px;height:100px;font-size:36px;">@Model.FullName.Substring(0, 2).ToUpper()</div>
+                        }
+                    </div>
+                </div>
+                <div class="ws-col-lg-7 ws-col-md-6 ws-col-9">
+                    <h3 class="ws-fw-800 ws-mb-1">@Model.FullName</h3>
+                    @if (!string.IsNullOrEmpty(Model.BanglaName))
+                    {
+                        <p class="ws-text-muted ws-fs-14 ws-mb-1">@Model.BanglaName</p>
+                    }
+                    <div class="ws-flex ws-items-center ws-flex-wrap ws-gap-2 ws-mb-1">
+                        <span class="er-badge er-badge--@(Model.Status == "Active" ? "success" : Model.Status == "On Leave" ? "warning" : "danger") ws-fs-12">@Model.Status</span>
+                        <span class="er-badge er-badge--neutral ws-fs-12">@Model.EmployeeCode</span>
+                        @if (Model.IsTeachingStaff)
+                        {
+                            <span class="er-badge er-badge--primary ws-fs-12">Teaching Staff</span>
+                        }
+                        else
+                        {
+                            <span class="er-badge er-badge--info ws-fs-12">Administration / Support Staff</span>
+                        }
+                    </div>
+                    <div class="ws-text-muted ws-fs-13">
+                        <i class="bi bi-briefcase ws-me-1"></i> @Model.Designation in <strong>@Model.Department</strong>
+                        <span class="ws-mx-1">·</span>
+                        <i class="bi bi-calendar ws-me-1"></i> Joined @Model.JoiningDate.ToString("dd MMM yyyy")
+                    </div>
+                </div>
+                <div class="ws-col-lg-4 ws-col-md-4 ws-col-12 ws-text-md-right">
+                    <div class="ws-flex ws-gap-2 ws-justify-md-end ws-flex-wrap">
+                        <a asp-action="DownloadServiceBookPdf" asp-route-id="@Model.Id" class="adm-btn adm-btn--ghost ws-px-3" style="border-radius:9999px;" title="Download Service Book PDF">
+                            <i class="bi bi-file-earmark-pdf ws-me-1 ws-text-danger"></i> Service Book
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="adm-btn adm-btn--ghost ws-px-3" style="border-radius:9999px;">
+                            <i class="bi bi-pencil ws-me-1"></i> Edit
+                        </a>
+                        @if (User.IsInRole("Super Admin") || User.HasClaim("Permission", "Users.Delete"))
+                        {
+                            <button type="button" class="adm-btn adm-btn--ghost ws-px-3" style="border-radius:9999px;color:var(--ws-danger);border-color:var(--ws-danger);" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash ws-me-1"></i> Delete
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Detail Tabs -->
-        <ul class="nav nav-tabs nav-justified mb-3" id="detailsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="qual-tab" data-bs-toggle="tab" data-bs-target="#qualTabContent" type="button" role="tab"><i class="bi bi-mortarboard-fill me-1"></i> Qualifications</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="exp-tab" data-bs-toggle="tab" data-bs-target="#expTabContent" type="button" role="tab"><i class="bi bi-award-fill me-1"></i> Experience</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="user-tab" data-bs-toggle="tab" data-bs-target="#userTabContent" type="button" role="tab"><i class="bi bi-shield-lock-fill me-1"></i> System Account</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docsTabContent" type="button" role="tab"><i class="bi bi-file-earmark-medical-fill me-1"></i> Documents</button>
-            </li>
-        </ul>
+    <!-- KPI Stats -->
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <div class="ws-fs-13 ws-text-muted ws-fw-600 ws-mb-2" style="text-transform:uppercase;">Attendance @DateTime.Today.Year</div>
+                <div class="ws-flex ws-justify-center ws-gap-3 ws-fs-13">
+                    <span><i class="bi bi-check-circle ws-text-success ws-me-1"></i><strong>@ViewBag.TotalPresent</strong> Present</span>
+                    <span><i class="bi bi-x-circle ws-text-danger ws-me-1"></i><strong>@ViewBag.TotalAbsent</strong> Absent</span>
+                    <span><i class="bi bi-clock ws-text-warning ws-me-1"></i><strong>@ViewBag.TotalLate</strong> Late</span>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <div class="ws-fs-13 ws-text-muted ws-fw-600 ws-mb-2" style="text-transform:uppercase;">Leave @DateTime.Today.Year</div>
+                <div class="ws-fs-28 ws-fw-800 ws-text-warning">@ViewBag.TotalLeaveDays</div>
+                <div class="ws-fs-13 ws-text-muted">Days Taken <span class="ws-text-body">· @ViewBag.TotalLeave Leave Events</span></div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <div class="ws-fs-13 ws-text-muted ws-fw-600 ws-mb-2" style="text-transform:uppercase;">Current Salary</div>
+                <div class="ws-fs-28 ws-fw-800 ws-text-success">@ViewBag.CurrentSalary.ToString("N0")</div>
+                <div class="ws-fs-13 ws-text-muted">BDT · @Model.EmployeeType</div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <div class="ws-fs-13 ws-text-muted ws-fw-600 ws-mb-2" style="text-transform:uppercase;">Years of Service</div>
+                @{
+                    var serviceDays = (DateTime.Today - Model.JoiningDate).Days;
+                    var serviceYears = (double)serviceDays / 365;
+                }
+                <div class="ws-fs-28 ws-fw-800 ws-text-primary">@serviceYears.ToString("0.0")</div>
+                <div class="ws-fs-13 ws-text-muted">Since @Model.JoiningDate.ToString("MMM yyyy")</div>
+            </div>
+        </div>
+    </div>
 
-        <div class="tab-content card border-0 shadow-sm p-4 rounded-4" style="background-color: var(--bs-card-bg, #fff);">
-            
-            <!-- 1. Qualifications Tab Content -->
-            <div class="tab-pane fade show active" id="qualTabContent" role="tabpanel">
-                <h5 class="fw-bold text-primary mb-3">Academic Achievements</h5>
-                @if (Model.Qualifications != null && Model.Qualifications.Any())
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Exam/Degree</th>
-                                    <th>Board/University</th>
-                                    <th>Institute Name</th>
-                                    <th>Subject</th>
-                                    <th class="text-center">Year</th>
-                                    <th class="text-center">Result</th>
-                                    <th class="text-center">Certificate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var q in Model.Qualifications)
-                                {
-                                    <tr>
-                                        <td><strong>@q.ExamName</strong></td>
-                                        <td>@q.BoardOrUniversity</td>
-                                        <td>@q.InstituteName</td>
-                                        <td>@q.GroupOrSubject</td>
-                                        <td class="text-center">@q.PassingYear</td>
-                                        <td class="text-center"><span class="badge bg-secondary">@q.CGPAOrDivision</span></td>
-                                        <td class="text-center">
-                                            @if (!string.IsNullOrEmpty(q.CertificateFilePath))
-                                            {
-                                                <a href="@q.CertificateFilePath" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> View</a>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted small">No File</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+    <!-- Profile Layout: Sidebar + Content -->
+    <div class="er-profile-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="er-profile-sidebar" role="tablist" aria-label="Profile sections">
+            <button class="er-profile-sidebar__btn er-profile-sidebar__btn--active" data-tab="general" role="tab" aria-selected="true">
+                <i class="bi bi-person-fill"></i> <span>General</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="contact" role="tab" aria-selected="false">
+                <i class="bi bi-envelope-fill"></i> <span>Contact</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="employment" role="tab" aria-selected="false">
+                <i class="bi bi-briefcase-fill"></i> <span>Employment</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="qualifications" role="tab" aria-selected="false">
+                <i class="bi bi-mortarboard-fill"></i> <span>Qualifications</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="experience" role="tab" aria-selected="false">
+                <i class="bi bi-award-fill"></i> <span>Experience</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="documents" role="tab" aria-selected="false">
+                <i class="bi bi-file-earmark-medical-fill"></i> <span>Documents</span>
+            </button>
+            <div class="er-profile-sidebar__divider"></div>
+            <button class="er-profile-sidebar__btn" data-tab="bank-accounts" role="tab" aria-selected="false">
+                <i class="bi bi-bank"></i> <span>Bank Accounts</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="salary" role="tab" aria-selected="false">
+                <i class="bi bi-cash-stack"></i> <span>Salary</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="promotions" role="tab" aria-selected="false">
+                <i class="bi bi-arrow-up-circle-fill"></i> <span>Promotions</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="transfers" role="tab" aria-selected="false">
+                <i class="bi bi-arrow-left-right"></i> <span>Transfers</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="training" role="tab" aria-selected="false">
+                <i class="bi bi-book-fill"></i> <span>Training</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="awards" role="tab" aria-selected="false">
+                <i class="bi bi-trophy-fill"></i> <span>Awards</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="disciplinary" role="tab" aria-selected="false">
+                <i class="bi bi-exclamation-triangle-fill"></i> <span>Disciplinary</span>
+            </button>
+            <div class="er-profile-sidebar__divider"></div>
+            <button class="er-profile-sidebar__btn" data-tab="attendance" role="tab" aria-selected="false">
+                <i class="bi bi-calendar-check-fill"></i> <span>Attendance</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="leave" role="tab" aria-selected="false">
+                <i class="bi bi-door-open-fill"></i> <span>Leave</span>
+            </button>
+            @if (hasTeacher)
+            {
+                <button class="er-profile-sidebar__btn" data-tab="teaching" role="tab" aria-selected="false">
+                    <i class="bi bi-person-workspace"></i> <span>Teaching Profile</span>
+                </button>
+            }
+            <div class="er-profile-sidebar__divider"></div>
+            <button class="er-profile-sidebar__btn" data-tab="timeline" role="tab" aria-selected="false">
+                <i class="bi bi-clock-history"></i> <span>Timeline</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="system-account" role="tab" aria-selected="false">
+                <i class="bi bi-shield-lock-fill"></i> <span>System Account</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="audit" role="tab" aria-selected="false">
+                <i class="bi bi-journal-text"></i> <span>Audit History</span>
+            </button>
+            <button class="er-profile-sidebar__btn" data-tab="id-card" role="tab" aria-selected="false">
+                <i class="bi bi-credit-card-2-front-fill"></i> <span>ID Card</span>
+            </button>
+        </aside>
+
+        <!-- Tab Content -->
+        <div class="er-profile-content">
+
+            <!-- ──── TAB: GENERAL ──── -->
+            <div class="er-profile-panel er-profile-panel--active" id="tab-general" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-person-fill ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Personal Information</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-6">
+                        <div class="ws-row ws-g-4">
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Full Name</label>
+                                <span class="er-value">@Model.FullName</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Bangla Name</label>
+                                <span class="er-value">@(Model.BanglaName ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Employee Code</label>
+                                <span class="er-value">@Model.EmployeeCode</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Gender</label>
+                                <span class="er-value">@Model.Gender</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Date of Birth</label>
+                                <span class="er-value">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Blood Group</label>
+                                <span class="er-value">@(Model.BloodGroup ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Religion</label>
+                                <span class="er-value">@(Model.Religion ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Nationality</label>
+                                <span class="er-value">@Model.Nationality</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Marital Status</label>
+                                <span class="er-value">@(Model.MaritalStatus ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-12"><hr class="ws-my-2" style="border-color:var(--ws-border-light);" /></div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Father's Name</label>
+                                <span class="er-value">@(Model.FatherName ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Mother's Name</label>
+                                <span class="er-value">@(Model.MotherName ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Spouse Name</label>
+                                <span class="er-value">@(Model.SpouseName ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-12"><hr class="ws-my-2" style="border-color:var(--ws-border-light);" /></div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">NID Number</label>
+                                <span class="er-value">@(Model.NIDNumber ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Birth Certificate No</label>
+                                <span class="er-value">@(Model.BirthCertificateNo ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Passport No</label>
+                                <span class="er-value">@(Model.PassportNo ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">TIN</label>
+                                <span class="er-value">@(Model.TIN ?? "N/A")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Driving License No</label>
+                                <span class="er-value">@(Model.DrivingLicenseNo ?? "N/A")</span>
+                            </div>
+                        </div>
                     </div>
-                }
-                else
-                {
-                    <div class="text-center p-4">
-                        <i class="bi bi-mortarboard text-muted fs-1 mb-2 d-block"></i>
-                        <span class="text-muted">No academic qualifications listed.</span>
-                    </div>
-                }
+                </div>
             </div>
 
-            <!-- 2. Experience Tab Content -->
-            <div class="tab-pane fade" id="expTabContent" role="tabpanel">
-                <h5 class="fw-bold text-primary mb-3">Employment History</h5>
-                @if (Model.Experiences != null && Model.Experiences.Any())
+            <!-- ──── TAB: CONTACT ──── -->
+            <div class="er-profile-panel" id="tab-contact" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-envelope-fill ws-fs-24 ws-text-success"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Contact Details</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                            <div class="adm-card__body ws-p-6">
+                                <h5 class="ws-fw-700 ws-mb-3 ws-text-success"><i class="bi bi-telephone-fill ws-me-2"></i>Primary Contact</h5>
+                                <div class="ws-row ws-g-4">
+                                    <div class="ws-col-12">
+                                        <label class="er-label">Primary Phone</label>
+                                        <span class="er-value ws-fs-20 ws-fw-700 ws-text-success">@Model.Phone</span>
+                                    </div>
+                                    <div class="ws-col-12">
+                                        <label class="er-label">Alternate Mobile</label>
+                                        <span class="er-value">@(Model.AlternateMobile ?? "N/A")</span>
+                                    </div>
+                                    <div class="ws-col-12">
+                                        <label class="er-label">Email Address</label>
+                                        <span class="er-value">@(Model.Email ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                            <div class="adm-card__body ws-p-6">
+                                <h5 class="ws-fw-700 ws-mb-3 ws-text-danger"><i class="bi bi-exclamation-circle-fill ws-me-2"></i>Emergency Contact</h5>
+                                <div class="ws-row ws-g-4">
+                                    <div class="ws-col-12">
+                                        <label class="er-label">Contact Name</label>
+                                        <span class="er-value">@(Model.EmergencyContactName ?? "N/A")</span>
+                                    </div>
+                                    <div class="ws-col-12">
+                                        <label class="er-label">Phone Number</label>
+                                        <span class="er-value ws-fw-700">@(Model.EmergencyContactPhone ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                            <div class="adm-card__body ws-p-6">
+                                <h5 class="ws-fw-700 ws-mb-3 ws-text-primary"><i class="bi bi-house-fill ws-me-2"></i>Present Address</h5>
+                                <p class="ws-mb-0 ws-text-light">@(Model.PresentAddress ?? "N/A")</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                            <div class="adm-card__body ws-p-6">
+                                <h5 class="ws-fw-700 ws-mb-3 ws-text-secondary"><i class="bi bi-house-check-fill ws-me-2"></i>Permanent Address</h5>
+                                <p class="ws-mb-0 ws-text-light">@(Model.PermanentAddress ?? "N/A")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: EMPLOYMENT ──── -->
+            <div class="er-profile-panel" id="tab-employment" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-briefcase-fill ws-fs-24 ws-text-accent"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Employment Details</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-6">
+                        <div class="ws-row ws-g-4">
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Department</label>
+                                <span class="er-value ws-fw-700">@Model.Department</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Designation</label>
+                                <span class="er-value ws-fw-700">@Model.Designation</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Employee Type</label>
+                                <span class="er-badge er-badge--primary">@Model.EmployeeType</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Joining Date</label>
+                                <span class="er-value">@Model.JoiningDate.ToString("dd MMMM yyyy")</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Years of Service</label>
+                                <span class="er-value ws-fw-700 ws-text-accent">@serviceYears.ToString("0.0") Years</span>
+                            </div>
+                            <div class="ws-col-md-4 ws-col-sm-6">
+                                <label class="er-label">Status</label>
+                                <span class="er-badge er-badge--@(Model.Status == "Active" ? "success" : Model.Status == "On Leave" ? "warning" : "danger")">@Model.Status</span>
+                            </div>
+                            <div class="ws-col-12">
+                                <label class="er-label">Staff Category</label>
+                                <span class="er-badge er-badge--@(Model.IsTeachingStaff ? "primary" : "info")">@(Model.IsTeachingStaff ? "Teaching Staff" : "Administration / Support Staff")</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Remarks))
+                            {
+                                <div class="ws-col-12">
+                                    <label class="er-label">Remarks</label>
+                                    <p class="ws-mb-0 ws-bg-alt ws-p-3 ws-rounded ws-fs-13 ws-text-light">@Model.Remarks</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: QUALIFICATIONS ──── -->
+            <div class="er-profile-panel" id="tab-qualifications" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-mortarboard-fill ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Academic Qualifications</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-0">
+                        @if (Model.Qualifications.Any())
+                        {
+                            <div class="ws-overflow-auto">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Exam/Degree</th>
+                                            <th>Board/University</th>
+                                            <th>Institute</th>
+                                            <th>Subject</th>
+                                            <th class="ws-text-center">Year</th>
+                                            <th class="ws-text-center">Result</th>
+                                            <th class="ws-text-center">Certificate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var q in Model.Qualifications)
+                                        {
+                                            <tr>
+                                                <td class="ws-fw-600">@q.ExamName</td>
+                                                <td>@q.BoardOrUniversity</td>
+                                                <td>@q.InstituteName</td>
+                                                <td>@q.GroupOrSubject</td>
+                                                <td class="ws-text-center">@q.PassingYear</td>
+                                                <td class="ws-text-center"><span class="er-badge er-badge--neutral">@q.CGPAOrDivision</span></td>
+                                                <td class="ws-text-center">
+                                                    @if (!string.IsNullOrEmpty(q.CertificateFilePath))
+                                                    {
+                                                        <a href="@q.CertificateFilePath" target="_blank" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-download"></i></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="ws-text-muted ws-fs-13">—</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="ws-text-center ws-py-8">
+                                <i class="bi bi-mortarboard ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                <p class="ws-text-muted ws-mb-0">No academic qualifications listed.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: EXPERIENCE ──── -->
+            <div class="er-profile-panel" id="tab-experience" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-award-fill ws-fs-24 ws-text-success"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Employment History</h4>
+                </div>
+                @if (Model.Experiences.Any())
                 {
-                    <div class="timeline-container">
+                    <div class="er-timeline">
                         @foreach (var ex in Model.Experiences.OrderByDescending(x => x.StartDate))
                         {
-                            <div class="border-start border-primary border-3 ps-3 mb-4">
-                                <h6 class="fw-bold mb-1 text-dark">@ex.Designation</h6>
-                                <div class="text-secondary small mb-2">
-                                    <i class="bi bi-building"></i> @ex.OrganizationName &nbsp;|&nbsp; 
-                                    <i class="bi bi-calendar"></i> @ex.StartDate.ToString("MMM yyyy") - @(ex.EndDate?.ToString("MMM yyyy") ?? "Present")
+                            <div class="er-timeline__item">
+                                <div class="er-timeline__dot"></div>
+                                <div class="er-timeline__content">
+                                    <h6 class="ws-fw-700 ws-mb-1">@ex.Designation</h6>
+                                    <div class="ws-text-muted ws-fs-13 ws-mb-2">
+                                        <i class="bi bi-building ws-me-1"></i> @ex.OrganizationName
+                                        <span class="ws-mx-1">·</span>
+                                        <i class="bi bi-calendar ws-me-1"></i> @ex.StartDate.ToString("MMM yyyy") — @(ex.EndDate?.ToString("MMM yyyy") ?? "Present")
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(ex.Remarks))
+                                    {
+                                        <p class="ws-mb-0 ws-fs-13 ws-text-light ws-bg-alt ws-p-3 ws-rounded">@ex.Remarks</p>
+                                    }
                                 </div>
-                                @if (!string.IsNullOrEmpty(ex.Remarks))
-                                {
-                                    <p class="mb-0 text-muted small bg-light p-2 rounded">@ex.Remarks</p>
-                                }
                             </div>
                         }
                     </div>
                 }
                 else
                 {
-                    <div class="text-center p-4">
-                        <i class="bi bi-briefcase text-muted fs-1 mb-2 d-block"></i>
-                        <span class="text-muted">No previous work history registered.</span>
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-briefcase ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No previous work history registered.</p>
+                        </div>
                     </div>
                 }
             </div>
 
-            <!-- 3. System Account Tab Content -->
-            <div class="tab-pane fade" id="userTabContent" role="tabpanel">
-                <h5 class="fw-bold text-primary mb-3">Provisioned System Credentials</h5>
-                <div class="row g-3">
-                    <div class="col-md-6 border-end">
-                        <div class="p-3 bg-light rounded shadow-sm text-center">
-                            <i class="bi bi-shield-check text-primary fs-1 mb-2 d-block"></i>
-                            <label class="text-muted small text-uppercase d-block mb-1">Username</label>
-                            <h5 class="fw-bold text-primary mb-2">@(Model.Username ?? "Account Not Created")</h5>
-                            <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-danger")">
-                                Account @(Model.Status == "Active" ? "Active" : "Inactive")
-                            </span>
+            <!-- ──── TAB: DOCUMENTS ──── -->
+            <div class="er-profile-panel" id="tab-documents" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-file-earmark-medical-fill ws-fs-24 ws-text-info"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Legal Documents & Signature</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <!-- Signature -->
+                    <div class="ws-col-12">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                            <div class="adm-card__body ws-p-4">
+                                <div class="ws-row ws-items-center ws-g-3">
+                                    <div class="ws-col ws-flex-1">
+                                        <h6 class="ws-fw-700 ws-mb-1"><i class="bi bi-pen-fill ws-me-2 ws-text-primary"></i>Digital Signature</h6>
+                                        <span class="ws-text-muted ws-fs-13">Validated legal authorization signature</span>
+                                    </div>
+                                    <div class="ws-col ws-w-auto">
+                                        @if (!string.IsNullOrEmpty(Model.SignaturePath))
+                                        {
+                                            <img src="@Model.SignaturePath" style="max-height:50px;object-fit:contain;" alt="Signature" />
+                                        }
+                                        else
+                                        {
+                                            <span class="ws-text-muted ws-fs-13 ws-fst-italic">Not uploaded</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-light rounded shadow-sm">
-                            <h6 class="fw-bold text-dark mb-2">Access Control</h6>
-                            <p class="small text-secondary mb-3">Role permissions are dynamically generated based on the employee's workforce designation mapping.</p>
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="small text-muted">Role Level:</span>
-                                <span class="fw-bold">@Model.Designation</span>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <span class="small text-muted">Academic Access:</span>
-                                <span class="badge @(Model.IsTeachingStaff ? "bg-primary" : "bg-secondary")">
-                                    @(Model.IsTeachingStaff ? "Full Teaching Faculty" : "Staff Level")
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.Remarks) && Model.Remarks.Contains("Account Auto-Provisioned"))
+
+                    @if (Model.Documents.Any())
                     {
-                        <div class="col-12 mt-3">
-                            <div class="alert alert-info py-2 small mb-0">
-                                <i class="bi bi-info-circle-fill me-2"></i><strong>Credentials Notice:</strong> @Model.Remarks
+                        @foreach (var doc in Model.Documents)
+                        {
+                            <div class="ws-col-md-6">
+                                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-card-lift ws-h-full">
+                                    <div class="adm-card__body ws-p-4">
+                                        <div class="ws-flex ws-flex-between ws-mb-2">
+                                            <div class="ws-flex ws-items-center ws-gap-2">
+                                                <i class="bi bi-file-earmark-text ws-fs-20 ws-text-secondary"></i>
+                                                <h6 class="ws-fw-700 ws-mb-0">@doc.DocumentName</h6>
+                                            </div>
+                                            <a href="@doc.FilePath" target="_blank" class="adm-btn adm-btn--sm adm-btn--ghost" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                        <span class="er-badge er-badge--neutral ws-fs-11">@doc.DocumentType</span>
+                                        @if (doc.ExpiryDate.HasValue)
+                                        {
+                                            <span class="ws-text-muted ws-fs-12 ws-ms-2">Expires @doc.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="ws-col-12">
+                            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                                <div class="adm-card__body ws-text-center ws-py-8">
+                                    <i class="bi bi-file-earmark ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                    <p class="ws-text-muted ws-mb-0">No legal documents attached.</p>
+                                </div>
                             </div>
                         </div>
                     }
                 </div>
-                
-                <h5 class="fw-bold text-success border-top pt-4 mt-4 mb-3">Administrative Control</h5>
-                <form asp-action="UpdateStatus" method="post" class="d-flex align-items-center gap-3">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <div>
-                        <label class="form-label small fw-bold text-secondary">Change System Status:</label>
-                        <select name="status" class="form-select form-select-sm" style="width: 180px;">
-                            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
-                            <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
-                            <option value="Resigned" selected="@(Model.Status == "Resigned")">Resigned</option>
-                            <option value="Retired" selected="@(Model.Status == "Retired")">Retired</option>
-                            <option value="On Leave" selected="@(Model.Status == "On Leave")">On Leave</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-success mt-4">Apply Status</button>
-                </form>
             </div>
 
-            <!-- 4. Documents Tab Content -->
-            <div class="tab-pane fade" id="docsTabContent" role="tabpanel">
-                <h5 class="fw-bold text-primary mb-3">Legal Attachments & Signature</h5>
-                
-                <!-- Signature Preview -->
-                <div class="p-3 mb-4 bg-light rounded d-flex align-items-center justify-content-between border border-dashed">
-                    <div>
-                        <h6 class="fw-bold mb-1">Digital Signature</h6>
-                        <span class="text-muted small">Validated legal authorization signature</span>
-                    </div>
-                    <div>
-                        @if (!string.IsNullOrEmpty(Model.SignaturePath))
+            <!-- ──── TAB: BANK ACCOUNTS ──── -->
+            <div class="er-profile-panel" id="tab-bank-accounts" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-bank ws-fs-24 ws-text-success"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Bank Accounts</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-0">
+                        @if (Model.BankAccounts.Any())
                         {
-                            <img src="@Model.SignaturePath" style="max-height: 60px; object-fit: contain;" alt="Signature" />
+                            <div class="ws-overflow-auto">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Bank Name</th>
+                                            <th>Branch</th>
+                                            <th>Account No</th>
+                                            <th>Routing No</th>
+                                            <th>Type</th>
+                                            <th class="ws-text-center">Default</th>
+                                            <th class="ws-text-center">Active</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var b in Model.BankAccounts)
+                                        {
+                                            <tr>
+                                                <td class="ws-fw-600">@b.BankName</td>
+                                                <td>@b.BranchName</td>
+                                                <td class="ws-fw-600 ws-font-mono ws-fs-14">@b.AccountNumber</td>
+                                                <td>@(b.RoutingNumber ?? "—")</td>
+                                                <td><span class="er-badge er-badge--neutral">@(b.AccountType ?? "Savings")</span></td>
+                                                <td class="ws-text-center">
+                                                    @if (b.IsDefault)
+                                                    {
+                                                        <i class="bi bi-check-circle-fill ws-text-success"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-dash-circle ws-text-muted"></i>
+                                                    }
+                                                </td>
+                                                <td class="ws-text-center">
+                                                    <span class="er-badge er-badge--@(b.IsActive ? "success" : "danger")">@(b.IsActive ? "Yes" : "No")</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                         else
                         {
-                            <span class="text-muted small italic">Not uploaded</span>
+                            <div class="ws-text-center ws-py-8">
+                                <i class="bi bi-bank ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                <p class="ws-text-muted ws-mb-0">No bank accounts registered.</p>
+                            </div>
                         }
                     </div>
                 </div>
+            </div>
 
-                @if (Model.Documents != null && Model.Documents.Any())
+            <!-- ──── TAB: SALARY ──── -->
+            <div class="er-profile-panel" id="tab-salary" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-cash-stack ws-fs-24 ws-text-success"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Salary Information</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-6">
+                        <div class="ws-row ws-g-4">
+                            <div class="ws-col-md-6">
+                                <div class="ws-p-6 ws-bg-alt ws-rounded ws-text-center">
+                                    <label class="er-label ws-mb-2">Current Monthly Salary</label>
+                                    <div class="ws-fs-42 ws-fw-800 ws-text-success ws-mb-2">@ViewBag.CurrentSalary.ToString("N0")</div>
+                                    <span class="ws-text-muted ws-fs-13">BDT (Taka)</span>
+                                </div>
+                            </div>
+                            <div class="ws-col-md-6">
+                                <div class="ws-p-4 ws-bg-success-bg ws-rounded ws-h-full">
+                                    <h6 class="ws-fw-700 ws-mb-3 ws-text-success">Salary Components</h6>
+                                    <div class="ws-flex ws-flex-between ws-mb-2 ws-fs-14">
+                                        <span class="ws-text-muted">Basic Salary</span>
+                                        <span class="ws-fw-600">—</span>
+                                    </div>
+                                    <div class="ws-flex ws-flex-between ws-mb-2 ws-fs-14">
+                                        <span class="ws-text-muted">House Rent</span>
+                                        <span class="ws-fw-600">—</span>
+                                    </div>
+                                    <div class="ws-flex ws-flex-between ws-mb-2 ws-fs-14">
+                                        <span class="ws-text-muted">Medical Allowance</span>
+                                        <span class="ws-fw-600">—</span>
+                                    </div>
+                                    <div class="ws-flex ws-flex-between ws-mb-2 ws-fs-14">
+                                        <span class="ws-text-muted">Transport Allowance</span>
+                                        <span class="ws-fw-600">—</span>
+                                    </div>
+                                    <div class="ws-flex ws-flex-between ws-fs-14">
+                                        <span class="ws-text-muted">Deductions</span>
+                                        <span class="ws-fw-600">—</span>
+                                    </div>
+                                    <hr class="ws-my-2" style="border-color:var(--ws-border-light);" />
+                                    <div class="ws-flex ws-flex-between ws-fs-16">
+                                        <span class="ws-fw-700">Total</span>
+                                        <span class="ws-fw-800 ws-text-success">@ViewBag.CurrentSalary.ToString("N0")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: PROMOTIONS ──── -->
+            <div class="er-profile-panel" id="tab-promotions" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-arrow-up-circle-fill ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Promotion History</h4>
+                </div>
+                @if (Model.Promotions.Any())
                 {
-                    <div class="row g-3">
-                        @foreach (var doc in Model.Documents)
+                    <div class="er-timeline">
+                        @foreach (var p in Model.Promotions.OrderByDescending(x => x.PromotionDate))
                         {
-                            <div class="col-md-6">
-                                <div class="p-3 bg-light border rounded d-flex align-items-center justify-content-between shadow-sm">
-                                    <div>
-                                        <h6 class="fw-bold mb-1">
-                                            @if (doc.DocumentType == "NID")
-                                            {
-                                                <i class="bi bi-card-heading text-primary me-2 fs-5"></i>
-                                            }
-                                            else if (doc.DocumentType == "Passport")
-                                            {
-                                                <i class="bi bi-globe text-success me-2 fs-5"></i>
-                                            }
-                                            else if (doc.DocumentType == "CV")
-                                            {
-                                                <i class="bi bi-file-earmark-person text-info me-2 fs-5"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="bi bi-file-earmark-text text-secondary me-2 fs-5"></i>
-                                            }
-                                            @doc.DocumentName
-                                        </h6>
-                                        <span class="badge bg-secondary-subtle text-secondary small">@doc.DocumentType</span>
-                                        @if (doc.ExpiryDate.HasValue)
+                            <div class="er-timeline__item">
+                                <div class="er-timeline__dot er-timeline__dot--primary"></div>
+                                <div class="er-timeline__content">
+                                    <h6 class="ws-fw-700 ws-mb-1">@p.Reason</h6>
+                                    <div class="ws-text-muted ws-fs-13 ws-mb-2">
+                                        <i class="bi bi-calendar ws-me-1"></i> @p.PromotionDate.ToString("dd MMM yyyy")
+                                    </div>
+                                    <div class="ws-flex ws-gap-3 ws-fs-13 ws-mb-2">
+                                        @if (p.PreviousSalary.HasValue)
                                         {
-                                            <span class="text-muted small ms-2 d-block mt-1">Expiry: @doc.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                            <span><span class="ws-text-muted">Previous Salary:</span> <strong>@p.PreviousSalary.Value.ToString("N0")</strong></span>
+                                        }
+                                        @if (p.NewSalary.HasValue)
+                                        {
+                                            <span><span class="ws-text-muted">New Salary:</span> <strong class="ws-text-success">@p.NewSalary.Value.ToString("N0")</strong></span>
                                         }
                                     </div>
-                                    <a href="@doc.FilePath" target="_blank" class="btn btn-primary btn-sm rounded-circle p-2" title="View Document">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                                    @if (!string.IsNullOrEmpty(p.Remarks))
+                                    {
+                                        <p class="ws-mb-0 ws-fs-13 ws-text-light ws-bg-alt ws-p-3 ws-rounded">@p.Remarks</p>
+                                    }
                                 </div>
                             </div>
                         }
@@ -413,35 +702,675 @@
                 }
                 else
                 {
-                    <div class="text-center p-4">
-                        <i class="bi bi-file-earmark text-muted fs-1 mb-2 d-block"></i>
-                        <span class="text-muted">No legal documents attached.</span>
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-arrow-up-circle ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No promotion history recorded.</p>
+                        </div>
                     </div>
                 }
+            </div>
+
+            <!-- ──── TAB: TRANSFERS ──── -->
+            <div class="er-profile-panel" id="tab-transfers" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-arrow-left-right ws-fs-24 ws-text-warning"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Transfer History</h4>
+                </div>
+                @if (Model.Transfers.Any())
+                {
+                    <div class="er-timeline">
+                        @foreach (var t in Model.Transfers.OrderByDescending(x => x.TransferDate))
+                        {
+                            <div class="er-timeline__item">
+                                <div class="er-timeline__dot er-timeline__dot--warning"></div>
+                                <div class="er-timeline__content">
+                                    <h6 class="ws-fw-700 ws-mb-1">@t.Reason</h6>
+                                    <div class="ws-text-muted ws-fs-13 ws-mb-2">
+                                        <i class="bi bi-calendar ws-me-1"></i> @t.TransferDate.ToString("dd MMM yyyy")
+                                        <span class="ws-mx-1">·</span>
+                                        <i class="bi bi-arrow-right ws-me-1"></i> @t.FromDepartment → @t.ToDepartment
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(t.Remarks))
+                                    {
+                                        <p class="ws-mb-0 ws-fs-13 ws-text-light ws-bg-alt ws-p-3 ws-rounded">@t.Remarks</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-arrow-left-right ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No transfer history recorded.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ──── TAB: TRAINING ──── -->
+            <div class="er-profile-panel" id="tab-training" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-book-fill ws-fs-24 ws-text-info"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Training & Professional Development</h4>
+                </div>
+                @if (Model.Trainings.Any())
+                {
+                    <div class="er-timeline">
+                        @foreach (var t in Model.Trainings.OrderByDescending(x => x.StartDate ?? x.EndDate ?? DateTime.MinValue))
+                        {
+                            <div class="er-timeline__item">
+                                <div class="er-timeline__dot er-timeline__dot--info"></div>
+                                <div class="er-timeline__content">
+                                    <h6 class="ws-fw-700 ws-mb-1">@t.TrainingName</h6>
+                                    <div class="ws-text-muted ws-fs-13 ws-mb-2">
+                                        @if (!string.IsNullOrEmpty(t.InstitutionName))
+                                        {
+                                            <span><i class="bi bi-building ws-me-1"></i> @t.InstitutionName</span>
+                                            <span class="ws-mx-1">·</span>
+                                        }
+                                        <i class="bi bi-calendar ws-me-1"></i>
+                                        @(t.StartDate?.ToString("MMM yyyy") ?? "—") — @(t.EndDate?.ToString("MMM yyyy") ?? "—")
+                                        @if (!string.IsNullOrEmpty(t.Duration))
+                                        {
+                                            <span class="ws-mx-1">·</span>
+                                            <span>@t.Duration</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(t.Remarks))
+                                    {
+                                        <p class="ws-mb-0 ws-fs-13 ws-text-light ws-bg-alt ws-p-3 ws-rounded">@t.Remarks</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(t.CertificatePath))
+                                    {
+                                        <a href="@t.CertificatePath" target="_blank" class="adm-btn adm-btn--sm adm-btn--ghost ws-mt-2">
+                                            <i class="bi bi-file-earmark-pdf ws-me-1"></i> View Certificate
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-book ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No training records found.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ──── TAB: AWARDS ──── -->
+            <div class="er-profile-panel" id="tab-awards" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-trophy-fill ws-fs-24 ws-text-warning"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Awards & Recognition</h4>
+                </div>
+                @if (Model.Awards.Any())
+                {
+                    <div class="ws-row ws-g-4">
+                        @foreach (var a in Model.Awards.OrderByDescending(x => x.AwardDate))
+                        {
+                            <div class="ws-col-md-6">
+                                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-card-lift ws-h-full">
+                                    <div class="adm-card__body ws-p-4">
+                                        <div class="ws-flex ws-items-center ws-gap-3 ws-mb-2">
+                                            <i class="bi bi-trophy ws-fs-28 ws-text-warning"></i>
+                                            <div>
+                                                <h6 class="ws-fw-700 ws-mb-0">@a.AwardName</h6>
+                                                @if (!string.IsNullOrEmpty(a.AwardedBy))
+                                                {
+                                                    <span class="ws-text-muted ws-fs-13">by @a.AwardedBy</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="ws-text-muted ws-fs-13 ws-mb-2">
+                                            <i class="bi bi-calendar ws-me-1"></i> @a.AwardDate.ToString("dd MMM yyyy")
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(a.Description))
+                                        {
+                                            <p class="ws-fs-13 ws-text-light ws-mb-2">@a.Description</p>
+                                        }
+                                        @if (!string.IsNullOrEmpty(a.CertificatePath))
+                                        {
+                                            <a href="@a.CertificatePath" target="_blank" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-file-earmark-pdf ws-me-1"></i> Certificate</a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-trophy ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No awards recorded.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ──── TAB: DISCIPLINARY ──── -->
+            <div class="er-profile-panel" id="tab-disciplinary" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-exclamation-triangle-fill ws-fs-24 ws-text-danger"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Disciplinary Actions</h4>
+                </div>
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-0">
+                        @if (Model.DisciplinaryActions.Any())
+                        {
+                            <div class="ws-overflow-auto">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Action Type</th>
+                                            <th>Date</th>
+                                            <th>Reason</th>
+                                            <th>Status</th>
+                                            <th>Resolution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var d in Model.DisciplinaryActions.OrderByDescending(x => x.ActionDate))
+                                        {
+                                            <tr>
+                                                <td class="ws-fw-600 ws-text-danger">@d.ActionType</td>
+                                                <td>@d.ActionDate.ToString("dd MMM yyyy")</td>
+                                                <td class="ws-fs-13 ws-text-light">@(d.Reason ?? "—")</td>
+                                                <td>
+                                                    <span class="er-badge er-badge--@(d.IsResolved ? "success" : "danger")">
+                                                        @(d.IsResolved ? "Resolved" : "Open")
+                                                    </span>
+                                                </td>
+                                                <td class="ws-fs-13">
+                                                    @if (d.IsResolved)
+                                                    {
+                                                        <span>@(d.ResolutionRemarks ?? "Resolved")</span>
+                                                        @if (d.ResolvedAt.HasValue)
+                                                        {
+                                                            <span class="ws-text-muted ws-d-block">@d.ResolvedAt.Value.ToString("dd MMM yyyy")</span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="ws-text-muted ws-fst-italic">Pending resolution</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="ws-text-center ws-py-8">
+                                <i class="bi bi-check-circle ws-text-success ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                <p class="ws-text-muted ws-mb-0">No disciplinary actions recorded.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: ATTENDANCE ──── -->
+            <div class="er-profile-panel" id="tab-attendance" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-calendar-check-fill ws-fs-24 ws-text-success"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Attendance Summary — @DateTime.Today.Year</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <div class="ws-col-md-3 ws-col-sm-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-5 ws-text-center">
+                            <i class="bi bi-check-circle-fill ws-fs-36 ws-text-success ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-36 ws-fw-800 ws-text-success">@ViewBag.TotalPresent</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">Present</div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-3 ws-col-sm-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-5 ws-text-center">
+                            <i class="bi bi-x-circle-fill ws-fs-36 ws-text-danger ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-36 ws-fw-800 ws-text-danger">@ViewBag.TotalAbsent</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">Absent</div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-3 ws-col-sm-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-5 ws-text-center">
+                            <i class="bi bi-door-open-fill ws-fs-36 ws-text-warning ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-36 ws-fw-800 ws-text-warning">@ViewBag.TotalLeave</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">On Leave</div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-3 ws-col-sm-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-5 ws-text-center">
+                            <i class="bi bi-clock-fill ws-fs-36 ws-text-info ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-36 ws-fw-800 ws-text-info">@ViewBag.TotalLate</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">Late</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: LEAVE ──── -->
+            <div class="er-profile-panel" id="tab-leave" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-door-open-fill ws-fs-24 ws-text-warning"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Leave Summary — @DateTime.Today.Year</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-6 ws-text-center">
+                            <i class="bi bi-calendar2-week ws-fs-36 ws-text-warning ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-42 ws-fw-800 ws-text-warning">@ViewBag.TotalLeaveDays</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">Total Leave Days Taken</div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-6 ws-text-center">
+                            <i class="bi bi-calendar-event ws-fs-36 ws-text-primary ws-mb-2 ws-d-block"></i>
+                            <div class="ws-fs-42 ws-fw-800 ws-text-primary">@ViewBag.TotalLeave</div>
+                            <div class="ws-text-muted ws-fs-13" style="text-transform:uppercase;">Leave Applications</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: TEACHING PROFILE ──── -->
+            @if (hasTeacher)
+            {
+                <div class="er-profile-panel" id="tab-teaching" role="tabpanel">
+                    <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                        <i class="bi bi-person-workspace ws-fs-24 ws-text-primary"></i>
+                        <h4 class="ws-fw-700 ws-mb-0">Teaching Profile</h4>
+                    </div>
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-mb-4">
+                        <div class="adm-card__body ws-p-6">
+                            <div class="ws-row ws-g-4">
+                                <div class="ws-col-md-4 ws-col-sm-6">
+                                    <label class="er-label">Teacher Code</label>
+                                    <span class="er-value ws-fw-700">@(teacher?.TeacherCode ?? "N/A")</span>
+                                </div>
+                                <div class="ws-col-md-4 ws-col-sm-6">
+                                    <label class="er-label">Subject Specialization</label>
+                                    <span class="er-value">@(teacher?.SubjectSpecialization ?? "N/A")</span>
+                                </div>
+                                <div class="ws-col-md-4 ws-col-sm-6">
+                                    <label class="er-label">Teaching Level</label>
+                                    <span class="er-value">@(teacher?.TeachingLevel ?? "N/A")</span>
+                                </div>
+                                <div class="ws-col-md-4 ws-col-sm-6">
+                                    <label class="er-label">Class Teacher</label>
+                                    <span class="er-badge er-badge--@(teacher?.IsClassTeacher == true ? "success" : "neutral")">@(teacher?.IsClassTeacher == true ? "Yes" : "No")</span>
+                                </div>
+                                <div class="ws-col-md-4 ws-col-sm-6">
+                                    <label class="er-label">Teaching Experience</label>
+                                    <span class="er-value">@(teacher?.TeachingExperienceYears.ToString() ?? "0") Years</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ws-row ws-g-4 ws-mb-4">
+                        @if (teacher?.ClassAssignments != null && teacher.ClassAssignments.Any())
+                        {
+                            <div class="ws-col-md-6">
+                                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                                    <div class="adm-card__body ws-p-4">
+                                        <div class="ws-flex ws-items-center ws-gap-3 ws-mb-3">
+                                            <i class="bi bi-people-fill ws-fs-24 ws-text-primary"></i>
+                                            <h5 class="ws-fw-700 ws-mb-0">Class Assignments</h5>
+                                        </div>
+                                        <div class="ws-fs-32 ws-fw-800 ws-text-primary ws-mb-2">@teacher.ClassAssignments.Count</div>
+                                        <span class="ws-text-muted ws-fs-13">Active assignments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (teacher?.SubjectAssignments != null && teacher.SubjectAssignments.Any())
+                        {
+                            <div class="ws-col-md-6">
+                                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                                    <div class="adm-card__body ws-p-4">
+                                        <div class="ws-flex ws-items-center ws-gap-3 ws-mb-3">
+                                            <i class="bi bi-bookmark-fill ws-fs-24 ws-text-success"></i>
+                                            <h5 class="ws-fw-700 ws-mb-0">Subject Assignments</h5>
+                                        </div>
+                                        <div class="ws-fs-32 ws-fw-800 ws-text-success ws-mb-2">@teacher.SubjectAssignments.Count</div>
+                                        <span class="ws-text-muted ws-fs-13">Active subjects</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- ──── TAB: TIMELINE ──── -->
+            <div class="er-profile-panel" id="tab-timeline" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-clock-history ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Complete Service Timeline</h4>
+                </div>
+
+                @{
+                    var timelineEvents = new List<(DateTime Date, string Type, string Icon, string Color, string Title, string Subtitle, string? Detail)>();
+
+                    foreach (var p in Model.Promotions)
+                    {
+                        timelineEvents.Add((p.PromotionDate, "Promotion", "bi-arrow-up-circle-fill", "primary",
+                            $"Promotion: {p.Reason}",
+                            $"Salary: {p.PreviousSalary?.ToString("N0") ?? "—"} → {p.NewSalary?.ToString("N0") ?? "—"}",
+                            p.Remarks));
+                    }
+
+                    foreach (var t in Model.Transfers)
+                    {
+                        timelineEvents.Add((t.TransferDate, "Transfer", "bi-arrow-left-right", "warning",
+                            $"Transfer: {t.Reason}",
+                            $"{t.FromDepartment} → {t.ToDepartment}",
+                            t.Remarks));
+                    }
+
+                    foreach (var t in Model.Trainings)
+                    {
+                        timelineEvents.Add((t.StartDate ?? t.EndDate ?? DateTime.MinValue, "Training", "bi-book-fill", "info",
+                            $"Training: {t.TrainingName}",
+                            $"{t.InstitutionName} · {(t.StartDate?.ToString("MMM yyyy") ?? "—")} — {(t.EndDate?.ToString("MMM yyyy") ?? "—")}",
+                            t.Remarks));
+                    }
+
+                    foreach (var a in Model.Awards)
+                    {
+                        timelineEvents.Add((a.AwardDate, "Award", "bi-trophy-fill", "warning",
+                            $"Award: {a.AwardName}",
+                            $"Awarded by: {a.AwardedBy}",
+                            a.Description));
+                    }
+
+                    foreach (var d in Model.DisciplinaryActions)
+                    {
+                        timelineEvents.Add((d.ActionDate, "Disciplinary", "bi-exclamation-triangle-fill", "danger",
+                            $"Disciplinary: {d.ActionType}",
+                            d.IsResolved ? "Resolved" : "Open",
+                            d.Reason));
+                    }
+
+                    timelineEvents = timelineEvents.OrderByDescending(x => x.Date).ToList();
+                }
+
+                @if (timelineEvents.Any())
+                {
+                    <div class="er-timeline">
+                        @foreach (var ev in timelineEvents)
+                        {
+                            var dotClass = ev.Color switch
+                            {
+                                "primary" => "er-timeline__dot--primary",
+                                "success" => "er-timeline__dot--success",
+                                "warning" => "er-timeline__dot--warning",
+                                "danger" => "er-timeline__dot--danger",
+                                "info" => "er-timeline__dot--info",
+                                _ => ""
+                            };
+                            <div class="er-timeline__item">
+                                <div class="er-timeline__dot @dotClass"></div>
+                                <div class="er-timeline__content">
+                                    <div class="ws-flex ws-flex-between ws-items-start ws-gap-2">
+                                        <h6 class="ws-fw-700 ws-mb-1">@ev.Title</h6>
+                                        <span class="ws-fs-12 ws-text-muted ws-text-nowrap">@ev.Date.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                    <div class="ws-text-muted ws-fs-13 ws-mb-1">@ev.Subtitle</div>
+                                    @if (!string.IsNullOrEmpty(ev.Detail))
+                                    {
+                                        <p class="ws-mb-0 ws-fs-13 ws-text-light ws-bg-alt ws-p-3 ws-rounded">@ev.Detail</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                        <div class="adm-card__body ws-text-center ws-py-8">
+                            <i class="bi bi-clock-history ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No HR events recorded yet.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ──── TAB: SYSTEM ACCOUNT ──── -->
+            <div class="er-profile-panel" id="tab-system-account" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-shield-lock-fill ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">System Account</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                            <div class="adm-card__body ws-p-6 ws-text-center">
+                                <i class="bi bi-shield-check ws-text-primary ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                <label class="er-label ws-mb-2">Username</label>
+                                <h4 class="ws-fw-800 ws-mb-2">@(Model.Username ?? "Account Not Created")</h4>
+                                <span class="er-badge er-badge--@(Model.Status == "Active" ? "success" : "danger") ws-fs-13">
+                                    Account @(Model.Status == "Active" ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-6">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                            <div class="adm-card__body ws-p-6">
+                                <h6 class="ws-fw-700 ws-mb-3">Access Control</h6>
+                                <p class="ws-fs-13 ws-text-secondary ws-mb-4">Role permissions are dynamically generated based on the employee's workforce designation mapping.</p>
+                                <div class="ws-flex ws-flex-between ws-mb-3 ws-pb-3 ws-border-bottom">
+                                    <span class="ws-fs-13 ws-text-muted">Designation Level:</span>
+                                    <span class="ws-fw-700">@Model.Designation</span>
+                                </div>
+                                <div class="ws-flex ws-flex-between ws-mb-3 ws-pb-3 ws-border-bottom">
+                                    <span class="ws-fs-13 ws-text-muted">Employee Type:</span>
+                                    <span class="ws-fw-700">@Model.EmployeeType</span>
+                                </div>
+                                <div class="ws-flex ws-flex-between">
+                                    <span class="ws-fs-13 ws-text-muted">Access Level:</span>
+                                    <span class="er-badge er-badge--@(Model.IsTeachingStaff ? "primary" : "info")">@(Model.IsTeachingStaff ? "Full Teaching Faculty" : "Staff Level")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Remarks) && Model.Remarks.Contains("Account"))
+                    {
+                        <div class="ws-col-12">
+                            <div class="ws-p-4 ws-fs-13" style="background:rgba(var(--ws-info-rgb,13,202,240),0.08);border-radius:var(--ws-radius-md);color:var(--ws-info);">
+                                <i class="bi bi-info-circle-fill ws-me-2"></i><strong>Notice:</strong> @Model.Remarks
+                            </div>
+                        </div>
+                    }
+
+                    <div class="ws-col-12">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                            <div class="adm-card__body ws-p-6">
+                                <h5 class="ws-fw-700 ws-mb-4 ws-text-success"><i class="bi bi-gear-fill ws-me-2"></i>Administrative Control</h5>
+                                <form asp-action="UpdateStatus" method="post" class="ws-row ws-g-4 ws-items-end">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <div class="ws-col-md-4">
+                                        <label class="er-label ws-mb-2">Change System Status</label>
+                                        <select name="status" class="er-input">
+                                            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                                            <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                                            <option value="Resigned" selected="@(Model.Status == "Resigned")">Resigned</option>
+                                            <option value="Retired" selected="@(Model.Status == "Retired")">Retired</option>
+                                            <option value="On Leave" selected="@(Model.Status == "On Leave")">On Leave</option>
+                                        </select>
+                                    </div>
+                                    <div class="ws-col-md-2">
+                                        <button type="submit" class="adm-btn adm-btn--success ws-w-full"><i class="bi bi-check-lg ws-me-1"></i> Apply</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: AUDIT HISTORY ──── -->
+            <div class="er-profile-panel" id="tab-audit" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-journal-text ws-fs-24 ws-text-info"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Audit History</h4>
+                </div>
+                @{
+                    var auditLogs = ViewBag.AuditLogs as List<SchoolManagementSystem.Models.Entities.Auth.AuditLog>;
+                }
+                <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                    <div class="adm-card__body ws-p-0">
+                        @if (auditLogs != null && auditLogs.Any())
+                        {
+                            <div class="ws-overflow-auto">
+                                <table class="adm-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Module</th>
+                                            <th>Action</th>
+                                            <th>IP Address</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var log in auditLogs)
+                                        {
+                                            <tr>
+                                                <td class="ws-text-nowrap ws-fs-13">@log.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                                <td><span class="er-badge er-badge--neutral ws-fs-12">@log.Module</span></td>
+                                                <td class="ws-fw-600 ws-fs-13">@log.Action</td>
+                                                <td class="ws-fs-12 ws-text-muted ws-font-mono">@(log.IpAddress ?? "—")</td>
+                                                <td class="ws-fs-13 ws-text-light" style="max-width:300px;">@(log.Details ?? "—")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="ws-text-center ws-py-8">
+                                <i class="bi bi-journal-text ws-text-muted ws-fs-48 ws-mb-3 ws-d-block"></i>
+                                <p class="ws-text-muted ws-mb-0">No audit log entries recorded for this employee's user account.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── TAB: ID CARD ──── -->
+            <div class="er-profile-panel" id="tab-id-card" role="tabpanel">
+                <div class="ws-flex ws-items-center ws-gap-3 ws-mb-4">
+                    <i class="bi bi-credit-card-2-front-fill ws-fs-24 ws-text-primary"></i>
+                    <h4 class="ws-fw-700 ws-mb-0">Employee ID Card</h4>
+                </div>
+                <div class="ws-row ws-g-4">
+                    <div class="ws-col-md-8">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg">
+                            <div class="adm-card__body ws-p-6">
+                                <div class="ws-row ws-g-4">
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">Card Number</label>
+                                        <span class="er-value ws-fw-700 ws-fs-20 ws-text-primary">@(Model.EmployeeCardNumber ?? "Not Issued")</span>
+                                    </div>
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">Card Version</label>
+                                        <span class="er-value">v@(Model.CardVersion)</span>
+                                    </div>
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">Issue Date</label>
+                                        <span class="er-value">@(Model.CardIssueDate?.ToString("dd MMM yyyy") ?? "—")</span>
+                                    </div>
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">Expiry Date</label>
+                                        <span class="er-value @(Model.CardExpiryDate.HasValue && Model.CardExpiryDate < DateTime.Today ? "ws-text-danger" : "")">
+                                            @(Model.CardExpiryDate?.ToString("dd MMM yyyy") ?? "—")
+                                            @if (Model.CardExpiryDate.HasValue && Model.CardExpiryDate < DateTime.Today)
+                                            {
+                                                <span class="er-badge er-badge--danger ws-ms-2">Expired</span>
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">QR Code</label>
+                                        <div>
+                                            @if (!string.IsNullOrEmpty(Model.QRVerificationCode))
+                                            {
+                                                <span class="ws-fw-700 ws-fs-14 ws-text-accent">@Model.QRVerificationCode</span>
+                                                <span class="ws-text-muted ws-fs-12 ws-ms-2">(verification code)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="ws-text-muted">Not generated</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="ws-col-sm-6">
+                                        <label class="er-label">Card Printed</label>
+                                        <span class="er-value">@(Model.CardPrintedAt?.ToString("dd MMM yyyy") ?? "Not yet printed")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-md-4">
+                        <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-text-center">
+                            <div class="adm-card__body ws-p-6">
+                                @if (!string.IsNullOrEmpty(ViewBag.QRCodeBase64 as string))
+                                {
+                                    <img src="@ViewBag.QRCodeBase64" alt="QR Code" style="width:180px;height:180px;display:block;margin:0 auto 12px;" />
+                                    <p class="ws-fs-12 ws-text-muted ws-mb-0">Scan to verify employee identity</p>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-qr-code ws-fs-64 ws-text-muted ws-mb-3 ws-d-block"></i>
+                                    <p class="ws-text-muted ws-fs-13 ws-mb-0">QR code not available. Card must be issued first.</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- Soft Delete Confirmation Modal -->
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <h5 class="modal-title ws-fw-700 ws-text-danger"><i class="bi bi-exclamation-triangle-fill ws-me-2"></i>Confirm Delete</h5>
                 <button type="button" class="btn-close" data-bs-dash="modal" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to soft-delete <strong>@Model.FullName</strong>?</p>
-                <p class="text-danger small mb-0"><i class="bi bi-info-circle me-1"></i>This will mark their employee records as deleted and immediately deactivate their system access credentials.</p>
+                <p class="ws-text-danger ws-fs-13 ws-mb-0"><i class="bi bi-info-circle ws-me-1"></i>This will mark their employee records as deleted and immediately deactivate their system access credentials.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--ghost" data-bs-dismiss="modal">Cancel</button>
                 <form asp-action="Delete" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="btn btn-danger px-4">Delete Records</button>
+                    <button type="submit" class="adm-btn adm-btn--danger ws-px-4">Delete Records</button>
                 </form>
             </div>
         </div>
@@ -449,41 +1378,279 @@
 </div>
 
 <style>
-    .avatar-xl {
-        border: 3px solid var(--adm-primary, #6f42c1);
+    /* ── Profile Sidebar Layout ── */
+    .er-profile-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
     }
-    .nav-tabs .nav-link {
-        font-weight: 600;
-        color: #6c757d;
-        border: none;
-        border-bottom: 3px solid transparent;
-        padding: 12px 16px;
+
+    .er-profile-sidebar {
+        flex: 0 0 220px;
+        position: sticky;
+        top: 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        background: var(--ws-surface);
+        border-radius: var(--ws-radius-lg);
+        box-shadow: var(--ws-shadow-sm);
+        padding: 8px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
     }
-    .nav-tabs .nav-link.active {
-        color: var(--adm-primary, #6f42c1);
-        border: none;
-        border-bottom: 3px solid var(--adm-primary, #6f42c1);
+
+    .er-profile-sidebar__btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ws-text-light);
         background: transparent;
+        border: none;
+        border-radius: var(--ws-radius-sm);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        text-align: left;
+        width: 100%;
+        white-space: nowrap;
     }
-    .nav-tabs .nav-link:hover {
-        border-color: transparent;
-        color: var(--adm-primary, #6f42c1);
+
+    .er-profile-sidebar__btn:hover {
+        background: var(--ws-surface-hover);
+        color: var(--ws-text);
+    }
+
+    .er-profile-sidebar__btn--active {
+        background: var(--ws-accent-light);
+        color: var(--ws-accent);
+        font-weight: 600;
+    }
+
+    .er-profile-sidebar__btn i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .er-profile-sidebar__divider {
+        height: 1px;
+        background: var(--ws-border-light);
+        margin: 6px 12px;
+    }
+
+    .er-profile-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .er-profile-panel {
+        display: none;
+    }
+
+    .er-profile-panel--active {
+        display: block;
+        animation: ws-fade-up 0.35s ease forwards;
+    }
+
+    /* ── Labels & Values ── */
+    .er-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ws-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    .er-value {
+        font-size: 15px;
+        color: var(--ws-text);
+        display: inline-block;
+    }
+
+    /* ── Timeline ── */
+    .er-timeline {
+        position: relative;
+        padding-left: 24px;
+    }
+
+    .er-timeline::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--ws-border-light);
+    }
+
+    .er-timeline__item {
+        position: relative;
+        padding-bottom: 24px;
+    }
+
+    .er-timeline__item:last-child {
+        padding-bottom: 0;
+    }
+
+    .er-timeline__dot {
+        position: absolute;
+        left: -20px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--ws-border-light);
+        border: 2px solid var(--ws-surface);
+        z-index: 1;
+    }
+
+    .er-timeline__dot--primary { background: var(--ws-primary); }
+    .er-timeline__dot--success { background: var(--ws-success); }
+    .er-timeline__dot--warning { background: var(--ws-warning); }
+    .er-timeline__dot--danger  { background: var(--ws-danger); }
+    .er-timeline__dot--info    { background: var(--ws-info); }
+
+    .er-timeline__content {
+        background: var(--ws-surface);
+        border-radius: var(--ws-radius-md);
+        padding: 16px;
+        box-shadow: var(--ws-shadow-xs);
+        border: 1px solid var(--ws-border-light);
+    }
+
+    /* ── Success background utility ── */
+    .ws-bg-success-bg {
+        background: var(--ws-success-bg) !important;
+    }
+
+    /* ── Monospace font ── */
+    .ws-font-mono {
+        font-family: 'Courier New', Courier, monospace;
+        letter-spacing: 0.05em;
+    }
+
+    /* ── er-input (consistent with er-* design system) ── */
+    .er-input {
+        width: 100%;
+        padding: 9px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--ws-text);
+        background: var(--ws-surface);
+        border: 1.5px solid var(--ws-border);
+        border-radius: var(--ws-radius-sm);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        outline: none;
+    }
+
+    .er-input:focus {
+        border-color: var(--ws-accent);
+        box-shadow: 0 0 0 3px var(--ws-accent-light);
+    }
+
+    /* ── Responsive ── */
+    @@media (max-width: 991px) {
+        .er-profile-layout {
+            flex-direction: column;
+        }
+
+        .er-profile-sidebar {
+            flex: none;
+            width: 100%;
+            position: static;
+            flex-direction: row;
+            flex-wrap: wrap;
+            max-height: none;
+            overflow-y: visible;
+            gap: 4px;
+            padding: 12px;
+        }
+
+        .er-profile-sidebar__btn {
+            flex: 0 0 auto;
+            padding: 8px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .er-profile-sidebar__btn span {
+            display: none;
+        }
+
+        .er-profile-sidebar__btn i {
+            font-size: 18px;
+            width: auto;
+        }
+
+        .er-profile-sidebar__divider {
+            display: none;
+        }
     }
 
     @@media print {
-        .btn, .nav-tabs, .modal, .alert, form, .col-auto button {
+        .er-profile-sidebar, .adm-btn, .modal, form, .er-badge {
             display: none !important;
         }
-        .tab-pane {
+        .er-profile-panel {
             display: block !important;
             opacity: 1 !important;
             margin-bottom: 2rem !important;
+            page-break-inside: avoid;
         }
-        .row {
+        .er-profile-layout {
             display: block !important;
         }
-        .col-md-5, .col-md-7, .col-lg-4, .col-lg-8 {
-            width: 100% !important;
-        }
+    }
+
+    /* ── Scrollbar styling ── */
+    .er-profile-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .er-profile-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .er-profile-sidebar::-webkit-scrollbar-thumb {
+        background: var(--ws-border-light);
+        border-radius: 4px;
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebarBtns = document.querySelectorAll('.er-profile-sidebar__btn');
+        const panels = document.querySelectorAll('.er-profile-panel');
+
+        sidebarBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const tabId = this.getAttribute('data-tab');
+
+                // Deactivate all sidebar buttons
+                sidebarBtns.forEach(function (b) {
+                    b.classList.remove('er-profile-sidebar__btn--active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+
+                // Hide all panels
+                panels.forEach(function (p) {
+                    p.classList.remove('er-profile-panel--active');
+                });
+
+                // Activate current
+                this.classList.add('er-profile-sidebar__btn--active');
+                this.setAttribute('aria-selected', 'true');
+
+                const targetPanel = document.getElementById('tab-' + tabId);
+                if (targetPanel) {
+                    targetPanel.classList.add('er-profile-panel--active');
+                }
+            });
+        });
+    });
+</script>

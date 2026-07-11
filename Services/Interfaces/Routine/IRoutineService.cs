@@ -71,6 +71,8 @@ public interface IRoutineEntryService
     Task UpdateEntryAsync(int id, int roomId, int routinePeriodId, int dayNumber, string updatedBy, CancellationToken cancellationToken = default);
     Task SwapEntriesAsync(int entryId1, int entryId2, string updatedBy, CancellationToken cancellationToken = default);
     Task MoveEntryAsync(int entryId, int targetPeriodId, int targetDayNumber, string updatedBy, CancellationToken cancellationToken = default);
+    Task BulkDeleteAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default);
+    Task BulkUpdateAsync(List<int> ids, int roomId, int routinePeriodId, int dayNumber, string updatedBy, CancellationToken cancellationToken = default);
 }
 
 public interface IRoutineGenerationService

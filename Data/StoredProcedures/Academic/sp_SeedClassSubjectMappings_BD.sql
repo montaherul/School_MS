@@ -146,18 +146,16 @@ INSERT INTO @Mappings VALUES
 (10,'IRE',NULL,0,1,'Islam'),(10,'HRE',NULL,0,1,'Hindu'),
 (10,'BRE',NULL,0,1,'Buddhist'),(10,'CRE',NULL,0,1,'Christian');
 
-INSERT INTO ClassSubjects (SchoolClassId, SubjectId, StudentGroupId, IsOptional, IsReligionSubject, ReligionType, FullMarks, PassMarks, IsMandatory, IsGroupSubject, DisplayOrder, IsActive, CreatedBy, CreatedAt, IsDeleted)
+INSERT INTO ClassSubjects (SchoolClassId, SubjectId, IsOptional, IsReligionSubject, ReligionType, FullMarks, PassMarks, IsMandatory, DisplayOrder, IsActive, CreatedBy, CreatedAt, IsDeleted)
 SELECT
 	c.ClassId,
 	s.SubjectId,
-	g.GroupId,
 	m.IsOptional,
 	m.IsReligionSubject,
 	m.ReligionType,
 	100.0,
 	33.0,
 	CASE WHEN m.IsOptional = 1 THEN 0 ELSE 1 END,
-	0,
 	0,
 	1,
 	'system',
@@ -166,14 +164,29 @@ SELECT
 FROM @Mappings m
 JOIN @ClassIds c ON c.SortOrder = m.ClassSortOrder
 JOIN @SubjectIds s ON s.Code = m.SubjectCode
-LEFT JOIN @GroupIds g ON g.Name = UPPER(LTRIM(RTRIM(m.GroupName)))
 WHERE NOT EXISTS (
 	SELECT 1
 	FROM ClassSubjects cs
 	WHERE cs.IsDeleted = 0
 	  AND cs.SchoolClassId = c.ClassId
 	  AND cs.SubjectId = s.SubjectId
-	  AND ISNULL(cs.StudentGroupId, 0) = ISNULL(g.GroupId, 0)
 );
+
+-- Seed ClassSubjectGroup junction records for group-specific mappings
+INSERT INTO ClassSubjectGroups (ClassSubjectId, StudentGroupId, IsActive, CreatedBy, CreatedAt, IsDeleted)
+SELECT cs.Id, g.GroupId, 1, 'system', SYSUTCDATETIME(), 0
+FROM ClassSubjects cs
+JOIN @ClassIds c ON c.ClassId = cs.SchoolClassId
+JOIN @SubjectIds s ON s.SubjectId = cs.SubjectId
+JOIN @Mappings m ON m.ClassSortOrder = c.SortOrder AND m.SubjectCode = s.Code
+JOIN @GroupIds g ON g.Name = UPPER(LTRIM(RTRIM(m.GroupName)))
+WHERE m.GroupName IS NOT NULL
+  AND cs.IsDeleted = 0
+  AND NOT EXISTS (
+	SELECT 1 FROM ClassSubjectGroups csg
+	WHERE csg.ClassSubjectId = cs.Id
+	  AND csg.StudentGroupId = g.GroupId
+	  AND csg.IsDeleted = 0
+  );
 
 COMMIT TRANSACTION;

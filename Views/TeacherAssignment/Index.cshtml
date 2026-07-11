@@ -3,67 +3,70 @@
     ViewData["Title"] = "Teacher Assignments - " + Model.FullName;
 }
 
-<div class="page-header mb-4">
-    <div class="d-flex align-items-center gap-3">
-        <a href="@Url.Action("Details", "Teacher", new { id = Model.Id })" class="btn btn-light btn-sm rounded-circle"><i class="bi bi-arrow-left"></i></a>
-        <div>
-            <h1 class="page-title h3 mb-0">Manage Assignments</h1>
-            <p class="text-muted small mb-0">Link <strong>@Model.FullName</strong> to classes and subjects.</p>
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="@Url.Action("Details", "Teacher", new { id = Model.Id })" class="adm-btn adm-btn--secondary adm-btn--sm adm-btn--circle">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="adm-header__title">Manage Assignments</h1>
+                <p class="adm-header__sub">Link <strong>@Model.FullName</strong> to classes and subjects.</p>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row g-4">
-    <!-- Class Assignments -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-building me-2"></i>Class Assignments</h5>
-                <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addClassModal">
-                    <i class="bi bi-plus-lg me-1"></i>Add Class
+    <div class="dash-main-grid">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title"><i class="bi bi-building ws-me-2"></i>Class Assignments</h2>
+                <button class="adm-btn adm-btn--primary adm-btn--sm" onclick="document.getElementById('addClassModal').classList.remove('d-none')">
+                    <i class="bi bi-plus-lg ws-me-1"></i>Add Class
                 </button>
             </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="small py-3 px-4">Class & Section</th>
-                                    <th class="small py-3">Group</th>
-                                    <th class="small py-3">Academic Year</th>
-                                    <th class="small py-3 text-end px-4">Action</th>
+            <div class="adm-card__body ws-p-0">
+                <div class="adm-table-wrapper">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Class & Section</th>
+                                <th>Group</th>
+                                <th>Academic Year</th>
+                                <th class="ws-text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.ClassAssignments.Where(x => !x.IsDeleted))
+                            {
+                                <tr id="class-row-@a.Id">
+                                    <td>
+                                        <div class="ws-fw-700">@a.Class?.Name</div>
+                                        <div class="ws-fs-13 ws-text-muted">@a.Section?.Name</div>
+                                    </td>
+                                    <td>
+                                        @if (a.Class?.IsGroupBased == true && a.Group != null)
+                                        {
+                                            <span class="adm-status adm-status--info">@a.Group.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--default">General</span>
+                                        }
+                                    </td>
+                                    <td>2026</td>
+                                    <td class="ws-text-end">
+                                        <button class="adm-btn adm-btn--danger adm-btn--sm" onclick="removeAssignment('Class', @a.Id)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var a in Model.ClassAssignments.Where(x => !x.IsDeleted))
-                                {
-                                    <tr id="class-row-@a.Id">
-                                        <td class="px-4">
-                                            <div class="fw-bold">@a.Class?.Name</div>
-                                            <div class="x-small text-muted">@a.Section?.Name</div>
-                                        </td>
-                                        <td>
-                                            @if (a.Class?.IsGroupBased == true && a.Group != null)
-                                            {
-                                                <span class="badge bg-info">@a.Group.Name</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">General</span>
-                                            }
-                                        </td>
-                                        <td>2026</td>
-                                        <td class="text-end px-4">
-                                            <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Class', @a.Id)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                            }
                             @if (!Model.ClassAssignments.Any(x => !x.IsDeleted))
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted small">No class assignments found.</td>
+                                    <td colspan="4" class="adm-table__empty">No class assignments found.</td>
                                 </tr>
                             }
                         </tbody>
@@ -71,61 +74,58 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Subject Assignments -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-success"><i class="bi bi-book me-2"></i>Subject Assignments</h5>
-                <button class="btn btn-success btn-sm rounded-pill px-3 text-white" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
-                    <i class="bi bi-plus-lg me-1"></i>Add Subject
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title"><i class="bi bi-book ws-me-2"></i>Subject Assignments</h2>
+                <button class="adm-btn adm-btn--success adm-btn--sm" onclick="document.getElementById('addSubjectModal').classList.remove('d-none')">
+                    <i class="bi bi-plus-lg ws-me-1"></i>Add Subject
                 </button>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="small py-3 px-4">Subject</th>
-                                    <th class="small py-3">Class/Section</th>
-                                    <th class="small py-3">Group</th>
-                                    <th class="small py-3 text-end px-4">Action</th>
+            <div class="adm-card__body ws-p-0">
+                <div class="adm-table-wrapper">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Class/Section</th>
+                                <th>Group</th>
+                                <th class="ws-text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.SubjectAssignments.Where(x => !x.IsDeleted))
+                            {
+                                <tr id="subject-row-@a.Id">
+                                    <td>
+                                        <div class="ws-fw-700">@a.Subject?.Name</div>
+                                        <div class="ws-fs-13 ws-text-muted">Core Subject</div>
+                                    </td>
+                                    <td>
+                                        <div>@a.Class?.Name</div>
+                                        <div class="ws-fs-13 ws-text-muted">@a.Section?.Name</div>
+                                    </td>
+                                    <td>
+                                        @if (a.Group != null)
+                                        {
+                                            <span class="adm-status adm-status--info">@a.Group.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--default">General</span>
+                                        }
+                                    </td>
+                                    <td class="ws-text-end">
+                                        <button class="adm-btn adm-btn--danger adm-btn--sm" onclick="removeAssignment('Subject', @a.Id)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var a in Model.SubjectAssignments.Where(x => !x.IsDeleted))
-                                {
-                                    <tr id="subject-row-@a.Id">
-                                        <td class="px-4">
-                                            <div class="fw-bold text-success">@a.Subject?.Name</div>
-                                            <div class="x-small text-muted">Core Subject</div>
-                                        </td>
-                                        <td>
-                                            <div class="small">@a.Class?.Name</div>
-                                            <div class="x-small text-muted">@a.Section?.Name</div>
-                                        </td>
-                                        <td>
-                                            @if (a.Group != null)
-                                            {
-                                                <span class="badge bg-info">@a.Group.Name</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">General</span>
-                                            }
-                                        </td>
-                                        <td class="text-end px-4">
-                                            <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Subject', @a.Id)">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
+                            }
                             @if (!Model.SubjectAssignments.Any(x => !x.IsDeleted))
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted small">No subject assignments found.</td>
+                                    <td colspan="4" class="adm-table__empty">No subject assignments found.</td>
                                 </tr>
                             }
                         </tbody>
@@ -136,110 +136,132 @@
     </div>
 </div>
 
-<!-- Modal: Add Class -->
-<div class="modal fade" id="addClassModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <form asp-action="AssignClass" method="post">
-                <input type="hidden" name="teacherId" value="@Model.Id" />
-                <div class="modal-header border-0 pt-4 px-4">
-                    <h5 class="fw-bold mb-0">Assign Class</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Class</label>
-                        <select name="classId" class="form-select" required onchange="loadSections(this.value, 'class-section-select'); toggleGroupDropdown(this, 'class-group-select')">
+<div class="adm-modal-backdrop d-none" id="addClassModal">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <h5 class="adm-modal__title">Assign Class</h5>
+            </div>
+            <button type="button" class="adm-modal__close" onclick="closeModal('addClassModal')">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <form asp-action="AssignClass" method="post">
+            <input type="hidden" name="teacherId" value="@Model.Id" />
+            <div class="adm-modal__body">
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Class</label>
+                        <select name="classId" class="adm-input" required onchange="loadSections(this.value, 'class-section-select'); toggleGroupDropdown(this, 'class-group-select')">
                             <option value="">Choose Class...</option>
                             @foreach(var c in ViewBag.Classes) { <option value="@c.Id" data-group-based="@c.IsGroupBased.ToString().ToLower()">@c.Name</option> }
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Section</label>
-                        <select name="sectionId" id="class-section-select" class="form-select" required>
+                </div>
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Section</label>
+                        <select name="sectionId" id="class-section-select" class="adm-input" required>
                             <option value="">Choose Section...</option>
                         </select>
                     </div>
-                    <div class="mb-3" id="class-group-wrapper" style="display:none;">
-                        <label class="form-label small fw-bold">Select Group</label>
-                        <select name="groupId" id="class-group-select" class="form-select">
+                </div>
+                <div class="adm-form-row" id="class-group-wrapper" style="display:none;">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Group</label>
+                        <select name="groupId" id="class-group-select" class="adm-input">
                             <option value="">Choose Group...</option>
                             @foreach(var g in ViewBag.Groups) { <option value="@g.Id">@g.Name</option> }
                         </select>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label small fw-bold">Academic Year</label>
-                        <select name="academicYearId" class="form-select" required>
+                </div>
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Academic Year</label>
+                        <select name="academicYearId" class="adm-input" required>
                             @foreach(var y in ViewBag.AcademicYears) { <option value="@y.Id" selected="@y.IsActive">@y.Name</option> }
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Assign Now</button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--secondary" onclick="closeModal('addClassModal')">Cancel</button>
+                <button type="submit" class="adm-btn adm-btn--primary">Assign Now</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- Modal: Add Subject -->
-<div class="modal fade" id="addSubjectModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <form asp-action="AssignSubject" method="post">
-                <input type="hidden" name="teacherId" value="@Model.Id" />
-                <div class="modal-header border-0 pt-4 px-4">
-                    <h5 class="fw-bold mb-0">Assign Subject</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Class</label>
-                        <select name="classId" class="form-select" required onchange="loadSectionsAndSubjects(this.value); toggleGroupDropdown(this, 'subj-group-select')">
+<div class="adm-modal-backdrop d-none" id="addSubjectModal">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <h5 class="adm-modal__title">Assign Subject</h5>
+            </div>
+            <button type="button" class="adm-modal__close" onclick="closeModal('addSubjectModal')">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <form asp-action="AssignSubject" method="post">
+            <input type="hidden" name="teacherId" value="@Model.Id" />
+            <div class="adm-modal__body">
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Class</label>
+                        <select name="classId" class="adm-input" required onchange="loadSectionsAndSubjects(this.value); toggleGroupDropdown(this, 'subj-group-select')">
                             <option value="">Choose Class...</option>
                             @foreach(var c in ViewBag.Classes) { <option value="@c.Id" data-group-based="@c.IsGroupBased.ToString().ToLower()">@c.Name</option> }
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Section</label>
-                        <select name="sectionId" id="subj-section-select" class="form-select" required>
+                </div>
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Section</label>
+                        <select name="sectionId" id="subj-section-select" class="adm-input" required>
                             <option value="">Choose Section...</option>
                         </select>
                     </div>
-                    <div class="mb-3" id="subj-group-wrapper" style="display:none;">
-                        <label class="form-label small fw-bold">Select Group</label>
-                        <select name="groupId" id="subj-group-select" class="form-select">
+                </div>
+                <div class="adm-form-row" id="subj-group-wrapper" style="display:none;">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Group</label>
+                        <select name="groupId" id="subj-group-select" class="adm-input">
                             <option value="">Choose Group...</option>
                             @foreach(var g in ViewBag.Groups) { <option value="@g.Id">@g.Name</option> }
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Subject</label>
-                        <select name="subjectId" id="subject-select" class="form-select" required>
+                </div>
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Select Subject</label>
+                        <select name="subjectId" id="subject-select" class="adm-input" required>
                             <option value="">Choose Subject...</option>
                         </select>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label small fw-bold">Academic Year</label>
-                        <select name="academicYearId" class="form-select" required>
+                </div>
+                <div class="adm-form-row">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Academic Year</label>
+                        <select name="academicYearId" class="adm-input" required>
                             @foreach(var y in ViewBag.AcademicYears) { <option value="@y.Id" selected="@y.IsActive">@y.Name</option> }
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success text-white rounded-pill px-4">Assign Now</button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--secondary" onclick="closeModal('addSubjectModal')">Cancel</button>
+                <button type="submit" class="adm-btn adm-btn--success">Assign Now</button>
+            </div>
+        </form>
     </div>
 </div>
 
-@Html.AntiForgeryToken()
-
 @section Scripts {
     <script>
+        function closeModal(id) {
+            document.getElementById(id).classList.add('d-none');
+        }
+
         function toggleGroupDropdown(classSelect, groupSelectId) {
             var option = classSelect.options[classSelect.selectedIndex];
             var isGroupBased = option && option.dataset.groupBased === 'true';
@@ -250,20 +272,18 @@
 
         function loadSections(classId, targetId) {
             if (!classId) return;
-            // First try sections (if class has sub-sections)
             fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId)
                 .then(r => r.json())
                 .then(data => {
                     const sel = document.getElementById(targetId);
                     sel.innerHTML = '<option value="">Choose Section...</option>';
                     if (data && data.length > 0) {
-                        data.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+                        data.forEach(s => sel.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>');
                     } else {
-                        // If no sub-sections, try top-level groups
                         fetch('@Url.Action("GetStudentGroupsForClass", "Section")?classId=' + classId)
                             .then(r2 => r2.json())
                             .then(data2 => {
-                                data2.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+                                data2.forEach(s => sel.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>');
                             });
                     }
                 });
@@ -272,37 +292,23 @@
         function loadSectionsAndSubjects(classId) {
             loadSections(classId, 'subj-section-select');
             if (!classId) return;
-            // Assuming there's a GetSubjectsForClass endpoint that returns all subjects for a class
             fetch('@Url.Action("GetSubjectsForClass", "ResultManagement")?classId=' + classId)
                 .then(r => r.json())
                 .then(data => {
                     const sel = document.getElementById('subject-select');
                     sel.innerHTML = '<option value="">Choose Subject...</option>';
-                    data.forEach(s => sel.innerHTML += `<option value="${s.subjectId}">${s.subjectName}</option>`);
+                    data.forEach(s => sel.innerHTML += '<option value="' + s.subjectId + '">' + s.subjectName + '</option>');
                 });
         }
 
         function removeAssignment(type, id) {
-            if (!confirm(`Are you sure you want to remove this ${type} assignment?`)) return;
-            
+            if (!confirm('Are you sure you want to remove this ' + type + ' assignment?')) return;
             const url = type === 'Class' ? '@Url.Action("RemoveClassAssignment", "TeacherAssignment")' : '@Url.Action("RemoveSubjectAssignment", "TeacherAssignment")';
-            
             const formData = new FormData();
             formData.append('id', id);
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-
             fetch(url, { method: 'POST', body: formData })
-                .then(r => {
-                    if (r.ok) {
-                        document.getElementById(`${type.toLowerCase()}-row-${id}`).remove();
-                    }
-                });
+                .then(r => { if (r.ok) { document.getElementById(type.toLowerCase() + '-row-' + id).remove(); } });
         }
     </script>
 }
-
-<style>
-    .hover-shadow:hover { box-shadow: 0 .25rem .75rem rgba(0,0,0,.05)!important; }
-    .transition { transition: all 0.2s ease; }
-    .x-small { font-size: 0.75rem; }
-</style>

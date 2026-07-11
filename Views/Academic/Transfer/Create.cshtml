@@ -1,0 +1,103 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.TransferCertificateUpsertDto
+@{
+    ViewData["Title"] = "Create Transfer Certificate";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Transfer Certificate</h1>
+                <p class="adm-header__sub">Issue a new transfer certificate for a student.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title">TC Details</h3></div>
+        <div class="adm-card__body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label asp-for="StudentId" class="adm-label"></label>
+                        <input asp-for="StudentId" class="adm-input" type="number" required />
+                        <span asp-validation-for="StudentId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="CertificateNo" class="adm-label"></label>
+                        <input asp-for="CertificateNo" class="adm-input" />
+                        <span asp-validation-for="CertificateNo" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="OldClassId" class="adm-label"></label>
+                        <input asp-for="OldClassId" class="adm-input" type="number" required />
+                        <span asp-validation-for="OldClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="OldSectionId" class="adm-label"></label>
+                        <input asp-for="OldSectionId" class="adm-input" type="number" />
+                        <span asp-validation-for="OldSectionId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="NewClassId" class="adm-label"></label>
+                        <input asp-for="NewClassId" class="adm-input" type="number" required />
+                        <span asp-validation-for="NewClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="NewSectionId" class="adm-label"></label>
+                        <input asp-for="NewSectionId" class="adm-input" type="number" />
+                        <span asp-validation-for="NewSectionId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="NewStudentGroupId" class="adm-label"></label>
+                        <input asp-for="NewStudentGroupId" class="adm-input" type="number" />
+                        <span asp-validation-for="NewStudentGroupId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="NewSchoolName" class="adm-label"></label>
+                        <input asp-for="NewSchoolName" class="adm-input" required />
+                        <span asp-validation-for="NewSchoolName" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="IssueDate" class="adm-label"></label>
+                        <input asp-for="IssueDate" class="adm-input" type="date" required />
+                        <span asp-validation-for="IssueDate" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group ws-form-check">
+                        <input asp-for="IsActive" class="ws-form-check-input" checked />
+                        <label asp-for="IsActive" class="ws-form-check-label">Is Active</label>
+                    </div>
+                </div>
+
+                <div class="adm-form-group adm-form-group--full">
+                    <label asp-for="Reason" class="adm-label"></label>
+                    <textarea asp-for="Reason" class="adm-textarea" rows="3"></textarea>
+                    <span asp-validation-for="Reason" class="adm-field-error"></span>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

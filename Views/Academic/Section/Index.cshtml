@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Sections";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-grid-3x3-gap"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Sections</h1>
+                <p class="adm-header__sub">Manage class sections and student distribution</p>
+            </div>
+        </div>
+        <a href="/Academic/Section/CreateEdit" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Section</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        SchoolMS.Grid.create('section', {
+            container: '#data-table',
+            ajaxUrl: '@Url.Action("GetList", "Section")',
+            editUrl: '/Academic/Section/CreateEdit',
+            deleteUrl: '/Academic/Section/DeleteConfirmed',
+            pageSize: 10,
+            paginationParams: { page: 'page', size: 'pageSize' },
+            columns: [
+                { title: "Section Name", field: "name", widthGrow: 1.5, formatter: function(c) { var row = c.getRow().getData(); var icon = row.parentSectionId ? '<i class=\"bi bi-diagram-3 ws-text-secondary ws-me-1 ws-fs-13\"></i>' : '<i class=\"bi bi-layers ws-text-primary ws-me-1 ws-fs-13\"></i>'; var cls = row.parentSectionId ? 'ws-text-success' : 'ws-fw-700'; return '<div class=\"' + cls + '\">' + icon + c.getValue() + '</div>'; } },
+                { title: "Group", field: "groupName", widthGrow: 1.2, formatter: function(c) { var v = c.getValue(); if (!v) return '<span class=\"ws-text-muted ws-fs-13\">\u2014</span>'; return '<span class=\"adm-badge adm-badge--neutral\"><i class=\"bi bi-collection ws-me-1\"></i>' + v + '</span>'; } },
+                { title: "Parent Class", field: "className", widthGrow: 2, formatter: function(c) { return '<div class=\"entity-cell__name\"><i class=\"bi bi-building ws-me-1 ws-fs-13\"></i>' + c.getValue() + '</div>'; } }
+            ],
+            placeholder: '<div class=\"dash-empty\"><i class=\"bi bi-grid-3x3-gap ws-fs-48\"></i><div class=\"dash-empty__title\">No Sections Found</div><div class=\"dash-empty__sub\">No sections match your search criteria.</div></div>'
+        });
+    </script>
+}

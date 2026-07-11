@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Helpers.Files;
@@ -25,6 +26,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     private readonly IUserProvisionService _userProvisionService;
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSync;
     private readonly ILogger<EmployeeInvitationService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public EmployeeInvitationService(
         IUnitOfWork uow,
@@ -33,7 +35,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         IPasswordHashService passwordHashService,
         IUserProvisionService userProvisionService,
         SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSync,
-        ILogger<EmployeeInvitationService> logger)
+        ILogger<EmployeeInvitationService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _uow = uow;
         _emailService = emailService;
@@ -42,6 +45,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _userProvisionService = userProvisionService;
         _teacherSync = teacherSync;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<(List<EmployeeInvitationDto> items, int totalRecords)> GetPagedInvitationsAsync(int page, int pageSize, string? search, CancellationToken ct)
@@ -158,6 +162,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             _logger.LogError(ex, "Employee invitation resend failed for invitation {InvitationId}", id);
         }
 
+        await LogAuditAsync("Employee.Invitation", "Resend", id.ToString(), $"Invitation resent to {invite.Email}", ct);
         return true;
     }
 
@@ -173,6 +178,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         invite.UpdatedAt = DateTime.UtcNow;
         _uow.Repository<EmployeeInvitation>().Update(invite);
         await _uow.SaveChangesAsync(ct);
+        await LogAuditAsync("Employee.Invitation", "Cancel", id.ToString(), $"Invitation cancelled for {invite.Email}", ct);
         return true;
     }
 
@@ -374,6 +380,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             _uow.Repository<EmployeeInvitation>().Update(invite);
 
             await _uow.SaveChangesAsync(ct);
+            await LogAuditAsync("Employee.Invitation", "CompleteOnboarding", employee.Id.ToString(), $"Onboarding completed for {employee.FullName} ({employee.EmployeeCode}) via invitation {invite.InvitationCode}", ct);
             return (true, "Onboarding successful.");
         }
         catch (Exception ex)
@@ -394,6 +401,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _uow.Repository<EmployeeInvitation>().Update(invite);
         await _uow.SaveChangesAsync(ct);
 
+        await LogAuditAsync("Employee.Invitation", "Approve", id.ToString(), $"Invitation approved for {invite.Email}", ct);
         return true;
     }
 
@@ -434,6 +442,30 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         }
 
         return $"{prefix}{nextNumber:D4}";
+    }
+
+    private string GetCurrentUserName()
+        => _httpContextAccessor?.HttpContext?.User?.Identity?.Name ?? "system";
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = GetCurrentUserName(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _uow.Repository<AuditLog>().AddAsync(log, ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     private EmployeeInvitationDto MapToDto(EmployeeInvitation i)

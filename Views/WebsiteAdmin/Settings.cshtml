@@ -6,100 +6,100 @@
 }
 
 <div class="adm-page">
-    <div style="margin-bottom:16px;">
-        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left" style="margin-right:4px;"></i> Back to Console</a>
+    <div class="ws-mb-4">
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back to Console</a>
     </div>
 
-    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-            <h5 style="font-weight:700;margin:0;color:var(--adm-primary);"><i class="bi bi-sliders" style="margin-right:8px;"></i> Update Global School Settings</h5>
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h5 class="ws-fw-700 ws-mb-0 ws-text-primary"><i class="bi bi-sliders ws-me-2"></i> Update Global School Settings</h5>
         </div>
-        <div style="padding:20px;">
+        <div class="adm-card__body">
             <form action="/Admin/Website/Settings" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
-                <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                <div class="ws-flex-wrap ws-gap-4">
                     <!-- School Information -->
-                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-info-circle-fill" style="margin-right:4px;color:var(--adm-primary);"></i> School Information</h6>
+                    <div class="ws-flex-1" style="min-width:280px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-info-circle-fill ws-me-1 ws-text-primary"></i> School Information</h6>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">School Name (English)</label>
                             <input type="text" name="SchoolName" value="@Model.SchoolName" class="adm-input" required/>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">School Name (Bangla)</label>
                             <input type="text" name="BanglaName" value="@Model.BanglaName" class="adm-input"/>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Short Name</label>
                             <input type="text" name="ShortName" value="@Model.ShortName" class="adm-input" required/>
                         </div>
 
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        <div class="ws-flex-wrap ws-gap-2">
                             <div style="flex:1 1 calc(33.33% - 8px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">EIIN</label>
                                     <input type="text" name="EIIN" value="@Model.EIIN" class="adm-input" required/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 8px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">School Code</label>
                                     <input type="text" name="SchoolCode" value="@Model.SchoolCode" class="adm-input"/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 8px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Established Year</label>
                                     <input type="number" name="EstablishedYear" value="@Model.EstablishedYear" class="adm-input" min="1800" max="2099"/>
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">School Motto</label>
                             <input type="text" name="SchoolMotto" value="@Model.SchoolMotto" class="adm-input"/>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">School Description</label>
                             <textarea name="SchoolDescription" class="adm-input" rows="3">@Model.SchoolDescription</textarea>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Email Address</label>
                             <input type="email" name="Email" value="@Model.Email" class="adm-input" required/>
                         </div>
 
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        <div class="ws-flex-wrap ws-gap-2">
                             <div style="flex:1 1 calc(50% - 8px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Phone</label>
                                     <input type="text" name="Phone" value="@Model.Phone" class="adm-input" required/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(50% - 8px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Mobile</label>
                                     <input type="text" name="Mobile" value="@Model.Mobile" class="adm-input"/>
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Address</label>
                             <textarea name="Address" class="adm-input" rows="2" required>@Model.Address</textarea>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Office Hours</label>
                             <input type="text" name="OfficeHours" value="@Model.OfficeHours" class="adm-input" placeholder="e.g. Sat - Thu (8:00 AM - 2:00 PM)"/>
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Website URL</label>
                             <input type="url" name="Website" value="@Model.Website" class="adm-input"/>
                         </div>
@@ -107,102 +107,102 @@
 
                     <!-- Branding & Visual Identity -->
                     <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-palette-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Brand & Visual Identity</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-palette-fill ws-me-1 ws-text-primary"></i> Brand & Visual Identity</h6>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Logo</label>
                             <input type="file" name="logoFile" class="adm-input"/>
                             @if (!string.IsNullOrEmpty(Model.LogoPath))
                             {
-                                <div style="margin-top:8px;"><img src="@Model.LogoPath" style="height:60px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:#fff;"/></div>
+                                <div class="ws-mt-2"><img src="@Model.LogoPath" class="ws-h-60 ws-p-1" style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--ws-surface);"/></div>
                             }
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Favicon (PNG/ICO)</label>
                             <input type="file" name="faviconFile" class="adm-input"/>
                             @if (!string.IsNullOrEmpty(Model.FaviconPath))
                             {
-                                <div style="margin-top:8px;"><img src="@Model.FaviconPath" style="height:30px;"/></div>
+                                <div class="ws-mt-2"><img src="@Model.FaviconPath" style="height:30px;"/></div>
                             }
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Login Page Logo</label>
                             <input type="file" name="loginLogoFile" class="adm-input"/>
                             @if (!string.IsNullOrEmpty(Model.LoginLogoPath))
                             {
-                                <div style="margin-top:8px;"><img src="@Model.LoginLogoPath" style="height:50px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:#fff;"/></div>
+                                <div class="ws-mt-2"><img src="@Model.LoginLogoPath" style="height:50px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:var(--ws-surface);"/></div>
                             }
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Footer Logo</label>
                             <input type="file" name="footerLogoFile" class="adm-input"/>
                             @if (!string.IsNullOrEmpty(Model.FooterLogoPath))
                             {
-                                <div style="margin-top:8px;"><img src="@Model.FooterLogoPath" style="height:50px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:#fff;"/></div>
+                                <div class="ws-mt-2"><img src="@Model.FooterLogoPath" style="height:50px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:var(--ws-surface);"/></div>
                             }
                         </div>
 
-                        <div style="margin-bottom:12px;">
+                        <div class="ws-mb-3">
                             <label class="adm-form-label">Website Banner Image</label>
                             <input type="file" name="bannerFile" class="adm-input"/>
                             @if (!string.IsNullOrEmpty(Model.WebsiteBannerPath))
                             {
-                                <div style="margin-top:8px;"><img src="@Model.WebsiteBannerPath" style="max-height:80px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:#fff;"/></div>
+                                <div class="ws-mt-2"><img src="@Model.WebsiteBannerPath" style="max-height:80px;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:3px;background:var(--ws-surface);"/></div>
                             }
                         </div>
                     </div>
                 </div>
 
                 <!-- Principal / Leadership -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-person-badge-fill" style="margin-right:4px;color:var(--adm-primary);"></i> School Leadership</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-person-badge-fill ws-me-1 ws-text-primary"></i> School Leadership</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Principal Name</label>
                                     <input type="text" name="PrincipalName" value="@Model.PrincipalName" class="adm-input"/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Designation</label>
                                     <input type="text" name="PrincipalDesignation" value="@Model.PrincipalDesignation" class="adm-input" placeholder="Head Teacher / Principal"/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Qualification</label>
                                     <input type="text" name="PrincipalQualification" value="@Model.PrincipalQualification" class="adm-input"/>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Photo</label>
                                     <input type="file" name="principalFile" class="adm-input"/>
                                     @if (!string.IsNullOrEmpty(Model.PrincipalImagePath))
                                     {
-                                        <div style="margin-top:4px;"><img src="@Model.PrincipalImagePath" style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:4px;background:#fff;max-height:80px;"/></div>
+                                        <div class="ws-mt-1"><img src="@Model.PrincipalImagePath" style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);padding:4px;background:var(--ws-surface);max-height:80px;"/></div>
                                     }
                                 </div>
                             </div>
                         </div>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Signature Image</label>
                                     <input type="file" name="signatureFile" class="adm-input"/>
                                     @if (!string.IsNullOrEmpty(Model.PrincipalSignaturePath))
                                     {
-                                        <div style="margin-top:4px;"><img src="@Model.PrincipalSignaturePath" style="max-height:50px;"/></div>
+                                        <div class="ws-mt-1"><img src="@Model.PrincipalSignaturePath" style="max-height:50px;"/></div>
                                     }
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
-                                <div style="margin-bottom:12px;">
+                                <div class="ws-mb-3">
                                     <label class="adm-form-label">Principal Message</label>
                                     <textarea name="PrincipalMessage" class="adm-input" rows="4">@Model.PrincipalMessage</textarea>
                                 </div>
@@ -212,44 +212,44 @@
                 </div>
 
                 <!-- Mission, Vision, About -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 calc(33.33% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-compass-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Mission</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-compass-fill ws-me-1 ws-text-primary"></i> Mission</h6>
                         <textarea name="Mission" class="adm-input" rows="4">@Model.Mission</textarea>
                     </div>
                     <div style="flex:1 1 calc(33.33% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-eye-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Vision</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-eye-fill ws-me-1 ws-text-primary"></i> Vision</h6>
                         <textarea name="Vision" class="adm-input" rows="4">@Model.Vision</textarea>
                     </div>
                     <div style="flex:1 1 calc(33.33% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-info-square-fill" style="margin-right:4px;color:var(--adm-primary);"></i> School Description</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-info-square-fill ws-me-1 ws-text-primary"></i> School Description</h6>
                         <textarea name="SchoolDescription" class="adm-input" rows="4">@Model.SchoolDescription</textarea>
                     </div>
                 </div>
 
                 <!-- Social Media -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-share-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Social Media Links</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-share-fill ws-me-1 ws-text-primary"></i> Social Media Links</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
-                                <label class="adm-form-label"><i class="bi bi-facebook" style="color:var(--adm-primary);margin-right:4px;"></i> Facebook</label>
+                                <label class="adm-form-label"><i class="bi bi-facebook ws-text-primary ws-me-1"></i> Facebook</label>
                                 <input type="url" name="FacebookUrl" value="@Model.FacebookUrl" class="adm-input" placeholder="https://facebook.com/page"/>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
-                                <label class="adm-form-label"><i class="bi bi-youtube" style="color:var(--adm-rejected);margin-right:4px;"></i> YouTube</label>
+                                <label class="adm-form-label"><i class="bi bi-youtube ws-text-danger ws-me-1"></i> YouTube</label>
                                 <input type="url" name="YouTubeUrl" value="@Model.YouTubeUrl" class="adm-input" placeholder="https://youtube.com/channel"/>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
-                                <label class="adm-form-label"><i class="bi bi-instagram" style="color:var(--adm-rejected);margin-right:4px;"></i> Instagram</label>
+                                <label class="adm-form-label"><i class="bi bi-instagram ws-text-danger ws-me-1"></i> Instagram</label>
                                 <input type="url" name="InstagramUrl" value="@Model.InstagramUrl" class="adm-input" placeholder="https://instagram.com/"/>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
-                                <label class="adm-form-label"><i class="bi bi-linkedin" style="color:var(--adm-primary);margin-right:4px;"></i> LinkedIn</label>
+                                <label class="adm-form-label"><i class="bi bi-linkedin ws-text-primary ws-me-1"></i> LinkedIn</label>
                                 <input type="url" name="LinkedInUrl" value="@Model.LinkedInUrl" class="adm-input" placeholder="https://linkedin.com/company/"/>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
-                                <label class="adm-form-label"><i class="bi bi-twitter-x" style="margin-right:4px;"></i> Twitter / X</label>
+                                <label class="adm-form-label"><i class="bi bi-twitter-x ws-me-1"></i> Twitter / X</label>
                                 <input type="url" name="TwitterUrl" value="@Model.TwitterUrl" class="adm-input" placeholder="https://twitter.com/"/>
                             </div>
                         </div>
@@ -257,10 +257,10 @@
                 </div>
 
                 <!-- Footer Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-layout-three-columns" style="margin-right:4px;color:var(--adm-primary);"></i> Footer Configuration</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-layout-three-columns ws-me-1 ws-text-primary"></i> Footer Configuration</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Footer Text / Description</label>
                                 <textarea name="FooterText" class="adm-input" rows="3">@Model.FooterText</textarea>
@@ -274,10 +274,10 @@
                 </div>
 
                 <!-- SEO Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-search-heart-fill" style="margin-right:4px;color:var(--adm-success);"></i> SEO & Open Graph Settings</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-search-heart-fill ws-me-1 ws-text-success"></i> SEO & Open Graph Settings</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Meta Title</label>
                                 <input type="text" name="MetaTitle" value="@Model.MetaTitle" class="adm-input"/>
@@ -303,7 +303,7 @@
                                 <input type="file" name="ogImageFile" class="adm-input"/>
                                 @if (!string.IsNullOrEmpty(Model.OgImagePath))
                                 {
-                                    <div style="margin-top:4px;"><img src="@Model.OgImagePath" style="max-height:50px;"/></div>
+                                    <div class="ws-mt-1"><img src="@Model.OgImagePath" style="max-height:50px;"/></div>
                                 }
                             </div>
                         </div>
@@ -311,72 +311,72 @@
                 </div>
 
                 <!-- Google Map -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-map-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Google Map Embed</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-map-fill ws-me-1 ws-text-primary"></i> Google Map Embed</h6>
                         <textarea name="GoogleMapEmbed" class="adm-input" rows="3" placeholder="<iframe>...</iframe>">@Model.GoogleMapEmbed</textarea>
                     </div>
                 </div>
 
                 <!-- Homepage Section Visibility Toggles -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-eye-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Homepage Section Visibility</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-eye-fill ws-me-1 ws-text-primary"></i> Homepage Section Visibility</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowSlider" value="true" @(Model.ShowSlider ? "checked" : "") id="chkSlider"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowSlider" value="true" @(Model.ShowSlider ? "checked" : "") id="chkSlider"/>
                                     <input type="hidden" name="ShowSlider" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkSlider">Hero Slider</label>
+                                    <label class="ws-fw-700" for="chkSlider">Hero Slider</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowWelcomeSection" value="true" @(Model.ShowWelcomeSection ? "checked" : "") id="chkWelcome"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowWelcomeSection" value="true" @(Model.ShowWelcomeSection ? "checked" : "") id="chkWelcome"/>
                                     <input type="hidden" name="ShowWelcomeSection" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkWelcome">Welcome Section</label>
+                                    <label class="ws-fw-700" for="chkWelcome">Welcome Section</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowPrincipalMessage" value="true" @(Model.ShowPrincipalMessage ? "checked" : "") id="chkPrincipal"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowPrincipalMessage" value="true" @(Model.ShowPrincipalMessage ? "checked" : "") id="chkPrincipal"/>
                                     <input type="hidden" name="ShowPrincipalMessage" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkPrincipal">Principal Message</label>
+                                    <label class="ws-fw-700" for="chkPrincipal">Principal Message</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowNotices" value="true" @(Model.ShowNotices ? "checked" : "") id="chkNotices"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowNotices" value="true" @(Model.ShowNotices ? "checked" : "") id="chkNotices"/>
                                     <input type="hidden" name="ShowNotices" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkNotices">Notices Section</label>
+                                    <label class="ws-fw-700" for="chkNotices">Notices Section</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowEvents" value="true" @(Model.ShowEvents ? "checked" : "") id="chkEvents"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowEvents" value="true" @(Model.ShowEvents ? "checked" : "") id="chkEvents"/>
                                     <input type="hidden" name="ShowEvents" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEvents">Events Section</label>
+                                    <label class="ws-fw-700" for="chkEvents">Events Section</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowGallery" value="true" @(Model.ShowGallery ? "checked" : "") id="chkGallery"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowGallery" value="true" @(Model.ShowGallery ? "checked" : "") id="chkGallery"/>
                                     <input type="hidden" name="ShowGallery" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkGallery">Gallery Preview</label>
+                                    <label class="ws-fw-700" for="chkGallery">Gallery Preview</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionCTA" value="true" @(Model.ShowAdmissionCTA ? "checked" : "") id="chkAdmission"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionCTA" value="true" @(Model.ShowAdmissionCTA ? "checked" : "") id="chkAdmission"/>
                                     <input type="hidden" name="ShowAdmissionCTA" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmission">Admission CTA</label>
+                                    <label class="ws-fw-700" for="chkAdmission">Admission CTA</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowStatistics" value="true" @(Model.ShowStatistics ? "checked" : "") id="chkStats"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowStatistics" value="true" @(Model.ShowStatistics ? "checked" : "") id="chkStats"/>
                                     <input type="hidden" name="ShowStatistics" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkStats">Statistics Section</label>
+                                    <label class="ws-fw-700" for="chkStats">Statistics Section</label>
                                 </div>
                             </div>
                         </div>
@@ -384,10 +384,10 @@
                 </div>
 
                 <!-- SMTP Server Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-envelope-at me-2 text-primary" style="color:var(--adm-primary);"></i> SMTP Server Settings</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-envelope-at ws-me-2 ws-text-primary"></i> SMTP Server Settings</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
                                 <label class="adm-form-label">SMTP Host</label>
                                 <input type="text" class="adm-input" name="SmtpHost" value="@Model.SmtpHost" placeholder="smtp.gmail.com" />
@@ -398,10 +398,10 @@
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
                                 <label class="adm-form-label">&nbsp;</label>
-                                <div class="form-check" style="display:flex;align-items:center;gap:8px;">
+                                <div class="ws-form-check">
                                     <input type="hidden" name="SmtpEnableSsl" value="false" />
-                                    <input type="checkbox" class="form-check-input" name="SmtpEnableSsl" value="true" checked="@Model.SmtpEnableSsl" id="chkSmtpSsl" />
-                                    <label class="form-check-label fw-bold" for="chkSmtpSsl">Enable SSL</label>
+                                    <input type="checkbox" class="ws-form-check-input" name="SmtpEnableSsl" value="true" checked="@Model.SmtpEnableSsl" id="chkSmtpSsl" />
+                                    <label class="ws-fw-700" for="chkSmtpSsl">Enable SSL</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
@@ -432,99 +432,49 @@
                     </div>
                 </div>
 
-                <!-- SMTP Server Settings -->
-                <div class="adm-table-card mb-4">
-                    <div class="px-4 py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-envelope-at me-2 text-primary"></i>SMTP Server Settings</h5>
-                    </div>
-                    <div style="padding: 24px;">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">SMTP Host</label>
-                                <input type="text" class="form-control" name="SmtpHost" value="@Model.SmtpHost" placeholder="smtp.gmail.com" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Port</label>
-                                <input type="number" class="form-control" name="SmtpPort" value="@Model.SmtpPort" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">&nbsp;</label>
-                                <div class="form-check pt-2">
-                                    <input type="checkbox" class="form-check-input" name="SmtpEnableSsl" value="true" checked="@Model.SmtpEnableSsl" />
-                                    <label class="form-check-label">Enable SSL</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" name="SmtpUserName" value="@Model.SmtpUserName" placeholder="user@gmail.com" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" name="SmtpPassword" value="@Model.SmtpPassword" placeholder="App password" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">From Email</label>
-                                <input type="email" class="form-control" name="SmtpFromEmail" value="@Model.SmtpFromEmail" placeholder="noreply@school.com" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Base URL</label>
-                                <input type="text" class="form-control" name="BaseUrl" value="@Model.BaseUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Local URL (Dev)</label>
-                                <input type="text" class="form-control" name="LocalUrl" value="@Model.LocalUrl" placeholder="https://localhost:7192/" />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Public URL (Prod)</label>
-                                <input type="text" class="form-control" name="PublicUrl" value="@Model.PublicUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Event Notification Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-bell-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Event Notification Settings</h6>
-                        <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:12px;">Configure automatic email notifications when website events are created or published.</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-bell-fill ws-me-1 ws-text-primary"></i> Event Notification Settings</h6>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Configure automatic email notifications when website events are created or published.</p>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableEventEmailNotifications" value="true" @(Model.EnableEventEmailNotifications ? "checked" : "") id="chkEventEmailNotifications"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableEventEmailNotifications" value="true" @(Model.EnableEventEmailNotifications ? "checked" : "") id="chkEventEmailNotifications"/>
                                     <input type="hidden" name="EnableEventEmailNotifications" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEventEmailNotifications">Enable Event Emails</label>
+                                    <label class="ws-fw-700" for="chkEventEmailNotifications">Enable Event Emails</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableStudentNotifications" value="true" @(Model.EnableStudentNotifications ? "checked" : "") id="chkStudentNotifications"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableStudentNotifications" value="true" @(Model.EnableStudentNotifications ? "checked" : "") id="chkStudentNotifications"/>
                                     <input type="hidden" name="EnableStudentNotifications" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkStudentNotifications">Notify Students</label>
+                                    <label class="ws-fw-700" for="chkStudentNotifications">Notify Students</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="SendImmediately" value="true" @(Model.SendImmediately ? "checked" : "") id="chkSendImmediately"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="SendImmediately" value="true" @(Model.SendImmediately ? "checked" : "") id="chkSendImmediately"/>
                                     <input type="hidden" name="SendImmediately" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkSendImmediately">Send Immediately</label>
+                                    <label class="ws-fw-700" for="chkSendImmediately">Send Immediately</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="SendOnPublish" value="true" @(Model.SendOnPublish ? "checked" : "") id="chkSendOnPublish"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="SendOnPublish" value="true" @(Model.SendOnPublish ? "checked" : "") id="chkSendOnPublish"/>
                                     <input type="hidden" name="SendOnPublish" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkSendOnPublish">Send On Publish</label>
+                                    <label class="ws-fw-700" for="chkSendOnPublish">Send On Publish</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="DailyDigestMode" value="true" @(Model.DailyDigestMode ? "checked" : "") id="chkDailyDigest"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="DailyDigestMode" value="true" @(Model.DailyDigestMode ? "checked" : "") id="chkDailyDigest"/>
                                     <input type="hidden" name="DailyDigestMode" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkDailyDigest">Daily Digest Mode</label>
+                                    <label class="ws-fw-700" for="chkDailyDigest">Daily Digest Mode</label>
                                 </div>
                             </div>
                         </div>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+                        <div class="ws-flex-wrap ws-gap-3 ws-mt-2">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Max Emails Per Batch</label>
                                 <input type="number" name="MaximumEmailsPerBatch" value="@Model.MaximumEmailsPerBatch" class="adm-input" min="10" max="500"/>
@@ -542,23 +492,23 @@
                 </div>
 
                 <!-- Event Approval & Reminder Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-check2-circle" style="margin-right:4px;color:var(--adm-primary);"></i> Event Approval & Reminder Settings</h6>
-                        <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:12px;">Configure event approval workflow and automatic reminder notifications for upcoming events.</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-check2-circle ws-me-1 ws-text-primary"></i> Event Approval & Reminder Settings</h6>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Configure event approval workflow and automatic reminder notifications for upcoming events.</p>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableEventApprovalWorkflow" value="true" @(Model.EnableEventApprovalWorkflow ? "checked" : "") id="chkEnableEventApproval"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableEventApprovalWorkflow" value="true" @(Model.EnableEventApprovalWorkflow ? "checked" : "") id="chkEnableEventApproval"/>
                                     <input type="hidden" name="EnableEventApprovalWorkflow" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEnableEventApproval">Enable Approval Workflow</label>
+                                    <label class="ws-fw-700" for="chkEnableEventApproval">Enable Approval Workflow</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableEventReminders" value="true" @(Model.EnableEventReminders ? "checked" : "") id="chkEnableEventReminders"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableEventReminders" value="true" @(Model.EnableEventReminders ? "checked" : "") id="chkEnableEventReminders"/>
                                     <input type="hidden" name="EnableEventReminders" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEnableEventReminders">Enable Event Reminders</label>
+                                    <label class="ws-fw-700" for="chkEnableEventReminders">Enable Event Reminders</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
@@ -589,15 +539,15 @@
                 </div>
 
                 <!-- Result Access Control -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-shield-exclamation" style="margin-right:4px;color:var(--adm-primary);"></i> Result Access Control</h6>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-shield-exclamation ws-me-1 ws-text-primary"></i> Result Access Control</h6>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="AllowResultWithDue" value="true" @(Model.AllowResultWithDue ? "checked" : "") id="chkAllowResultWithDue"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="AllowResultWithDue" value="true" @(Model.AllowResultWithDue ? "checked" : "") id="chkAllowResultWithDue"/>
                                     <input type="hidden" name="AllowResultWithDue" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAllowResultWithDue">Allow Result Access With Due</label>
+                                    <label class="ws-fw-700" for="chkAllowResultWithDue">Allow Result Access With Due</label>
                                 </div>
                             </div>
                         </div>
@@ -605,37 +555,37 @@
                 </div>
 
                 <!-- Guardian Portal Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-shield-check" style="margin-right:4px;color:var(--adm-primary);"></i> Guardian Portal Settings</h6>
-                        <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:12px;">Enable or disable guardian/parent portal features. When disabled, guardians are not created during admission, guardian menus are hidden, and guardian URLs are blocked.</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-shield-check ws-me-1 ws-text-primary"></i> Guardian Portal Settings</h6>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Enable or disable guardian/parent portal features. When disabled, guardians are not created during admission, guardian menus are hidden, and guardian URLs are blocked.</p>
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableGuardianPortal" value="true" @(Model.EnableGuardianPortal ? "checked" : "") id="chkEnableGuardianPortal"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianPortal" value="true" @(Model.EnableGuardianPortal ? "checked" : "") id="chkEnableGuardianPortal"/>
                                     <input type="hidden" name="EnableGuardianPortal" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEnableGuardianPortal">Enable Guardian Portal</label>
+                                    <label class="ws-fw-700" for="chkEnableGuardianPortal">Enable Guardian Portal</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableGuardianActivation" value="true" @(Model.EnableGuardianActivation ? "checked" : "") id="chkEnableGuardianActivation"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianActivation" value="true" @(Model.EnableGuardianActivation ? "checked" : "") id="chkEnableGuardianActivation"/>
                                     <input type="hidden" name="EnableGuardianActivation" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEnableGuardianActivation">Enable Guardian Activation</label>
+                                    <label class="ws-fw-700" for="chkEnableGuardianActivation">Enable Guardian Activation</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="RequireGuardianForAdmission" value="true" @(Model.RequireGuardianForAdmission ? "checked" : "") id="chkRequireGuardianForAdmission"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="RequireGuardianForAdmission" value="true" @(Model.RequireGuardianForAdmission ? "checked" : "") id="chkRequireGuardianForAdmission"/>
                                     <input type="hidden" name="RequireGuardianForAdmission" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkRequireGuardianForAdmission">Require Guardian During Admission</label>
+                                    <label class="ws-fw-700" for="chkRequireGuardianForAdmission">Require Guardian During Admission</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="EnableGuardianNotifications" value="true" @(Model.EnableGuardianNotifications ? "checked" : "") id="chkEnableGuardianNotifications"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianNotifications" value="true" @(Model.EnableGuardianNotifications ? "checked" : "") id="chkEnableGuardianNotifications"/>
                                     <input type="hidden" name="EnableGuardianNotifications" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkEnableGuardianNotifications">Enable Guardian Notifications</label>
+                                    <label class="ws-fw-700" for="chkEnableGuardianNotifications">Enable Guardian Notifications</label>
                                 </div>
                             </div>
                         </div>
@@ -643,65 +593,65 @@
                 </div>
 
                 <!-- Admission Information Settings -->
-                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-mortarboard-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Admission Information</h6>
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-mortarboard-fill ws-me-1 ws-text-primary"></i> Admission Information</h6>
 
                         <!-- Visibility Toggles -->
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                        <div class="ws-flex-wrap ws-gap-3 ws-mb-4">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="AdmissionEnabled" value="true" @(Model.AdmissionEnabled ? "checked" : "") id="chkAdmissionEnabled"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="AdmissionEnabled" value="true" @(Model.AdmissionEnabled ? "checked" : "") id="chkAdmissionEnabled"/>
                                     <input type="hidden" name="AdmissionEnabled" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmissionEnabled">Admission Enabled</label>
+                                    <label class="ws-fw-700" for="chkAdmissionEnabled">Admission Enabled</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionPage" value="true" @(Model.ShowAdmissionPage ? "checked" : "") id="chkShowAdmissionPage"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionPage" value="true" @(Model.ShowAdmissionPage ? "checked" : "") id="chkShowAdmissionPage"/>
                                     <input type="hidden" name="ShowAdmissionPage" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkShowAdmissionPage">Show Admission Page</label>
+                                    <label class="ws-fw-700" for="chkShowAdmissionPage">Show Admission Page</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="OnlineAdmissionEnabled" value="true" @(Model.OnlineAdmissionEnabled ? "checked" : "") id="chkOnlineAdmission"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="OnlineAdmissionEnabled" value="true" @(Model.OnlineAdmissionEnabled ? "checked" : "") id="chkOnlineAdmission"/>
                                     <input type="hidden" name="OnlineAdmissionEnabled" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkOnlineAdmission">Online Admission Enabled</label>
+                                    <label class="ws-fw-700" for="chkOnlineAdmission">Online Admission Enabled</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionFees" value="true" @(Model.ShowAdmissionFees ? "checked" : "") id="chkAdmFees"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionFees" value="true" @(Model.ShowAdmissionFees ? "checked" : "") id="chkAdmFees"/>
                                     <input type="hidden" name="ShowAdmissionFees" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmFees">Show Fee Section</label>
+                                    <label class="ws-fw-700" for="chkAdmFees">Show Fee Section</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionGuidelines" value="true" @(Model.ShowAdmissionGuidelines ? "checked" : "") id="chkAdmGuide"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionGuidelines" value="true" @(Model.ShowAdmissionGuidelines ? "checked" : "") id="chkAdmGuide"/>
                                     <input type="hidden" name="ShowAdmissionGuidelines" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmGuide">Show Guidelines</label>
+                                    <label class="ws-fw-700" for="chkAdmGuide">Show Guidelines</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionRequirements" value="true" @(Model.ShowAdmissionRequirements ? "checked" : "") id="chkAdmReq"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionRequirements" value="true" @(Model.ShowAdmissionRequirements ? "checked" : "") id="chkAdmReq"/>
                                     <input type="hidden" name="ShowAdmissionRequirements" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmReq">Show Requirements</label>
+                                    <label class="ws-fw-700" for="chkAdmReq">Show Requirements</label>
                                 </div>
                             </div>
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
-                                    <input class="form-check-input" type="checkbox" name="ShowAdmissionDownloads" value="true" @(Model.ShowAdmissionDownloads ? "checked" : "") id="chkAdmDl"/>
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="ShowAdmissionDownloads" value="true" @(Model.ShowAdmissionDownloads ? "checked" : "") id="chkAdmDl"/>
                                     <input type="hidden" name="ShowAdmissionDownloads" value="false"/>
-                                    <label class="form-check-label fw-bold" for="chkAdmDl">Show Downloads</label>
+                                    <label class="ws-fw-700" for="chkAdmDl">Show Downloads</label>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Content Fields -->
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <div class="ws-flex-wrap ws-gap-3">
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Admission Page Title</label>
                                 <input type="text" name="AdmissionTitle" value="@Model.AdmissionTitle" class="adm-input" placeholder="Admission Information"/>
@@ -733,7 +683,7 @@
                         </div>
 
                         <!-- Dates & CTA -->
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+                        <div class="ws-flex-wrap ws-gap-3 ws-mt-2">
                             <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Admission Open Date</label>
                                 <input type="date" name="AdmissionOpenDate" value="@(Model.AdmissionOpenDate?.ToString("yyyy-MM-dd") ?? "")" class="adm-input"/>
@@ -753,13 +703,13 @@
                         </div>
 
                         <!-- Document Uploads -->
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+                        <div class="ws-flex-wrap ws-gap-3 ws-mt-2">
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Admission Circular (PDF)</label>
                                 <input type="file" name="admissionCircularFile" class="adm-input" accept=".pdf"/>
                                 @if (!string.IsNullOrEmpty(Model.AdmissionCircularPath))
                                 {
-                                    <div style="margin-top:4px;"><a href="@Model.AdmissionCircularPath" target="_blank" style="text-decoration:none;"><i class="bi bi-file-earmark-pdf-fill" style="color:var(--adm-rejected);margin-right:4px;"></i> View Current Circular</a></div>
+                                    <div class="ws-mt-1"><a href="@Model.AdmissionCircularPath" target="_blank"><i class="bi bi-file-earmark-pdf-fill ws-text-danger ws-me-1"></i> View Current Circular</a></div>
                                 }
                             </div>
                             <div style="flex:1 1 calc(50% - 12px);min-width:280px;">
@@ -767,15 +717,15 @@
                                 <input type="file" name="admissionFormFile" class="adm-input" accept=".pdf"/>
                                 @if (!string.IsNullOrEmpty(Model.AdmissionFormPath))
                                 {
-                                    <div style="margin-top:4px;"><a href="@Model.AdmissionFormPath" target="_blank" style="text-decoration:none;"><i class="bi bi-file-earmark-pdf-fill" style="color:var(--adm-rejected);margin-right:4px;"></i> View Current Form</a></div>
+                                    <div class="ws-mt-1"><a href="@Model.AdmissionFormPath" target="_blank"><i class="bi bi-file-earmark-pdf-fill ws-text-danger ws-me-1"></i> View Current Form</a></div>
                                 }
                             </div>
                         </div>
 
                         <!-- Admission SEO -->
-                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">
+                        <div class="ws-flex-wrap ws-gap-3 ws-mt-3">
                             <div style="flex:1 1 100%;min-width:280px;">
-                                <h6 style="font-weight:700;margin-bottom:8px;color:var(--adm-text-3);"><i class="bi bi-search" style="margin-right:4px;"></i> Admission Page SEO</h6>
+                                <h6 class="ws-fw-700 ws-mb-2 ws-text-muted"><i class="bi bi-search ws-me-1"></i> Admission Page SEO</h6>
                             </div>
                             <div style="flex:1 1 calc(33.33% - 12px);min-width:280px;">
                                 <label class="adm-form-label">Meta Title</label>
@@ -802,21 +752,21 @@
                                 <input type="file" name="admissionOgImageFile" class="adm-input" accept=".jpg,.jpeg,.png"/>
                                 @if (!string.IsNullOrEmpty(Model.AdmissionOgImagePath))
                                 {
-                                    <div style="margin-top:4px;"><img src="@Model.AdmissionOgImagePath" style="max-height:50px;"/></div>
+                                    <div class="ws-mt-1"><img src="@Model.AdmissionOgImagePath" style="max-height:50px;"/></div>
                                 }
                             </div>
                         </div>
 
                         <!-- Preview Link -->
-                        <div style="margin-top:12px;">
-                            <a href="/admission-info" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye" style="margin-right:4px;"></i> Preview Admission Page</a>
+                        <div class="ws-mt-3">
+                            <a href="/admission-info" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye ws-me-1"></i> Preview Admission Page</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Submit -->
-                <div style="text-align:right;padding-top:16px;margin-top:12px;border-top:1px solid var(--adm-border);width:100%;">
-                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save" style="margin-right:4px;"></i> Save All Settings</button>
+                <div class="ws-text-end ws-pt-4 ws-mt-3 ws-border-top ws-w-full">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save All Settings</button>
                 </div>
             </form>
         </div>

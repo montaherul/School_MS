@@ -1,0 +1,556 @@
+@{
+    ViewData["Title"] = "Academic Calendar";
+    bool canManage = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Calendar</h1>
+                <p class="adm-header__sub">Manage academic schedules, exams, holidays and events</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <div class="adm-btn-group">
+                <a asp-action="PrintView" class="adm-btn adm-btn--ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    Print
+                </a>
+                <a asp-action="ExportExcel" class="adm-btn adm-btn--ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    Excel
+                </a>
+                <a asp-action="ExportPdf" class="adm-btn adm-btn--ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    PDF
+                </a>
+                @if (canManage)
+                {
+                    <a asp-action="Create" class="adm-btn adm-btn--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Entry
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            @TempData["Success"]
+        </div>
+    }
+
+    <nav class="ws-flex ws-gap-1 ws-mb-4" aria-label="Calendar view navigation">
+        <a asp-action="Index" class="adm-btn adm-btn--primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Month
+        </a>
+        <a asp-action="WeekView" class="adm-btn adm-btn--ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Week
+        </a>
+        <a asp-action="Agenda" class="adm-btn adm-btn--ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Agenda
+        </a>
+        <a asp-action="YearView" class="adm-btn adm-btn--ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Year
+        </a>
+    </nav>
+
+    <div class="dash-stats ws-mb-4" id="acKpiCards"></div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Start Date</label>
+                <input type="date" id="filterStart" class="adm-input" />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">End Date</label>
+                <input type="date" id="filterEnd" class="adm-input" />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Event Type</label>
+                <select id="filterCategory" class="adm-select">
+                    <option value="">All</option>
+                    <option value="holiday">Holiday</option>
+                    <option value="exam">Exam</option>
+                    <option value="event">Academic Event</option>
+                    <option value="working">Working Day</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="filterSearch" class="adm-input" placeholder="Search entries...">
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">&nbsp;</label>
+                <button class="adm-btn adm-btn--primary" id="btnRefresh">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Search
+                </button>
+            </div>
+        </div>
+        <div class="ws-flex ws-gap-2 ws-mt-2 ws-flex-wrap">
+            <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-range="today">Today</button>
+            <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-range="week">This Week</button>
+            <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" data-range="month">This Month</button>
+            <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-range="year">This Year</button>
+            <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" data-range="reset">Reset</button>
+        </div>
+    </div>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__header">
+            <div class="ws-flex ws-items-center ws-gap-3">
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="prevMonth">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <h3 class="ws-fw-700 ws-fs-18" id="monthLabel">Loading...</h3>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="nextMonth">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="todayMonthBtn">Today</button>
+            </div>
+        </div>
+        <div class="adm-card__body">
+            <div id="monthGridContainer">
+                <div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading calendar...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-flex ws-gap-4 ws-mb-4 ws-flex-wrap">
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span class="ws-d-inline-block" style="width:12px;height:12px;border-radius:50%;background:var(--adm-converted);"></span> Working Day</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span class="ws-d-inline-block" style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected);"></span> Holiday</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span class="ws-d-inline-block" style="width:12px;height:12px;border-radius:50%;background:var(--adm-pending);"></span> Exam</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span class="ws-d-inline-block" style="width:12px;height:12px;border-radius:50%;background:var(--adm-info);"></span> Academic Event</span>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h2 class="adm-card__title">Event Details</h2>
+            <span class="adm-badge adm-badge--neutral" id="eventCount">0 entries</span>
+        </div>
+        <div class="adm-card__body">
+            <div id="calendarTable"></div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            var currentDate = new Date();
+            var tabulatorTable = null;
+            var chartMonthly = null;
+            var chartPie = null;
+            var allEvents = [];
+            var today = new Date();
+            var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            function pad(n) { return n < 10 ? '0' + n : n; }
+            function formatDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+            var filterStart = document.getElementById('filterStart');
+            var filterEnd = document.getElementById('filterEnd');
+            var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            var monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            filterStart.value = formatDate(monthStart);
+            filterEnd.value = formatDate(monthEnd);
+
+            function updateMonthLabel() {
+                document.getElementById('monthLabel').textContent = monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+            }
+
+            function renderMonthGrid(year, month, events, containerId) {
+                var container = document.getElementById(containerId);
+                var firstDay = new Date(year, month, 1).getDay();
+                var daysInMonth = new Date(year, month + 1, 0).getDate();
+                var todayStr = formatDate(today);
+                var eventMap = {};
+                events.forEach(function(e) {
+                    var d = e.date || e.holidayDate;
+                    if (d) {
+                        if (!eventMap[d]) eventMap[d] = [];
+                        eventMap[d].push(e);
+                    }
+                });
+
+                var html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">';
+                dayNames.forEach(function(d) {
+                    html += '<div class="ws-text-center ws-fw-700 ws-fs-12 ws-p-2 ws-text-muted">' + d + '</div>';
+                });
+
+                for (var i = 0; i < firstDay; i++) {
+                    html += '<div></div>';
+                }
+
+                for (var day = 1; day <= daysInMonth; day++) {
+                    var dateStr = year + '-' + pad(month + 1) + '-' + pad(day);
+                    var isToday = dateStr === todayStr;
+                    var dayEvents = eventMap[dateStr] || [];
+                    var hasHoliday = dayEvents.some(function(e) { return e.isHoliday; });
+                    var hasExam = dayEvents.some(function(e) { return e.isExamDay; });
+                    var hasEvent = dayEvents.some(function(e) { return e.isEventDay; });
+
+                    var bg = 'var(--adm-surface)';
+                    if (hasHoliday) bg = 'var(--adm-rejected-bg, #fef2f2)';
+                    else if (hasExam) bg = 'var(--adm-pending-bg, #fffbeb)';
+                    else if (hasEvent) bg = 'var(--adm-info-bg, #eff6ff)';
+
+                    html += '<div class="ws-p-2 ws-border ws-border-radius ws-fs-13" style="background:' + bg + ';min-height:60px;' + (isToday ? 'outline:2px solid var(--adm-primary);' : '') + '">';
+                    html += '<div class="ws-fw-600 ws-mb-1">' + day + '</div>';
+                    dayEvents.slice(0, 2).forEach(function(e) {
+                        var cls = e.isHoliday ? 'ws-text-danger' : (e.isExamDay ? 'ws-text-warning' : 'ws-text-info');
+                        html += '<div class="ws-fs-11 ' + cls + ' ws-text-truncate">' + (e.title || e.holidayName || '') + '</div>';
+                    });
+                    if (dayEvents.length > 2) {
+                        html += '<div class="ws-fs-11 ws-text-muted">+' + (dayEvents.length - 2) + ' more</div>';
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            function loadMonthView() {
+                updateMonthLabel();
+                var year = currentDate.getFullYear();
+                var month = currentDate.getMonth();
+                var start = new Date(year, month, 1);
+                var end = new Date(year, month + 1, 0);
+
+                fetch('/AcademicCalendar/GetEvents?start=' + formatDate(start) + '&end=' + formatDate(end))
+                    .then(function(r) { return r.json(); })
+                    .then(function(events) {
+                        allEvents = events;
+                        renderMonthGrid(year, month, events, 'monthGridContainer');
+                    });
+            }
+
+            document.getElementById('prevMonth').addEventListener('click', function() { currentDate.setMonth(currentDate.getMonth() - 1); loadMonthView(); });
+            document.getElementById('nextMonth').addEventListener('click', function() { currentDate.setMonth(currentDate.getMonth() + 1); loadMonthView(); });
+            document.getElementById('todayMonthBtn').addEventListener('click', function() { currentDate = new Date(); loadMonthView(); });
+
+            function initTable() {
+                tabulatorTable = new Tabulator("#calendarTable", {
+                    height: false,
+                    layout: "fitColumns",
+                    movableColumns: false,
+                    placeholder: "<div style='padding:40px;text-align:center;color:var(--adm-text-3);'>No entries found. Try adjusting your date range or filters.</div>",
+                    columns: [
+                        { title: "Date", field: "date", width: 120, hozAlign: "center",
+                            formatter: function(cell) {
+                                var val = cell.getValue();
+                                if (!val) { var d = cell.getRow().getData().holidayDate; if (d) val = d; }
+                                if (!val) return '—';
+                                var parts = val.split('-');
+                                var d = new Date(parts[0], parts[1] - 1, parts[2]);
+                                return '<span class="ws-fw-600">' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</span>';
+                            }
+                        },
+                        { title: "Title", field: "title", minWidth: 180,
+                            formatter: function(cell) {
+                                var title = cell.getValue() || cell.getRow().getData().holidayName || '';
+                                var desc = cell.getRow().getData().description || '';
+                                return '<div class="ws-fw-600">' + title + '</div>' + (desc ? '<div class="ws-fs-12 ws-text-muted">' + desc + '</div>' : '');
+                            }
+                        },
+                        { title: "Type", field: "isHoliday", minWidth: 110, hozAlign: "center",
+                            formatter: function(cell) {
+                                var data = cell.getRow().getData();
+                                if (data.isHoliday) return '<span class="adm-badge adm-badge--danger">Holiday</span>';
+                                if (data.isExamDay) return '<span class="adm-badge adm-badge--warning">Exam</span>';
+                                if (data.isEventDay) return '<span class="adm-badge adm-badge--info">Event</span>';
+                                return '<span class="adm-badge adm-badge--success">Working</span>';
+                            }
+                        },
+                        { title: "Day", field: "dayName", width: 100, hozAlign: "center",
+                            formatter: function(cell) {
+                                var val = cell.getRow().getData().date || cell.getRow().getData().holidayDate;
+                                if (!val) return '—';
+                                var d = new Date(val.split('-')[0], val.split('-')[1] - 1, val.split('-')[2]);
+                                return '<span>' + d.toLocaleDateString(undefined, { weekday: 'long' }) + '</span>';
+                            }
+                        },
+                        { title: "Holiday Type", field: "holidayType", width: 120, hozAlign: "center",
+                            formatter: function(cell) {
+                                return cell.getValue() ? '<span class="ws-fs-13">' + cell.getValue() + '</span>' : '—';
+                            }
+                        },
+                        { title: "Remarks", field: "remarks", minWidth: 120,
+                            formatter: function(cell) {
+                                return cell.getValue() ? '<span class="ws-fs-13 ws-text-muted">' + cell.getValue() + '</span>' : '—';
+                            }
+                        },
+                        {
+                            title: "Actions", width: 110, hozAlign: "center", headerSort: false,
+                            formatter: function(cell) {
+                                var data = cell.getRow().getData();
+                                var id = data.id || data.sourceId;
+                                if (!id) return '';
+                                return '<div class="adm-actions">' +
+                                    '<a href="/AcademicCalendar/Edit/' + id + '" class="adm-action adm-action--edit" title="Edit">' +
+                                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+                                    '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>' +
+                                    '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>' +
+                                    '</svg></a>' +
+                                    '<button class="adm-action adm-action--delete btn-delete" title="Delete" data-id="' + id + '">' +
+                                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+                                    '<polyline points="3 6 5 6 21 6"/>' +
+                                    '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2V6"/>' +
+                                    '</svg></button></div>';
+                            }
+                        }
+                    ],
+                    ajaxURL: "/AcademicCalendar/GetEvents",
+                    ajaxParams: { start: filterStart.value, end: filterEnd.value },
+                    ajaxResponse: function(url, params, response) {
+                        document.getElementById('eventCount').textContent = response.length + ' entr' + (response.length === 1 ? 'y' : 'ies');
+                        return response;
+                    }
+                });
+            }
+
+            function refreshData() {
+                if (tabulatorTable) {
+                    tabulatorTable.setData("/AcademicCalendar/GetEvents", { start: filterStart.value, end: filterEnd.value });
+                }
+            }
+
+            document.getElementById('btnRefresh').addEventListener('click', refreshData);
+            filterStart.addEventListener('change', refreshData);
+            filterEnd.addEventListener('change', refreshData);
+
+            document.getElementById('filterSearch').addEventListener('keyup', function() {
+                var query = this.value.toLowerCase();
+                if (tabulatorTable) {
+                    tabulatorTable.setFilter(function(data) {
+                        return (data.title && data.title.toLowerCase().includes(query)) ||
+                               (data.description && data.description.toLowerCase().includes(query)) ||
+                               (data.remarks && data.remarks.toLowerCase().includes(query)) ||
+                               (data.holidayType && data.holidayType.toLowerCase().includes(query));
+                    });
+                }
+            });
+
+            document.getElementById('filterCategory').addEventListener('change', function() {
+                var cat = this.value;
+                if (tabulatorTable) {
+                    if (!cat) { tabulatorTable.clearFilter(); return; }
+                    tabulatorTable.setFilter(function(data) {
+                        switch (cat) {
+                            case 'holiday': return data.isHoliday;
+                            case 'exam': return data.isExamDay;
+                            case 'event': return data.isEventDay;
+                            case 'working': return data.isWorkingDay && !data.isHoliday;
+                            default: return true;
+                        }
+                    });
+                }
+            });
+
+            document.querySelectorAll('[data-range]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var range = this.getAttribute('data-range');
+                    var now = new Date();
+                    var s, e;
+                    switch (range) {
+                        case 'today': s = now; e = now; break;
+                        case 'week':
+                            s = new Date(now); s.setDate(s.getDate() - s.getDay());
+                            e = new Date(s); e.setDate(e.getDate() + 6);
+                            break;
+                        case 'month':
+                            s = new Date(now.getFullYear(), now.getMonth(), 1);
+                            e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                            break;
+                        case 'year':
+                            s = new Date(now.getFullYear(), 0, 1);
+                            e = new Date(now.getFullYear(), 11, 31);
+                            break;
+                        case 'reset':
+                            s = new Date(now.getFullYear(), now.getMonth(), 1);
+                            e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                            break;
+                    }
+                    if (s && e) {
+                        filterStart.value = formatDate(s);
+                        filterEnd.value = formatDate(e);
+                        refreshData();
+                    }
+                });
+            });
+
+            function loadCharts() {
+                var year = new Date().getFullYear();
+                fetch('/AcademicCalendar/GetYearData?year=' + year)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (!data || !data.months) return;
+                        var labels = data.months.map(function(m) { return m.monthName.substring(0, 3); });
+                        var working = data.months.map(function(m) { return m.workingDays; });
+                        var holidays = data.months.map(function(m) { return m.holidays; });
+                        var exams = data.months.map(function(m) { return m.examDays; });
+                        var events = data.months.map(function(m) { return m.events; });
+
+                        var ctx1 = document.getElementById('acChartMonthly');
+                        if (ctx1) {
+                            if (chartMonthly) chartMonthly.destroy();
+                            chartMonthly = new Chart(ctx1, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: 'Working', data: working, backgroundColor: 'var(--adm-converted)', borderRadius: 3 },
+                                        { label: 'Holidays', data: holidays, backgroundColor: 'var(--adm-rejected)', borderRadius: 3 },
+                                        { label: 'Exams', data: exams, backgroundColor: 'var(--adm-pending)', borderRadius: 3 },
+                                        { label: 'Events', data: events, backgroundColor: 'var(--adm-info)', borderRadius: 3 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+                                    scales: {
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, stepSize: 1 } }
+                                    }
+                                }
+                            });
+                        }
+
+                        var ctx2 = document.getElementById('acChartPie');
+                        if (ctx2) {
+                            var totalW = working.reduce(function(a, b) { return a + b; }, 0);
+                            var totalH = holidays.reduce(function(a, b) { return a + b; }, 0);
+                            var totalE = exams.reduce(function(a, b) { return a + b; }, 0);
+                            var totalEv = events.reduce(function(a, b) { return a + b; }, 0);
+                            if (chartPie) chartPie.destroy();
+                            chartPie = new Chart(ctx2, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Working Days', 'Holidays', 'Exams', 'Events'],
+                                    datasets: [{ data: [totalW, totalH, totalE, totalEv], backgroundColor: ['var(--adm-converted)', 'var(--adm-rejected)', 'var(--adm-pending)', 'var(--adm-info)'], borderWidth: 0 }]
+                                },
+                                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } }, cutout: '65%' }
+                            });
+                        }
+                    });
+            }
+
+            function loadKpiCards() {
+                fetch('/AcademicCalendar/WidgetMonthSummary')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (!data) return;
+                        var html = '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--success"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Working Days</span><span class="dash-stat-card__value">' + (data.workingDays || 0) + '</span></div></div>';
+                        html += '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--danger"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 6 6v0a6 6 0 0 0-6-6Z"/><path d="M12 3a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6"/><path d="M12 15v6"/><path d="M8 21h8"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Holidays</span><span class="dash-stat-card__value">' + (data.holidays || 0) + '</span></div></div>';
+                        html += '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--warning"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Exams</span><span class="dash-stat-card__value">' + (data.exams || 0) + '</span></div></div>';
+                        html += '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--info"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Events</span><span class="dash-stat-card__value">' + (data.events || 0) + '</span></div></div>';
+                        document.getElementById('acKpiCards').innerHTML = html;
+                    });
+            }
+
+            document.addEventListener('click', function(e) {
+                var deleteBtn = e.target.closest('.btn-delete');
+                if (deleteBtn) {
+                    var id = deleteBtn.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this entry?')) {
+                        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                        fetch('/AcademicCalendar/Delete/' + id, {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' }
+                        }).then(function(res) { return res.json(); }).then(function(res) {
+                            if (res.success) {
+                                toastr.success(res.message);
+                                refreshData();
+                                loadMonthView();
+                            } else {
+                                toastr.error(res.message || 'Error occurred');
+                            }
+                        }).catch(function() { toastr.error('Network error occurred.'); });
+                    }
+                }
+            });
+
+            loadMonthView();
+            initTable();
+            loadKpiCards();
+            loadCharts();
+        })();
+    </script>
+}

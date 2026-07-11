@@ -267,6 +267,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.ReEvaluation")]
     public async Task<IActionResult> ProcessReEvaluation([FromBody] ReEvaluationProcessDto dto)
     {
@@ -288,6 +289,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.RequestReEvaluation")]
     public async Task<IActionResult> RequestReEvaluation(ReEvaluationRequestDto dto, CancellationToken ct)
     {

@@ -12,7 +12,7 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             font-size: 10pt;
-            color: #222;
+            color: var(--ws-text, #222);
             margin: 20px;
         }
         table {
@@ -20,7 +20,7 @@
             border-collapse: collapse;
         }
         th {
-            background: #1a73e8;
+            background: var(--ws-primary, #1a73e8);
             color: #fff;
             padding: 6px 8px;
             text-align: left;
@@ -29,11 +29,11 @@
         }
         td {
             padding: 4px 8px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--ws-border, #ccc);
             vertical-align: top;
         }
         tr:nth-child(even) {
-            background: #f8f9fa;
+            background: var(--ws-surface-alt, #f8f9fa);
         }
         .header-title {
             font-size: 14pt;
@@ -44,7 +44,7 @@
 </head>
 <body>
     <div class="header-title">Timetable Entries</div>
-    <div style="margin-bottom:10px;font-size:9pt;color:#666;">
+    <div class="ws-fs-13 ws-text-muted ws-mb-2">
         @(ViewBag.SchoolName ?? "School Name")
         @if (!string.IsNullOrEmpty(ViewBag.AcademicYearName as string))
         {
@@ -55,7 +55,7 @@
 
     @if (Model.Count == 0)
     {
-        <p style="color:#888;">No timetable entries found.</p>
+        <p class="ws-text-muted">No timetable entries found.</p>
     }
     else
     {
@@ -92,7 +92,7 @@
         </table>
     }
 
-    <div style="margin-top:12px;font-size:8pt;color:#999;text-align:center;">
+    <div class="ws-fs-12 ws-text-muted ws-text-center ws-mt-2">
         @(ViewBag.SchoolName ?? "School Name") — Timetable Export — Page 1 of 1
     </div>
 </body>

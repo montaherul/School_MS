@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
-using SchoolManagementSystem.Services.Implementations.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 
 namespace SchoolManagementSystem.Controllers.Academic;
@@ -11,20 +10,20 @@ namespace SchoolManagementSystem.Controllers.Academic;
 public class HolidayMasterController : Controller
 {
     private readonly IHolidayMasterService _service;
-    private readonly ICalendarGenerationService _calendarGenService;
 
-    public HolidayMasterController(IHolidayMasterService service, ICalendarGenerationService calendarGenService)
+    public HolidayMasterController(IHolidayMasterService service)
     {
         _service = service;
-        _calendarGenService = calendarGenService;
     }
 
+    [RequirePermission("Calendar.View")]
     public IActionResult Index()
     {
         return View();
     }
 
     [HttpGet]
+    [RequirePermission("Calendar.View")]
     public async Task<IActionResult> GetList(int page = 1, int pageSize = 20, string? search = null, string? type = null, string? religion = null, CancellationToken ct = default)
     {
         var result = await _service.GetPagedAsync(page, pageSize, search, type, religion, ct);
@@ -143,27 +142,13 @@ public class HolidayMasterController : Controller
     [RequirePermission("Calendar.Generate")]
     public async Task<IActionResult> GenerateBangladeshHolidays(int year, CancellationToken ct)
     {
-        var holidays = HolidayProvider.GetAllAnnualHolidays(year);
-        var dtoList = holidays.Select(h => new HolidayMasterUpsertDto
-        {
-            Name = h.Name,
-            NameBn = h.NameBn,
-            HolidayType = h.HolidayType,
-            HolidayDate = h.HolidayDate,
-            IsRecurring = h.IsRecurring,
-            Religion = h.Religion,
-            CountryCode = "BD",
-            Description = h.Description,
-            DisplayOrder = h.DisplayOrder,
-            IsActive = true
-        }).ToList();
-
-        var imported = await _service.ImportAsync(dtoList, User.Identity?.Name ?? "system", ct);
+        var imported = await _service.GenerateBangladeshHolidaysAsync(year, User.Identity?.Name ?? "system", ct);
         TempData["Success"] = $"Generated {imported} Bangladesh holidays for {year}.";
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
+    [RequirePermission("Calendar.View")]
     public async Task<IActionResult> GetTypes(CancellationToken ct)
     {
         var types = new[] { "National", "Religious", "Cultural", "Government", "Weekly Off", "Other" };

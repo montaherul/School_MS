@@ -73,7 +73,7 @@
                     <label class="adm-form-label">Email Body (HTML)</label>
                     <input type="hidden" name="Body" id="hiddenBody" value="@Model.Body"/>
                     <div id="editor-container" style="height:400px;background-color:#fff;border-radius:4px;">
-                        @Html.Raw(Model.Body)
+                        @Html.SanitizedHtml(Model.Body)
                     </div>
                 </div>
 

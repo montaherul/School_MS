@@ -41,7 +41,7 @@ public class CalendarDashboardService : ICalendarDashboardService
         Interlocked.Increment(ref _cacheMisses);
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var result = await _uow.Repository<AcademicCalendar>().Query()
+        var result = await _uow.Repository<AcademicCalendar>().Query().AsNoTracking()
             .Where(x => !x.IsDeleted && x.IsHoliday && x.Date >= today && !x.IsExamDay)
             .OrderBy(x => x.Date)
             .Take(count)
@@ -68,7 +68,7 @@ public class CalendarDashboardService : ICalendarDashboardService
         Interlocked.Increment(ref _cacheMisses);
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var result = await _uow.Repository<AcademicCalendar>().Query()
+        var result = await _uow.Repository<AcademicCalendar>().Query().AsNoTracking()
             .Where(x => !x.IsDeleted && x.IsExamDay && x.Date >= today)
             .OrderBy(x => x.Date)
             .Take(count)
@@ -95,7 +95,7 @@ public class CalendarDashboardService : ICalendarDashboardService
         Interlocked.Increment(ref _cacheMisses);
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var result = await _uow.Repository<AcademicCalendar>().Query()
+        var result = await _uow.Repository<AcademicCalendar>().Query().AsNoTracking()
             .Where(x => !x.IsDeleted && x.IsEventDay && x.Date >= today)
             .OrderBy(x => x.Date)
             .Take(count)
@@ -127,7 +127,7 @@ public class CalendarDashboardService : ICalendarDashboardService
         var startDate = new DateOnly(currentYear, currentMonth, 1);
         var endDate = startDate.AddMonths(1).AddDays(-1);
 
-        var entries = await _uow.Repository<AcademicCalendar>().Query()
+        var entries = await _uow.Repository<AcademicCalendar>().Query().AsNoTracking()
             .Where(x => !x.IsDeleted && x.Date >= startDate && x.Date <= endDate)
             .ToListAsync(ct);
 

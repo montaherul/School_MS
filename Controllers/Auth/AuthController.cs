@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SchoolManagementSystem.Models.ViewModels.Auth;
 using SchoolManagementSystem.Services.Interfaces.Auth;
 using System.Security.Claims;
@@ -31,6 +32,7 @@ public class AuthController : Controller
     [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("Login")]
     public async Task<IActionResult> Login(LoginViewModel model, CancellationToken ct)
     {
         if (!ModelState.IsValid) return View(model);

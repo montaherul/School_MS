@@ -15,58 +15,58 @@
                 <p class="adm-header__sub">Class details and overview</p>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="ws-flex ws-gap-2">
             <a href="/SchoolClass/CreateEdit/@Model.Id" class="adm-btn adm-btn--primary"><i class="bi bi-pencil"></i> Edit</a>
             <a href="/SchoolClass/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left"></i> Back to List</a>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>General Information</h5>
-                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary") rounded-pill px-3">@(Model.IsActive ? "Active" : "Inactive")</span>
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-lg-8">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__header ws-py-3 ws-flex-between">
+                    <h5 class="ws-mb-0"><i class="bi bi-info-circle ws-me-2"></i>General Information</h5>
+                    <span class="adm-badge @(Model.IsActive ? "adm-badge--success" : "adm-badge--neutral")">@(Model.IsActive ? "Active" : "Inactive")</span>
                 </div>
-                <div class="card-body">
-                    <table class="table table-borderless mb-0">
+                <div class="adm-card__body">
+                    <table class="adm-table ws-mb-0">
                         <tbody>
                             <tr>
-                                <td class="text-muted fw-semibold" style="width: 180px;">Class Name</td>
-                                <td class="fw-bold">@Model.Name</td>
+                                <td class="ws-text-muted ws-fw-600">Class Name</td>
+                                <td class="ws-fw-700">@Model.Name</td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Name (Bangla)</td>
-                                <td>@(string.IsNullOrEmpty(Model.NameBn) ? "<span class='text-muted fst-italic'>Not set</span>" : Model.NameBn)</td>
+                                <td class="ws-text-muted ws-fw-600">Name (Bangla)</td>
+                                <td>@(string.IsNullOrEmpty(Model.NameBn) ? "<span class='ws-text-muted'>Not set</span>" : Model.NameBn)</td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Code</td>
-                                <td>@(string.IsNullOrEmpty(Model.Code) ? "<span class='text-muted fst-italic'>Not set</span>" : Model.Code)</td>
+                                <td class="ws-text-muted ws-fw-600">Code</td>
+                                <td>@(string.IsNullOrEmpty(Model.Code) ? "<span class='ws-text-muted'>Not set</span>" : Model.Code)</td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Sort Order</td>
+                                <td class="ws-text-muted ws-fw-600">Sort Order</td>
                                 <td>@Model.SortOrder</td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Capacity</td>
-                                <td>@(Model.Capacity > 0 ? Model.Capacity + " students" : "<span class='text-muted fst-italic'>Unlimited</span>")</td>
+                                <td class="ws-text-muted ws-fw-600">Capacity</td>
+                                <td>@(Model.Capacity > 0 ? Model.Capacity + " students" : "<span class='ws-text-muted'>Unlimited</span>")</td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Group Based</td>
+                                <td class="ws-text-muted ws-fw-600">Group Based</td>
                                 <td>
                                     @if (Model.IsGroupBased)
                                     {
-                                        <span class="badge bg-info rounded-pill px-3">Yes &mdash; Science / Business / Humanities</span>
+                                        <span class="adm-badge adm-badge--info">Yes &mdash; Science / Business / Humanities</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-light text-dark rounded-pill px-3">No</span>
+                                        <span class="adm-badge adm-badge--neutral">No</span>
                                     }
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-muted fw-semibold">Description</td>
-                                <td>@(string.IsNullOrEmpty(Model.Description) ? "<span class='text-muted fst-italic'>No description</span>" : Model.Description)</td>
+                                <td class="ws-text-muted ws-fw-600">Description</td>
+                                <td>@(string.IsNullOrEmpty(Model.Description) ? "<span class='ws-text-muted'>No description</span>" : Model.Description)</td>
                             </tr>
                         </tbody>
                     </table>
@@ -74,37 +74,37 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0"><i class="bi bi-layers me-2"></i>Related Data</h5>
+        <div class="ws-col-lg-4">
+            <div class="adm-card ws-shadow-sm ws-mb-4">
+                <div class="adm-card__header ws-py-3">
+                    <h5 class="ws-mb-0"><i class="bi bi-layers ws-me-2"></i>Related Data</h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="/Section/Index?classId=@Model.Id" class="btn btn-outline-info text-start d-flex justify-content-between align-items-center p-3">
-                            <span><i class="bi bi-columns-gap me-2"></i>Sections</span>
-                            <span class="badge bg-info rounded-pill" id="sectionCount">...</span>
+                <div class="adm-card__body">
+                    <div class="ws-flex ws-flex-col ws-gap-3">
+                        <a href="/Section/Index?classId=@Model.Id" class="adm-btn adm-btn--ghost ws-flex-between ws-p-3">
+                            <span><i class="bi bi-columns-gap ws-me-2"></i>Sections</span>
+                            <span class="adm-badge adm-badge--info" id="sectionCount">...</span>
                         </a>
-                        <a href="/ClassSubjectMapping/Index?classId=@Model.Id" class="btn btn-outline-success text-start d-flex justify-content-between align-items-center p-3">
-                            <span><i class="bi bi-book me-2"></i>Subject Mappings</span>
-                            <span class="badge bg-success rounded-pill" id="subjectCount">...</span>
+                        <a href="/ClassSubjectMapping/Index?classId=@Model.Id" class="adm-btn adm-btn--ghost ws-flex-between ws-p-3">
+                            <span><i class="bi bi-book ws-me-2"></i>Subject Mappings</span>
+                            <span class="adm-badge adm-badge--success" id="subjectCount">...</span>
                         </a>
-                        <a href="/Student/Index?classId=@Model.Id" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center p-3">
-                            <span><i class="bi bi-people me-2"></i>Students</span>
-                            <span class="badge bg-primary rounded-pill" id="studentCount">...</span>
+                        <a href="/Student/Index?classId=@Model.Id" class="adm-btn adm-btn--ghost ws-flex-between ws-p-3">
+                            <span><i class="bi bi-people ws-me-2"></i>Students</span>
+                            <span class="adm-badge adm-badge--primary" id="studentCount">...</span>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__header ws-py-3">
+                    <h5 class="ws-mb-0"><i class="bi bi-gear ws-me-2"></i>Actions</h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="/SchoolClass/CreateEdit/@Model.Id" class="btn btn-primary"><i class="bi bi-pencil me-1"></i> Edit Class</a>
-                        <a href="/SchoolClass/Delete/@Model.Id" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i> Delete Class</a>
+                <div class="adm-card__body">
+                    <div class="ws-flex ws-flex-col ws-gap-2">
+                        <a href="/SchoolClass/CreateEdit/@Model.Id" class="adm-btn adm-btn--primary"><i class="bi bi-pencil ws-me-1"></i> Edit Class</a>
+                        <a href="/SchoolClass/Delete/@Model.Id" class="adm-btn adm-btn--danger"><i class="bi bi-trash ws-me-1"></i> Delete Class</a>
                     </div>
                 </div>
             </div>

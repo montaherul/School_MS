@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0F766E, #14B8A6); box-shadow: 0 4px 12px rgba(15,118,110,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-link-45deg"></i>
             </div>
             <div>
@@ -19,22 +19,22 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-xl-9 col-lg-11">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Establish Class-Subject Mappings</h5>
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-12 ws-col-lg-11 ws-col-xl-9">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h2 class="adm-card__title"><i class="bi bi-link-45deg ws-me-2"></i>Establish Class-Subject Mappings</h2>
                 </div>
-                <div class="card-body p-4">
+                <div class="adm-card__body">
                     <form asp-action="Assign" method="post" id="assignmentForm">
-                        
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-1-circle-fill me-2 text-primary"></i>1. Define Academic Scope
+
+                        <h6 class="ws-title-label ws-mb-3">
+                            <i class="bi bi-1-circle-fill ws-me-2"></i>1. Define Academic Scope
                         </h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label asp-for="SchoolClassId" class="form-label fw-bold">Academic Class <span class="text-danger">*</span></label>
-                                <select asp-for="SchoolClassId" class="form-select" id="ddlClass" required>
+                        <div class="adm-form-grid ws-mb-4">
+                            <div class="adm-form-group">
+                                <label asp-for="SchoolClassId" class="adm-label">Academic Class <span class="ws-text-danger">*</span></label>
+                                <select asp-for="SchoolClassId" class="adm-input" id="ddlClass" required>
                                     <option value="">-- Choose Class --</option>
                                     @if (ViewBag.Classes != null)
                                     {
@@ -44,59 +44,59 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="SchoolClassId" class="text-danger small"></span>
+                                <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="GroupName" class="form-label fw-bold">Curriculum Stream / Group</label>
-                                <select asp-for="GroupName" class="form-select" id="ddlGroup">
+                            <div class="adm-form-group">
+                                <label asp-for="GroupName" class="adm-label">Curriculum Stream / Group</label>
+                                <select asp-for="GroupName" class="adm-input" id="ddlGroup">
                                     <option value="General">General (No Stream)</option>
                                     <option value="Science">Science Group</option>
                                     <option value="BusinessStudies">Business Studies Group</option>
                                     <option value="Humanities">Humanities Group</option>
                                 </select>
-                                <span asp-validation-for="GroupName" class="text-danger small"></span>
-                                <div class="form-text small">Applies to secondary classes (Class 9-10)</div>
+                                <span asp-validation-for="GroupName" class="ws-text-danger ws-fs-13"></span>
+                                <div class="ws-fs-13 ws-text-muted">Applies to secondary classes (Class 9-10)</div>
                             </div>
                         </div>
 
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-2-circle-fill me-2 text-primary"></i>2. Configure Default Mark Rules
+                        <h6 class="ws-title-label ws-mb-3">
+                            <i class="bi bi-2-circle-fill ws-me-2"></i>2. Configure Default Mark Rules
                         </h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label asp-for="FullMarks" class="form-label fw-bold">Default Full Marks <span class="text-danger">*</span></label>
-                                <input asp-for="FullMarks" class="form-control" type="number" step="0.5" required />
-                                <span asp-validation-for="FullMarks" class="text-danger small"></span>
+                        <div class="adm-form-grid ws-mb-4">
+                            <div class="adm-form-group">
+                                <label asp-for="FullMarks" class="adm-label">Default Full Marks <span class="ws-text-danger">*</span></label>
+                                <input asp-for="FullMarks" class="adm-input" type="number" step="0.5" required />
+                                <span asp-validation-for="FullMarks" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="PassMarks" class="form-label fw-bold">Default Pass Marks <span class="text-danger">*</span></label>
-                                <input asp-for="PassMarks" class="form-control" type="number" step="0.5" required />
-                                <span asp-validation-for="PassMarks" class="text-danger small"></span>
+                            <div class="adm-form-group">
+                                <label asp-for="PassMarks" class="adm-label">Default Pass Marks <span class="ws-text-danger">*</span></label>
+                                <input asp-for="PassMarks" class="adm-input" type="number" step="0.5" required />
+                                <span asp-validation-for="PassMarks" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-3-circle-fill me-2 text-primary"></i>3. Select Subjects to Map
+                        <h6 class="ws-title-label ws-mb-3">
+                            <i class="bi bi-3-circle-fill ws-me-2"></i>3. Select Subjects to Map
                         </h6>
-                        
-                        <div class="card border mb-4 overflow-hidden">
-                            <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
-                                <span class="fw-semibold small">Unmapped Subjects Checklist</span>
-                                <div class="form-check form-check-inline mb-0" id="selectAllWrapper" style="display: none;">
-                                    <input class="form-check-input" type="checkbox" id="chkSelectAll" />
-                                    <label class="form-check-label fw-bold small" for="chkSelectAll">Select All</label>
+
+                        <div class="adm-card ws-mb-4">
+                            <div class="adm-card__header">
+                                <span class="ws-fw-600 ws-fs-13">Unmapped Subjects Checklist</span>
+                                <div class="ws-flex ws-items-center ws-gap-2 ws-d-none" id="selectAllWrapper">
+                                    <input class="ws-form-check" type="checkbox" id="chkSelectAll" />
+                                    <label class="ws-fw-700 ws-fs-13" for="chkSelectAll">Select All</label>
                                 </div>
                             </div>
-                            <div class="card-body p-3" style="max-height: 350px; overflow-y: auto;" id="subjectsChecklistContainer">
-                                <div class="text-center text-muted py-4">
-                                    <i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-muted opacity-50"></i>
+                            <div class="adm-card__body ws-overflow-auto" id="subjectsChecklistContainer">
+                                <div class="ws-text-center ws-text-muted ws-py-4">
+                                    <i class="bi bi-arrow-up-circle ws-fs-32 ws-d-block ws-mb-2 ws-text-muted ws-opacity-50"></i>
                                     Please select an Academic Class and Stream Group to load unmapped subjects
                                 </div>
                             </div>
                         </div>
 
-                        <hr class="my-4" />
-                        <div class="d-flex justify-content-end gap-2">
+                        <hr class="ws-mt-4 ws-mb-4" />
+                        <div class="ws-flex ws-gap-2 ws-justify-end">
                             <a href="/ClassSubjectMapping/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-x-circle"></i> Cancel</a>
                             <button type="submit" class="adm-btn adm-btn--primary" id="btnSubmit" disabled><i class="bi bi-save"></i> Save Mappings</button>
                         </div>
@@ -123,54 +123,54 @@
                 const groupName = ddlGroup.val();
 
                 if (!classId) {
-                    checklistContainer.html('<div class="text-center text-muted py-4"><i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-muted opacity-50"></i>Please select an Academic Class and Stream Group to load unmapped subjects</div>');
-                    $('#selectAllWrapper').hide();
+                    checklistContainer.html('<div class="ws-text-center ws-text-muted ws-py-4"><i class="bi bi-arrow-up-circle ws-fs-32 ws-d-block ws-mb-2 ws-text-muted ws-opacity-50"></i>Please select an Academic Class and Stream Group to load unmapped subjects</div>');
+                    $('#selectAllWrapper').addClass('ws-d-none');
                     btnSubmit.prop('disabled', true);
                     return;
                 }
 
-                checklistContainer.html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><span class="d-block mt-2 text-muted small">Loading unmapped subjects...</span></div>');
+                checklistContainer.html('<div class="ws-text-center ws-py-4"><div class="spinner-border ws-text-primary" role="status"></div><span class="ws-d-block ws-mt-2 ws-text-muted ws-fs-13">Loading unmapped subjects...</span></div>');
 
                 fetch(`/ClassSubjectMapping/GetUnmappedSubjects?classId=${classId}&groupName=${encodeURIComponent(groupName || '')}`)
                     .then(res => res.json())
                     .then(subjects => {
                         if (!subjects || subjects.length === 0) {
-                            checklistContainer.html('<div class="text-center text-success py-4"><i class="bi bi-check2-circle fs-1 d-block mb-2 text-success"></i>All subjects already mapped for this class/group!</div>');
-                            $('#selectAllWrapper').hide();
+                            checklistContainer.html('<div class="ws-text-center ws-text-success ws-py-4"><i class="bi bi-check2-circle ws-fs-32 ws-d-block ws-mb-2 ws-text-success"></i>All subjects already mapped for this class/group!</div>');
+                            $('#selectAllWrapper').addClass('ws-d-none');
                             btnSubmit.prop('disabled', true);
                             return;
                         }
 
-                        let html = '<div class="row g-2">';
+                        let html = '<div class="ws-row ws-g-2">';
                         subjects.forEach(sub => {
-                            const badge = sub.subjectGroup 
-                                ? `<span class="adm-badge adm-badge--neutral mx-1">${sub.subjectGroup}</span>`
+                            const badge = sub.subjectGroup
+                                ? '<span class="adm-badge adm-badge--neutral ws-mx-1">' + sub.subjectGroup + '</span>'
                                 : '';
                             const religionBadge = sub.isReligionSubject
-                                ? `<span class="adm-badge adm-badge--warning mx-1">${sub.religionType || 'Religion'}</span>`
+                                ? '<span class="adm-badge adm-badge--warning ws-mx-1">' + (sub.religionType || 'Religion') + '</span>'
                                 : '';
                             const optionalBadge = sub.isOptional
-                                ? `<span class="adm-badge adm-badge--info mx-1">Optional</span>`
+                                ? '<span class="adm-badge adm-badge--info ws-mx-1">Optional</span>'
                                 : '';
 
-                            html += '<div class="col-md-6 col-lg-4"><div class="p-2 border rounded-3 bg-white h-100 d-flex align-items-center justify-content-between" style="transition: all 0.2s ease;" onmouseover="this.style.borderColor=\'var(--adm-primary)\'" onmouseout="this.style.borderColor=\'\'">';
-                            html += '<div class="form-check mb-0 flex-grow-1">';
-                            html += '<input class="form-check-input subject-checkbox" type="checkbox" name="SubjectIds" value="' + sub.id + '" id="sub_' + sub.id + '" />';
-                            html += '<label class="form-check-label small cursor-pointer ms-1" for="sub_' + sub.id + '">';
-                            html += '<span class="text-primary fw-semibold">' + sub.code + '</span> - ' + sub.name;
-                            html += '<span class="d-block text-muted small">' + sub.nameBn + '</span></label></div>';
-                            html += '<div class="d-flex flex-column align-items-end gap-1">' + badge + religionBadge + optionalBadge + '</div></div></div>';
+                            html += '<div class="ws-col-12 ws-col-sm-6 ws-col-lg-4"><div class="ws-p-2 adm-card ws-h-full ws-flex ws-items-center ws-justify-between">';
+                            html += '<div class="ws-form-check ws-mb-0 ws-flex-grow-1">';
+                            html += '<input class="ws-form-check-input subject-checkbox" type="checkbox" name="SubjectIds" value="' + sub.id + '" id="sub_' + sub.id + '" />';
+                            html += '<label class="ws-form-check-label ws-fs-13 ws-cursor-pointer ws-ms-1" for="sub_' + sub.id + '">';
+                            html += '<span class="ws-text-primary ws-fw-600">' + sub.code + '</span> - ' + sub.name;
+                            html += '<span class="ws-d-block ws-text-muted ws-fs-13">' + sub.nameBn + '</span></label></div>';
+                            html += '<div class="ws-flex ws-flex-col ws-items-end ws-gap-1">' + badge + religionBadge + optionalBadge + '</div></div></div>';
                         });
                         html += '</div>';
 
                         checklistContainer.html(html);
-                        $('#selectAllWrapper').show();
+                        $('#selectAllWrapper').removeClass('ws-d-none');
                         selectAllCheck.prop('checked', false);
                         toggleSubmitButton();
                     })
                     .catch(function() {
-                        checklistContainer.html('<div class="text-center text-danger py-4"><i class="bi bi-exclamation-octagon fs-1 d-block mb-2 text-danger"></i>Error loading subjects. Please refresh.</div>');
-                        $('#selectAllWrapper').hide();
+                        checklistContainer.html('<div class="ws-text-center ws-text-danger ws-py-4"><i class="bi bi-exclamation-octagon ws-fs-32 ws-d-block ws-mb-2 ws-text-danger"></i>Error loading subjects. Please refresh.</div>');
+                        $('#selectAllWrapper').addClass('ws-d-none');
                         btnSubmit.prop('disabled', true);
                     });
             }

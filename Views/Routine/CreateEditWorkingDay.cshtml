@@ -7,7 +7,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #16A34A, #4ADE80); box-shadow: 0 4px 12px rgba(22,163,74,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-calendar-check"></i>
             </div>
             <div>
@@ -20,17 +20,17 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditWorkingDay" method="post">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="DayNumber" />
 
-                        <div class="mb-3">
-                            <label asp-for="AcademicYearId" class="form-label">Academic Year <span class="text-danger">*</span></label>
-                            <select asp-for="AcademicYearId" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="AcademicYearId" class="adm-label">Academic Year <span class="ws-text-danger">*</span></label>
+                            <select asp-for="AcademicYearId" class="adm-input">
                                 <option value="">Select Year</option>
                                 @if (academicYears != null)
                                 {
@@ -40,12 +40,12 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="AcademicYearId" class="text-danger small"></span>
+                            <span asp-validation-for="AcademicYearId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="DayName" class="form-label">Day Name <span class="text-danger">*</span></label>
-                            <select asp-for="DayName" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="DayName" class="adm-label">Day Name <span class="ws-text-danger">*</span></label>
+                            <select asp-for="DayName" class="adm-input">
                                 <option value="">Select Day</option>
                                 <option value="Saturday">Saturday</option>
                                 <option value="Sunday">Sunday</option>
@@ -55,15 +55,15 @@
                                 <option value="Thursday">Thursday</option>
                                 <option value="Friday">Friday</option>
                             </select>
-                            <span asp-validation-for="DayName" class="text-danger small"></span>
+                            <span asp-validation-for="DayName" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-4 form-check">
-                            <input asp-for="IsWorkingDay" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsWorkingDay" class="form-check-label fw-semibold">Is Working Day</label>
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsWorkingDay" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsWorkingDay" class="adm-form-check-label ws-fw-600">Is Working Day</label>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/WorkingDays" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

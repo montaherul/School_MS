@@ -15,20 +15,20 @@
         </div>
     </div>
 
-    <div class="er-card" style="max-width:700px">
-        <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-calendar-range"></i> Event Details</h3></div>
-        <div class="er-card__body">
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title"><i class="bi bi-calendar-range"></i> Event Details</h3></div>
+        <div class="adm-card__body">
             <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
-                <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
-                    <div>
-                        <label class="er-label">Title *</label>
-                        <input asp-for="Title" class="er-input" required />
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Title *</label>
+                        <input asp-for="Title" class="adm-input" required />
                     </div>
-                    <div>
-                        <label class="er-label">Event Type *</label>
-                        <select asp-for="EventType" class="er-select" required>
+                    <div class="adm-form-group">
+                        <label class="adm-label">Event Type *</label>
+                        <select asp-for="EventType" class="adm-input" required>
                             <option value="">Select</option>
                             @if (types != null)
                             {
@@ -37,24 +37,20 @@
                             }
                         </select>
                     </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
-                    <div>
-                        <label class="er-label">Start *</label>
-                        <input asp-for="StartDate" type="datetime-local" class="er-input" required />
+                    <div class="adm-form-group">
+                        <label class="adm-label">Start *</label>
+                        <input asp-for="StartDate" type="datetime-local" class="adm-input" required />
                     </div>
-                    <div>
-                        <label class="er-label">End *</label>
-                        <input asp-for="EndDate" type="datetime-local" class="er-input" required />
+                    <div class="adm-form-group">
+                        <label class="adm-label">End *</label>
+                        <input asp-for="EndDate" type="datetime-local" class="adm-input" required />
+                    </div>
+                    <div class="adm-form-group ws-flex ws-items-center ws-gap-3">
+                        <input class="adm-checkbox" type="checkbox" asp-for="IsActive" />
+                        <label asp-for="IsActive" class="adm-label ws-mb-0">Active</label>
                     </div>
                 </div>
-                <div style="margin-top:16px">
-                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                        <input class="form-check-input" type="checkbox" asp-for="IsActive" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                        <span style="font-weight:600;color:var(--er-text)">Active</span>
-                    </label>
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--er-border)">
+                <div class="adm-form-actions">
                     <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
                     <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Update</button>
                 </div>

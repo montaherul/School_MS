@@ -16,14 +16,23 @@ public class Employee : BaseEntity
     public string FullName { get; set; } = string.Empty;
 
     [MaxLength(120)]
+    public string? BanglaName { get; set; }
+
+    [MaxLength(120)]
     public string? FatherName { get; set; }
 
     [MaxLength(120)]
     public string? MotherName { get; set; }
 
+    [MaxLength(120)]
+    public string? SpouseName { get; set; }
+
     [Required]
     [MaxLength(20)]
     public string Gender { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string? MaritalStatus { get; set; }
 
     public DateTime DateOfBirth { get; set; }
 
@@ -42,10 +51,23 @@ public class Employee : BaseEntity
     [MaxLength(50)]
     public string? BirthCertificateNo { get; set; }
 
+    [MaxLength(50)]
+    public string? PassportNo { get; set; }
+
+    [MaxLength(50)]
+    public string? TIN { get; set; }
+
+    [MaxLength(50)]
+    public string? DrivingLicenseNo { get; set; }
+
     [Required]
     [Phone]
     [MaxLength(30)]
     public string Phone { get; set; } = string.Empty;
+
+    [Phone]
+    [MaxLength(30)]
+    public string? AlternateMobile { get; set; }
 
     [EmailAddress]
     [MaxLength(160)]
@@ -112,6 +134,12 @@ public class Employee : BaseEntity
     public ICollection<SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance> Attendances { get; set; } = new List<SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance>();
     public ICollection<SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication> Leaves { get; set; } = new List<SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication>();
     public ICollection<EmployeeSalary> Salaries { get; set; } = new List<EmployeeSalary>();
+    public ICollection<EmployeeBankAccount> BankAccounts { get; set; } = new List<EmployeeBankAccount>();
+    public ICollection<EmployeePromotion> Promotions { get; set; } = new List<EmployeePromotion>();
+    public ICollection<EmployeeTransfer> Transfers { get; set; } = new List<EmployeeTransfer>();
+    public ICollection<EmployeeTraining> Trainings { get; set; } = new List<EmployeeTraining>();
+    public ICollection<EmployeeAward> Awards { get; set; } = new List<EmployeeAward>();
+    public ICollection<EmployeeDisciplinaryAction> DisciplinaryActions { get; set; } = new List<EmployeeDisciplinaryAction>();
 }
 
 public class Department : BaseEntity
@@ -248,4 +276,159 @@ public class EmployeeAcademicAssignment : BaseEntity
     public int SectionId { get; set; }
     public int SubjectId { get; set; }
     public int AcademicYearId { get; set; }
+}
+
+public class EmployeeBankAccount : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string BankName { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string BranchName { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string AccountNumber { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? RoutingNumber { get; set; }
+
+    [MaxLength(50)]
+    public string? AccountType { get; set; }
+
+    public bool IsDefault { get; set; }
+
+    public bool IsActive { get; set; } = true;
+}
+
+public class EmployeePromotion : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    public int PreviousDesignationId { get; set; }
+
+    public int NewDesignationId { get; set; }
+
+    [MaxLength(200)]
+    public string? Reason { get; set; }
+
+    public DateTime PromotionDate { get; set; }
+
+    public decimal? PreviousSalary { get; set; }
+
+    public decimal? NewSalary { get; set; }
+
+    public int? ApprovedByUserId { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public class EmployeeTransfer : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    public int FromDepartmentId { get; set; }
+
+    public int ToDepartmentId { get; set; }
+
+    [MaxLength(200)]
+    public string? Reason { get; set; }
+
+    public DateTime TransferDate { get; set; }
+
+    public int? ApprovedByUserId { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public class EmployeeTraining : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string TrainingName { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? InstitutionName { get; set; }
+
+    [MaxLength(100)]
+    public string? Duration { get; set; }
+
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
+    [MaxLength(50)]
+    public string? CertificatePath { get; set; }
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public class EmployeeAward : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string AwardName { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? AwardedBy { get; set; }
+
+    public DateTime AwardDate { get; set; }
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [MaxLength(50)]
+    public string? CertificatePath { get; set; }
+}
+
+public class EmployeeDisciplinaryAction : BaseEntity
+{
+    public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string ActionType { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Reason { get; set; }
+
+    public DateTime ActionDate { get; set; }
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    public int? ApprovedByUserId { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    [MaxLength(50)]
+    public string? DocumentPath { get; set; }
+
+    public bool IsResolved { get; set; }
+
+    public DateTime? ResolvedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? ResolutionRemarks { get; set; }
 }

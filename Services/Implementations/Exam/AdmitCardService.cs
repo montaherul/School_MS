@@ -193,6 +193,7 @@ public class AdmitCardService : IAdmitCardService
     public async Task<byte[]> GenerateBulkAdmitCardsPdfAsync(int examId, int? sectionId)
     {
         var query = _uow.Repository<AdmitCard>().Query()
+            .AsNoTracking()
             .Include(a => a.Student)
                 .ThenInclude(s => s.Class)
             .Include(a => a.Student)

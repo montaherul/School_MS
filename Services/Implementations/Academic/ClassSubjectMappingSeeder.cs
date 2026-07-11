@@ -1,7 +1,5 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -9,16 +7,13 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 
 public class ClassSubjectMappingSeeder
 {
-    private readonly SchoolDbContext _db;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<ClassSubjectMappingSeeder> _logger;
 
     public ClassSubjectMappingSeeder(
-        SchoolDbContext db,
         IUnitOfWork uow,
         ILogger<ClassSubjectMappingSeeder> logger)
     {
-        _db = db;
         _uow = uow;
         _logger = logger;
     }
@@ -27,48 +22,47 @@ public class ClassSubjectMappingSeeder
     {
         try
         {
-            var strategy = _db.Database.CreateExecutionStrategy();
+            var classRepo = _uow.Repository<SchoolClass>();
+            var subjectRepo = _uow.Repository<Subject>();
+            var groupRepo = _uow.Repository<StudentGroup>();
 
-            await strategy.ExecuteAsync(async () =>
+            // 1. Safety Check: Ensure core data exists to prevent dictionary errors in BuildMappings
+            var classCount = await classRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
+            var subjectCount = await subjectRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
+
+            if (classCount == 0 || subjectCount == 0)
             {
-                var classRepo = _uow.Repository<SchoolClass>();
-                var subjectRepo = _uow.Repository<Subject>();
-                var groupRepo = _uow.Repository<StudentGroup>();
+                _logger.LogWarning("Skipping ClassSubject mapping seed because Classes or Subjects are not yet seeded.");
+                return;
+            }
 
-                // 1. Safety Check: Ensure core data exists to prevent dictionary errors in BuildMappings
-                var classCount = await classRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
-                var subjectCount = await subjectRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
-
-                if (classCount == 0 || subjectCount == 0)
-                {
-                    _logger.LogWarning("Skipping ClassSubject mapping seed because Classes or Subjects are not yet seeded.");
-                    return;
-                }
-
-                await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+            await _uow.ExecuteInTransactionAsync(async () =>
+            {
                 var classSubjectRepo = _uow.Repository<ClassSubject>();
+                var csgRepo = _uow.Repository<ClassSubjectGroup>();
 
                 // 2. Data Lookups
                 var classLookup = await classRepo.Query().AsNoTracking().ToDictionaryAsync(c => c.SortOrder, c => c.Id, cancellationToken);
                 var subjectLookup = await subjectRepo.Query().AsNoTracking().ToDictionaryAsync(s => s.Code.Trim().ToUpperInvariant(), s => s.Id, cancellationToken);
                 var groupLookup = await groupRepo.Query().AsNoTracking().ToDictionaryAsync(g => g.Name.Trim().ToUpperInvariant(), g => g.Id, cancellationToken);
 
-                var mappings = BuildMappings(classLookup, subjectLookup, groupLookup);
+                // Build mappings without group FK; track group links separately
+                var (mappings, groupLinks) = BuildMappings(classLookup, subjectLookup, groupLookup);
 
                 // 3. Optimization: Pre-fetch existing mappings to avoid N+1 AnyAsync calls
-                var existingSet = new HashSet<(int classId, int subjectId, int? groupId)>(
-                    await classSubjectRepo.Query()
-                        .AsNoTracking()
-                        .Where(x => !x.IsDeleted)
-                        .Select(x => new { x.SchoolClassId, x.SubjectId, x.StudentGroupId })
-                        .ToListAsync(cancellationToken)
-                        .ContinueWith(t => t.Result.Select(x => (x.SchoolClassId, x.SubjectId, x.StudentGroupId)))
+                var existingList = await classSubjectRepo.Query()
+                    .AsNoTracking()
+                    .Where(x => !x.IsDeleted)
+                    .Select(x => new { x.SchoolClassId, x.SubjectId })
+                    .ToListAsync(cancellationToken);
+                var existingSet = new HashSet<(int SchoolClassId, int SubjectId)>(
+                    existingList.Select(x => (x.SchoolClassId, x.SubjectId))
                 );
 
                 bool added = false;
                 foreach (var mapping in mappings)
                 {
-                    if (!existingSet.Contains((mapping.SchoolClassId, mapping.SubjectId, mapping.StudentGroupId)))
+                    if (!existingSet.Contains((mapping.SchoolClassId, mapping.SubjectId)))
                     {
                         await classSubjectRepo.AddAsync(mapping, cancellationToken);
                         added = true;
@@ -78,10 +72,35 @@ public class ClassSubjectMappingSeeder
                 if (added)
                 {
                     await _uow.SaveChangesAsync(cancellationToken);
+
+                    // Create junction records for group-specific mappings
+                    var savedMappings = await classSubjectRepo.Query()
+                        .AsNoTracking()
+                        .Where(x => !x.IsDeleted)
+                        .Select(x => new { x.Id, x.SchoolClassId, x.SubjectId })
+                        .ToListAsync(cancellationToken);
+
+                    var savedLookup = savedMappings.ToDictionary(x => (x.SchoolClassId, x.SubjectId), x => x.Id);
+
+                    var csgList = await csgRepo.Query()
+                        .AsNoTracking()
+                        .Where(x => !x.IsDeleted)
+                        .Select(x => new { x.ClassSubjectId, x.StudentGroupId })
+                        .ToListAsync(cancellationToken);
+                    var existingCsgSet = new HashSet<(int ClassSubjectId, int StudentGroupId)>(
+                        csgList.Select(x => (x.ClassSubjectId, x.StudentGroupId))
+                    );
+
+                    foreach (var (classId, subjectId, groupId) in groupLinks)
+                    {
+                        if (savedLookup.TryGetValue((classId, subjectId), out var csId) && !existingCsgSet.Contains((csId, groupId)))
+                        {
+                            await csgRepo.AddAsync(new ClassSubjectGroup { ClassSubjectId = csId, StudentGroupId = groupId, CreatedBy = "system" }, cancellationToken);
+                        }
+                    }
+                    await _uow.SaveChangesAsync(cancellationToken);
                 }
-                
-                await transaction.CommitAsync(cancellationToken);
-            });
+            }, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -89,12 +108,13 @@ public class ClassSubjectMappingSeeder
         }
     }
 
-    private static List<ClassSubject> BuildMappings(
+    private static (List<ClassSubject> Mappings, List<(int ClassId, int SubjectId, int GroupId)> GroupLinks) BuildMappings(
         IReadOnlyDictionary<int, int> classLookup,
         IReadOnlyDictionary<string, int> subjectLookup,
         IReadOnlyDictionary<string, int> groupLookup)
     {
         var mappings = new List<ClassSubject>();
+        var groupLinks = new List<(int ClassId, int SubjectId, int GroupId)>();
 
         var classIds = new Dictionary<int, int>();
 
@@ -113,15 +133,12 @@ public class ClassSubjectMappingSeeder
         // Religion Subjects
         // =========================================
         var religionSubjects = new[]
-     {
-    new { Code = "IRE", ReligionType = "Islam" },
-
-    new { Code = "HRE", ReligionType = "Hindu" },
-
-    new { Code = "BRE", ReligionType = "Buddhist" },
-
-    new { Code = "CRE", ReligionType = "Christian" }
-};
+        {
+            new { Code = "IRE", ReligionType = "Islam" },
+            new { Code = "HRE", ReligionType = "Hindu" },
+            new { Code = "BRE", ReligionType = "Buddhist" },
+            new { Code = "CRE", ReligionType = "Christian" }
+        };
 
         // =========================================
         // Classes 1–5
@@ -183,10 +200,6 @@ public class ClassSubjectMappingSeeder
             "SCI"        // বিজ্ঞান (Class 6-8)
         };
 
-        // =========================================
-        // Optional Subjects 6–8
-        // =========================================
-
         var optionalSubjects6To8 = new[]
         {
             "AGR", // কৃষিশিক্ষা
@@ -227,14 +240,9 @@ public class ClassSubjectMappingSeeder
         // Student Groups
         // =========================================
 
-        var scienceGroupId =
-            GetGroupId(groupLookup, "SCIENCE");
-
-        var businessGroupId =
-            GetGroupId(groupLookup, "BusinessStudies");
-
-        var humanitiesGroupId =
-            GetGroupId(groupLookup, "HUMANITIES");
+        var scienceGroupId = GetGroupId(groupLookup, "SCIENCE");
+        var businessGroupId = GetGroupId(groupLookup, "BusinessStudies");
+        var humanitiesGroupId = GetGroupId(groupLookup, "HUMANITIES");
 
         // =========================================
         // Science Group
@@ -242,17 +250,8 @@ public class ClassSubjectMappingSeeder
 
         var scienceSubjects = new[]
         {
-            "BAN1",
-            "BAN2",
-            "ENG1",
-            "ENG2",
-            "MAT",
-            "HMA",
-            "PHY",
-            "CHE",
-            "BIO",
-            "SOC",
-            "ICT"
+            "BAN1", "BAN2", "ENG1", "ENG2", "MAT",
+            "HMA", "PHY", "CHE", "BIO", "SOC", "ICT"
         };
 
         // =========================================
@@ -261,17 +260,8 @@ public class ClassSubjectMappingSeeder
 
         var businessSubjects = new[]
         {
-            "BAN1",
-            "BAN2",
-            "ENG1",
-            "ENG2",
-            "MAT",
-            "ACC",
-            "BUS",
-            "ECO",
-            "FIN",
-            "ICT",
-            "CAREER"
+            "BAN1", "BAN2", "ENG1", "ENG2", "MAT",
+            "ACC", "BUS", "ECO", "FIN", "ICT", "CAREER"
         };
 
         // =========================================
@@ -280,63 +270,39 @@ public class ClassSubjectMappingSeeder
 
         var humanitiesSubjects = new[]
         {
-            "BAN1",
-            "BAN2",
-            "ENG1",
-            "ENG2",
-            "MAT",
-            "HMA",
-            "HIS",
-            "GEO",
-            "CIV",
-            "ECO",
-            "ICT",
-            "CAREER"
+            "BAN1", "BAN2", "ENG1", "ENG2", "MAT",
+            "HMA", "HIS", "GEO", "CIV", "ECO", "ICT", "CAREER"
         };
 
         foreach (var classId in new[] { 9, 10 })
         {
             // Science Group
-
             foreach (var subjectCode in scienceSubjects)
             {
-                mappings.Add(
-                    CreateMapping(
-                        classIds[classId],
-                        GetSubjectId(subjectLookup, subjectCode),
-                        studentGroupId: scienceGroupId,
-                        groupName: "Science"));
+                var subId = GetSubjectId(subjectLookup, subjectCode);
+                var mapping = CreateMapping(classIds[classId], subId, groupName: "Science", isOptional: subjectCode == "HMA");
+                mappings.Add(mapping);
+                // Capture group link key — will be resolved via subject code after save
+                groupLinks.Add((classIds[classId], subId, scienceGroupId));
             }
 
             // Business Studies Group
-
             foreach (var subjectCode in businessSubjects)
             {
-                mappings.Add(
-                    CreateMapping(
-                        classIds[classId],
-                        GetSubjectId(subjectLookup, subjectCode),
-                        studentGroupId: businessGroupId,
-                        groupName: "BusinessStudies"));
+                var subId = GetSubjectId(subjectLookup, subjectCode);
+                mappings.Add(CreateMapping(classIds[classId], subId, groupName: "BusinessStudies"));
+                groupLinks.Add((classIds[classId], subId, businessGroupId));
             }
 
             // Humanities Group
-
             foreach (var subjectCode in humanitiesSubjects)
             {
-                var isOptional = subjectCode == "HMA";
-
-                mappings.Add(
-                    CreateMapping(
-                        classIds[classId],
-                        GetSubjectId(subjectLookup, subjectCode),
-                        studentGroupId: humanitiesGroupId,
-                        groupName: "Humanities",
-                        isOptional: isOptional));
+                var subId = GetSubjectId(subjectLookup, subjectCode);
+                mappings.Add(CreateMapping(classIds[classId], subId, groupName: "Humanities", isOptional: subjectCode == "HMA"));
+                groupLinks.Add((classIds[classId], subId, humanitiesGroupId));
             }
 
             // Religion Subjects
-
             foreach (var religion in religionSubjects)
             {
                 mappings.Add(
@@ -348,13 +314,12 @@ public class ClassSubjectMappingSeeder
             }
         }
 
-        return mappings;
+        return (mappings, groupLinks);
     }
 
     private static ClassSubject CreateMapping(
         int classId,
         int subjectId,
-        int? studentGroupId = null,
         string? groupName = null,
         bool isOptional = false,
         bool isReligion = false,
@@ -364,11 +329,9 @@ public class ClassSubjectMappingSeeder
         {
             SchoolClassId = classId,
             SubjectId = subjectId,
-            StudentGroupId = studentGroupId,
             GroupName = groupName,
             IsOptional = isOptional,
             IsMandatory = !isOptional,
-            IsGroupSubject = studentGroupId.HasValue,
             IsReligionSubject = isReligion,
             ReligionType = religionType,
             CreatedBy = "system",

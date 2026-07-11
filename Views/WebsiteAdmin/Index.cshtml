@@ -6,134 +6,134 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div style="padding:12px 16px;border-radius:var(--adm-radius);background:var(--adm-success-bg);color:var(--adm-success);border:1px solid rgba(5,150,105,0.15);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div class="adm-alert adm-alert--success">
             @TempData["SuccessMessage"]
-            <button type="button" onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--adm-success);">&times;</button>
+            <button type="button" onclick="this.parentElement.style.display='none'" class="adm-alert__close">&times;</button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div style="padding:12px 16px;border-radius:var(--adm-radius);background:var(--adm-rejected-bg);color:var(--adm-rejected);border:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div class="adm-alert adm-alert--error">
             @TempData["ErrorMessage"]
-            <button type="button" onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--adm-rejected);">&times;</button>
+            <button type="button" onclick="this.parentElement.style.display='none'" class="adm-alert__close">&times;</button>
         </div>
     }
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+    <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
         <div>
-            <h1 style="font-size:22px;font-weight:700;margin:0;"><i class="bi bi-globe" style="margin-right:8px;color:var(--adm-primary);"></i> Public Website Administration</h1>
-            <p style="color:var(--adm-text-3);margin:0;">Configure settings, home sliders, notices, events, and galleries of the public portal.</p>
+            <h1 class="ws-fs-22 ws-fw-700 ws-m-0"><i class="bi bi-globe ws-me-2" style="color:var(--adm-primary);"></i> Public Website Administration</h1>
+            <p class="ws-text-muted ws-m-0">Configure settings, home sliders, notices, events, and galleries of the public portal.</p>
         </div>
-        <div style="display:flex;gap:8px;">
-            <a href="/Admin/Website/Settings" class="adm-btn adm-btn--primary"><i class="bi bi-gear-fill" style="margin-right:4px;"></i> Edit School Settings</a>
-            <a href="/" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye-fill" style="margin-right:4px;"></i> View Live Site</a>
+        <div class="ws-flex ws-gap-2">
+            <a href="/Admin/Website/Settings" class="adm-btn adm-btn--primary"><i class="bi bi-gear-fill ws-me-1"></i> Edit School Settings</a>
+            <a href="/" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye-fill ws-me-1"></i> View Live Site</a>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);">
-        <div style="padding:0;border-bottom:1px solid var(--adm-border);">
-            <div style="display:flex;flex-wrap:wrap;gap:0;" id="websiteTabs" role="tablist">
-                <button class="adm-tab adm-tab--active" id="sliders-tab" onclick="switchTab('sliders-pane', this)" type="button" role="tab"><i class="bi bi-images" style="margin-right:4px;"></i> Home Sliders</button>
-                <button class="adm-tab" id="notices-tab" onclick="switchTab('notices-pane', this)" type="button" role="tab"><i class="bi bi-megaphone-fill" style="margin-right:4px;"></i> Notice Board</button>
-                <button class="adm-tab" id="events-tab" onclick="switchTab('events-pane', this)" type="button" role="tab"><i class="bi bi-calendar3" style="margin-right:4px;"></i> School Events</button>
-                <button class="adm-tab" id="galleries-tab" onclick="switchTab('galleries-pane', this)" type="button" role="tab"><i class="bi bi-images-alt" style="margin-right:4px;"></i> Photo Albums</button>
-                <button class="adm-tab" id="pages-tab" onclick="switchTab('pages-pane', this)" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill" style="margin-right:4px;"></i> CMS Pages</button>
-                <button class="adm-tab" id="messages-tab" onclick="switchTab('messages-pane', this)" type="button" role="tab"><i class="bi bi-chat-dots-fill" style="margin-right:4px;"></i> Contact Inbox</button>
-                <button class="adm-tab" id="templates-tab" onclick="switchTab('templates-pane', this)" type="button" role="tab"><i class="bi bi-envelope-paper-fill" style="margin-right:4px;"></i> Email Templates</button>
-                <button class="adm-tab" id="announcements-tab" onclick="switchTab('announcements-pane', this)" type="button" role="tab"><i class="bi bi-megaphone" style="margin-right:4px;"></i> Announcements</button>
-                <button class="adm-tab" id="eventcategories-tab" onclick="switchTab('eventcategories-pane', this)" type="button" role="tab"><i class="bi bi-tags-fill" style="margin-right:4px;"></i> Event Categories</button>
-                <button class="adm-tab" id="fees-tab" onclick="switchTab('fees-pane', this)" type="button" role="tab"><i class="bi bi-cash-stack" style="margin-right:4px;"></i> Admission Fees</button>
+    <div class="adm-card">
+        <div class="adm-card__header ws-p-0">
+            <div class="ws-flex ws-flex-wrap ws-gap-0" id="websiteTabs" role="tablist">
+                <button class="adm-tab adm-tab--active" id="sliders-tab" onclick="switchTab('sliders-pane', this)" type="button" role="tab"><i class="bi bi-images ws-me-1"></i> Home Sliders</button>
+                <button class="adm-tab" id="notices-tab" onclick="switchTab('notices-pane', this)" type="button" role="tab"><i class="bi bi-megaphone-fill ws-me-1"></i> Notice Board</button>
+                <button class="adm-tab" id="events-tab" onclick="switchTab('events-pane', this)" type="button" role="tab"><i class="bi bi-calendar3 ws-me-1"></i> School Events</button>
+                <button class="adm-tab" id="galleries-tab" onclick="switchTab('galleries-pane', this)" type="button" role="tab"><i class="bi bi-images-alt ws-me-1"></i> Photo Albums</button>
+                <button class="adm-tab" id="pages-tab" onclick="switchTab('pages-pane', this)" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill ws-me-1"></i> CMS Pages</button>
+                <button class="adm-tab" id="messages-tab" onclick="switchTab('messages-pane', this)" type="button" role="tab"><i class="bi bi-chat-dots-fill ws-me-1"></i> Contact Inbox</button>
+                <button class="adm-tab" id="templates-tab" onclick="switchTab('templates-pane', this)" type="button" role="tab"><i class="bi bi-envelope-paper-fill ws-me-1"></i> Email Templates</button>
+                <button class="adm-tab" id="announcements-tab" onclick="switchTab('announcements-pane', this)" type="button" role="tab"><i class="bi bi-megaphone ws-me-1"></i> Announcements</button>
+                <button class="adm-tab" id="eventcategories-tab" onclick="switchTab('eventcategories-pane', this)" type="button" role="tab"><i class="bi bi-tags-fill ws-me-1"></i> Event Categories</button>
+                <button class="adm-tab" id="fees-tab" onclick="switchTab('fees-pane', this)" type="button" role="tab"><i class="bi bi-cash-stack ws-me-1"></i> Admission Fees</button>
             </div>
         </div>
-        <div style="padding:20px;">
+        <div class="adm-card__body">
 
             <!-- ── 1. Hero Sliders Pane ── -->
             <div id="sliders-pane" style="display:block;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Hero Slideshow Settings</h5>
-                    <a href="/Admin/Website/Sliders/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add New Slide</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Hero Slideshow Settings</h5>
+                    <a href="/Admin/Website/Sliders/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add New Slide</a>
                 </div>
                 <div id="slidersGrid"></div>
             </div>
 
             <!-- ── 2. Notices Pane ── -->
             <div id="notices-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Bulletin Notice Board Announcements</h5>
-                    <a href="/Admin/Website/Notices/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Create Notice</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Bulletin Notice Board Announcements</h5>
+                    <a href="/Admin/Website/Notices/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Create Notice</a>
                 </div>
                 <div id="noticesGrid"></div>
             </div>
 
             <!-- ── 3. Events Pane ── -->
             <div id="events-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Academic & Extra Events</h5>
-                    <a href="/Admin/Website/Events/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Create Event</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Academic & Extra Events</h5>
+                    <a href="/Admin/Website/Events/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Create Event</a>
                 </div>
                 <div id="eventsGrid"></div>
             </div>
 
             <!-- ── 4. Galleries Pane ── -->
             <div id="galleries-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">School Life Photo Albums</h5>
-                    <a href="/Admin/Website/Galleries/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Photo Album</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">School Life Photo Albums</h5>
+                    <a href="/Admin/Website/Galleries/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Photo Album</a>
                 </div>
                 <div id="galleriesGrid"></div>
             </div>
 
             <!-- ── 5. CMS Pages Pane ── -->
             <div id="pages-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Dynamic Lightweight CMS Pages</h5>
-                    <a href="/Admin/Website/Pages/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Custom Page</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Dynamic Lightweight CMS Pages</h5>
+                    <a href="/Admin/Website/Pages/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Custom Page</a>
                 </div>
                 <div id="pagesGrid"></div>
             </div>
 
             <!-- ── 6. Contact Messages Inbox Pane ── -->
             <div id="messages-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Contact Form Inbox</h5>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Contact Form Inbox</h5>
                 </div>
                 <div id="messagesGrid"></div>
             </div>
 
             <!-- ── 7. Email Templates Pane ── -->
             <div id="templates-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Email Notification Templates</h5>
-                    <a href="/Admin/Website/EmailTemplates/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Template</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Email Notification Templates</h5>
+                    <a href="/Admin/Website/EmailTemplates/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Template</a>
                 </div>
                 <div id="templatesGrid"></div>
             </div>
 
             <!-- ── 8. Announcements Pane ── -->
             <div id="announcements-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Website Announcements</h5>
-                    <a href="/Admin/Website/Announcements/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Announcement</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Website Announcements</h5>
+                    <a href="/Admin/Website/Announcements/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Announcement</a>
                 </div>
                 <div id="announcementsGrid"></div>
             </div>
 
             <!-- ── 9. Event Categories Pane ── -->
             <div id="eventcategories-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Event Categories</h5>
-                    <a href="/Admin/Website/EventCategories/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Category</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Event Categories</h5>
+                    <a href="/Admin/Website/EventCategories/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Category</a>
                 </div>
                 <div id="eventcategoriesGrid"></div>
             </div>
 
             <!-- ── 10. Admission Fee Structures Pane ── -->
             <div id="fees-pane" style="display:none;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-                    <h5 style="font-weight:700;margin:0;">Admission Fee Structure</h5>
-                    <div style="display:flex;gap:8px;">
-                        <a href="/admission-info" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye" style="margin-right:4px;"></i> Preview Page</a>
-                        <a href="/Admin/Website/AdmissionFees/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Fee Row</a>
+                <div class="ws-flex ws-flex-between ws-items-center ws-flex-wrap ws-gap-2 ws-mb-4">
+                    <h5 class="ws-fw-700 ws-m-0">Admission Fee Structure</h5>
+                    <div class="ws-flex ws-gap-2">
+                        <a href="/admission-info" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye ws-me-1"></i> Preview Page</a>
+                        <a href="/Admin/Website/AdmissionFees/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i> Add Fee Row</a>
                     </div>
                 </div>
                 <div id="feesGrid"></div>

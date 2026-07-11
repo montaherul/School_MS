@@ -107,6 +107,13 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 0;
     });
+    options.AddFixedWindowLimiter("Login", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
@@ -123,13 +130,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         //options.Cookie.SameSite = SameSiteMode.Strict;// by localhostlogin
       //  options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
         options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
-    options.Secure = CookieSecurePolicy.SameAsRequest;
+    options.Secure = CookieSecurePolicy.Always;
 });
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>
@@ -143,24 +150,6 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 // All repository and service registrations are now in ServiceRegistration.AddSchoolApplicationServices()
 builder.Services.AddSchoolApplicationServices();
 
-// Additional services not in ServiceRegistration
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.IAcademicYearService, SchoolManagementSystem.Services.Implementations.Academic.AcademicYearService>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISchoolClassService, SchoolManagementSystem.Services.Implementations.Academic.SchoolClassService>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISectionService, SchoolManagementSystem.Services.Implementations.Academic.SectionService>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISubjectService, SchoolManagementSystem.Services.Implementations.Academic.SubjectService>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.IClassSubjectMappingService, SchoolManagementSystem.Services.Implementations.Academic.ClassSubjectMappingService>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IPaymentService, SchoolManagementSystem.Services.Implementations.Fees.PaymentService>();
-builder.Services.AddScoped(typeof(SchoolManagementSystem.Services.Interfaces.Base.IBaseService<>), typeof(SchoolManagementSystem.Services.Implementations.Base.BaseService<>));
-builder.Services.AddScoped<IExamService, ExamService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IAssignmentService, AssignmentService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ClassSubjectMappingSeeder>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
-builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Result.SubjectMarkStructureSeeder>();
-builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
-builder.Services.AddScoped<IStudentAttendanceService, StudentAttendanceService>();
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -175,9 +164,16 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
         serverOptions.ListenAnyIP(int.Parse(port));
     }
 });
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = new[] { "text/plain", "text/html", "text/css", "application/javascript", "application/json", "image/svg+xml" };
+});
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // Email diagnostic CLI flag removed from main branch. Use development tools or run the diagnostics locally when needed.
 
@@ -191,6 +187,8 @@ else
     app.UseExceptionHandler("/Error/Index");
     app.UseHsts();
 }
+
+app.UseHttpsRedirection();
 
 app.UseGlobalExceptionMiddleware();
 

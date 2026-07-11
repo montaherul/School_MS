@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
 
@@ -138,6 +140,10 @@ public class PromotionService : IPromotionService
 
         await _uow.ExecuteInTransactionAsync(async () =>
         {
+            // Cache for settings/class to avoid N+1 across iterations
+            SchoolSetting? cachedSettings = null;
+            SchoolClass? cachedNextSchoolClass = null;
+
             foreach (var student in students)
             {
                 finalResults.TryGetValue(student.Id, out var finalResult);
@@ -169,7 +175,30 @@ public class PromotionService : IPromotionService
                 if (status == PromotionStatus.Promoted && nextClassId != classId)
                 {
                     student.ClassId = nextClassId;
+
+                    // Load settings/class once (cached for subsequent iterations to avoid N+1)
+                    cachedSettings ??= await _uow.Repository<SchoolSetting>().FirstOrDefaultAsync(s => !s.IsDeleted);
+                    cachedNextSchoolClass ??= await _uow.Repository<SchoolClass>().GetByIdAsync(nextClassId);
+
+                    if (cachedSettings != null && cachedNextSchoolClass != null)
+                    {
+                        bool targetRequiresGroup = cachedNextSchoolClass.SortOrder >= cachedSettings.GroupStartsFromClassId;
+                        if (targetRequiresGroup && !student.StudentGroupId.HasValue)
+                            throw new InvalidOperationException($"Student {student.FullName} requires an academic group for {cachedNextSchoolClass.Name}.");
+                        if (!targetRequiresGroup)
+                            student.StudentGroupId = null;
+                    }
+
                     _studentRepository.Update(student);
+
+                    // Cascade updates to attendance, exam results, and group assignment
+                    await RebuildStudentCascadeAsync(
+                        student.Id,
+                        student.ClassId,
+                        student.SectionId,
+                        student.StudentGroupId,
+                        academicYearId,
+                        default);
                 }
 
                 if (finalResult != null)
@@ -227,6 +256,10 @@ public class PromotionService : IPromotionService
 
         await _uow.ExecuteInTransactionAsync(async () =>
         {
+            // Cache for settings/class to avoid N+1 across iterations
+            SchoolSetting? cachedSettings = null;
+            SchoolClass? cachedNextSchoolClass = null;
+
             foreach (var student in students)
             {
                 finalResults.TryGetValue(student.Id, out var finalResult);
@@ -257,7 +290,30 @@ public class PromotionService : IPromotionService
                 if (request.ToClassId != request.FromClassId)
                 {
                     student.ClassId = request.ToClassId;
+
+                    // Load settings/class once (cached for subsequent iterations to avoid N+1)
+                    cachedSettings ??= await _uow.Repository<SchoolSetting>().FirstOrDefaultAsync(s => !s.IsDeleted);
+                    cachedNextSchoolClass ??= await _uow.Repository<SchoolClass>().GetByIdAsync(request.ToClassId);
+
+                    if (cachedSettings != null && cachedNextSchoolClass != null)
+                    {
+                        bool targetRequiresGroup = cachedNextSchoolClass.SortOrder >= cachedSettings.GroupStartsFromClassId;
+                        if (targetRequiresGroup && !student.StudentGroupId.HasValue)
+                            throw new InvalidOperationException($"Student {student.FullName} requires an academic group for {cachedNextSchoolClass.Name}.");
+                        if (!targetRequiresGroup)
+                            student.StudentGroupId = null;
+                    }
+
                     _studentRepository.Update(student);
+
+                    // Cascade updates to attendance, exam results, and group assignment
+                    await RebuildStudentCascadeAsync(
+                        student.Id,
+                        student.ClassId,
+                        student.SectionId,
+                        student.StudentGroupId,
+                        request.AcademicYearId,
+                        default);
                 }
 
                 if (finalResult != null)
@@ -407,6 +463,77 @@ public class PromotionService : IPromotionService
             .ToListAsync();
     }
 
+    public async Task RebuildStudentCascadeAsync(int studentId, int newClassId, int? newSectionId, int? newGroupId, int academicYearId, CancellationToken ct = default)
+    {
+        // 1. Batch-update AttendanceRecord
+        await _uow.Repository<AttendanceRecord>().Query()
+            .Where(a => a.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(a => a.SchoolClassId, newClassId)
+                .SetProperty(a => a.SectionId, a => newSectionId ?? a.SectionId), ct);
+
+        // 2. Batch-update StudentExamResult
+        await _uow.Repository<StudentExamResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.ClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 3. Batch-update StudentSubjectResult
+        await _uow.Repository<StudentSubjectResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.ClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 4. Batch-update FinalResult
+        await _uow.Repository<FinalResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.SchoolClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 5. Handle StudentGroupAssignment
+        if (newGroupId.HasValue)
+        {
+            var existing = await _uow.Repository<StudentGroupAssignment>()
+                .FirstOrDefaultAsync(a => a.StudentId == studentId && a.SchoolClassId == newClassId && a.AcademicYearId == academicYearId, ct);
+
+            if (existing != null)
+            {
+                if (existing.StudentGroupId != newGroupId.Value)
+                {
+                    existing.StudentGroupId = newGroupId.Value;
+                    _uow.Repository<StudentGroupAssignment>().Update(existing);
+                }
+            }
+            else
+            {
+                var newAssignment = new StudentGroupAssignment
+                {
+                    StudentId = studentId,
+                    StudentGroupId = newGroupId.Value,
+                    SchoolClassId = newClassId,
+                    AcademicYearId = academicYearId,
+                    AssignedDate = DateTime.Now
+                };
+                await _uow.Repository<StudentGroupAssignment>().AddAsync(newAssignment, ct);
+            }
+        }
+        else
+        {
+            var existing = await _uow.Repository<StudentGroupAssignment>()
+                .FirstOrDefaultAsync(a => a.StudentId == studentId && a.SchoolClassId == newClassId && a.AcademicYearId == academicYearId, ct);
+            if (existing != null)
+            {
+                _uow.Repository<StudentGroupAssignment>().Remove(existing);
+            }
+        }
+    }
+
     public async Task ReversePromotionAsync(int promotionHistoryId, int reversedByUserId, string reason)
     {
         var promotion = await _promotionHistoryRepository.GetByIdAsync(promotionHistoryId);
@@ -437,6 +564,15 @@ public class PromotionService : IPromotionService
             {
                 student.ClassId = promotion.FromClassId;
                 _studentRepository.Update(student);
+
+                // Cascade: revert ClassId in related tables, keep section/group unchanged
+                await RebuildStudentCascadeAsync(
+                    student.Id,
+                    promotion.FromClassId,
+                    null,
+                    null,
+                    promotion.AcademicYearId,
+                    default);
             }
 
             var finalResult = await _finalResultRepository.FirstOrDefaultAsync(fr =>

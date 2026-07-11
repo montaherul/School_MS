@@ -65,7 +65,7 @@ public class MeritCalculationService : IMeritCalculationService
 
     public async Task CalculateGroupMeritPositionsAsync(int examId)
     {
-        var groupResults = await _examResultRepository.Query()
+        var groupResults = await _examResultRepository.QueryNoTracking()
             .Include(r => r.Student)
             .ThenInclude(s => s.StudentGroup)
             .Where(r => r.ExamId == examId && r.Student.StudentGroupId != null)
@@ -87,7 +87,7 @@ public class MeritCalculationService : IMeritCalculationService
 
     public async Task RecalculateMeritPositionsAsync(int examId)
     {
-        var exam = await _examRepository.Query()
+        var exam = await _examRepository.QueryNoTracking()
             .Include(e => e.ExamSubjects)
             .ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId);
@@ -95,6 +95,7 @@ public class MeritCalculationService : IMeritCalculationService
         if (exam == null) return;
 
         var classIds = await _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .Select(r => r.Student.ClassId)
@@ -179,6 +180,7 @@ public class MeritCalculationService : IMeritCalculationService
     public async Task<IEnumerable<MeritListItem>> GetMeritListAsync(int examId, MeritCategory category)
     {
         IQueryable<StudentExamResult> query = _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Student)
             .ThenInclude(s => s.Section)
             .Include(r => r.Student.StudentGroup)
@@ -220,6 +222,7 @@ public class MeritCalculationService : IMeritCalculationService
     public async Task<IEnumerable<TopPerformer>> GetTopPerformersAsync(int examId, int count = 10)
     {
         var topResults = await _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .OrderByDescending(r => r.Gpa)
@@ -241,6 +244,7 @@ public class MeritCalculationService : IMeritCalculationService
     private async Task<List<StudentExamResult>> GetSortedResultsAsync(int examId, int classId)
     {
         var results = await _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId && r.Student.ClassId == classId)
             .ToListAsync();

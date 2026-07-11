@@ -1,0 +1,830 @@
+@model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeDetailsViewModel
+@{
+    Layout = null;
+    var serviceDays = (DateTime.Today - Model.JoiningDate).Days;
+    var serviceYears = (double)serviceDays / 365;
+    var schoolName = ViewBag.SchoolSetting?.SchoolName ?? "School Management ERP";
+    var today = DateTime.Today;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Service Book — @Model.FullName</title>
+    <style>
+        @@page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            color: #1a1a1a;
+            line-height: 1.55;
+        }
+
+        /* Cover Page */
+        .cover {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            page-break-after: always;
+        }
+        .cover__school {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #1B4D8C;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+        .cover__title {
+            font-size: 26pt;
+            font-weight: 800;
+            color: #0B1D3A;
+            margin: 24px 0 8px;
+            letter-spacing: -0.02em;
+        }
+        .cover__subtitle {
+            font-size: 13pt;
+            color: #555;
+            margin-bottom: 32px;
+        }
+        .cover__line {
+            width: 80px;
+            height: 4px;
+            background: #1B4D8C;
+            border-radius: 2px;
+            margin: 0 auto 32px;
+        }
+        .cover__photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #1B4D8C;
+            margin-bottom: 20px;
+        }
+        .cover__photo-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #e8ecf0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: #6B7280;
+            border: 4px solid #1B4D8C;
+            margin: 0 auto 20px;
+        }
+        .cover__name {
+            font-size: 20pt;
+            font-weight: 700;
+            color: #0B1D3A;
+            margin-bottom: 4px;
+        }
+        .cover__meta {
+            font-size: 11pt;
+            color: #666;
+        }
+        .cover__meta strong {
+            color: #1B4D8C;
+        }
+        .cover__footer {
+            margin-top: 48px;
+            font-size: 9pt;
+            color: #999;
+        }
+        .cover__footer span {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Section headers */
+        .section {
+            page-break-inside: avoid;
+            margin-bottom: 24px;
+        }
+        .section__header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 6px;
+            border-bottom: 3px solid #1B4D8C;
+            margin-bottom: 14px;
+        }
+        .section__icon {
+            font-size: 16pt;
+        }
+        .section__title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1B4D8C;
+        }
+        .section__content {
+            padding-left: 4px;
+        }
+
+        /* Info grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 24px;
+        }
+        .info-grid--3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            padding: 3px 0;
+            border-bottom: 1px dotted #e0e0e0;
+        }
+        .info-item__label {
+            font-size: 7.5pt;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .info-item__value {
+            font-size: 10pt;
+            color: #1a1a1a;
+        }
+        .info-item--full {
+            grid-column: 1 / -1;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 9pt;
+        }
+        .data-table th {
+            background: #1B4D8C;
+            color: #fff;
+            padding: 5px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .data-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:nth-child(even) td {
+            background: #f9fafb;
+        }
+
+        /* Timeline entries */
+        .entry {
+            padding-left: 14px;
+            border-left: 2px solid #1B4D8C;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+        }
+        .entry:last-child {
+            margin-bottom: 0;
+        }
+        .entry__title {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #0B1D3A;
+        }
+        .entry__meta {
+            font-size: 8.5pt;
+            color: #888;
+        }
+        .entry__detail {
+            font-size: 9pt;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        /* Status badges for print */
+        .badge {
+            display: inline-block;
+            padding: 1px 8px;
+            font-size: 8pt;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+        .badge--active { background: #dcfce7; color: #15803d; }
+        .badge--inactive { background: #fef2f2; color: #b91c1c; }
+        .badge--primary { background: #e0e7ff; color: #1B4D8C; }
+        .badge--warning { background: #fef3c7; color: #b45309; }
+        .badge--neutral { background: #f3f4f6; color: #6B7280; }
+
+        /* Footer declaration */
+        .declaration {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #1B4D8C;
+            page-break-inside: avoid;
+        }
+        .declaration__text {
+            font-size: 9pt;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+        }
+        .signature-row__item {
+            text-align: center;
+            min-width: 200px;
+        }
+        .signature-row__line {
+            width: 200px;
+            border-top: 1px solid #333;
+            margin: 0 auto 6px;
+            padding-top: 8px;
+        }
+        .signature-row__label {
+            font-size: 8pt;
+            color: #888;
+        }
+        .signature-row__name {
+            font-size: 9pt;
+            font-weight: 600;
+        }
+
+        /* Right align */
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* Page number */
+        .page-number {
+            position: fixed;
+            bottom: 10px;
+            right: 16px;
+            font-size: 8pt;
+            color: #aaa;
+        }
+
+        @@media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════ COVER PAGE ═══════ -->
+    <div class="cover">
+        <div class="cover__school">@schoolName</div>
+        <div class="cover__line"></div>
+        <div class="cover__title">SERVICE BOOK</div>
+        <div class="cover__subtitle">Employee Record of Service</div>
+
+        @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+        {
+            <img src="@Model.ProfilePicturePath" alt="" class="cover__photo" />
+        }
+        else
+        {
+            <div class="cover__photo-placeholder">@Model.FullName.Substring(0, 2).ToUpper()</div>
+        }
+
+        <div class="cover__name">@Model.FullName</div>
+        @if (!string.IsNullOrEmpty(Model.BanglaName))
+        {
+            <div class="cover__meta">@Model.BanglaName</div>
+        }
+        <div class="cover__meta" style="margin-top:4px;">
+            <strong>@Model.Designation</strong> &nbsp;·&nbsp; @Model.Department
+        </div>
+        <div class="cover__meta">
+            Employee Code: <strong>@Model.EmployeeCode</strong>
+            @if (!string.IsNullOrEmpty(Model.EmployeeCardNumber))
+            {
+                <text> &nbsp;·&nbsp; Card: @Model.EmployeeCardNumber</text>
+            }
+        </div>
+
+        <div class="cover__footer">
+            <span>Generated on @today.ToString("dd MMMM yyyy")</span>
+            <span>@schoolName</span>
+        </div>
+    </div>
+
+    <!-- ═══════ SECTION 1: PERSONAL INFORMATION ═══════ -->
+    <div class="section">
+        <div class="section__header">
+            <span class="section__icon">&#128100;</span>
+            <span class="section__title">Personal Information</span>
+        </div>
+        <div class="section__content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-item__label">Full Name</span>
+                    <span class="info-item__value">@Model.FullName</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Bangla Name</span>
+                    <span class="info-item__value">@(Model.BanglaName ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Gender</span>
+                    <span class="info-item__value">@Model.Gender</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Marital Status</span>
+                    <span class="info-item__value">@(Model.MaritalStatus ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Date of Birth</span>
+                    <span class="info-item__value">@Model.DateOfBirth.ToString("dd MMMM yyyy")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Blood Group</span>
+                    <span class="info-item__value">@(Model.BloodGroup ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Father's Name</span>
+                    <span class="info-item__value">@(Model.FatherName ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Mother's Name</span>
+                    <span class="info-item__value">@(Model.MotherName ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Spouse Name</span>
+                    <span class="info-item__value">@(Model.SpouseName ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Religion</span>
+                    <span class="info-item__value">@(Model.Religion ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Nationality</span>
+                    <span class="info-item__value">@Model.Nationality</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">NID Number</span>
+                    <span class="info-item__value">@(Model.NIDNumber ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Birth Certificate No</span>
+                    <span class="info-item__value">@(Model.BirthCertificateNo ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Passport No</span>
+                    <span class="info-item__value">@(Model.PassportNo ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">TIN</span>
+                    <span class="info-item__value">@(Model.TIN ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Driving License</span>
+                    <span class="info-item__value">@(Model.DrivingLicenseNo ?? "—")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ SECTION 2: CONTACT ═══════ -->
+    <div class="section">
+        <div class="section__header">
+            <span class="section__icon">&#128222;</span>
+            <span class="section__title">Contact Information</span>
+        </div>
+        <div class="section__content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-item__label">Phone (Primary)</span>
+                    <span class="info-item__value">@Model.Phone</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Alternate Mobile</span>
+                    <span class="info-item__value">@(Model.AlternateMobile ?? "—")</span>
+                </div>
+                <div class="info-item info-item--full">
+                    <span class="info-item__label">Email</span>
+                    <span class="info-item__value">@(Model.Email ?? "—")</span>
+                </div>
+                <div class="info-item info-item--full">
+                    <span class="info-item__label">Present Address</span>
+                    <span class="info-item__value">@(Model.PresentAddress ?? "—")</span>
+                </div>
+                <div class="info-item info-item--full">
+                    <span class="info-item__label">Permanent Address</span>
+                    <span class="info-item__value">@(Model.PermanentAddress ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Emergency Contact</span>
+                    <span class="info-item__value">@(Model.EmergencyContactName ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Emergency Phone</span>
+                    <span class="info-item__value">@(Model.EmergencyContactPhone ?? "—")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ SECTION 3: EMPLOYMENT ═══════ -->
+    <div class="section">
+        <div class="section__header">
+            <span class="section__icon">&#128188;</span>
+            <span class="section__title">Employment Details</span>
+        </div>
+        <div class="section__content">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-item__label">Employee Code</span>
+                    <span class="info-item__value">@Model.EmployeeCode</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Department</span>
+                    <span class="info-item__value">@Model.Department</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Designation</span>
+                    <span class="info-item__value">@Model.Designation</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Employee Type</span>
+                    <span class="info-item__value">@Model.EmployeeType</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Staff Category</span>
+                    <span class="info-item__value">@(Model.IsTeachingStaff ? "Teaching" : "Non-Teaching")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Status</span>
+                    <span class="info-item__value">@Model.Status</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Joining Date</span>
+                    <span class="info-item__value">@Model.JoiningDate.ToString("dd MMMM yyyy")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Years of Service</span>
+                    <span class="info-item__value">@serviceYears.ToString("0.0") Years</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Current Salary</span>
+                    <span class="info-item__value">@ViewBag.CurrentSalary.ToString("N0") BDT</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ SECTION 4: QUALIFICATIONS ═══════ -->
+    @if (Model.Qualifications.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#127891;</span>
+                <span class="section__title">Academic Qualifications</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Exam/Degree</th>
+                            <th>Board/University</th>
+                            <th>Institute</th>
+                            <th>Subject</th>
+                            <th>Year</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var q in Model.Qualifications.OrderByDescending(x => x.PassingYear))
+                        {
+                            <tr>
+                                <td><strong>@q.ExamName</strong></td>
+                                <td>@q.BoardOrUniversity</td>
+                                <td>@q.InstituteName</td>
+                                <td>@q.GroupOrSubject</td>
+                                <td class="text-center">@q.PassingYear</td>
+                                <td class="text-center">@q.CGPAOrDivision</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 5: EXPERIENCE ═══════ -->
+    @if (Model.Experiences.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#128188;</span>
+                <span class="section__title">Previous Employment History</span>
+            </div>
+            <div class="section__content">
+                @foreach (var ex in Model.Experiences.OrderByDescending(x => x.StartDate))
+                {
+                    <div class="entry">
+                        <div class="entry__title">@ex.Designation</div>
+                        <div class="entry__meta">@ex.OrganizationName · @ex.StartDate.ToString("MMM yyyy") — @(ex.EndDate?.ToString("MMM yyyy") ?? "Present")</div>
+                        @if (!string.IsNullOrEmpty(ex.Remarks))
+                        {
+                            <div class="entry__detail">@ex.Remarks</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 6: PROMOTIONS ═══════ -->
+    @if (Model.Promotions.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#8593;</span>
+                <span class="section__title">Promotion History</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reason</th>
+                            <th>Previous Salary</th>
+                            <th>New Salary</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Promotions.OrderByDescending(x => x.PromotionDate))
+                        {
+                            <tr>
+                                <td>@p.PromotionDate.ToString("dd MMM yyyy")</td>
+                                <td>@p.Reason</td>
+                                <td class="text-right">@(p.PreviousSalary?.ToString("N0") ?? "—")</td>
+                                <td class="text-right">@(p.NewSalary?.ToString("N0") ?? "—")</td>
+                                <td>@(p.Remarks ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 7: TRANSFERS ═══════ -->
+    @if (Model.Transfers.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#8596;</span>
+                <span class="section__title">Transfer History</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>From Department</th>
+                            <th>To Department</th>
+                            <th>Reason</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model.Transfers.OrderByDescending(x => x.TransferDate))
+                        {
+                            <tr>
+                                <td>@t.TransferDate.ToString("dd MMM yyyy")</td>
+                                <td>@t.FromDepartment</td>
+                                <td>@t.ToDepartment</td>
+                                <td>@t.Reason</td>
+                                <td>@(t.Remarks ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 8: TRAINING ═══════ -->
+    @if (Model.Trainings.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#128218;</span>
+                <span class="section__title">Training & Professional Development</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Training Name</th>
+                            <th>Institution</th>
+                            <th>Duration</th>
+                            <th>Period</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model.Trainings.OrderByDescending(x => x.StartDate ?? x.EndDate ?? DateTime.MinValue))
+                        {
+                            <tr>
+                                <td><strong>@t.TrainingName</strong></td>
+                                <td>@(t.InstitutionName ?? "—")</td>
+                                <td>@(t.Duration ?? "—")</td>
+                                <td>@(t.StartDate?.ToString("MMM yyyy") ?? "—") — @(t.EndDate?.ToString("MMM yyyy") ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 9: AWARDS ═══════ -->
+    @if (Model.Awards.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#127942;</span>
+                <span class="section__title">Awards & Recognition</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Award Name</th>
+                            <th>Awarded By</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Awards.OrderByDescending(x => x.AwardDate))
+                        {
+                            <tr>
+                                <td>@a.AwardDate.ToString("dd MMM yyyy")</td>
+                                <td><strong>@a.AwardName</strong></td>
+                                <td>@(a.AwardedBy ?? "—")</td>
+                                <td>@(a.Description ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 10: DISCIPLINARY ═══════ -->
+    @if (Model.DisciplinaryActions.Any())
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#9888;</span>
+                <span class="section__title">Disciplinary Actions</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Resolution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.DisciplinaryActions.OrderByDescending(x => x.ActionDate))
+                        {
+                            <tr>
+                                <td>@d.ActionDate.ToString("dd MMM yyyy")</td>
+                                <td><strong>@d.ActionType</strong></td>
+                                <td>@(d.Reason ?? "—")</td>
+                                <td><span class="badge badge--@(d.IsResolved ? "active" : "inactive")">@(d.IsResolved ? "Resolved" : "Open")</span></td>
+                                <td>@(d.ResolutionRemarks ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 11: BANK ACCOUNTS ═══════ -->
+    @if (Model.BankAccounts.Any(b => b.IsActive))
+    {
+        <div class="section">
+            <div class="section__header">
+                <span class="section__icon">&#127974;</span>
+                <span class="section__title">Bank Account Details</span>
+            </div>
+            <div class="section__content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bank Name</th>
+                            <th>Branch</th>
+                            <th>Account No</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model.BankAccounts.Where(x => x.IsActive))
+                        {
+                            <tr>
+                                <td><strong>@b.BankName</strong></td>
+                                <td>@b.BranchName</td>
+                                <td>@b.AccountNumber</td>
+                                <td>@(b.AccountType ?? "Savings")</td>
+                                <td class="text-center">@(b.IsDefault ? "Yes" : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- ═══════ SECTION 12: ID CARD ═══════ -->
+    <div class="section">
+        <div class="section__header">
+            <span class="section__icon">&#128179;</span>
+            <span class="section__title">Employee ID Card Information</span>
+        </div>
+        <div class="section__content">
+            <div class="info-grid info-grid--3">
+                <div class="info-item">
+                    <span class="info-item__label">Card Number</span>
+                    <span class="info-item__value">@(Model.EmployeeCardNumber ?? "Not Issued")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Card Version</span>
+                    <span class="info-item__value">v@(Model.CardVersion)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Issue Date</span>
+                    <span class="info-item__value">@(Model.CardIssueDate?.ToString("dd MMM yyyy") ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Expiry Date</span>
+                    <span class="info-item__value">@(Model.CardExpiryDate?.ToString("dd MMM yyyy") ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">QR Code</span>
+                    <span class="info-item__value">@(Model.QRVerificationCode ?? "—")</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-item__label">Last Printed</span>
+                    <span class="info-item__value">@(Model.CardPrintedAt?.ToString("dd MMM yyyy") ?? "—")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ DECLARATION ═══════ -->
+    <div class="declaration">
+        <div class="section__header">
+            <span class="section__icon">&#128220;</span>
+            <span class="section__title">Certification</span>
+        </div>
+        <div class="declaration__text">
+            This Service Book is a true and complete record of the service history of <strong>@Model.FullName</strong>
+            (@Model.EmployeeCode), employed as <strong>@Model.Designation</strong> in the <strong>@Model.Department</strong>
+            department of <strong>@schoolName</strong>.
+            <br /><br />
+            All entries herein are verified against the official records maintained by the institution. This document
+            is generated electronically and is valid without signature.
+        </div>
+        <div class="signature-row">
+            <div class="signature-row__item">
+                <div class="signature-row__line">&nbsp;</div>
+                <div class="signature-row__label">Prepared By</div>
+                <div class="signature-row__name">Authorized Officer</div>
+            </div>
+            <div class="signature-row__item">
+                <div class="signature-row__line">&nbsp;</div>
+                <div class="signature-row__label">Verified By</div>
+                <div class="signature-row__name">Head of HR / Administration</div>
+            </div>
+            <div class="signature-row__item">
+                <div class="signature-row__line">&nbsp;</div>
+                <div class="signature-row__label">Date</div>
+                <div class="signature-row__name">@today.ToString("dd MMMM yyyy")</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

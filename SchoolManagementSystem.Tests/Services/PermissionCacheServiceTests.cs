@@ -34,10 +34,10 @@ public class PermissionCacheServiceTests
         var scopeMock = new Mock<IServiceScope>(MockBehavior.Loose);
         scopeMock.Setup(s => s.ServiceProvider.GetService(typeof(SchoolDbContext))).Returns(db);
 
-        var spMock = new Mock<IServiceProvider>(MockBehavior.Loose);
-        spMock.Setup(s => s.CreateScope()).Returns(scopeMock.Object);
+        var scopeFactoryMock = new Mock<IServiceScopeFactory>(MockBehavior.Loose);
+        scopeFactoryMock.Setup(s => s.CreateScope()).Returns(scopeMock.Object);
 
-        return (new PermissionCacheService(spMock.Object, cache), db);
+        return (new PermissionCacheService(scopeFactoryMock.Object, cache), db);
     }
 
     [Fact(DisplayName = "1. HasPermissionAsync returns false when role has no matching permissions")]
@@ -138,8 +138,8 @@ public class PermissionCacheServiceTests
     public async Task HasPermissionAsync_EmptyRoleNames_ReturnsFalse()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
-        var spMock = new Mock<IServiceProvider>(MockBehavior.Loose);
-        var service = new PermissionCacheService(spMock.Object, cache);
+        var scopeFactoryMock = new Mock<IServiceScopeFactory>(MockBehavior.Loose);
+        var service = new PermissionCacheService(scopeFactoryMock.Object, cache);
 
         var result = await service.HasPermissionAsync([], "Any.Code");
 

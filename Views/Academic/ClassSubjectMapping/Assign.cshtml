@@ -1,0 +1,179 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.ClassSubjectAssignmentDto
+@{
+    ViewData["Title"] = "Assign Subjects to Class";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Assign Subjects to Class</h1>
+                <p class="adm-header__sub">Select a class and group, then choose subjects to map</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Assign" method="post" class="adm-card">
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+        <div class="adm-card__body">
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="SchoolClassId" class="adm-label"></label>
+                    <select asp-for="SchoolClassId" class="adm-select" asp-items="ViewBag.Classes" id="classSelect">
+                        <option value="">-- Select Class --</option>
+                    </select>
+                    <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="GroupName" class="adm-label"></label>
+                    <select asp-for="GroupName" class="adm-select" id="groupSelect">
+                        <option value="">General</option>
+                        <option value="Science">Science</option>
+                        <option value="Business Studies">Business Studies</option>
+                        <option value="Humanities">Humanities</option>
+                    </select>
+                    <span asp-validation-for="GroupName" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid ws-mt-3">
+                <div class="adm-form-group">
+                    <label asp-for="FullMarks" class="adm-label"></label>
+                    <input asp-for="FullMarks" class="adm-input" type="number" step="0.01" />
+                    <span asp-validation-for="FullMarks" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="PassMarks" class="adm-label"></label>
+                    <input asp-for="PassMarks" class="adm-input" type="number" step="0.01" />
+                    <span asp-validation-for="PassMarks" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="ws-mt-4" id="subjectsContainer">
+                <div class="ws-text-center ws-py-5 ws-text-muted">Select a class to load available subjects.</div>
+            </div>
+        </div>
+
+        <div class="adm-card__header ws-flex-between">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            <button type="submit" class="adm-btn adm-btn--primary" id="saveBtn" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Mapping
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        var classSelect = document.getElementById('classSelect');
+        var groupSelect = document.getElementById('groupSelect');
+        var subjectsContainer = document.getElementById('subjectsContainer');
+        var saveBtn = document.getElementById('saveBtn');
+
+        function loadSubjects() {
+            var classId = classSelect.value;
+            var groupName = groupSelect.value || '';
+
+            if (!classId) {
+                subjectsContainer.innerHTML = '<div class="ws-text-center ws-py-5 ws-text-muted">Select a class to load available subjects.</div>';
+                saveBtn.disabled = true;
+                return;
+            }
+
+            subjectsContainer.innerHTML = '<div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading subjects...</span></div>';
+
+            fetch('/ClassSubjectMapping/GetUnmappedSubjects?classId=' + encodeURIComponent(classId) + '&groupName=' + encodeURIComponent(groupName))
+                .then(function(r) { return r.json(); })
+                .then(function(subjects) {
+                    if (!subjects || !subjects.length) {
+                        subjectsContainer.innerHTML = '<div class="ws-text-center ws-py-5 ws-text-muted">No available subjects for this class and group.</div>';
+                        saveBtn.disabled = true;
+                        return;
+                    }
+
+                    var html = '<div class="ws-flex ws-items-center ws-justify-between ws-mb-3">' +
+                        '<h3 class="ws-fw-600 ws-fs-16">Select Subjects</h3>' +
+                        '<div class="ws-flex ws-gap-2">' +
+                        '<button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" id="selectAllBtn">Select All</button>' +
+                        '<button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" id="deselectAllBtn">Deselect All</button>' +
+                        '</div></div>';
+
+                    html += '<div class="adm-form-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">';
+
+                    subjects.forEach(function(s) {
+                        var name = s.subjectName || s.subjectNameEn || s.name || '';
+                        var code = s.subjectCode || s.code || '';
+                        html += '<label class="ws-flex ws-items-start ws-gap-2 ws-p-2 ws-border ws-border-radius ws-cursor-pointer subject-item" data-id="' + s.id + '">' +
+                            '<input type="checkbox" class="ws-form-check-input subject-checkbox ws-mt-1" name="SubjectIds" value="' + s.id + '" />' +
+                            '<div><div class="ws-fw-600 ws-fs-14">' + name + '</div>' +
+                            '<div class="ws-fs-12 ws-text-muted">' + code + '</div></div></label>';
+                    });
+
+                    html += '</div>';
+                    subjectsContainer.innerHTML = html;
+                    saveBtn.disabled = false;
+
+                    document.querySelectorAll('.subject-checkbox').forEach(function(cb) {
+                        cb.addEventListener('change', updateSaveBtn);
+                    });
+                    document.querySelectorAll('.subject-item').forEach(function(item) {
+                        item.addEventListener('click', function(e) {
+                            if (e.target.type !== 'checkbox') {
+                                var cb = this.querySelector('.subject-checkbox');
+                                if (cb) { cb.checked = !cb.checked; updateSaveBtn(); }
+                            }
+                        });
+                    });
+
+                    document.getElementById('selectAllBtn')?.addEventListener('click', function() {
+                        document.querySelectorAll('.subject-checkbox').forEach(function(cb) { cb.checked = true; });
+                        updateSaveBtn();
+                    });
+                    document.getElementById('deselectAllBtn')?.addEventListener('click', function() {
+                        document.querySelectorAll('.subject-checkbox').forEach(function(cb) { cb.checked = false; });
+                        updateSaveBtn();
+                    });
+
+                    updateSaveBtn();
+                })
+                .catch(function() {
+                    subjectsContainer.innerHTML = '<div class="ws-text-center ws-py-5 ws-text-danger">Failed to load subjects. Please try again.</div>';
+                    saveBtn.disabled = true;
+                });
+        }
+
+        function updateSaveBtn() {
+            var count = document.querySelectorAll('.subject-checkbox:checked').length;
+            saveBtn.innerHTML = count > 0
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Mapping (' + count + ' subjects)'
+                : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Mapping';
+        }
+
+        classSelect.addEventListener('change', loadSubjects);
+        groupSelect.addEventListener('change', loadSubjects);
+    </script>
+}

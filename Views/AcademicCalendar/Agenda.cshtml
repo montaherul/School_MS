@@ -27,16 +27,16 @@
     <!-- ═══ SEGMENTED VIEW NAV ═══ -->
     <nav class="ac-nav" aria-label="Calendar view navigation">
         <a class="ac-nav__item" asp-action="Index">
-            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+            <i class="bi bi-calendar3"></i> Month
         </a>
         <a class="ac-nav__item" asp-action="WeekView">
-            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+            <i class="bi bi-calendar-week"></i> Week
         </a>
         <a class="ac-nav__item ac-nav__item--active" asp-action="Agenda">
-            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+            <i class="bi bi-list-task"></i> Agenda
         </a>
         <a class="ac-nav__item" asp-action="YearView">
-            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+            <i class="bi bi-calendar-range"></i> Year
         </a>
     </nav>
 
@@ -73,7 +73,7 @@
             </div>
             <div class="ac-filters__group ac-filters__group--actions">
                 <label class="ac-filters__label">&nbsp;</label>
-                <button class="er-btn er-btn--primary" id="applyAgendaFilters" style="width:100%">
+                <button class="er-btn er-btn--primary" id="applyAgendaFilters">
                     <i class="bi bi-funnel"></i> Apply
                 </button>
             </div>
@@ -81,7 +81,7 @@
     </div>
 
     <!-- ═══ LEGEND ═══ -->
-    <div class="ac-legend" style="margin-bottom:16px;border-top:none;padding-top:0">
+    <div class="ac-legend ac-legend--standalone">
         <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
         <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
         <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
@@ -92,12 +92,12 @@
     <!-- ═══ AGENDA CONTENT ═══ -->
     <div class="er-card">
         <div class="er-card__header">
-            <h5 class="er-card__title"><i class="bi bi-list-task" style="color:var(--adm-primary)"></i> Timeline</h5>
-            <span class="er-stat__value" id="agendaCountLabel" style="font-size:16px">0 items</span>
+            <h5 class="er-card__title"><i class="bi bi-list-task ac-icon-primary"></i> Timeline</h5>
+            <span class="er-stat__value" id="agendaCountLabel">0 items</span>
         </div>
         <div class="er-card__body">
             <div id="agendaList" aria-live="polite" role="region" aria-label="Agenda items list">
-                <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading agenda...</div>
+                <div class="ws-text-center ws-py-5"><span class="ws-text-muted ws-me-2">Loading agenda...</span></div>
             </div>
         </div>
     </div>
@@ -121,7 +121,7 @@
 
             function loadAgenda() {
                 var list = document.getElementById('agendaList');
-                list.innerHTML = '<div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading agenda...</div>';
+                list.innerHTML = '<div class="ws-text-center ws-py-5"><span class="ws-text-muted ws-me-2">Loading agenda...</span></div>';
 
                 var startVal = document.getElementById('agendaStart').value;
                 var count = document.getElementById('agendaCount').value;

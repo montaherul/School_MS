@@ -105,6 +105,7 @@ public class MarksController : Controller
             SubjectName = dto.SubjectName,
             ClassId = dto.ClassId,
             ClassName = dto.ClassName,
+            SectionId = sectionId,
             Students = dto.Students.Select(s => new StudentMarkViewModel
             {
                 StudentId = s.StudentId,
@@ -138,6 +139,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> Save([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
@@ -179,6 +181,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> SaveRow([FromBody] MarkEntryDto dto, CancellationToken ct)
     {
@@ -221,6 +224,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> SaveDraft([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
@@ -261,6 +265,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Import")]
     public async Task<IActionResult> ImportExcel(int examId, int subjectId, int classId, int sectionId, IFormFile file, bool saveAsDraft, CancellationToken ct)
     {
@@ -276,6 +281,14 @@ public class MarksController : Controller
 
         if (file == null || file.Length == 0)
             return Json(new ImportResultDto { ErrorCount = 1, Errors = [new() { RowNumber = 0, Message = "No file uploaded" }] });
+
+        var allowedExtensions = new[] { ".xlsx", ".xls" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+            return Json(new ImportResultDto { ErrorCount = 1, Errors = [new() { RowNumber = 0, Message = "Only Excel files (.xlsx, .xls) are allowed." }] });
+
+        if (file.Length > 10 * 1024 * 1024)
+            return Json(new ImportResultDto { ErrorCount = 1, Errors = [new() { RowNumber = 0, Message = "File size must be less than 10MB." }] });
 
         using var stream = file.OpenReadStream();
         var result = await _markEntryService.ImportMarksFromExcelAsync(stream, examId, subjectId, classId, sectionId, teacherId, saveAsDraft);
@@ -392,6 +405,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Lock")]
     public async Task<IActionResult> Lock(int examId, int subjectId, int classId, int sectionId)
     {
@@ -410,6 +424,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Marks.Lock")]
     public async Task<IActionResult> Unlock(int examId, int subjectId, int classId, int sectionId)
     {

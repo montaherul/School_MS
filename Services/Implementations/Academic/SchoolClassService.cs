@@ -3,6 +3,7 @@ using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -11,59 +12,54 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class SchoolClassService : ISchoolClassService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ISchoolClassRepository _repo;
 
-    public SchoolClassService(IUnitOfWork unitOfWork) { _unitOfWork = unitOfWork; }
+    public SchoolClassService(IUnitOfWork unitOfWork, ISchoolClassRepository repo)
+    {
+        _unitOfWork = unitOfWork;
+        _repo = repo;
+    }
 
     public async Task<PagedResult<SchoolClassListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct = default)
     {
-        var repo = _unitOfWork.Repository<SchoolClass>();
-        var query = repo.Query().Where(c => !c.IsDeleted && c.IsActive);
+        var spResults = await _repo.GetListSpAsync(page, pageSize, search);
+        if (spResults.Count == 0)
+            return new PagedResult<SchoolClassListItemDto> { Items = [], Page = page, PageSize = pageSize, TotalItems = 0 };
 
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(c => c.Name.Contains(search) || c.NameBn.Contains(search) || c.Code.Contains(search));
+        var totalCount = spResults[0].TotalRecords;
+        var ids = spResults.Select(x => x.Id).ToList();
 
-        var totalCount = await query.CountAsync(ct);
-        var items = await query
-            .OrderBy(c => c.SortOrder)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(c => new SchoolClassListItemDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                NameBn = c.NameBn,
-                Code = c.Code,
-                SortOrder = c.SortOrder,
-                Capacity = c.Capacity,
-                IsGroupBased = c.IsGroupBased,
-                IsActive = c.IsActive,
-                SectionCount = c.Sections.Count(s => !s.IsDeleted)
-            })
+        var classEntities = await _unitOfWork.Repository<SchoolClass>().Query().AsNoTracking()
+            .Where(c => ids.Contains(c.Id))
+            .Select(c => new { c.Id, c.NameBn, c.Code, c.Capacity, c.IsGroupBased })
             .ToListAsync(ct);
+        var entityLookup = classEntities.ToDictionary(x => x.Id);
 
-        if (items.Count > 0)
+        var subjectCounts = await _unitOfWork.Repository<ClassSubject>().Query()
+            .Where(cs => ids.Contains(cs.SchoolClassId) && !cs.IsDeleted)
+            .GroupBy(cs => cs.SchoolClassId)
+            .Select(g => new { ClassId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+        var subjectLookup = subjectCounts.ToDictionary(x => x.ClassId, x => x.Count);
+
+        var items = spResults.Select(x =>
         {
-            var ids = items.Select(i => i.Id).ToList();
-            var studentCounts = await _unitOfWork.Repository<Student>().Query()
-                .Where(st => ids.Contains(st.ClassId) && !st.IsDeleted)
-                .GroupBy(st => st.ClassId)
-                .Select(g => new { ClassId = g.Key, Count = g.Count() })
-                .ToListAsync(ct);
-            var subjectCounts = await _unitOfWork.Repository<ClassSubject>().Query()
-                .Where(cs => ids.Contains(cs.SchoolClassId) && !cs.IsDeleted)
-                .GroupBy(cs => cs.SchoolClassId)
-                .Select(g => new { ClassId = g.Key, Count = g.Count() })
-                .ToListAsync(ct);
-
-            var studentLookup = studentCounts.ToDictionary(x => x.ClassId, x => x.Count);
-            var subjectLookup = subjectCounts.ToDictionary(x => x.ClassId, x => x.Count);
-
-            foreach (var item in items)
+            var entity = entityLookup.GetValueOrDefault(x.Id);
+            return new SchoolClassListItemDto
             {
-                item.StudentCount = studentLookup.GetValueOrDefault(item.Id, 0);
-                item.SubjectMappingCount = subjectLookup.GetValueOrDefault(item.Id, 0);
-            }
-        }
+                Id = x.Id,
+                Name = x.Name,
+                NameBn = entity?.NameBn ?? "",
+                Code = entity?.Code ?? "",
+                SortOrder = x.SortOrder,
+                Capacity = entity?.Capacity ?? 0,
+                IsGroupBased = entity?.IsGroupBased ?? false,
+                IsActive = entity != null,
+                SectionCount = x.SectionCount,
+                StudentCount = x.StudentCount,
+                SubjectMappingCount = subjectLookup.GetValueOrDefault(x.Id, 0)
+            };
+        }).ToList();
 
         return new PagedResult<SchoolClassListItemDto>
         {
@@ -228,6 +224,30 @@ public class SchoolClassService : ISchoolClassService
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
+    public async Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        if (ids == null || ids.Count == 0) return;
+        await _unitOfWork.Repository<SchoolClass>().Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.IsActive, true)
+                .SetProperty(x => x.ArchivedAt, (DateTime?)null)
+                .SetProperty(x => x.UpdatedBy, updatedBy)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+    }
+
+    public async Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        if (ids == null || ids.Count == 0) return;
+        await _unitOfWork.Repository<SchoolClass>().Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.IsActive, false)
+                .SetProperty(x => x.ArchivedAt, DateTime.UtcNow)
+                .SetProperty(x => x.UpdatedBy, updatedBy)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+    }
+
     public async Task ToggleActiveAsync(int id, string updatedBy, CancellationToken ct = default)
     {
         var entity = await _unitOfWork.Repository<SchoolClass>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct)
@@ -257,17 +277,17 @@ public class SchoolClassService : ISchoolClassService
     public async Task<bool> CanDeleteAsync(int id, CancellationToken ct = default)
     {
         var sectionRepo = _unitOfWork.Repository<Section>();
-        var hasSections = await sectionRepo.Query().AnyAsync(s => s.SchoolClassId == id && !s.IsDeleted, ct);
-        if (hasSections) return false;
-
         var mappingRepo = _unitOfWork.Repository<ClassSubject>();
-        var hasMappings = await mappingRepo.Query().AnyAsync(m => m.SchoolClassId == id && !m.IsDeleted, ct);
-        if (hasMappings) return false;
-
         var studentRepo = _unitOfWork.Repository<Student>();
-        var hasStudents = await studentRepo.Query().AnyAsync(st => st.ClassId == id && !st.IsDeleted, ct);
-        if (hasStudents) return false;
 
-        return true;
+        var tasks = new Task<bool>[]
+        {
+            sectionRepo.Query().AnyAsync(s => s.SchoolClassId == id && !s.IsDeleted, ct),
+            mappingRepo.Query().AnyAsync(m => m.SchoolClassId == id && !m.IsDeleted, ct),
+            studentRepo.Query().AnyAsync(st => st.ClassId == id && !st.IsDeleted, ct)
+        };
+
+        var results = await Task.WhenAll(tasks);
+        return !results[0] && !results[1] && !results[2];
     }
 }

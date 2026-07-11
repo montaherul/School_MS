@@ -1,0 +1,71 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.CurriculumVersionUpsertDto
+@{
+    ViewData["Title"] = "Create Curriculum Version";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Curriculum Version</h1>
+                <p class="adm-header__sub">Define a new NCTB curriculum version for an academic year</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Academic/NctbCompliance" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" class="adm-card">
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+        <div class="adm-card__body">
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="VersionName" class="adm-label"></label>
+                    <input asp-for="VersionName" class="adm-input" required />
+                    <span asp-validation-for="VersionName" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="AcademicYearId" class="adm-label"></label>
+                    <select asp-for="AcademicYearId" class="adm-select" asp-items="ViewBag.AcademicYears">
+                        <option value="">-- Select Academic Year --</option>
+                    </select>
+                    <span asp-validation-for="AcademicYearId" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="EffectiveFrom" class="adm-label"></label>
+                    <input asp-for="EffectiveFrom" class="adm-input" type="date" />
+                    <span asp-validation-for="EffectiveFrom" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group ws-form-check">
+                    <input asp-for="IsCurrent" class="ws-form-check-input" />
+                    <label asp-for="IsCurrent" class="ws-form-check-label">Set as current version</label>
+                </div>
+                <div class="adm-form-group ws-col-12">
+                    <label asp-for="Description" class="adm-label"></label>
+                    <textarea asp-for="Description" class="adm-input" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+        </div>
+        <div class="adm-card__header ws-flex-between">
+            <a href="/Academic/NctbCompliance" class="adm-btn adm-btn--ghost">Cancel</a>
+            <button type="submit" class="adm-btn adm-btn--primary">
+                <i class="bi bi-save"></i> Create Version
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

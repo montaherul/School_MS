@@ -1,0 +1,62 @@
+@model EmployeeSalaryDto
+@{
+    ViewData["Title"] = "Add Salary";
+    var employeeName = ViewBag.EmployeeName as string;
+}
+
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <h1 class="er-page-header__title">Add Salary</h1>
+            <p class="er-page-header__sub">@employeeName</p>
+        </div>
+    </div>
+
+    <div class="er-card">
+        <div class="er-card__body">
+            <form method="post" asp-action="Create">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="EmployeeId" />
+                <input type="hidden" asp-for="Id" />
+
+                <div class="adm-form-grid adm-form-grid--3">
+                    <div class="adm-form-group">
+                        <label asp-for="BasicSalary" class="er-label"></label>
+                        <input asp-for="BasicSalary" class="adm-input" type="number" step="0.01" />
+                        <span asp-validation-for="BasicSalary" class="er-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="HouseRent" class="er-label"></label>
+                        <input asp-for="HouseRent" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="MedicalAllowance" class="er-label"></label>
+                        <input asp-for="MedicalAllowance" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="TransportAllowance" class="er-label"></label>
+                        <input asp-for="TransportAllowance" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="OtherAllowance" class="er-label"></label>
+                        <input asp-for="OtherAllowance" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="Deduction" class="er-label"></label>
+                        <input asp-for="Deduction" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="EffectiveFrom" class="er-label"></label>
+                        <input asp-for="EffectiveFrom" class="adm-input" type="date" />
+                        <span asp-validation-for="EffectiveFrom" class="er-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a href="@Url.Action("Index", new { employeeId = Model.EmployeeId })" class="er-btn er-btn--secondary">Cancel</a>
+                    <button type="submit" class="er-btn er-btn--primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

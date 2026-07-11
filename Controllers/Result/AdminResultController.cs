@@ -378,6 +378,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Publish")]
     public async Task<IActionResult> PublishResults([FromBody] PublishRequest request)
     {
@@ -402,6 +403,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Publish")]
     public async Task<IActionResult> UnpublishResults([FromBody] PublishRequest request)
     {
@@ -430,6 +432,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Publish")]
     public async Task<IActionResult> RepublishResults([FromBody] PublishRequest request)
     {
@@ -445,6 +448,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Approve")]
     public async Task<IActionResult> ApproveResults([FromBody] PublishRequest request)
     {
@@ -461,6 +465,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Publish")]
     public async Task<IActionResult> RejectResults([FromBody] RejectRequest request)
     {
@@ -494,6 +499,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Recalculate")]
     public async Task<IActionResult> RecalculateResults(int examId)
     {
@@ -516,6 +522,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Recalculate")]
     public async Task<IActionResult> RecalculateMeritPositions(int examId)
     {

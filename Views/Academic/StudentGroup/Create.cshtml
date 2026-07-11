@@ -1,0 +1,76 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.StudentGroupUpsertDto
+@{
+    ViewData["Title"] = "Create Student Group";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-layers"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Student Group</h1>
+                <p class="adm-header__sub">Define a new academic group stream.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title">Group Details</h3></div>
+        <div class="adm-card__body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label asp-for="Name" class="adm-label"></label>
+                        <input asp-for="Name" class="adm-input" required />
+                        <span asp-validation-for="Name" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="Code" class="adm-label"></label>
+                        <input asp-for="Code" class="adm-input" placeholder="SCI, HUM, BUS" />
+                        <span asp-validation-for="Code" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="DisplayOrder" class="adm-label"></label>
+                        <input asp-for="DisplayOrder" type="number" class="adm-input" />
+                        <span asp-validation-for="DisplayOrder" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="MinClass" class="adm-label"></label>
+                        <input asp-for="MinClass" type="number" min="1" max="12" class="adm-input" />
+                        <span asp-validation-for="MinClass" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="MaxClass" class="adm-label"></label>
+                        <input asp-for="MaxClass" type="number" min="1" max="12" class="adm-input" />
+                        <span asp-validation-for="MaxClass" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group ws-form-check">
+                        <input asp-for="IsActive" class="ws-form-check-input" checked />
+                        <label asp-for="IsActive" class="ws-form-check-label">Is Active</label>
+                    </div>
+                </div>
+
+                <div class="adm-form-group adm-form-group--full">
+                    <label asp-for="Description" class="adm-label"></label>
+                    <textarea asp-for="Description" class="adm-textarea" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="adm-field-error"></span>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

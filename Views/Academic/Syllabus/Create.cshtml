@@ -1,0 +1,84 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.SyllabusUpsertDto
+@{
+    ViewData["Title"] = "Create Syllabus";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Action = "Create";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Syllabus</h1>
+                <p class="adm-header__sub">Upload a new syllabus document for a class and subject.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title">Syllabus Details</h3></div>
+        <div class="adm-card__body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+                <div class="adm-form-grid adm-form-grid--3">
+                    <div class="adm-form-group">
+                        <label asp-for="Title" class="adm-label"></label>
+                        <input asp-for="Title" class="adm-input" required />
+                        <span asp-validation-for="Title" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SchoolClassId" class="adm-label"></label>
+                        <select asp-for="SchoolClassId" class="adm-select" asp-items="ViewBag.SchoolClasses">
+                            <option value="">-- Select Class --</option>
+                        </select>
+                        <span asp-validation-for="SchoolClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SubjectId" class="adm-label"></label>
+                        <select asp-for="SubjectId" class="adm-select" asp-items="ViewBag.Subjects">
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                        <span asp-validation-for="SubjectId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="AcademicYearId" class="adm-label"></label>
+                        <select asp-for="AcademicYearId" class="adm-select" asp-items="ViewBag.AcademicYears">
+                            <option value="">-- Select Academic Year --</option>
+                        </select>
+                        <span asp-validation-for="AcademicYearId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-label">Upload File</label>
+                        <input name="file" class="adm-input" type="file" />
+                    </div>
+                </div>
+
+                <div class="adm-form-group adm-form-group--full">
+                    <label asp-for="Description" class="adm-label"></label>
+                    <textarea asp-for="Description" class="adm-textarea" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="adm-field-error"></span>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

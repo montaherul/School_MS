@@ -35,8 +35,8 @@
         </div>
     </div>
 
-    <div class="adm-filters mb-4">
-        <form method="get" action="@Url.Action("Policies")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div class="adm-filters ws-mb-4">
+        <form method="get" action="@Url.Action("Policies")" class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="er-label">Academic Year</label>
                 <select name="academicYearId" class="er-filters__select">
@@ -57,11 +57,11 @@
             <h2 class="dash-section__title">Configured Policies</h2>
             <span class="dash-count-badge">@Model.Count Policies</span>
         </div>
-        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="er-card__body">
                 @if (Model.Any())
                 {
-                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                    <div class="adm-table-wrapper">
                         <table class="dash-table" id="policiesTable">
                             <thead>
                                 <tr>
@@ -73,7 +73,7 @@
                                     <th>Min Attendance</th>
                                     <th>Combined Rules</th>
                                     <th>Status</th>
-                                    <th style="text-align:right;">Actions</th>
+                                    <th class="ws-text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -113,7 +113,7 @@
                                                    class="er-action er-action--edit" title="Edit">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                                 </a>
-                                                <form asp-action="PolicyDelete" asp-controller="Promotion" method="post" style="display:inline;">
+                                                <form asp-action="PolicyDelete" asp-controller="Promotion" method="post" class="ws-d-inline">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@p.Id" />
                                                     <input type="hidden" name="academicYearId" value="@selectedYearId" />
@@ -147,17 +147,4 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#policiesTable').DataTable({
-                    responsive: true,
-                    pageLength: 25,
-                    order: [[0, 'asc']],
-                    language: { emptyTable: "No promotion policies found" }
-                });
-            }
-        });
-    </script>
-}
+

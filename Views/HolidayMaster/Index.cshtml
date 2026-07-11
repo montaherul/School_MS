@@ -9,14 +9,14 @@
 <div class="adm-page">
     @if (TempData["Success"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["Success"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #DC2626, #F87171); box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+            <div class="adm-header__icon-wrap adm-header__icon-wrap--holiday">
                 <i class="bi bi-calendar-heart"></i>
             </div>
             <div>
@@ -24,20 +24,20 @@
                 <p class="adm-header__sub">Manage all holidays. Sync to calendar.</p>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="ws-flex ws-gap-2">
             @if (canExport)
             {
-                <a asp-action="Export" class="adm-btn adm-btn--ghost"><i class="bi bi-download"></i> Export</a>
+                <a asp-action="Export" class="adm-btn adm-btn--secondary"><i class="bi bi-download"></i> Export</a>
             }
             @if (canCreate)
             {
-                <button type="button" class="adm-btn adm-btn--ghost" id="btnGenerateBD"><i class="bi bi-globe"></i> Generate BD Holidays</button>
+                <button type="button" class="adm-btn adm-btn--secondary" id="btnGenerateBD"><i class="bi bi-globe"></i> Generate BD Holidays</button>
                 <a asp-action="Create" class="adm-btn adm-btn--primary"><i class="bi bi-plus-circle"></i> Add Holiday</a>
             }
         </div>
     </div>
 
-    <div class="adm-filters mb-3">
+    <div class="adm-filters ws-mb-3">
         <div class="adm-filters__row">
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
@@ -69,7 +69,7 @@
             </div>
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">Action</label>
-                <button class="adm-btn adm-btn--ghost" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                <button class="adm-btn adm-btn--secondary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
             </div>
         </div>
     </div>
@@ -82,125 +82,57 @@
 </div>
 
 @section Scripts {
-    <style>
-        .badge-national { background: #dc2626; color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; }
-        .badge-religious { background: #7c3aed; color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; }
-        .badge-cultural { background: #d97706; color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; }
-        .badge-government { background: #2563eb; color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; }
-        .badge-weekly { background: #64748b; color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; }
-    </style>
-
     <script>
-        let table;
-
-        function initTable() {
-            table = new Tabulator("#holidayTable", {
-                height: false,
-                layout: "fitColumns",
-                movableColumns: false,
-                pagination: true,
-                paginationMode: "remote",
-                paginationSize: 20,
-                paginationSizeSelector: [10,25,50,100],
-                ajaxURL: "/HolidayMaster/GetList",
-                paginationDataSent: { "page": "page", "size": "pageSize" },
-                ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page || 1 }; },
-                columns: [
-                    {
-                        title: "Name", field: "name", minWidth: 180,
-                        formatter: function(c) {
-                            let html = '<div class="entity-cell__name">' + (c.getValue() || '') + '</div>';
-                            if (c.getRow().getData().nameBn) html += '<div class="small text-muted">' + c.getRow().getData().nameBn + '</div>';
-                            return html;
-                        }
-                    },
-                    {
-                        title: "Type", field: "holidayType", width: 120, hozAlign: "center",
-                        formatter: function(c) {
-                            const t = c.getValue() || '';
-                            const cls = t === 'National' ? 'badge-national' : t === 'Religious' ? 'badge-religious' : t === 'Cultural' ? 'badge-cultural' : t === 'Government' ? 'badge-government' : 'badge-weekly';
-                            return '<span class="' + cls + '">' + t + '</span>';
-                        }
-                    },
-                    {
-                        title: "Date", field: "holidayDate", width: 130, hozAlign: "center",
-                        formatter: function(c) {
-                            const d = new Date(c.getValue());
-                            return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-                        }
-                    },
-                    {
-                        title: "Recurring", field: "isRecurring", width: 100, hozAlign: "center",
-                        formatter: function(c) { return c.getValue() ? '<span class="adm-status adm-status--approved">Yes</span>' : '<span class="adm-status adm-status--neutral">No</span>'; }
-                    },
-                    { title: "Religion", field: "religion", width: 100, hozAlign: "center" },
-                    {
-                        title: "Status", field: "isActive", width: 90, hozAlign: "center",
-                        formatter: function(c) { return c.getValue() ? '<span class="adm-status adm-status--approved">Active</span>' : '<span class="adm-status adm-status--rejected">Inactive</span>'; }
-                    },
-                    {
-                        title: "Actions", width: 160, hozAlign: "center", headerSort: false,
-                        formatter: function(c) {
-                            const d = c.getRow().getData();
-                            const items = [];
-                            items.push({ url: '/HolidayMaster/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' });
-                            if (d.isActive) {
-                                items.push({ className: 'action-btn--warning', icon: 'pause-circle', title: 'Deactivate', onClick: 'deactivateHoliday(' + d.id + ')' });
-                            } else {
-                                items.push({ className: 'action-btn--success', icon: 'play-circle', title: 'Activate', onClick: 'activateHoliday(' + d.id + ')' });
-                            }
-                            items.push({ className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'deleteHoliday(' + d.id + ')' });
-                            return buildActionGroup(items);
-                        }
-                    }
-                ]
-            });
-        }
-
-        function refreshData() {
-            if (table) {
-                table.setData("/HolidayMaster/GetList", {
-                    page: 1, pageSize: 100,
-                    search: document.getElementById('filterSearch').value,
-                    type: document.getElementById('filterType').value,
-                    religion: document.getElementById('filterReligion').value
-                });
-            }
-        }
-
-        function deleteHoliday(id) {
-            if (!confirm('Delete this holiday?')) return;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            fetch('/HolidayMaster/Delete/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
-                .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
-        }
-
         function activateHoliday(id) {
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             fetch('/HolidayMaster/Activate/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
-                .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
+                .then(function(r) { return r.json(); })
+                .then(function(r) { if (r.success) { toastr.success(r.message); SchoolMS.Grid.reload('holidayMaster'); } else toastr.error(r.message); });
         }
 
         function deactivateHoliday(id) {
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             fetch('/HolidayMaster/Deactivate/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
-                .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
+                .then(function(r) { return r.json(); })
+                .then(function(r) { if (r.success) { toastr.success(r.message); SchoolMS.Grid.reload('holidayMaster'); } else toastr.error(r.message); });
         }
 
-        document.getElementById('btnRefresh').addEventListener('click', refreshData);
-        document.getElementById('filterSearch').addEventListener('keyup', refreshData);
-        document.getElementById('filterType').addEventListener('change', refreshData);
-        document.getElementById('filterReligion').addEventListener('change', refreshData);
+        SchoolMS.Grid.create('holidayMaster', {
+            container: '#holidayTable',
+            ajaxUrl: '/HolidayMaster/GetList',
+            editUrl: '/HolidayMaster/Edit',
+            deleteUrl: '/HolidayMaster/Delete',
+            pageSize: 20,
+            paginationParams: { page: 'page', size: 'pageSize' },
+            columns: [
+                { title: "Name", field: "name", minWidth: 180, formatter: function(c) { var html = '<div class=\"entity-cell__name\">' + (c.getValue() || '') + '</div>'; if (c.getRow().getData().nameBn) html += '<div class=\"small text-muted\">' + c.getRow().getData().nameBn + '</div>'; return html; } },
+                { title: "Type", field: "holidayType", width: 120, hozAlign: "center", formatter: function(c) { var t = c.getValue() || ''; var cls = t === 'National' ? 'badge-national' : t === 'Religious' ? 'badge-religious' : t === 'Cultural' ? 'badge-cultural' : t === 'Government' ? 'badge-government' : 'badge-weekly'; return '<span class=\"' + cls + '\">' + t + '</span>'; } },
+                { title: "Date", field: "holidayDate", width: 130, hozAlign: "center", formatter: function(c) { var d = new Date(c.getValue()); return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); } },
+                { title: "Recurring", field: "isRecurring", width: 100, hozAlign: "center", formatter: function(c) { return c.getValue() ? '<span class=\"adm-status adm-status--approved\">Yes</span>' : '<span class=\"adm-status adm-status--neutral\">No</span>'; } },
+                { title: "Religion", field: "religion", width: 100, hozAlign: "center" },
+                { title: "Status", field: "isActive", width: 90, hozAlign: "center", formatter: function(c) { return c.getValue() ? '<span class=\"adm-status adm-status--approved\">Active</span>' : '<span class=\"adm-status adm-status--rejected\">Inactive</span>'; } }
+            ],
+            actionItems: function(d) {
+                var items = [];
+                items.push({ url: '/HolidayMaster/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' });
+                if (d.isActive) {
+                    items.push({ className: 'action-btn--warning', icon: 'pause-circle', title: 'Deactivate', onClick: 'deactivateHoliday(' + d.id + ')' });
+                } else {
+                    items.push({ className: 'action-btn--success', icon: 'play-circle', title: 'Activate', onClick: 'activateHoliday(' + d.id + ')' });
+                }
+                items.push({ className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete(\'holidayMaster\', ' + d.id + ')' });
+                return items;
+            },
+            placeholder: '<div class=\"dash-empty\"><i class=\"bi bi-calendar-heart ws-fs-48\"></i><div class=\"dash-empty__title\">No Holidays Found</div></div>'
+        });
 
         document.getElementById('btnGenerateBD').addEventListener('click', function() {
-            const year = prompt('Enter year to generate Bangladesh holidays:', new Date().getFullYear());
+            var year = prompt('Enter year to generate Bangladesh holidays:', new Date().getFullYear());
             if (year && year >= 2000 && year <= 2100) {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                 fetch('/HolidayMaster/GenerateBangladeshHolidays?year=' + year, { method: 'POST', headers: { 'RequestVerificationToken': token } })
                     .then(function() { window.location.reload(); });
             }
         });
-
-        document.addEventListener('DOMContentLoaded', initTable);
     </script>
 }

@@ -23,6 +23,7 @@ public class StudentSubjectFilterService : IStudentSubjectFilterService
 
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
             .AsNoTracking()
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => cs.SchoolClassId == student.ClassId && !cs.IsDeleted && cs.IsActive)
             .ToListAsync(ct);
 
@@ -35,14 +36,16 @@ public class StudentSubjectFilterService : IStudentSubjectFilterService
                 continue;
             }
 
-            if (cs.IsGroupSubject)
+            // Group-specific subject: include only if student's group is linked
+            var link = cs.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (link != null)
             {
-                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
+                if (student.StudentGroupId.HasValue && link.StudentGroupId == student.StudentGroupId.Value)
                     validIds.Add(cs.SubjectId);
                 continue;
             }
 
+            // General subject (no group links): include for all students
             validIds.Add(cs.SubjectId);
         }
 

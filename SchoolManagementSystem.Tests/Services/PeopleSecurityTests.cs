@@ -111,7 +111,7 @@ public class PeopleSecurityTests
         // Should have RequirePermission
         var permAttr = method.GetCustomAttribute<RequirePermissionAttribute>();
         Assert.NotNull(permAttr);
-        Assert.Equal("Users.View", GetPermissionCode(permAttr));
+        Assert.Equal("Employees.View", GetPermissionCode(permAttr));
     }
 
     // ─── 5. EmployeeInvitationController Resend has antiforgery ──────

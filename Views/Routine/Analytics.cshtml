@@ -9,7 +9,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0891B2, #22D3EE); box-shadow: 0 4px 12px rgba(8,145,178,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-bar-chart"></i>
             </div>
             <div>
@@ -22,8 +22,8 @@
         </a>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                     <i class="bi bi-people"></i>
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--success">
                     <i class="bi bi-building"></i>
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--warning">
                     <i class="bi bi-book"></i>
@@ -56,7 +56,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--info">
                     <i class="bi bi-exclamation-triangle"></i>
@@ -69,8 +69,8 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Teacher Load Distribution</h3>
@@ -80,7 +80,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Room Utilization (%)</h3>
@@ -92,8 +92,8 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Subject Distribution</h3>
@@ -103,7 +103,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Conflict Summary</h3>
@@ -115,22 +115,22 @@
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-12">
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-12">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Teacher Load Detail</h3>
                 </div>
                 <div class="adm-card__body">
-                    <div class="table-responsive">
-                        <table class="table table-sm adm-table">
+                    <div class="adm-table-wrapper">
+                        <table class="adm-table">
                             <thead>
                                 <tr>
                                     <th>Teacher</th>
-                                    <th class="text-center">Periods/Week</th>
-                                    <th class="text-center">Max/Day</th>
-                                    <th class="text-center">Working Days</th>
-                                    <th class="text-center">Avg/Day</th>
+                                    <th class="ws-text-center">Periods/Week</th>
+                                    <th class="ws-text-center">Max/Day</th>
+                                    <th class="ws-text-center">Working Days</th>
+                                    <th class="ws-text-center">Avg/Day</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -138,15 +138,15 @@
                                 {
                                     <tr>
                                         <td>@t.TeacherName</td>
-                                        <td class="text-center">@t.TotalPeriodsPerWeek</td>
-                                        <td class="text-center">@t.MaxPeriodsPerDay</td>
-                                        <td class="text-center">@t.WorkingDays</td>
-                                        <td class="text-center">@t.AveragePerDay</td>
+                                        <td class="ws-text-center">@t.TotalPeriodsPerWeek</td>
+                                        <td class="ws-text-center">@t.MaxPeriodsPerDay</td>
+                                        <td class="ws-text-center">@t.WorkingDays</td>
+                                        <td class="ws-text-center">@t.AveragePerDay</td>
                                     </tr>
                                 }
                                 @if (Model.TeacherLoadSummary.Count == 0)
                                 {
-                                    <tr><td colspan="5" class="text-center text-muted">No teacher load data available.</td></tr>
+                                    <tr><td colspan="5" class="ws-text-center ws-text-muted">No teacher load data available.</td></tr>
                                 }
                             </tbody>
                         </table>

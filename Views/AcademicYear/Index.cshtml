@@ -7,14 +7,14 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #D97706, #F59E0B); box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-calendar3"></i>
             </div>
             <div>
@@ -27,109 +27,37 @@
         </a>
     </div>
 
-    <div class="adm-table-card">
+    <div class="adm-table-card adm-grid">
         <div class="adm-table-card__body">
             <div id="data-table"></div>
         </div>
     </div>
 </div>
 
-<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
-    <div class="adm-modal">
-        <div class="adm-modal__header">
-            <div class="adm-modal__header-left">
-                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
-                    <i class="bi bi-trash"></i>
-                </div>
-                <div>
-                    <h5 class="adm-modal__title">Confirm Delete</h5>
-                    <p class="adm-modal__subtitle">This action cannot be undone</p>
-                </div>
-            </div>
-            <button type="button" class="adm-modal__close" id="closeDeleteModal">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-        <div class="adm-modal__body">
-            Are you sure you want to delete <strong id="deleteName"></strong>?
-            <br><small class="text-muted">This action cannot be undone.</small>
-        </div>
-        <div class="adm-modal__footer">
-            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
-            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
-                <i class="bi bi-trash"></i> Delete
-            </button>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <script>
-        var pendingDeleteId = null;
-        var deleteModal = document.getElementById('deleteModalBackdrop');
-
-        function openDeleteModal(name, id) {
-            pendingDeleteId = id;
-            document.getElementById('deleteName').textContent = name;
-            deleteModal.classList.remove('d-none');
-        }
-
-        function closeDeleteModal() {
-            deleteModal.classList.add('d-none');
-            pendingDeleteId = null;
-        }
-
-        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
-        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
-
-        var columns = [
-            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
-            { title: "Name", field: "name", minWidth: 200, cssClass: "entity-cell__name" },
-            { title: "Starts On", field: "startsOn", hozAlign: "center", width: 150 },
-            { title: "Ends On", field: "endsOn", hozAlign: "center", width: 150 },
-            {
-                title: "Status", field: "isActive", hozAlign: "center", width: 110,
-                formatter: function(cell) {
-                    return cell.getValue()
-                        ? '<span class="adm-status adm-status--approved">Active</span>'
-                        : '<span class="adm-status adm-status--rejected">Inactive</span>';
+        SchoolMS.Grid.create('academicYear', {
+            container: '#data-table',
+            ajaxUrl: '@Url.Action("GetList", "AcademicYear")',
+            editUrl: '/AcademicYear/CreateEdit',
+            deleteUrl: '/AcademicYear/DeleteConfirmed',
+            rowNum: true,
+            pageSize: 10,
+            pageSizeSelector: [10,25,50,100],
+            columns: [
+                { title: "Name", field: "name", minWidth: 200, cssClass: "entity-cell__name" },
+                { title: "Starts On", field: "startsOn", hozAlign: "center", width: 150 },
+                { title: "Ends On", field: "endsOn", hozAlign: "center", width: 150 },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center", width: 110,
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>';
+                    }
                 }
-            },
-            {
-                title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 160,
-                formatter: function(cell) {
-                    var d = cell.getRow().getData();
-                    return buildActionGroup([
-                        { url: '/AcademicYear/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
-                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'openDeleteModal("' + d.name.replace(/"/g, '&quot;') + '", ' + d.id + ')' }
-                    ]);
-                }
-            }
-        ];
-
-        var table = new Tabulator("#data-table", {
-            height: false,
-            layout: "fitColumns",
-            movableColumns: false,
-            pagination: true,
-            paginationMode: "remote",
-            filterMode: "remote",
-            paginationSize: 10,
-            paginationSizeSelector: [10,25,50,100],
-            ajaxURL: '@Url.Action("GetList", "AcademicYear")',
-            ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page }; },
-            columns: columns,
-            placeholder: "<div class='dash-empty'><i class='bi bi-calendar3 fs-1'></i><div class='dash-empty__title'>No Academic Years Found</div><div class='dash-empty__sub'>Create a new academic year to get started.</div></div>"
-        });
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (!pendingDeleteId) return;
-            fetch(`/AcademicYear/Delete/${pendingDeleteId}`)
-                .then(res => res.json())
-                .then(data => {
-                    closeDeleteModal();
-                    if (data.success) { table.replaceData(); }
-                });
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-calendar3 ws-fs-48"></i><div class="dash-empty__title">No Academic Years Found</div><div class="dash-empty__sub">Create a new academic year to get started.</div></div>'
         });
     </script>
 }

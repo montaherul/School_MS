@@ -1,0 +1,127 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.SectionViewModel
+@{ 
+    ViewData["Title"] = Model.IsEditMode ? "Edit Section" : "Add Section";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-grid-3x3-gap"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Section" : "Add Section")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify section details" : "Create a new class section")</p>
+            </div>
+        </div>
+        <a href="/Academic/Section/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="ws-mb-3">
+                            <label asp-for="SchoolClassId" class="adm-label">Class <span class="ws-text-danger">*</span></label>
+                            <select asp-for="SchoolClassId" class="adm-select" id="classSelect" onchange="loadGroupsForClass(this.value)">
+                                <option value="">Select Class</option>
+                                @foreach (var c in ViewBag.Classes)
+                                {
+                                    if(c.Id == Model.SchoolClassId)
+                                    {
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" selected>@c.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-mb-3" id="parentGroupRow" style="display:none;">
+                            <label asp-for="ParentSectionId" class="adm-label">
+                                Parent Group <span class="ws-text-muted ws-fs-13">(for group-based class sub-sections)</span>
+                            </label>
+                            <select asp-for="ParentSectionId" class="adm-select" id="parentGroupSelect">
+                                <option value="">— None (this IS the group) —</option>
+                            </select>
+                            <div class="adm-form-text">
+                                Leave blank to create a top-level group (e.g. "Science"). 
+                                Select a group to create a sub-section under it (e.g. "Science A").
+                            </div>
+                        </div>
+
+                        <div class="ws-mb-4">
+                            <label asp-for="Name" class="adm-label">Section Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. A, B, Science A" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Academic/Section/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function isGroupBasedClass(classId) {
+            var opt = document.querySelector('#classSelect option[value="' + classId + '"]');
+            return opt ? opt.dataset.isGroupBased === 'true' : false;
+        }
+
+        function loadGroupsForClass(classId) {
+            const parentRow = document.getElementById('parentGroupRow');
+            const parentSelect = document.getElementById('parentGroupSelect');
+
+            if (!classId || !isGroupBasedClass(classId)) {
+                parentRow.style.display = 'none';
+                parentSelect.value = '';
+                return;
+            }
+
+            parentRow.style.display = '';
+            parentSelect.innerHTML = '<option value="">Loading groups...</option>';
+
+            fetch(`/Admission/GetClassSections?classId=${classId}`)
+                .then(r => r.json())
+                .then(data => {
+                    return fetch(`/Section/GetGroupsForClass?classId=${classId}`)
+                        .then(r => r.json())
+                        .then(groupData => {
+                            parentSelect.innerHTML = '<option value="">— None (this IS the group) —</option>';
+                            groupData.forEach(g => {
+                                const opt = document.createElement('option');
+                                opt.value = g.id;
+                                opt.textContent = g.groupName || g.name;
+                                if (opt.value == '@Model.ParentSectionId') opt.selected = true;
+                                parentSelect.appendChild(opt);
+                            });
+                        });
+                })
+                .catch(() => {
+                    parentSelect.innerHTML = '<option value="">Failed to load groups</option>';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const classId = document.getElementById('classSelect').value;
+            if (classId) loadGroupsForClass(classId);
+        });
+    </script>
+}

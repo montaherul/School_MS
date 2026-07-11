@@ -1,4 +1,12 @@
 @model SchoolManagementSystem.Models.DTOs.Academic.SubjectUpsertDto
 @{ ViewData["Title"] = "Subject Details"; }
-<div class="page-title"><h1>Subject Details</h1><a asp-action="Index" class="btn btn-outline-secondary">Back</a></div>
-<div class="panel"><partial name="_ObjectDetails" model="Model" /></div>
+<div class="adm-header">
+    <div class="adm-header__left">
+        <div></div>
+        <div>
+            <h1 class="adm-header__title">Subject Details</h1>
+        </div>
+    </div>
+    <a asp-action="Index" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back</a>
+</div>
+<div class="adm-card"><partial name="_ObjectDetails" model="Model" /></div>

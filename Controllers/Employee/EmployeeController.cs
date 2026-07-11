@@ -7,9 +7,13 @@ using SchoolManagementSystem.Models.ViewModels.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Helpers;
+using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using EmpEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
+using SalaryEntity = SchoolManagementSystem.Models.Entities.Employee.EmployeeSalary;
+using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -20,20 +24,33 @@ public class EmployeeController : Controller
     private readonly IDepartmentService _departmentService;
     private readonly IDesignationService _designationService;
     private readonly IUnitOfWork _uow;
+    private readonly IViewRendererService _viewRenderer;
+    private readonly IPdfGenerator _pdfGenerator;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
         IDesignationService designationService,
-        IUnitOfWork uow)
+        IUnitOfWork uow,
+        IViewRendererService viewRenderer,
+        IPdfGenerator pdfGenerator)
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _designationService = designationService;
         _uow = uow;
+        _viewRenderer = viewRenderer;
+        _pdfGenerator = pdfGenerator;
     }
 
-    [RequirePermission("Users.View")] // Fallback to Users permission or specialized if desired
+    [RequirePermission("Employees.View")]
+    public async Task<IActionResult> Dashboard(CancellationToken ct)
+    {
+        var model = await _employeeService.GetDashboardAsync(ct);
+        return View(model);
+    }
+
+    [RequirePermission("Employees.View")]
     public async Task<IActionResult> Index(
         int page = 1, int size = 10, string? search = null, 
         int? departmentId = null, int? designationId = null, 
@@ -52,7 +69,7 @@ public class EmployeeController : Controller
         return View();
     }
 
-    [RequirePermission("Users.Create")]
+    [RequirePermission("Employees.Create")]
     public async Task<IActionResult> Create(CancellationToken ct)
     {
         await PopulateLookupListsAsync(ct);
@@ -66,7 +83,7 @@ public class EmployeeController : Controller
         return View("CreateEdit", model);
     }
 
-    [RequirePermission("Users.Edit")]
+    [RequirePermission("Employees.Edit")]
     public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
         var dto = await _employeeService.GetForEditAsync(id, ct);
@@ -80,6 +97,11 @@ public class EmployeeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(EmployeeUpsertDto dto, CancellationToken ct)
     {
+        // Runtime permission check (Create vs Edit based on Id)
+        var requiredPerm = dto.Id == 0 ? "Employees.Create" : "Employees.Edit";
+        if (!User.HasClaim("Permission", requiredPerm) && !User.IsInRole("Super Admin"))
+            return Forbid();
+
         if (!ModelState.IsValid)
         {
             await PopulateLookupListsAsync(ct);
@@ -103,13 +125,14 @@ public class EmployeeController : Controller
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError(string.Empty, $"An unexpected error occurred: {ex.Message}");
+            ModelState.AddModelError(string.Empty, $"An unexpected error occurred.");
             await PopulateLookupListsAsync(ct);
             return View("CreateEdit", dto);
         }
     }
 
     [Route("Employee/Details/{id?}")]
+    [RequirePermission("Employees.View")]
     public async Task<IActionResult> Details(int? id, CancellationToken ct)
     {
         int targetId;
@@ -135,8 +158,8 @@ public class EmployeeController : Controller
             }
         }
 
-        // Security Check: Users.View allows viewing any employee, or they can view their own profile.
-        if (!isOwnProfile && !User.HasClaim("Permission", "Users.View") && !User.IsInRole("Super Admin"))
+        // Security Check: own profile bypasses Employees.View
+        if (!isOwnProfile && !User.HasClaim("Permission", "Employees.View") && !User.IsInRole("Super Admin"))
         {
             return Forbid();
         }
@@ -167,12 +190,71 @@ public class EmployeeController : Controller
         }
 
         ViewBag.SchoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-        
+
+        // Load additional profile data
+        var attendanceQuery = _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance>().Query()
+            .Where(a => a.EmployeeId == targetId && a.AttendanceDate.Year == DateTime.Today.Year && !a.IsDeleted);
+        var attendanceStats = await attendanceQuery
+            .GroupBy(a => 1)
+            .Select(g => new
+            {
+                Present = g.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present),
+                Absent = g.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent),
+                Leave = g.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Leave),
+                Late = g.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Late)
+            })
+            .FirstOrDefaultAsync(ct);
+        ViewBag.TotalPresent = attendanceStats?.Present ?? 0;
+        ViewBag.TotalAbsent = attendanceStats?.Absent ?? 0;
+        ViewBag.TotalLeave = attendanceStats?.Leave ?? 0;
+        ViewBag.TotalLate = attendanceStats?.Late ?? 0;
+
+        var leaveQuery = _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication>().Query()
+            .Where(l => l.EmployeeId == targetId && l.FromDate.Year == DateTime.Today.Year);
+        ViewBag.TotalLeaveDays = await leaveQuery.SumAsync(l => l.TotalDays, ct);
+
+        var salary = await _uow.Repository<SalaryEntity>().Query()
+            .Where(s => s.EmployeeId == targetId && !s.IsDeleted)
+            .OrderByDescending(s => s.EffectiveFrom)
+            .FirstOrDefaultAsync(ct);
+        ViewBag.CurrentSalary = salary?.TotalSalary ?? 0;
+
+        // Teaching profile
+        var teacher = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().Query()
+            .Include(t => t.ClassAssignments.Where(ca => !ca.IsDeleted && ca.IsActive))
+            .Include(t => t.SubjectAssignments.Where(sa => !sa.IsDeleted && sa.IsActive))
+            .FirstOrDefaultAsync(t => t.EmployeeId == targetId && !t.IsDeleted, ct);
+        ViewBag.TeacherProfile = teacher;
+
+        // Generate QR code for ID Card
+        if (!string.IsNullOrEmpty(dto.QRVerificationCode))
+        {
+            ViewBag.QRCodeBase64 = IdCardQRHelper.GenerateQrCodeBase64(dto.QRVerificationCode);
+        }
+
+        // Load audit log history for employee's user account
+        var empEntity = await _uow.Repository<EmpEntity>().Query()
+            .Where(e => e.Id == targetId && !e.IsDeleted)
+            .Select(e => e.UserId)
+            .FirstOrDefaultAsync(ct);
+        if (empEntity.HasValue)
+        {
+            ViewBag.AuditLogs = await _uow.Repository<SchoolManagementSystem.Models.Entities.Auth.AuditLog>().Query()
+                .Where(al => al.UserId == empEntity.Value)
+                .OrderByDescending(al => al.CreatedAt)
+                .Take(200)
+                .ToListAsync(ct);
+        }
+        else
+        {
+            ViewBag.AuditLogs = new List<SchoolManagementSystem.Models.Entities.Auth.AuditLog>();
+        }
+
         return View(dto.MapTo<EmployeeDetailsViewModel>());
     }
 
     [HttpPost]
-    [RequirePermission("Users.Delete")]
+    [RequirePermission("Employees.Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
@@ -183,8 +265,30 @@ public class EmployeeController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    [RequirePermission("Employees.View")]
+    public async Task<IActionResult> DownloadServiceBookPdf(int id, CancellationToken ct)
+    {
+        var dto = await _employeeService.GetDetailsAsync(id, ct);
+        if (dto == null) return NotFound("Employee not found");
+
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        ViewBag.SchoolSetting = schoolSetting;
+
+        var salary = await _uow.Repository<SalaryEntity>().Query()
+            .Where(s => s.EmployeeId == id && !s.IsDeleted)
+            .OrderByDescending(s => s.EffectiveFrom)
+            .FirstOrDefaultAsync(ct);
+        ViewBag.CurrentSalary = salary?.TotalSalary ?? 0;
+
+        var vm = dto.MapTo<EmployeeDetailsViewModel>();
+        var html = await _viewRenderer.RenderToStringAsync("ServiceBookPdf", vm);
+        var pdf = _pdfGenerator.GenerateFromHtml(html);
+        return File(pdf, "application/pdf", $"ServiceBook_{dto.EmployeeCode}_{DateTime.Today:yyyyMMdd}.pdf");
+    }
+
     [HttpPost]
-    [RequirePermission("Users.Edit")]
+    [RequirePermission("Employees.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateStatus(int id, string status, CancellationToken ct)
     {
@@ -196,6 +300,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Employees.View")]
     public async Task<IActionResult> VerifyCode(string code, int? id, CancellationToken ct)
     {
         var exists = await _employeeService.IsCodeExistsAsync(code, id, ct);
@@ -203,6 +308,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Employees.View")]
     public async Task<IActionResult> VerifyEmail(string email, int? id, CancellationToken ct)
     {
         var exists = await _employeeService.IsEmailExistsAsync(email, id, ct);
@@ -210,6 +316,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Employees.View")]
     public async Task<IActionResult> VerifyPhone(string phone, int? id, CancellationToken ct)
     {
         var exists = await _employeeService.IsPhoneExistsAsync(phone, id, ct);
@@ -217,7 +324,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("Users.View")]
+    [RequirePermission("Employees.View")]
     [Route("Employee/Verify/{id}")]
     public async Task<IActionResult> Verify(int id, CancellationToken ct)
     {

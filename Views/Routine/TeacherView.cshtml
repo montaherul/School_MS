@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-calendar-week"></i>
             </div>
             <div>
@@ -16,8 +16,8 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                     <i class="bi bi-book"></i>
@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--success">
                     <i class="bi bi-clock"></i>
@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--warning">
                     <i class="bi bi-building"></i>
@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--info">
                     <i class="bi bi-calendar-check"></i>
@@ -63,10 +63,10 @@
         </div>
     </div>
 
-    <div class="adm-card mb-4">
+    <div class="adm-card ws-mb-4">
         <div class="adm-card__header">
             <h3>Weekly Timetable</h3>
-            <div class="d-flex gap-2">
+            <div class="ws-flex ws-gap-2">
                 <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" onclick="window.print()">
                     <i class="bi bi-printer"></i> Print
                 </button>
@@ -84,23 +84,23 @@
                 <h3>Today's Classes</h3>
             </div>
             <div class="adm-card__body">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+                <div class="adm-table-wrapper">
+                    <table class="adm-table">
+                        <thead class="ws-bg-surface">
                             <tr>
-                                <th class="small py-3">Period</th>
-                                <th class="small py-3">Class</th>
-                                <th class="small py-3">Section</th>
-                                <th class="small py-3">Subject</th>
-                                <th class="small py-3">Room</th>
-                                <th class="small py-3">Time</th>
+                                <th class="ws-fs-13 ws-py-3">Period</th>
+                                <th class="ws-fs-13 ws-py-3">Class</th>
+                                <th class="ws-fs-13 ws-py-3">Section</th>
+                                <th class="ws-fs-13 ws-py-3">Subject</th>
+                                <th class="ws-fs-13 ws-py-3">Room</th>
+                                <th class="ws-fs-13 ws-py-3">Time</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var cls in Model.TodayClasses)
                             {
                                 <tr>
-                                    <td class="fw-semibold">@cls.PeriodName</td>
+                                    <td class="ws-fw-600">@cls.PeriodName</td>
                                     <td>@cls.ClassName</td>
                                     <td>@cls.SectionName</td>
                                     <td>@cls.SubjectName</td>
@@ -121,25 +121,25 @@
         var columns = [
             { title: "Period", field: "periodName", width: 100, cssClass: "fw-semibold" },
             { title: "Saturday", field: "sat", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Sunday", field: "sun", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Monday", field: "mon", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Tuesday", field: "tue", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Wednesday", field: "wed", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Thursday", field: "thu", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             },
             { title: "Friday", field: "fri", widthGrow: 1, hozAlign: "center",
-                formatter: function(cell) { return cell.getValue() || '—'; }
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
             }
         ];
 
@@ -147,9 +147,9 @@
             height: false,
             layout: "fitColumns",
             movableColumns: false,
-            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.WeeklyGrid)),
+            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyGrid)),
             columns: columns,
-            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week fs-1'></i><div class='dash-empty__title'>No Timetable Found</div><div class='dash-empty__sub'>Your timetable has not been published yet.</div></div>"
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week ws-fs-48'></i><div class='dash-empty__title'>No Timetable Found</div><div class='dash-empty__sub'>Your timetable has not been published yet.</div></div>"
         });
     </script>
 }

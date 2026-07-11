@@ -35,17 +35,17 @@
 
     @if (TempData["SuccessMessage"] is string msg)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="adm-alert adm-alert--success alert-dismissible fade show" role="alert">
             @msg
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     <div class="adm-card mb-4">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label er-label">Subject</label>
-                <select name="subjectId" class="form-select er-filters__select" onchange="this.form.submit()">
+        <form method="get" class="ws-row ws-g-4 ws-items-end">
+            <div class="ws-col-md-4">
+                <label class="adm-label er-label">Subject</label>
+                <select name="subjectId" class="adm-input er-filters__select" onchange="this.form.submit()">
                     <option value="">-- All Subjects --</option>
                     @foreach (var s in subjects)
                     {
@@ -59,15 +59,15 @@
     <div class="adm-card">
         @if (Model.Count == 0)
         {
-            <div class="text-center py-5 text-muted">
+            <div class="ws-text-center ws-py-5 ws-text-muted">
                 <p>No subject mark structures configured.</p>
-                <p class="small">Select a subject above, then click "Configure Components".</p>
+                <p class="ws-fs-13">Select a subject above, then click "Configure Components".</p>
             </div>
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table adm-table">
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
                     <thead>
                         <tr>
                             <th>Component</th>
@@ -84,7 +84,7 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr class="@(!item.IsActive ? "text-muted" : "")">
+                            <tr class="@(!item.IsActive ? "ws-text-muted" : "")">
                                 <td><code>@item.ComponentCode</code> @item.ComponentName</td>
                                 <td>@item.FullMarks</td>
                                 <td>@item.PassMarks</td>
@@ -95,15 +95,15 @@
                                 <td>
                                     @if (item.IsActive)
                                     {
-                                        <span class="badge bg-success">Active</span>
+                                        <span class="adm-badge adm-badge--success">Active</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger">Inactive</span>
+                                        <span class="adm-badge adm-badge--danger">Inactive</span>
                                     }
                                 </td>
                                 <td>
-                                    <div class="d-flex gap-1">
+                                    <div class="ws-flex ws-gap-1">
                                         <a href="@Url.Action("Details", new { id = item.Id })" class="er-btn er-btn--sm er-btn--secondary" title="Details">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
                                         </a>
@@ -112,7 +112,7 @@
                                         </a>
                                         <form method="post" action="@Url.Action("Delete", new { id = item.Id })" onsubmit="return confirm('Delete this component configuration?');">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="er-btn er-btn--sm er-btn--secondary text-danger" title="Delete">
+                                            <button type="submit" class="er-btn er-btn--sm er-btn--secondary ws-text-danger" title="Delete">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                                             </button>
                                         </form>

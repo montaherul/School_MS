@@ -30,8 +30,8 @@
         </div>
     </div>
 
-    <div class="adm-filters mb-4">
-        <form method="get" action="@Url.Action("History")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div class="adm-filters ws-mb-4">
+        <form method="get" action="@Url.Action("History")" class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="er-label">Academic Year</label>
                 <select name="academicYearId" class="er-filters__select">
@@ -54,7 +54,7 @@
             </div>
             <div class="adm-filters__field">
                 <label class="er-label">Student ID</label>
-                <input type="number" name="studentId" value="@selectedStudentId" class="er-filters__select" placeholder="Student ID" style="min-width:120px;" />
+                <input type="number" name="studentId" value="@selectedStudentId" class="er-filters__select" placeholder="Student ID" />
             </div>
             <div class="adm-filters__field">
                 <button type="submit" class="er-btn er-btn--primary adm-btn--sm">Search</button>
@@ -67,11 +67,11 @@
             <h2 class="dash-section__title">Promotion Records</h2>
             <span class="dash-count-badge">@Model.Count Records</span>
         </div>
-        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="er-card__body">
                 @if (Model.Any())
                 {
-                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                    <div class="adm-table-wrapper">
                         <table class="dash-table" id="historyTable">
                             <thead>
                                 <tr>
@@ -82,7 +82,7 @@
                                     <th>Status</th>
                                     <th>Date</th>
                                     <th>Remarks</th>
-                                    <th style="text-align:right;">Actions</th>
+                                    <th class="ws-text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -130,11 +130,11 @@
     </div>
 </div>
 
-<div class="adm-modal-backdrop" id="reverseModal" style="display:none;">
+<div class="adm-modal-backdrop ws-d-none" id="reverseModal">
     <div class="adm-modal" role="dialog">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
-                <div class="adm-modal__header-icon" style="background:var(--adm-rejected-bg);color:var(--adm-rejected);">
+                <div class="adm-modal__header-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                 </div>
                 <div>
@@ -150,15 +150,15 @@
             @Html.AntiForgeryToken()
             <input type="hidden" name="promotionHistoryId" id="reverseHistoryId" />
             <input type="hidden" name="academicYearId" value="@selectedYearId" />
-            <div class="adm-modal__body" style="padding-top:4px;">
-                <div class="adm-filters__field" style="margin-bottom:0;">
-                    <label class="er-label">Reason for Reversal <span style="color:var(--adm-rejected);">*</span></label>
+            <div class="adm-modal__body">
+                <div class="adm-filters__field">
+                    <label class="er-label">Reason for Reversal <span class="ws-text-danger">*</span></label>
                     <textarea name="reason" class="er-filters__select" rows="3" required placeholder="Enter reason for reversing this promotion..."></textarea>
                 </div>
             </div>
             <div class="adm-modal__footer">
                 <button type="button" class="er-btn er-btn--secondary" onclick="closeReverseModal()">Cancel</button>
-                <button type="submit" class="er-btn er-btn--primary" style="background:var(--adm-rejected);border-color:var(--adm-rejected);">
+                <button type="submit" class="er-btn er-btn--danger">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                     Reverse Promotion
                 </button>
@@ -183,17 +183,6 @@
 
         document.getElementById('reverseModal').addEventListener('click', function (e) {
             if (e.target === this) closeReverseModal();
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#historyTable').DataTable({
-                    responsive: true,
-                    pageLength: 25,
-                    order: [[5, 'desc']],
-                    language: { emptyTable: "No promotion history found" }
-                });
-            }
         });
     </script>
 }

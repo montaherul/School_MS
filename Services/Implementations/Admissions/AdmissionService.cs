@@ -507,6 +507,12 @@ public class AdmissionService : IAdmissionService
         return groups;
     }
 
+    public async Task<int?> GetGroupStartThresholdAsync(CancellationToken ct = default)
+    {
+        var settings = await _settingRepo.GetCurrentSettingsAsync(ct);
+        return settings?.GroupStartsFromClassId;
+    }
+
     public async Task<BulkOperationProgress> BulkApproveAsync(List<int> ids, int sectionId, string approvedBy, CancellationToken ct = default)
     {
         var progress = new BulkOperationProgress { Total = ids.Count };

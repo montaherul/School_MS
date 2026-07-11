@@ -6,31 +6,31 @@
 }
 
 <div class="tab-pane fade" id="professional" role="tabpanel">
-    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-telephone-fill me-2"></i>Contact Information</h5>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
-        <div class="adm-form-group">
+    <h5 class="er-heading"><i class="bi bi-telephone-fill ws-me-2"></i>Contact Information</h5>
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="Phone" class="adm-form-label">Primary Phone <span class="adm-required">*</span></label>
             <input asp-for="Phone" class="adm-input" placeholder="e.g. 017XXXXXXXX" required />
-            <span asp-validation-for="Phone" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="Phone" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="Email" class="adm-form-label">Email Address</label>
             <input asp-for="Email" type="email" class="adm-input" placeholder="e.g. email@school.local" />
-            <span asp-validation-for="Email" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="Email" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="EmergencyContactName" class="adm-form-label">Emergency Contact Name</label>
             <input asp-for="EmergencyContactName" class="adm-input" placeholder="Contact Person" />
-        </div>
-        <div class="adm-form-group">
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="EmergencyContactPhone" class="adm-form-label">Emergency Contact Phone</label>
             <input asp-for="EmergencyContactPhone" class="adm-input" placeholder="Contact Phone" />
-        </div>
+        </div></div>
     </div>
 
-    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-briefcase-fill me-2"></i>Professional Particulars</h5>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px">
-        <div class="adm-form-group">
+    <h5 class="er-heading"><i class="bi bi-briefcase-fill ws-me-2"></i>Professional Particulars</h5>
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-4"><div class="adm-form-group">
             <label asp-for="DepartmentId" class="adm-form-label">Department <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
@@ -53,9 +53,9 @@
                     }
                 </select>
             }
-            <span asp-validation-for="DepartmentId" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="DepartmentId" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-4"><div class="adm-form-group">
             <label asp-for="DesignationId" class="adm-form-label">Designation <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
@@ -78,9 +78,9 @@
                     }
                 </select>
             }
-            <span asp-validation-for="DesignationId" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="DesignationId" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-4"><div class="adm-form-group">
             <label asp-for="JoiningDate" class="adm-form-label">Joining Date <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
@@ -91,9 +91,9 @@
             {
                 <input asp-for="JoiningDate" type="date" class="adm-input" required />
             }
-            <span asp-validation-for="JoiningDate" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="JoiningDate" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-4"><div class="adm-form-group">
             <label asp-for="EmployeeType" class="adm-form-label">Employment Type <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
@@ -114,8 +114,8 @@
                     <option value="Substitute">Substitute</option>
                 </select>
             }
-        </div>
-        <div class="adm-form-group">
+        </div></div>
+        <div class="ws-col-4"><div class="adm-form-group">
             <label asp-for="Status" class="adm-form-label">Status <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
@@ -138,9 +138,9 @@
                     <option value="On Leave">On Leave</option>
                 </select>
             }
-        </div>
-        <div class="adm-form-group" style="display:flex;align-items:flex-end">
-            <div style="width:100%;border:1px solid var(--adm-border);border-radius:var(--adm-radius);padding:12px;background:var(--adm-surface-2);display:flex;align-items:center;gap:8px">
+        </div></div>
+        <div class="ws-col-4"><div class="adm-form-group">
+            <div class="er-checkbox-card">
                 @if (isOnboarding)
                 {
                     <input type="hidden" asp-for="IsTeachingStaff" />
@@ -150,10 +150,10 @@
                 {
                     <input type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching" style="accent-color:var(--adm-primary);width:18px;height:18px">
                 }
-                <label for="chkIsTeaching" style="font-weight:600;font-size:13px;color:var(--adm-text);cursor:pointer">Is Teaching Staff?</label>
+                <label for="chkIsTeaching" class="er-checkbox-label">Is Teaching Staff?</label>
             </div>
-        </div>
-        <div class="adm-form-group" style="grid-column:1/-1">
+        </div></div>
+        <div class="ws-col-12"><div class="adm-form-group">
             <label asp-for="Remarks" class="adm-form-label">Remarks / Special Notes</label>
             @if (isOnboarding)
             {
@@ -163,6 +163,6 @@
             {
                 <textarea asp-for="Remarks" class="adm-input" rows="2"></textarea>
             }
-        </div>
+        </div></div>
     </div>
 </div>

@@ -40,7 +40,7 @@
                 <div class="ws-text-light ws-fs-16 ws-lh-lg">
                     @if (!string.IsNullOrEmpty(Model.PrincipalMessage))
                     {
-                        @Html.Raw(Model.PrincipalMessage.Replace("\r\n", "<br/>").Replace("\n", "<br/>"))
+                        @Html.SanitizedHtml(Model.PrincipalMessage?.Replace("\r\n", "<br/>")?.Replace("\n", "<br/>"))
                     }
                     else
                     {

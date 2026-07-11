@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Subject Master Registry";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-book"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Master Registry</h1>
+                <p class="adm-header__sub">Manage curriculum subjects, classifications, and master configurations</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Academic/Subject/CreateEdit" class="adm-btn adm-btn--primary">
+                <i class="bi bi-plus-circle"></i> <span>Add Subject</span>
+            </a>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="SchoolMS.Grid.bulkImport('subject')">
+                <i class="bi bi-upload"></i> <span>Import</span>
+            </button>
+            <a href="/Subject/BulkExport" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-download"></i> <span>Export</span>
+            </a>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="SchoolMS.Grid.bulkActivate('subject')">
+                <i class="bi bi-check2-all"></i> <span>Activate</span>
+            </button>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="SchoolMS.Grid.bulkDeactivate('subject')">
+                <i class="bi bi-x-octagon"></i> <span>Deactivate</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        SchoolMS.Grid.create('subject', {
+            container: '#data-table',
+            ajaxUrl: '@Url.Action("GetList", "Subject")',
+            editUrl: '/Academic/Subject/CreateEdit',
+            deleteUrl: '/Academic/Subject/DeleteAjax',
+            deleteBody: true,
+            pageSize: 10,
+            columns: [
+                { title: "Code", field: "code", minWidth: 100, cssClass: "adm-cell-mono" },
+                { title: "English Name", field: "name", minWidth: 160, cssClass: "entity-cell__name" },
+                { title: "Bangla Name", field: "nameBn", minWidth: 160, cssClass: "ws-text-muted" },
+                { title: "Group", field: "subjectGroup", minWidth: 150, formatter: function(c) { var v = c.getValue(); if (!v || v === 'General') return '<span class=\"adm-badge adm-badge--neutral\">General</span>'; return '<span class=\"adm-badge adm-badge--info\">' + v + '</span>'; } },
+                { title: "Religion", field: "isReligionSubject", width: 120, hozAlign: "center", formatter: function(c) { if (!c.getValue()) return '<span class=\"ws-text-muted ws-fs-13\">-</span>'; return '<span class=\"adm-badge adm-badge--warning\">' + (c.getRow().getData().religionType || 'Religion') + '</span>'; } },
+                { title: "Optional", field: "isOptional", width: 100, hozAlign: "center", formatter: "tickCross" },
+                { title: "Practical", field: "isPractical", width: 100, hozAlign: "center", formatter: "tickCross" },
+                { title: "Status", field: "isActive", width: 110, hozAlign: "center", formatter: function(c) { return c.getValue() ? '<span class=\"adm-status adm-status--approved\">Active</span>' : '<span class=\"adm-status adm-status--rejected\">Inactive</span>'; } }
+            ],
+            actionItems: function(d) {
+                var items = [
+                    { url: '/Academic/Subject/Details/' + d.id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                    { url: '/Academic/Subject/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete(\'subject\', ' + d.id + ')' }
+                ];
+                items.push({ className: 'action-btn--toggle', icon: 'toggle-on', title: d.isActive ? 'Deactivate' : 'Activate', onClick: 'SchoolMS.Grid.toggleActive(\'subject\', ' + d.id + ')' });
+                return items;
+            },
+            placeholder: '<div class=\"dash-empty\"><i class=\"bi bi-journal-x ws-fs-48\"></i><div class=\"dash-empty__title\">No Subjects Found</div><div class=\"dash-empty__sub\">Try adjusting your filters.</div></div>'
+        });
+    </script>
+}

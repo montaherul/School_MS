@@ -783,6 +783,11 @@ body {
     box-shadow: 0 4px 12px rgba(15,118,110,0.3);
 }
 
+.adm-header__icon-wrap--holiday {
+    background: linear-gradient(135deg, #DC2626, #F87171);
+    box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+}
+
 .adm-header__title {
     font-size: 22px;
     font-weight: 700;
@@ -1734,6 +1739,8 @@ body {
 }
 
 .adm-modal {
+    position: relative;
+    z-index: 1060;
     background: var(--adm-surface);
     border-radius: var(--adm-radius-lg);
     box-shadow: var(--adm-shadow-lg);
@@ -2016,68 +2023,99 @@ body {
     border: 1px solid var(--adm-border);
 }
 
-/* ── Action Group ── */
+/* ── Action Pill (shared container) ── */
 .action-group {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    flex-wrap: nowrap;
-    min-width: max-content;
+    gap: 1px;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--adm-border);
+    background: var(--adm-surface);
+    opacity: 0.7;
+    transition:
+        opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.3s ease;
 }
 
+.tabulator-row:hover .action-group,
+tr:hover .action-group {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--adm-text-1) 8%, transparent);
+}
+
+/* ── Individual action chip ── */
 .action-btn {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--adm-radius-sm);
-    border: 1px solid var(--adm-border);
-    background: var(--adm-surface);
+    border-radius: 7px;
+    border: none;
+    background: transparent;
     color: var(--adm-text-3);
     cursor: pointer;
-    transition: all var(--adm-transition);
+    transition:
+        background 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
     .action-btn:hover {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        border-color: var(--adm-primary);
+        background: var(--adm-surface-2);
+        color: var(--adm-text-1);
+        transform: scale(1.1);
     }
 
-    .action-btn--view:hover {
-        background: var(--adm-converted-bg);
-        color: var(--adm-converted);
-        border-color: var(--adm-converted);
+    .action-btn:active {
+        transform: scale(0.92);
+        transition-duration: 0.06s;
     }
 
-    .action-btn--edit:hover {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        border-color: var(--adm-primary);
+    .action-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--adm-bg), 0 0 0 4px var(--adm-primary);
     }
+
+/* ── View: sky chip ── */
+.action-btn--view:hover {
+    background: color-mix(in srgb, var(--adm-converted) 18%, transparent);
+    color: var(--adm-converted);
+}
+
+/* ── Edit: teal chip ── */
+.action-btn--edit:hover {
+    background: color-mix(in srgb, var(--adm-primary) 18%, transparent);
+    color: var(--adm-primary);
+}
+
+/* ── Delete: muted red at rest, red chip on hover ── */
+.action-btn--delete {
+    color: color-mix(in srgb, var(--adm-rejected) 55%, var(--adm-text-3));
+}
 
     .action-btn--delete:hover {
-        background: var(--adm-rejected-bg);
+        background: color-mix(in srgb, var(--adm-rejected) 18%, transparent);
         color: var(--adm-rejected);
-        border-color: var(--adm-rejected);
     }
 
-    .action-btn--success:hover {
-        background: var(--adm-success-bg);
-        color: var(--adm-success);
-        border-color: var(--adm-success);
-    }
+/* ── Success: green chip ── */
+.action-btn--success:hover {
+    background: color-mix(in srgb, var(--adm-success) 18%, transparent);
+    color: var(--adm-success);
+}
 
-    .action-btn--warning:hover {
-        background: var(--adm-pending-bg);
-        color: var(--adm-pending);
-        border-color: var(--adm-pending);
-    }
+/* ── Warning: amber chip ── */
+.action-btn--warning:hover {
+    background: color-mix(in srgb, var(--adm-pending) 18%, transparent);
+    color: var(--adm-pending);
+}
 
     .tabulator .tabulator-row .tabulator-cell {
         padding: 8px 12px !important;
@@ -2179,6 +2217,10 @@ body {
 
 .adm-form-grid--single {
     grid-template-columns: 1fr;
+}
+
+.adm-form-grid--3 {
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .adm-form-group {

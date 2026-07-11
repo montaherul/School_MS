@@ -34,7 +34,7 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             font-size: 9pt;
-            color: #222;
+            color: var(--ws-text, #222);
             margin: 0;
             padding: 0;
             line-height: 1.3;
@@ -43,7 +43,7 @@
             text-align: center;
             margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #1a73e8;
+            border-bottom: 2px solid var(--ws-primary, #1a73e8);
         }
         .header .school-name {
             font-size: 14pt;
@@ -52,18 +52,18 @@
         }
         .header .school-addr {
             font-size: 8pt;
-            color: #666;
+            color: var(--ws-text-muted, #666);
             margin: 2px 0;
         }
         .header .title {
             font-size: 12pt;
             font-weight: 600;
             margin: 6px 0 2px;
-            color: #1a73e8;
+            color: var(--ws-primary, #1a73e8);
         }
         .header .subtitle {
             font-size: 9pt;
-            color: #555;
+            color: var(--ws-text-light, #555);
             margin: 2px 0;
         }
         table {
@@ -76,7 +76,7 @@
             display: table-header-group;
         }
         th {
-            background: #1a73e8;
+            background: var(--ws-primary, #1a73e8);
             color: #fff;
             padding: 6px 4px;
             text-align: center;
@@ -90,22 +90,22 @@
         }
         td {
             padding: 4px 6px;
-            border: 1px solid #d0d0d0;
+            border: 1px solid var(--ws-border, #d0d0d0);
             vertical-align: middle;
             text-align: center;
         }
         td:first-child {
             text-align: left;
             font-weight: 600;
-            background: #f0f4ff;
+            background: var(--ws-surface-highlight, #f0f4ff);
             width: 70px;
             padding-left: 8px;
         }
         tr:nth-child(even) td:first-child {
-            background: #e8edf6;
+            background: var(--ws-surface-alt, #e8edf6);
         }
         .cell-empty {
-            color: #ccc;
+            color: var(--ws-border, #ccc);
         }
         .cell-subject {
             font-weight: 600;
@@ -113,12 +113,12 @@
         }
         .cell-detail {
             font-size: 7pt;
-            color: #555;
+            color: var(--ws-text-light, #555);
         }
         .cell-lab {
             display: inline-block;
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--ws-warning-bg, #fef3c7);
+            color: var(--ws-warning-text, #92400e);
             padding: 1px 6px;
             border-radius: 3px;
             font-size: 6.5pt;
@@ -127,11 +127,11 @@
         .footer {
             margin-top: 10px;
             padding-top: 6px;
-            border-top: 1px solid #ccc;
+            border-top: 1px solid var(--ws-border, #ccc);
             display: flex;
             justify-content: space-between;
             font-size: 7.5pt;
-            color: #888;
+            color: var(--ws-text-muted, #888);
         }
         .footer .generated {
             text-align: right;
@@ -165,17 +165,17 @@
 
     @if (Model.Count == 0)
     {
-        <p style="text-align:center;color:#888;padding:40px;">No timetable entries found.</p>
+        <p class="ws-text-center ws-text-muted ws-py-6">No timetable entries found.</p>
     }
     else
     {
         <table>
             <thead>
                 <tr>
-                    <th style="width:10%;">Period</th>
+                    <th>Period</th>
                     @for (int d = 0; d < 7; d++)
                     {
-                        <th style="width:12.86%;">@dayAbbr[d]</th>
+                        <th>@dayAbbr[d]</th>
                     }
                 </tr>
             </thead>
@@ -201,7 +201,7 @@
                             }
                             else
                             {
-                                <td><span class="cell-empty">—</span></td>
+                                <td><span class="cell-empty">&mdash;</span></td>
                             }
                         }
                     </tr>

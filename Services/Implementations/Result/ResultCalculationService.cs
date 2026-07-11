@@ -92,14 +92,14 @@ public class ResultCalculationService : IResultCalculationService
         {
             await CalculateSubjectResultsAsync(examId);
 
-            var exam = await _examRepository.Query()
+            var exam = await _examRepository.QueryNoTracking()
                 .Include(e => e.ExamSubjects)
                 .ThenInclude(es => es.Subject)
                 .FirstOrDefaultAsync(e => e.Id == examId);
 
             if (exam == null) throw new ArgumentException("Exam not found");
 
-            var classIds = await _examResultRepository.Query()
+            var classIds = await _examResultRepository.QueryNoTracking()
                 .Include(r => r.Student)
                 .Where(r => r.ExamId == examId)
                 .Select(r => r.Student.ClassId)
@@ -107,10 +107,11 @@ public class ResultCalculationService : IResultCalculationService
                 .ToListAsync();
 
             var students = await _uow.Repository<Student>().Query()
+                .AsNoTracking()
                 .Where(s => classIds.Contains(s.ClassId) && !s.IsDeleted)
                 .ToListAsync();
 
-            var allSubjectResults = await _subjectResultRepository.Query()
+            var allSubjectResults = await _subjectResultRepository.QueryNoTracking()
                 .Include(r => r.Subject)
                 .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
                 .ToListAsync();
@@ -147,6 +148,7 @@ public class ResultCalculationService : IResultCalculationService
     public async Task CalculateSubjectResultsAsync(int examId)
     {
         var markEntries = await _markEntryRepository.Query()
+            .AsNoTracking()
             .Include(m => m.Student)
             .Include(m => m.Subject)
             .Where(m => m.ExamId == examId)
@@ -176,7 +178,9 @@ public class ResultCalculationService : IResultCalculationService
         var studentGroupLookup = studentGroups.ToDictionary(sg => sg.Id, sg => sg);
 
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
             .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => classIds.Contains(cs.SchoolClassId) && !cs.IsDeleted && cs.IsActive)
             .ToListAsync();
 
@@ -209,13 +213,11 @@ public class ResultCalculationService : IResultCalculationService
             }
 
             // Group subject filtering: only include if the subject belongs to the student's group
-            if (classSubject.IsGroupSubject && studentInfo != null)
+            var csgLink = classSubject.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink != null && studentInfo != null)
             {
-                if (classSubject.StudentGroupId.HasValue && studentInfo.StudentGroupId.HasValue)
-                {
-                    if (classSubject.StudentGroupId.Value != studentInfo.StudentGroupId.Value)
-                        continue;
-                }
+                if (!studentInfo.StudentGroupId.HasValue || csgLink.StudentGroupId != studentInfo.StudentGroupId.Value)
+                    continue;
             }
 
             examSubjects.TryGetValue(markEntry.SubjectId, out var examSubject);
@@ -540,6 +542,7 @@ public class ResultCalculationService : IResultCalculationService
 
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
             .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted && cs.IsActive)
             .ToListAsync();
 
@@ -566,14 +569,12 @@ public class ResultCalculationService : IResultCalculationService
                     continue;
             }
 
-            // Group subject filtering
-            if (classSubject.IsGroupSubject && student != null)
+            // Group subject filtering via junction table
+            var csgLink = classSubject.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink != null && student != null)
             {
-                if (classSubject.StudentGroupId.HasValue && student.StudentGroupId.HasValue)
-                {
-                    if (classSubject.StudentGroupId.Value != student.StudentGroupId.Value)
-                        continue;
-                }
+                if (!student.StudentGroupId.HasValue || csgLink.StudentGroupId != student.StudentGroupId.Value)
+                    continue;
             }
 
             examSubjects.TryGetValue(markEntry.SubjectId, out var examSubject);

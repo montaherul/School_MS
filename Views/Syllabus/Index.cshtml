@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Syllabus";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Syllabus</h1>
+                <p class="adm-header__sub">Manage syllabus documents by class and subject</p>
+            </div>
+        </div>
+        <a href="/Syllabus/Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Syllabus</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        function toggleActive(id) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/Syllabus/ToggleActive/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.success) SchoolMS.Grid.reload('syllabus'); });
+        }
+
+        SchoolMS.Grid.create('syllabus', {
+            ajaxUrl: '@Url.Action("GetList", "Syllabus")',
+            editUrl: '/Syllabus/Edit',
+            deleteUrl: '/Syllabus/Delete',
+            pageSize: 10,
+            pageSizeSelector: [10,25,50,100],
+            actionsWidth: 200,
+            actionItems: function(d) {
+                var items = [
+                    { url: '/Syllabus/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete("syllabus",' + d.id + ')' }
+                ];
+                if (d.fileName) items.push({ url: '/Syllabus/Download/' + d.id, className: 'action-btn--view', icon: 'download', title: 'Download' });
+                items.push({ url: '/Syllabus/ExportPdf/' + d.id, className: 'action-btn--view', icon: 'filetype-pdf', title: 'PDF' });
+                return items;
+            },
+            columns: [
+                { title: "Title", field: "title", minWidth: 200, cssClass: "entity-cell__name" },
+                { title: "Class", field: "className", hozAlign: "center", width: 120 },
+                { title: "Subject", field: "subjectName", hozAlign: "center", width: 150 },
+                { title: "Academic Year", field: "academicYearName", hozAlign: "center", width: 130 },
+                { title: "File", field: "fileName", hozAlign: "center", width: 150,
+                  formatter: function(c) { return c.getValue() ? '<i class="bi bi-paperclip"></i> ' + c.getValue() : ''; }
+                },
+                { title: "Size", field: "fileSize", hozAlign: "center", width: 90,
+                  formatter: function(c) { var v = c.getValue(); return v ? (v / 1024).toFixed(1) + ' KB' : ''; }
+                },
+                { title: "Uploaded By", field: "uploadedBy", hozAlign: "center", width: 130 },
+                { title: "Uploaded At", field: "uploadedAt", hozAlign: "center", width: 150,
+                  formatter: function(c) { var v = c.getValue(); return v ? new Date(v).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : ''; }
+                },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center", width: 100,
+                    formatter: function(cell) {
+                        var id = cell.getRow().getData().id;
+                        var active = cell.getValue();
+                        return '<a href="#" onclick="toggleActive(' + id + ');return false">'
+                            + (active ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>') + '</a>';
+                    }
+                }
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-journal-text ws-fs-40"></i><div class="dash-empty__title">No Syllabus Found</div><div class="dash-empty__sub">Create a new syllabus entry to get started.</div></div>'
+        });
+    </script>
+}

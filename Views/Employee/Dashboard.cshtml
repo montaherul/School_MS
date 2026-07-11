@@ -1,0 +1,270 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDashboardDto
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<div class="ws-container ws-py-6">
+
+    <!-- Page Header -->
+    <div class="ws-flex ws-flex-between ws-items-center ws-mb-6">
+        <div>
+            <h3 class="ws-fw-800 ws-mb-1"><i class="bi bi-people-fill ws-me-2 ws-text-primary"></i>Employee Dashboard</h3>
+            <p class="ws-text-muted ws-mb-0 ws-fs-14">HR overview and workforce analytics</p>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost"><i class="bi bi-list-ul ws-me-1"></i> All Employees</a>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg dash-stat-card">
+                <div class="adm-card__body ws-p-4 ws-text-center">
+                    <div class="dash-stat-card__icon" style="background:rgba(var(--ws-primary-rgb,11,29,58),0.1);">
+                        <i class="bi bi-people-fill ws-text-primary"></i>
+                    </div>
+                    <div class="dash-stat-card__value ws-fs-32 ws-fw-800 ws-text-primary">@Model.TotalEmployees</div>
+                    <div class="dash-stat-card__label ws-text-muted ws-fs-13">Total Employees</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg dash-stat-card">
+                <div class="adm-card__body ws-p-4 ws-text-center">
+                    <div class="dash-stat-card__icon" style="background:rgba(var(--ws-success-rgb,22,163,74),0.1);">
+                        <i class="bi bi-check-circle-fill ws-text-success"></i>
+                    </div>
+                    <div class="dash-stat-card__value ws-fs-32 ws-fw-800 ws-text-success">@Model.ActiveEmployees</div>
+                    <div class="dash-stat-card__label ws-text-muted ws-fs-13">Active</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg dash-stat-card">
+                <div class="adm-card__body ws-p-4 ws-text-center">
+                    <div class="dash-stat-card__icon" style="background:rgba(var(--ws-info-rgb,2,132,199),0.1);">
+                        <i class="bi bi-mortarboard-fill ws-text-info"></i>
+                    </div>
+                    <div class="dash-stat-card__value ws-fs-32 ws-fw-800 ws-text-info">@Model.TeachingStaff</div>
+                    <div class="dash-stat-card__label ws-text-muted ws-fs-13">Teaching Staff</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg dash-stat-card">
+                <div class="adm-card__body ws-p-4 ws-text-center">
+                    <div class="dash-stat-card__icon" style="background:rgba(var(--ws-warning-rgb,217,119,6),0.1);">
+                        <i class="bi bi-building ws-text-warning"></i>
+                    </div>
+                    <div class="dash-stat-card__value ws-fs-32 ws-fw-800 ws-text-warning">@Model.NonTeachingStaff</div>
+                    <div class="dash-stat-card__label ws-text-muted ws-fs-13">Non-Teaching Staff</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row KPIs -->
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <i class="bi bi-person-plus-fill ws-fs-28 ws-text-primary ws-mb-2 ws-d-block"></i>
+                <div class="ws-fs-26 ws-fw-700 ws-text-primary">@Model.NewHiresThisYear</div>
+                <div class="ws-text-muted ws-fs-13">New Hires @DateTime.Today.Year</div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <i class="bi bi-gift-fill ws-fs-28 ws-text-danger ws-mb-2 ws-d-block"></i>
+                <div class="ws-fs-26 ws-fw-700 ws-text-danger">@Model.BirthdaysThisMonth</div>
+                <div class="ws-text-muted ws-fs-13">Birthdays This Month</div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <i class="bi bi-door-open-fill ws-fs-28 ws-text-warning ws-mb-2 ws-d-block"></i>
+                <div class="ws-fs-26 ws-fw-700 ws-text-warning">@Model.OnLeaveEmployees</div>
+                <div class="ws-text-muted ws-fs-13">On Leave</div>
+            </div>
+        </div>
+        <div class="ws-col-lg-3 ws-col-md-6 ws-col-sm-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-p-4 ws-text-center">
+                <i class="bi bi-person-dash-fill ws-fs-28 ws-text-muted ws-mb-2 ws-d-block"></i>
+                <div class="ws-fs-26 ws-fw-700 ws-text-muted">@(Model.InactiveEmployees + Model.ResignedEmployees + Model.RetiredEmployees)</div>
+                <div class="ws-text-muted ws-fs-13">Inactive / Resigned / Retired</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-row ws-g-6">
+
+        <!-- Department Distribution -->
+        <div class="ws-col-lg-6 ws-mb-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                <div class="adm-card__header ws-p-4 ws-pb-0">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-primary"><i class="bi bi-diagram-3-fill ws-me-2"></i>Department Distribution</h5>
+                </div>
+                <div class="adm-card__body ws-p-4">
+                    @if (Model.DepartmentStats.Any())
+                    {
+                        <div class="ws-overflow-auto">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th class="ws-text-center">Total</th>
+                                        <th class="ws-text-center">Teaching</th>
+                                        <th class="ws-text-center">Non-Teaching</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.DepartmentStats)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@d.DepartmentName</td>
+                                            <td class="ws-text-center ws-fw-700">@d.Count</td>
+                                            <td class="ws-text-center">
+                                                <span class="er-badge er-badge--primary ws-fs-11">@d.TeachingCount</span>
+                                            </td>
+                                            <td class="ws-text-center">
+                                                <span class="er-badge er-badge--info ws-fs-11">@d.NonTeachingCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="ws-text-muted ws-text-center ws-py-4 ws-mb-0">No department data available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Distribution -->
+        <div class="ws-col-lg-6 ws-mb-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                <div class="adm-card__header ws-p-4 ws-pb-0">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-success"><i class="bi bi-pie-chart-fill ws-me-2"></i>Status Distribution</h5>
+                </div>
+                <div class="adm-card__body ws-p-4">
+                    @if (Model.StatusStats.Any())
+                    {
+                        <div class="ws-row ws-g-4">
+                            @foreach (var s in Model.StatusStats)
+                            {
+                                var pct = Model.TotalEmployees > 0 ? (s.Count * 100m / Model.TotalEmployees) : 0;
+                                var badgeClass = s.Status == "Active" ? "success" :
+                                                 s.Status == "On Leave" ? "warning" :
+                                                 s.Status == "Resigned" ? "danger" :
+                                                 s.Status == "Retired" ? "neutral" : "danger";
+                                <div class="ws-col-md-6 ws-col-sm-6">
+                                    <div class="ws-p-3 ws-bg-alt ws-rounded ws-flex ws-flex-between ws-items-center">
+                                        <div>
+                                            <span class="er-badge er-badge--@badgeClass ws-fs-11 ws-mb-1">@s.Status</span>
+                                            <div class="ws-fs-20 ws-fw-700">@s.Count</div>
+                                        </div>
+                                        <div class="ws-fs-13 ws-text-muted">@pct.ToString("0.0")%</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="ws-text-muted ws-text-center ws-py-4 ws-mb-0">No status data available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Hires -->
+        <div class="ws-col-lg-6 ws-mb-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                <div class="adm-card__header ws-p-4 ws-pb-0">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-accent"><i class="bi bi-person-plus-fill ws-me-2"></i>Recent Hires</h5>
+                </div>
+                <div class="adm-card__body ws-p-0">
+                    @if (Model.RecentHires.Any())
+                    {
+                        <div class="ws-overflow-auto">
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Designation</th>
+                                        <th>Department</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var h in Model.RecentHires)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">
+                                                <a asp-action="Details" asp-route-id="@h.Id" class="ws-text-body">@h.FullName</a>
+                                            </td>
+                                            <td>@h.Designation</td>
+                                            <td>@h.Department</td>
+                                            <td class="ws-fs-13 ws-text-muted">@h.JoiningDate.ToString("dd MMM yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ws-text-center ws-py-6">
+                            <i class="bi bi-person-plus ws-text-muted ws-fs-36 ws-mb-2 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No recent hires.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Birthdays -->
+        <div class="ws-col-lg-6 ws-mb-6">
+            <div class="adm-card ws-border-none ws-shadow-sm ws-rounded-lg ws-h-full">
+                <div class="adm-card__header ws-p-4 ws-pb-0">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-danger"><i class="bi bi-gift-fill ws-me-2"></i>Birthdays This Month (@DateTime.Now.ToString("MMMM"))</h5>
+                </div>
+                <div class="adm-card__body ws-p-0">
+                    @if (Model.UpcomingBirthdays.Any())
+                    {
+                        <div class="ws-divide-y">
+                            @foreach (var b in Model.UpcomingBirthdays.OrderBy(x => x.DateOfBirth.Day))
+                            {
+                                <div class="ws-flex ws-items-center ws-gap-3 ws-p-3 ws-border-bottom" style="border-color:var(--ws-border-light);">
+                                    <div class="ws-flex ws-items-center ws-justify-center" style="width:44px;height:44px;border-radius:50%;background:rgba(var(--ws-danger-rgb,220,38,38),0.1);flex-shrink:0;">
+                                        <i class="bi bi-cake2 ws-text-danger ws-fs-20"></i>
+                                    </div>
+                                    <div class="ws-flex-1">
+                                        <a asp-action="Details" asp-route-id="@b.Id" class="ws-fw-600 ws-text-body">@b.FullName</a>
+                                        <div class="ws-text-muted ws-fs-12">@b.Designation · @b.DateOfBirth.ToString("dd MMMM")</div>
+                                    </div>
+                                    <span class="er-badge er-badge--danger ws-fs-11">@b.DateOfBirth.ToString("dd MMM")</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ws-text-center ws-py-6">
+                            <i class="bi bi-calendar-heart ws-text-muted ws-fs-36 ws-mb-2 ws-d-block"></i>
+                            <p class="ws-text-muted ws-mb-0">No birthdays this month.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .ws-divide-y > * + * {
+        border-top: 1px solid var(--ws-border-light);
+    }
+</style>

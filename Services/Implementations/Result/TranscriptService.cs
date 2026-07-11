@@ -28,7 +28,7 @@ public class TranscriptService : ITranscriptService
     public async Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId)
     {
         var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
-            .Query()
+            .QueryNoTracking()
             .Include(s => s.Class)
             .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted);
         if (student == null) return null;
@@ -40,7 +40,7 @@ public class TranscriptService : ITranscriptService
         var schoolProfile = await _uow.Repository<SchoolProfile>().Query().FirstOrDefaultAsync();
 
         var examResults = await _uow.Repository<StudentExamResult>()
-            .Query()
+            .QueryNoTracking()
             .Include(r => r.Exam)
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId
                 && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked))
@@ -48,7 +48,7 @@ public class TranscriptService : ITranscriptService
             .ToListAsync();
 
         var subjectResults = await _uow.Repository<StudentSubjectResult>()
-            .Query()
+            .QueryNoTracking()
             .Include(r => r.Subject)
             .Include(r => r.Exam)
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId)

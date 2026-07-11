@@ -935,17 +935,18 @@
                 }
             };
 
-            /* ---- Class/Group filter ---- */
+            /* ---- Class/Group filter —— uses GroupStartsFromClassId threshold ---- */
             var classDropdown = document.getElementById('AppliedClassId');
             var sectionContainer = document.getElementById('sectionContainer');
             var groupSelect = document.getElementById('AppliedStudentGroupId');
+            var groupThreshold = @(ViewBag.GroupStartsFromClassId ?? 9);
             if (classDropdown) {
                 classDropdown.addEventListener('change', function () {
                     var selectedOption = this.options[this.selectedIndex];
-                    var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
-                    sectionContainer.style.display = isGroupBased ? 'block' : 'none';
-                    if (isGroupBased && groupSelect) {
-                        var sortOrder = parseInt(selectedOption.dataset.sortOrder) || 0;
+                    var sortOrder = parseInt(selectedOption && selectedOption.dataset.sortOrder) || 0;
+                    var showGroup = sortOrder >= groupThreshold;
+                    sectionContainer.style.display = showGroup ? 'block' : 'none';
+                    if (showGroup && groupSelect) {
                         Array.from(groupSelect.options).forEach(function (opt) {
                             if (opt.value === '') return;
                             var minClass = parseInt(opt.dataset.minClass) || 0;

@@ -1,20 +1,13 @@
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Routine;
-using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Auth;
-using SchoolManagementSystem.Models.Entities.Routine;
-using SchoolManagementSystem.Models.Entities.Student;
-using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Services.Implementations.Routine;
 using SchoolManagementSystem.Services.Interfaces.Routine;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
@@ -35,7 +28,6 @@ public class RoutineController : Controller
     private readonly ISubstituteService _substituteService;
     private readonly IViewRendererService _viewRenderer;
     private readonly PlaywrightPdfEngine _playwright;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly RoutineGenerationQueue _generationQueue;
     private readonly IMemoryCache _cache;
     private const string RoutineSettingsCacheKey = "RoutineSettings";
@@ -53,7 +45,6 @@ public class RoutineController : Controller
         ISubstituteService substituteService,
         IViewRendererService viewRenderer,
         PlaywrightPdfEngine playwright,
-        IUnitOfWork unitOfWork,
         RoutineGenerationQueue generationQueue,
         IMemoryCache cache)
     {
@@ -69,7 +60,6 @@ public class RoutineController : Controller
         _substituteService = substituteService;
         _viewRenderer = viewRenderer;
         _playwright = playwright;
-        _unitOfWork = unitOfWork;
         _generationQueue = generationQueue;
         _cache = cache;
     }
@@ -582,10 +572,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.CreateAsync(dto, userId);
-            });
+            await _entryService.CreateAsync(dto, userId);
 
             return Json(new { success = true, message = "Entry created successfully." });
         }
@@ -607,10 +594,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.UpdateEntryAsync(dto.Id, dto.RoomId, dto.RoutinePeriodId, dto.DayNumber, userId);
-            });
+            await _entryService.UpdateEntryAsync(dto.Id, dto.RoomId, dto.RoutinePeriodId, dto.DayNumber, userId);
 
             return Json(new { success = true, message = "Entry updated successfully." });
         }
@@ -632,10 +616,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.SwapEntriesAsync(dto.EntryId1, dto.EntryId2, userId);
-            });
+            await _entryService.SwapEntriesAsync(dto.EntryId1, dto.EntryId2, userId);
 
             return Json(new { success = true, message = "Entries swapped successfully." });
         }
@@ -657,10 +638,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.MoveEntryAsync(dto.EntryId, dto.TargetPeriodId, dto.TargetDayNumber, userId);
-            });
+            await _entryService.MoveEntryAsync(dto.EntryId, dto.TargetPeriodId, dto.TargetDayNumber, userId);
 
             return Json(new { success = true, message = "Entry moved successfully." });
         }
@@ -676,18 +654,10 @@ public class RoutineController : Controller
     public async Task<IActionResult> BulkDeleteEntries([FromBody] BulkDeleteRequestDto dto, CancellationToken ct = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
-        var results = new List<string>();
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                foreach (var id in dto.Ids)
-                {
-                    await _entryService.DeleteAsync(id, userId);
-                    results.Add($"Entry {id} deleted.");
-                }
-            });
+            await _entryService.BulkDeleteAsync(dto.Ids, userId, ct);
 
             return Json(new { success = true, message = $"{dto.Ids.Count} entries deleted successfully." });
         }
@@ -706,13 +676,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                foreach (var id in dto.Ids)
-                {
-                    await _entryService.UpdateEntryAsync(id, dto.RoomId, dto.RoutinePeriodId, dto.DayNumber, userId);
-                }
-            });
+            await _entryService.BulkUpdateAsync(dto.Ids, dto.RoomId, dto.RoutinePeriodId, dto.DayNumber, userId, ct);
 
             return Json(new { success = true, message = $"{dto.Ids.Count} entries updated." });
         }
@@ -731,10 +695,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.DeleteAsync(id, userId);
-            });
+            await _entryService.DeleteAsync(id, userId);
 
             return Json(new { success = true, message = "Entry deleted successfully." });
         }
@@ -811,10 +772,7 @@ public class RoutineController : Controller
 
         try
         {
-            await _unitOfWork.ExecuteInTransactionAsync(async () =>
-            {
-                await _entryService.UpdateAsync(dto, userId, ct);
-            });
+            await _entryService.UpdateAsync(dto, userId, ct);
 
             return Json(new { success = true, message = "Entry updated successfully." });
         }
@@ -1151,21 +1109,12 @@ public class RoutineController : Controller
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
-            .AsNoTracking()
-            .Include(s => s.Class)
-            .Include(s => s.Section)
-            .Include(s => s.StudentGroup)
-            .FirstOrDefaultAsync(s => s.UserId == userId, ct);
+        var student = await _engineService.GetStudentByUserIdAsync(userId, ct);
 
         if (student == null)
             return View(new RoutineStudentViewModel());
 
-        var currentYear = await _unitOfWork.Repository<AcademicYear>().Query()
-            .AsNoTracking()
-            .Where(y => !y.IsDeleted && y.IsActive)
-            .OrderByDescending(y => y.StartsOn)
-            .FirstOrDefaultAsync(ct);
+        var currentYear = await _engineService.GetCurrentAcademicYearAsync(ct);
 
         var academicYearId = currentYear?.Id ?? 0;
         var entries = await _entryService.GetGridAsync(
@@ -1229,26 +1178,12 @@ public class RoutineController : Controller
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var user = await _unitOfWork.Repository<ApplicationUser>().Query()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userId, ct);
+        var (user, teacher) = await _engineService.GetUserAndTeacherAsync(userId, ct);
 
-        if (user?.EmployeeId == null)
+        if (user == null || user.EmployeeId == null || teacher == null)
             return View(new RoutineTeacherViewModel());
 
-        var teacher = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().Query()
-            .AsNoTracking()
-            .Include(t => t.Employee)
-            .FirstOrDefaultAsync(t => t.EmployeeId == user.EmployeeId, ct);
-
-        if (teacher == null)
-            return View(new RoutineTeacherViewModel());
-
-        var currentYear = await _unitOfWork.Repository<AcademicYear>().Query()
-            .AsNoTracking()
-            .Where(y => !y.IsDeleted && y.IsActive)
-            .OrderByDescending(y => y.StartsOn)
-            .FirstOrDefaultAsync(ct);
+        var currentYear = await _engineService.GetCurrentAcademicYearAsync(ct);
 
         var academicYearId = currentYear?.Id ?? 0;
         var entries = await _entryService.GetGridAsync(
@@ -1307,19 +1242,8 @@ public class RoutineController : Controller
     [RequirePermission("Routine.View")]
     public async Task<IActionResult> ClassView(CancellationToken ct)
     {
-        var academicYears = await _unitOfWork.Repository<AcademicYear>().Query()
-            .AsNoTracking()
-            .Where(y => !y.IsDeleted)
-            .OrderByDescending(y => y.StartsOn)
-            .Select(y => new AcademicYearItem { Id = y.Id, Name = y.Name, IsActive = y.IsActive })
-            .ToListAsync(ct);
-
-        var classes = await _unitOfWork.Repository<SchoolClass>().Query()
-            .AsNoTracking()
-            .Where(c => !c.IsDeleted)
-            .OrderBy(c => c.SortOrder)
-            .Select(c => new ClassItem { Id = c.Id, Name = c.Name })
-            .ToListAsync(ct);
+        var academicYears = await _engineService.GetAcademicYearItemsAsync(ct);
+        var classes = await _engineService.GetClassItemsAsync(ct);
 
         return View(new RoutineClassViewModel { AcademicYears = academicYears, Classes = classes });
     }
@@ -1328,12 +1252,7 @@ public class RoutineController : Controller
     [RequirePermission("Routine.View")]
     public async Task<IActionResult> RoomView(CancellationToken ct)
     {
-        var rooms = await _unitOfWork.Repository<Room>().Query()
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted)
-            .OrderBy(r => r.RoomNo)
-            .Select(r => new RoomItem { Id = r.Id, RoomNo = r.RoomNo, Name = r.Name })
-            .ToListAsync(ct);
+        var rooms = await _engineService.GetRoomItemsAsync(ct);
 
         return View(new RoutineRoomViewModel { Rooms = rooms });
     }
@@ -1352,33 +1271,15 @@ public class RoutineController : Controller
     [RequirePermission("Routine.View")]
     public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
     {
-        var sections = await _unitOfWork.Repository<Section>().Query()
-            .AsNoTracking()
-            .Where(s => s.SchoolClassId == classId && !s.IsDeleted)
-            .OrderBy(s => s.Name)
-            .Select(s => new SectionItem { Id = s.Id, Name = s.Name })
-            .ToListAsync(ct);
+        var sections = await _engineService.GetSectionsByClassAsync(classId, ct);
         return Json(sections);
     }
 
     [HttpGet]
     [RequirePermission("Routine.View")]
     public async Task<IActionResult> GetGroupsByClass(int classId, CancellationToken ct)
-
     {
-        var sectionIds = await _unitOfWork.Repository<Section>().Query()
-            .AsNoTracking()
-            .Where(s => s.SchoolClassId == classId && s.StudentGroupId != null && !s.IsDeleted)
-            .Select(s => s.StudentGroupId!.Value)
-            .Distinct()
-            .ToListAsync(ct);
-
-        var groups = await _unitOfWork.Repository<StudentGroup>().Query()
-            .AsNoTracking()
-            .Where(g => sectionIds.Contains(g.Id) && !g.IsDeleted)
-            .OrderBy(g => g.DisplayOrder)
-            .Select(g => new { g.Id, g.Name })
-            .ToListAsync(ct);
+        var groups = await _engineService.GetGroupsByClassAsync(classId, ct);
         return Json(groups);
     }
 
@@ -1419,11 +1320,7 @@ public class RoutineController : Controller
     public async Task<IActionResult> GetRoomSchedule(int roomId, int? dayNumber, CancellationToken ct)
     {
         var room = await _roomService.GetForEditAsync(roomId, ct);
-        var currentYear = await _unitOfWork.Repository<AcademicYear>().Query()
-            .AsNoTracking()
-            .Where(y => !y.IsDeleted && y.IsActive)
-            .OrderByDescending(y => y.StartsOn)
-            .FirstOrDefaultAsync(ct);
+        var currentYear = await _engineService.GetCurrentAcademicYearAsync(ct);
 
         var academicYearId = currentYear?.Id ?? 0;
         var entries = await _entryService.GetGridAsync(academicYearId, null, null, null, null, roomId, 1, 500, ct);

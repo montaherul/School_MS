@@ -43,6 +43,13 @@ public interface IPromotionService
     /// Reverses a promotion (admin only)
     /// </summary>
     Task ReversePromotionAsync(int promotionHistoryId, int reversedByUserId, string reason);
+
+    /// <summary>
+    /// Rebuilds cascade data for a promoted student across attendance, exam results, and group assignment.
+    /// Batch-updates AttendanceRecord, StudentExamResult, StudentSubjectResult, FinalResult,
+    /// and handles StudentGroupAssignment upsert.
+    /// </summary>
+    Task RebuildStudentCascadeAsync(int studentId, int newClassId, int? newSectionId, int? newGroupId, int academicYearId, CancellationToken ct = default);
 }
 
 public class PromotionEligibility

@@ -145,6 +145,13 @@ public class TransferCertificate : BaseEntity
 {
     public int StudentId { get; set; }
 
+    public int OldClassId { get; set; }
+
+    public int? OldSectionId { get; set; }
+
+    [MaxLength(200)]
+    public string NewSchoolName { get; set; } = string.Empty;
+
     [MaxLength(40)]
     public string CertificateNo { get; set; } = string.Empty;
 
@@ -152,4 +159,6 @@ public class TransferCertificate : BaseEntity
 
     [MaxLength(500)]
     public string Reason { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
 }

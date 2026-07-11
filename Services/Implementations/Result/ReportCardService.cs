@@ -54,7 +54,7 @@ public class ReportCardService : IReportCardService
         if (await IsResultBlockedForStudentAsync(studentId, ct))
             return null;
 
-        var query = _examResultRepository.Query()
+        var query = _examResultRepository.QueryNoTracking()
             .Include(r => r.Student)
             .Include(r => r.Exam)
             .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
@@ -77,7 +77,7 @@ public class ReportCardService : IReportCardService
             ? await _subjectFilter.GetValidSubjectIdsForStudentAsync(student, ct)
             : new HashSet<int>();
 
-        var marks = await _markEntryRepository.Query()
+        var marks = await _markEntryRepository.QueryNoTracking()
             .Include(m => m.Subject)
             .Where(m => m.ExamId == examId && m.StudentId == studentId && !m.IsDeleted)
             .ToListAsync(ct);

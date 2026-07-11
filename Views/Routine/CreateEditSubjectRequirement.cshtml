@@ -11,7 +11,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0F766E, #14B8A6); box-shadow: 0 4px 12px rgba(15,118,110,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-journal-text"></i>
             </div>
             <div>
@@ -24,17 +24,17 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-8">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditSubjectRequirement" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="AcademicYearId" class="form-label">Academic Year <span class="text-danger">*</span></label>
-                                <select asp-for="AcademicYearId" class="form-select">
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="AcademicYearId" class="adm-label">Academic Year <span class="ws-text-danger">*</span></label>
+                                <select asp-for="AcademicYearId" class="adm-input">
                                     <option value="">Select Year</option>
                                     @if (academicYears != null)
                                     {
@@ -44,11 +44,11 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="AcademicYearId" class="text-danger small"></span>
+                                <span asp-validation-for="AcademicYearId" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ClassId" class="form-label">Class <span class="text-danger">*</span></label>
-                                <select asp-for="ClassId" class="form-select" id="classSelect">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="ClassId" class="adm-label">Class <span class="ws-text-danger">*</span></label>
+                                <select asp-for="ClassId" class="adm-input" id="classSelect">
                                     <option value="">Select Class</option>
                                     @if (classes != null)
                                     {
@@ -58,21 +58,21 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="ClassId" class="text-danger small"></span>
+                                <span asp-validation-for="ClassId" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="SectionId" class="form-label">Section</label>
-                                <select asp-for="SectionId" class="form-select" id="sectionSelect">
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="SectionId" class="adm-label">Section</label>
+                                <select asp-for="SectionId" class="adm-input" id="sectionSelect">
                                     <option value="">All Sections</option>
                                 </select>
-                                <span asp-validation-for="SectionId" class="text-danger small"></span>
+                                <span asp-validation-for="SectionId" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="GroupId" class="form-label">Group</label>
-                                <select asp-for="GroupId" class="form-select" id="groupSelect">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="GroupId" class="adm-label">Group</label>
+                                <select asp-for="GroupId" class="adm-input" id="groupSelect">
                                     <option value="">No Group</option>
                                     @if (groups != null)
                                     {
@@ -82,14 +82,14 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="GroupId" class="text-danger small"></span>
+                                <span asp-validation-for="GroupId" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="SubjectId" class="form-label">Subject <span class="text-danger">*</span></label>
-                                <select asp-for="SubjectId" class="form-select">
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="SubjectId" class="adm-label">Subject <span class="ws-text-danger">*</span></label>
+                                <select asp-for="SubjectId" class="adm-input">
                                     <option value="">Select Subject</option>
                                     @if (subjects != null)
                                     {
@@ -99,11 +99,11 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="SubjectId" class="text-danger small"></span>
+                                <span asp-validation-for="SubjectId" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="TeacherId" class="form-label">Teacher <span class="text-danger">*</span></label>
-                                <select asp-for="TeacherId" class="form-select">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="TeacherId" class="adm-label">Teacher <span class="ws-text-danger">*</span></label>
+                                <select asp-for="TeacherId" class="adm-input">
                                     <option value="">Select Teacher</option>
                                     @if (teachers != null)
                                     {
@@ -113,40 +113,40 @@
                                         }
                                     }
                                 </select>
-                                <span asp-validation-for="TeacherId" class="text-danger small"></span>
+                                <span asp-validation-for="TeacherId" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="PeriodsPerWeek" class="form-label">Periods/Week <span class="text-danger">*</span></label>
-                                <input asp-for="PeriodsPerWeek" type="number" class="form-control" min="1" placeholder="e.g. 5" />
-                                <span asp-validation-for="PeriodsPerWeek" class="text-danger small"></span>
+                        <div class="ws-row">
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="PeriodsPerWeek" class="adm-label">Periods/Week <span class="ws-text-danger">*</span></label>
+                                <input asp-for="PeriodsPerWeek" type="number" class="adm-input" min="1" placeholder="e.g. 5" />
+                                <span asp-validation-for="PeriodsPerWeek" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="Priority" class="form-label">Priority</label>
-                                <input asp-for="Priority" type="number" class="form-control" min="0" placeholder="1 (highest)" />
-                                <span asp-validation-for="Priority" class="text-danger small"></span>
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="Priority" class="adm-label">Priority</label>
+                                <input asp-for="Priority" type="number" class="adm-input" min="0" placeholder="1 (highest)" />
+                                <span asp-validation-for="Priority" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label asp-for="MaxConsecutive" class="form-label">Max Consecutive</label>
-                                <input asp-for="MaxConsecutive" type="number" class="form-control" min="1" placeholder="e.g. 2" />
-                                <span asp-validation-for="MaxConsecutive" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3 form-check">
-                                <input asp-for="RequiresLab" class="form-check-input" type="checkbox" />
-                                <label asp-for="RequiresLab" class="form-check-label fw-semibold">Requires Lab</label>
-                            </div>
-                            <div class="col-md-6 mb-3 form-check">
-                                <input asp-for="RequiresDoublePeriod" class="form-check-input" type="checkbox" />
-                                <label asp-for="RequiresDoublePeriod" class="form-check-label fw-semibold">Requires Double Period</label>
+                            <div class="ws-col-md-4 ws-mb-3">
+                                <label asp-for="MaxConsecutive" class="adm-label">Max Consecutive</label>
+                                <input asp-for="MaxConsecutive" type="number" class="adm-input" min="1" placeholder="e.g. 2" />
+                                <span asp-validation-for="MaxConsecutive" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mt-3">
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3 adm-form-check">
+                                <input asp-for="RequiresLab" class="adm-form-check-input" type="checkbox" />
+                                <label asp-for="RequiresLab" class="adm-form-check-label ws-fw-600">Requires Lab</label>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3 adm-form-check">
+                                <input asp-for="RequiresDoublePeriod" class="adm-form-check-input" type="checkbox" />
+                                <label asp-for="RequiresDoublePeriod" class="adm-form-check-label ws-fw-600">Requires Double Period</label>
+                            </div>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2 ws-mt-3">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/SubjectRequirements" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

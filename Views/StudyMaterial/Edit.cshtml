@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.StudyMaterialUpsertDto
+@{
+    ViewData["Title"] = "Edit Study Material";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <h1 class="adm-header__title">Edit Study Material</h1>
+        </div>
+    </div>
+    <div class="adm-card">
+        <div class="adm-card__body">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error"></div>
+                <div class="adm-form-grid adm-form-grid--3">
+                    <div class="adm-form-group">
+                        <label asp-for="Title" class="adm-label"></label>
+                        <input asp-for="Title" class="adm-input" />
+                        <span asp-validation-for="Title" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="MaterialType" class="adm-label"></label>
+                        <input asp-for="MaterialType" class="adm-input" />
+                        <span asp-validation-for="MaterialType" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SchoolClassId" class="adm-label"></label>
+                        <input asp-for="SchoolClassId" class="adm-input" type="number" min="1" />
+                        <span asp-validation-for="SchoolClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SubjectId" class="adm-label"></label>
+                        <input asp-for="SubjectId" class="adm-input" type="number" min="1" />
+                        <span asp-validation-for="SubjectId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="AcademicYearId" class="adm-label"></label>
+                        <input asp-for="AcademicYearId" class="adm-input" type="number" min="1" />
+                        <span asp-validation-for="AcademicYearId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="ExternalUrl" class="adm-label"></label>
+                        <input asp-for="ExternalUrl" class="adm-input" />
+                        <span asp-validation-for="ExternalUrl" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-label">Upload File</label>
+                        <input name="file" class="adm-input" type="file" />
+                        @if (!string.IsNullOrEmpty(Model.ExistingFileName))
+                        {
+                            <small>Current file: @Model.ExistingFileName</small>
+                        }
+                    </div>
+                </div>
+                <div class="adm-form-group adm-form-group--full">
+                    <label asp-for="Description" class="adm-label"></label>
+                    <textarea asp-for="Description" class="adm-input" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="adm-field-error"></span>
+                </div>
+                <div class="adm-form-actions">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Update</button>
+                    <a href="/StudyMaterial" class="adm-btn adm-btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

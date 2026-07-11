@@ -6,9 +6,8 @@ using Moq;
 using SchoolManagementSystem.Controllers.Academic;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
-using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using Xunit;
 
 namespace SchoolManagementSystem.Tests.Services;
@@ -16,14 +15,14 @@ namespace SchoolManagementSystem.Tests.Services;
 public class CalendarExportTests
 {
     private readonly Mock<IAcademicCalendarService> _serviceMock = new(MockBehavior.Loose);
-    private readonly Mock<IUnitOfWork> _uowMock = new(MockBehavior.Loose);
+    private readonly Mock<IAcademicYearService> _yearServiceMock = new(MockBehavior.Loose);
     private readonly Mock<ICalendarDashboardService> _dashboardMock = new(MockBehavior.Loose);
     private readonly Mock<IPdfGenerator> _pdfMock = new(MockBehavior.Loose);
 
     [Fact]
     public async Task ExportPdf_ReturnsFileResult()
     {
-        var data = new List<AcademicCalendar>
+        var data = new List<AcademicCalendarDto>
         {
             new() { Date = new DateOnly(2026, 1, 1), Title = "New Year", IsHoliday = true },
             new() { Date = new DateOnly(2026, 1, 2), Title = "Working Day", IsWorkingDay = true }
@@ -32,7 +31,7 @@ public class CalendarExportTests
             .ReturnsAsync(data);
         _pdfMock.Setup(x => x.GenerateFromHtml(It.IsAny<string>())).Returns(Encoding.UTF8.GetBytes("PDF"));
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportPdf(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -43,11 +42,11 @@ public class CalendarExportTests
     [Fact]
     public async Task ExportExcel_ReturnsFileResult()
     {
-        var data = new List<AcademicCalendar>();
+        var data = new List<AcademicCalendarDto>();
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -58,11 +57,11 @@ public class CalendarExportTests
     [Fact]
     public async Task ExportExcel_ContainsHeaderRow()
     {
-        var data = new List<AcademicCalendar>();
+        var data = new List<AcademicCalendarDto>();
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -73,14 +72,14 @@ public class CalendarExportTests
     [Fact]
     public async Task ExportExcel_ContainsDataRows()
     {
-        var data = new List<AcademicCalendar>
+        var data = new List<AcademicCalendarDto>
         {
             new() { Date = new DateOnly(2026, 6, 1), Title = "Test", IsWorkingDay = true }
         };
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -90,12 +89,12 @@ public class CalendarExportTests
     [Fact]
     public async Task ExportPdf_DefaultsToCurrentYear()
     {
-        var data = new List<AcademicCalendar>();
+        var data = new List<AcademicCalendarDto>();
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
         _pdfMock.Setup(x => x.GenerateFromHtml(It.IsAny<string>())).Returns(Encoding.UTF8.GetBytes("PDF"));
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportPdf(null);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -105,11 +104,11 @@ public class CalendarExportTests
     [Fact]
     public async Task ExportExcel_DefaultsToCurrentYear()
     {
-        var data = new List<AcademicCalendar>();
+        var data = new List<AcademicCalendarDto>();
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object);
         var result = await controller.ExportExcel(null);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -119,7 +118,7 @@ public class CalendarExportTests
     [Fact]
     public async Task PrintView_ReturnsViewResult()
     {
-        var data = new List<AcademicCalendar>
+        var data = new List<AcademicCalendarDto>
         {
             new() { Date = new DateOnly(2026, 1, 1), Title = "Day1", IsHoliday = true },
             new() { Date = new DateOnly(2026, 1, 2), Title = "Day2", IsWorkingDay = true }
@@ -128,7 +127,7 @@ public class CalendarExportTests
             .ReturnsAsync(data);
 
         var httpContext = new DefaultHttpContext();
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!)
+        var controller = new AcademicCalendarController(_serviceMock.Object, _yearServiceMock.Object, _dashboardMock.Object, _pdfMock.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext }
         };

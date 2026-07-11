@@ -18,7 +18,7 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
 
     public async Task<List<SubjectMarkStructureDto>> GetBySubjectAsync(int subjectId)
     {
-        return await _uow.Repository<SubjectMarkStructure>().Query()
+        return await _uow.Repository<SubjectMarkStructure>().QueryNoTracking()
             .Include(s => s.Component)
             .Include(s => s.Class)
             .Include(s => s.Subject)
@@ -32,7 +32,7 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
 
     public async Task<SubjectMarkStructureDto?> GetByIdAsync(int id)
     {
-        var entity = await _uow.Repository<SubjectMarkStructure>().Query()
+        var entity = await _uow.Repository<SubjectMarkStructure>().QueryNoTracking()
             .Include(s => s.Component)
             .Include(s => s.Class)
             .Include(s => s.Subject)

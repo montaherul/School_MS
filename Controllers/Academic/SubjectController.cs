@@ -92,7 +92,7 @@ public class SubjectController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Subjects.Delete")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Subjects.Delete")]
     public async Task<IActionResult> DeleteAjax(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -100,7 +100,7 @@ public class SubjectController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Subjects.Create")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Subjects.Create")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -108,7 +108,7 @@ public class SubjectController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Subjects.Create")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Subjects.Create")]
     public async Task<IActionResult> BulkActivate([FromBody] List<int> ids, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -116,7 +116,7 @@ public class SubjectController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Subjects.Create")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Subjects.Create")]
     public async Task<IActionResult> BulkDeactivate([FromBody] List<int> ids, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -124,7 +124,7 @@ public class SubjectController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Subjects.Create")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Subjects.Create")]
     public async Task<IActionResult> BulkImport([FromBody] List<SubjectUpsertDto> dtos, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

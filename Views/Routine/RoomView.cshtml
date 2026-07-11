@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #D97706, #F59E0B); box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-building"></i>
             </div>
             <div>
@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <div class="adm-filters mb-3">
+    <div class="adm-filters ws-mb-3">
         <div class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="adm-label">Room</label>
@@ -55,7 +55,7 @@
 
     <div id="scheduleContainer">
         <div class="dash-empty">
-            <i class="bi bi-building fs-1"></i>
+            <i class="bi bi-building ws-fs-48"></i>
             <div class="dash-empty__title">Select a room to view schedule</div>
             <div class="dash-empty__sub">Choose a room above to see its weekly schedule.</div>
         </div>
@@ -70,19 +70,19 @@
             if (!roomId) { alert('Please select a room.'); return; }
 
             var container = document.getElementById('scheduleContainer');
-            container.innerHTML = '<div class="dash-empty"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="dash-empty__title mt-3">Loading Schedule</div></div>';
+            container.innerHTML = '<div class="dash-empty"><div class="ws-fs-28 ws-text-muted ws-mb-2"><i class="bi bi-arrow-repeat ws-spin"></i></div><div class="dash-empty__title">Loading Schedule</div></div>';
 
             var url = '/Routine/GetRoomSchedule?roomId=' + roomId;
             if (dayNumber) url += '&dayNumber=' + dayNumber;
 
             fetch(url).then(function(r) { return r.json(); }).then(function(data) {
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="dash-empty"><i class="bi bi-calendar-x fs-1"></i><div class="dash-empty__title">No Schedule Found</div><div class="dash-empty__sub">This room has no scheduled classes.</div></div>';
+                    container.innerHTML = '<div class="dash-empty"><i class="bi bi-calendar-x ws-fs-48"></i><div class="dash-empty__title">No Schedule Found</div><div class="dash-empty__sub">This room has no scheduled classes.</div></div>';
                     return;
                 }
 
                 var roomInfo = data.roomInfo || {};
-                container.innerHTML = '<div class="adm-card mb-3"><div class="adm-card__header"><h3>Room: ' + roomInfo.roomNo + ' - ' + (roomInfo.name || '') + '</h3><div><span class="adm-badge adm-badge--info">Capacity: ' + (roomInfo.capacity || '—') + '</span></div></div></div>';
+                container.innerHTML = '<div class="adm-card ws-mb-3"><div class="adm-card__header"><h3>Room: ' + roomInfo.roomNo + ' - ' + (roomInfo.name || '') + '</h3><div><span class="adm-badge adm-badge--info">Capacity: ' + (roomInfo.capacity || '\u2014') + '</span></div></div></div>';
 
                 container.innerHTML += '<div class="adm-card"><div class="adm-card__header"><h3>Weekly Schedule</h3></div><div class="adm-card__body"><div id="room-schedule-grid"></div></div></div>';
 
@@ -102,7 +102,7 @@
                     movableColumns: false,
                     data: data.schedules || data,
                     columns: columns,
-                    placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week fs-1'></i><div class='dash-empty__title'>No Schedule Data</div></div>"
+                    placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week ws-fs-48'></i><div class='dash-empty__title'>No Schedule Data</div></div>"
                 });
             }).catch(function() {
                 container.innerHTML = '<div class="adm-alert adm-alert--error">Failed to load schedule.</div>';

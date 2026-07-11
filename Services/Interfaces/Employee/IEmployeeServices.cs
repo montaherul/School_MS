@@ -1,4 +1,5 @@
 using SchoolManagementSystem.Models.DTOs.Employee;
+using SchoolManagementSystem.Models.Entities.Academic;
 
 namespace SchoolManagementSystem.Services.Interfaces.Employee;
 
@@ -14,6 +15,7 @@ public interface IEmployeeService
     Task<bool> IsCodeExistsAsync(string code, int? excludeId, CancellationToken ct);
     Task<bool> IsEmailExistsAsync(string email, int? excludeId, CancellationToken ct);
     Task<bool> IsPhoneExistsAsync(string phone, int? excludeId, CancellationToken ct);
+    Task<EmployeeDashboardDto> GetDashboardAsync(CancellationToken ct);
 }
 
 public interface IDepartmentService

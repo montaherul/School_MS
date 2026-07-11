@@ -104,6 +104,7 @@ public class ClassSubjectMappingController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("ClassSubjectMappings.Delete")]
     public async Task<IActionResult> DeleteAjax([FromBody] DeleteRequest request, CancellationToken ct)
     {

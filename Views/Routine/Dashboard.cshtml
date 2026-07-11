@@ -7,14 +7,14 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-calendar-week"></i>
             </div>
             <div>
@@ -23,7 +23,7 @@
             </div>
         </div>
         <div>
-            <a href="/Routine/Settings" class="adm-btn adm-btn--ghost me-2">
+            <a href="/Routine/Settings" class="adm-btn adm-btn--ghost ws-me-2">
                 <i class="bi bi-gear"></i> <span>Settings</span>
             </a>
             <a href="/Routine/Analytics?academicYearId=0" class="adm-btn adm-btn--ghost">
@@ -32,8 +32,8 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                     <i class="bi bi-mortarboard"></i>
@@ -44,7 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--success">
                     <i class="bi bi-building"></i>
@@ -55,7 +55,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--warning">
                     <i class="bi bi-layers"></i>
@@ -66,7 +66,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="ws-col-md-3">
             <div class="dash-stat-card">
                 <div class="dash-stat-card__icon dash-stat-card__icon--info">
                     <i class="bi bi-table"></i>
@@ -79,14 +79,14 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-8">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-md-8">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Quick Actions</h3>
                 </div>
                 <div class="adm-card__body">
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="ws-flex ws-flex-wrap ws-gap-2">
                         <a href="/Routine/Timetable" class="adm-btn adm-btn--primary">
                             <i class="bi bi-table"></i> <span>Go to Timetable</span>
                         </a>
@@ -133,7 +133,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="ws-col-md-4">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Last Generation</h3>
@@ -141,48 +141,48 @@
                 <div class="adm-card__body">
                     @if (ViewBag.LastGeneration != null)
                     {
-                        <div class="mb-2">
-                            <span class="text-muted small">Status:</span>
+                        <div>
+                            <span class="ws-text-muted ws-fs-13">Status:</span>
                             <span class="adm-status adm-status--@(ViewBag.LastGeneration.Status == "Completed" ? "approved" : "rejected")">@ViewBag.LastGeneration.Status</span>
                         </div>
-                        <div class="mb-2">
-                            <span class="text-muted small">Generated At:</span>
+                        <div>
+                            <span class="ws-text-muted ws-fs-13">Generated At:</span>
                             <span>@ViewBag.LastGeneration.GeneratedAt</span>
                         </div>
-                        <div class="mb-2">
-                            <span class="text-muted small">Entries Created:</span>
+                        <div>
+                            <span class="ws-text-muted ws-fs-13">Entries Created:</span>
                             <span>@ViewBag.LastGeneration.EntryCount</span>
                         </div>
                     }
                     else
                     {
                         <div class="dash-empty">
-                            <i class="bi bi-clock-history fs-1"></i>
+                            <i class="bi bi-clock-history ws-fs-48"></i>
                             <div class="dash-empty__title">No Generation Run</div>
                             <div class="dash-empty__sub">Run auto-generation to see results here.</div>
                         </div>
                     }
                 </div>
             </div>
-            <div class="adm-card mt-3">
+                <div class="adm-card ws-mt-3">
                 <div class="adm-card__header">
                     <h3>Published Version</h3>
                 </div>
                 <div class="adm-card__body">
                     @if (ViewBag.PublishedVersion != null)
                     {
-                        <div class="mb-2">
-                            <span class="fw-semibold">@ViewBag.PublishedVersion.Name</span>
-                            <span class="adm-status adm-status--approved ms-2">Published</span>
+                        <div>
+                            <span class="ws-fw-600">@ViewBag.PublishedVersion.Name</span>
+                            <span class="adm-status adm-status--approved ws-ms-2">Published</span>
                         </div>
-                        <div class="small text-muted">
+                        <div class="ws-fs-13 ws-text-muted">
                             @ViewBag.PublishedVersion.EntryCount entries
                         </div>
                     }
                     else
                     {
                         <div class="dash-empty">
-                            <i class="bi bi-bookmark-x fs-1"></i>
+                            <i class="bi bi-bookmark-x ws-fs-48"></i>
                             <div class="dash-empty__title">No Published Version</div>
                             <div class="dash-empty__sub">Publish a timetable version to make it live.</div>
                         </div>
@@ -192,8 +192,8 @@
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-md-6">
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Teacher Load Distribution</h3>
@@ -203,7 +203,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="ws-col-md-6">
             <div class="adm-card">
                 <div class="adm-card__header">
                     <h3>Room Utilization</h3>

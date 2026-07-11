@@ -234,8 +234,8 @@ public class Phase38B_RbacFixTests
 
     // ─── Guardian boundary ─────────────────────────────────────────
 
-    [Fact(DisplayName = "13. Guardian role has exactly the 9 allowed portal codes")]
-    public void GuardianRole_HasExactlyNinePortalCodes()
+    [Fact(DisplayName = "13. Guardian role has exactly the 10 allowed portal codes")]
+    public void GuardianRole_HasExactlyTenPortalCodes()
     {
         var guardianCodes = DbInitializer.GuardianPermissionCodes;
         var expected = new HashSet<string>(StringComparer.Ordinal)
@@ -248,10 +248,11 @@ public class Phase38B_RbacFixTests
             "Notice.View",
             "Calendar.View",
             "Profile.View",
-            "Notification.View"
+            "Notification.View",
+            "Routine.View"
         };
 
-        Assert.Equal(expected.Count, guardianCodes.Count);
+        Assert.Equal(10, guardianCodes.Count);
         Assert.True(expected.SetEquals(guardianCodes));
     }
 

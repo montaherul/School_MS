@@ -7,14 +7,14 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #DC2626, #F87171); box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-exclamation-triangle"></i>
             </div>
             <div>
@@ -27,7 +27,7 @@
         </a>
     </div>
 
-    <div class="adm-filters mb-3">
+    <div class="adm-filters ws-mb-3">
         <div class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="adm-label">Generation</label>

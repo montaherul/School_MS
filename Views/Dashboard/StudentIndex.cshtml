@@ -10,7 +10,7 @@
 <div class="adm-page">
 
     <!-- HERO -->
-    <div class="adm-table-card mb-4">
+    <div class="adm-table-card ws-mb-4">
 
         <div class="dash-hero-gradient">
 
@@ -96,7 +96,7 @@
                     @Model.AttendancePercentage%
                 </div>
 
-                <div style="font-size:12px;color:var(--adm-text-3);">
+                <div class="ws-fs-12" style="color:var(--adm-text-3);">
                     Present: @Model.PresentCount &bull; Absent: @Model.AbsentCount &bull; Late: @Model.LateCount &bull; Leave: @Model.LeaveCount
                 </div>
 
@@ -121,7 +121,7 @@
                     ৳@Model.TotalDue
                 </div>
 
-                <div style="font-size:12px;color:var(--adm-text-3);">
+                <div class="ws-fs-12" style="color:var(--adm-text-3);">
                     Due Amount
                 </div>
 
@@ -146,7 +146,7 @@
                     @Model.StudentStatus
                 </div>
 
-                <div style="font-size:12px;color:var(--adm-text-3);">
+                <div class="ws-fs-12" style="color:var(--adm-text-3);">
                     Current Session
                 </div>
 
@@ -171,7 +171,7 @@
                     @Model.UpcomingAssignments.Count
                 </div>
 
-                <div style="font-size:12px;color:var(--adm-text-3);">
+                <div class="ws-fs-12" style="color:var(--adm-text-3);">
                     Pending Tasks
                 </div>
 
@@ -196,7 +196,7 @@
                     @Model.LeaveApplicationCount
                 </div>
 
-                <div style="font-size:12px;color:var(--adm-text-3);">
+                <div class="ws-fs-12" style="color:var(--adm-text-3);">
                     @Model.PendingLeaveCount pending
                 </div>
 
@@ -207,24 +207,24 @@
     </div>
 
     <!-- TAB NAVIGATION -->
-    <div class="adm-tabs mb-4" style="display:flex;gap:4px;border-bottom:2px solid var(--adm-border);padding-bottom:0;">
+    <div class="adm-tabs ws-mb-4 ws-flex" style="gap:4px;border-bottom:2px solid var(--adm-border);padding-bottom:0;">
         <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:var(--adm-text);border-bottom:2px solid var(--adm-primary);margin-bottom:-2px;">
-            <i class="bi bi-grid-1x2 me-1"></i> Overview
+            <i class="bi bi-grid-1x2 ws-me-1"></i> Overview
         </button>
         <button class="adm-tab" data-tab="finance" onclick="switchTab('finance')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
-            <i class="bi bi-cash-coin me-1"></i> Finance
+            <i class="bi bi-cash-coin ws-me-1"></i> Finance
         </button>
         <button class="adm-tab" data-tab="routine" onclick="switchTab('routine')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
-            <i class="bi bi-calendar-week me-1"></i> Routine
+            <i class="bi bi-calendar-week ws-me-1"></i> Routine
         </button>
         <button class="adm-tab" data-tab="assignments" onclick="switchTab('assignments')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
-            <i class="bi bi-journal-check me-1"></i> Assignments
+            <i class="bi bi-journal-check ws-me-1"></i> Assignments
         </button>
         <button class="adm-tab" data-tab="library" onclick="switchTab('library')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
-            <i class="bi bi-book me-1"></i> Library
+            <i class="bi bi-book ws-me-1"></i> Library
         </button>
         <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
-            <i class="bi bi-bell me-1"></i> Notifications @if(Model.UnreadNotificationCount > 0){<span class="badge bg-danger ms-1" style="font-size:10px;">@Model.UnreadNotificationCount</span>}
+            <i class="bi bi-bell ws-me-1"></i> Notifications @if(Model.UnreadNotificationCount > 0){<span style="background:var(--clr-danger);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;" class="ws-ms-1">@Model.UnreadNotificationCount</span>}
         </button>
     </div>
 
@@ -234,39 +234,39 @@
     <!-- LATEST RESULTS -->
     @if (Model.Results.Any())
     {
-        <div class="adm-table-card mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+        <div class="adm-table-card ws-mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
             <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
                 <h5 class="dash-section__title" style="margin:0;">
-                    <i class="bi bi-journal-text me-2"></i> Latest Results
+                    <i class="bi bi-journal-text ws-me-2"></i> Latest Results
                 </h5>
             </div>
-            <div class="p-3">
+            <div class="ws-p-3">
                 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
                     @foreach (var r in Model.Results)
                     {
                         <div style="padding:16px; border-radius:var(--adm-radius-md); border:1px solid var(--adm-border); background:var(--adm-bg-2);">
-                            <div style="font-weight:700; font-size:14px; margin-bottom:8px;">@r.ExamName</div>
-                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                            <div class="ws-fw-700 ws-fs-14" style="margin-bottom:8px;">@r.ExamName</div>
+                            <div class="ws-flex ws-flex-between ws-fs-13" style="margin-bottom:4px;">
                                 <span style="color:var(--adm-text-3);">Grade</span>
-                                <span style="font-weight:600;">@r.Grade</span>
+                                <span class="ws-fw-600">@r.Grade</span>
                             </div>
-                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                            <div class="ws-flex ws-flex-between ws-fs-13" style="margin-bottom:4px;">
                                 <span style="color:var(--adm-text-3);">GPA</span>
-                                <span style="font-weight:600;">@r.GPA.ToString("F2")</span>
+                                <span class="ws-fw-600">@r.GPA.ToString("F2")</span>
                             </div>
-                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                            <div class="ws-flex ws-flex-between ws-fs-13" style="margin-bottom:4px;">
                                 <span style="color:var(--adm-text-3);">Marks</span>
-                                <span style="font-weight:600;">@r.ObtainedMarks / @r.FullMarks</span>
+                                <span class="ws-fw-600">@r.ObtainedMarks / @r.FullMarks</span>
                             </div>
-                            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                            <div class="ws-flex ws-flex-between ws-fs-13">
                                 <span style="color:var(--adm-text-3);">Status</span>
                                 @if (r.IsPassed)
                                 {
-                                    <span class="badge bg-success">Passed</span>
+                                    <span style="background:var(--clr-success);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Passed</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Failed</span>
+                                    <span style="background:var(--clr-danger);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;">Failed</span>
                                 }
                             </div>
                         </div>
@@ -277,13 +277,13 @@
     }
 
     <!-- ATTENDANCE CALENDAR -->
-    <div class="adm-table-card mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+    <div class="adm-table-card ws-mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
         <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
             <h5 class="dash-section__title" style="margin:0;">
-                <i class="bi bi-calendar3 me-2"></i> Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")
+                <i class="bi bi-calendar3 ws-me-2"></i> Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")
             </h5>
         </div>
-        <div class="p-4">
+        <div class="ws-p-4">
             <div style="overflow-x:auto;"><div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; min-width:560px;">
                 @for (int i = 1; i <= DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month); i++)
                 {
@@ -307,7 +307,7 @@
                         
                         @if (att != null)
                         {
-                            <div class="badge bg-@color" style="font-size:10px;">@status</div>
+                            <div style="background:var(--clr-@color);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;">@status</div>
                         }
                         else
                         {
@@ -320,41 +320,41 @@
     </div>
 
     <!-- ATTENDANCE CHART -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-6">
+    <div class="ws-row ws-g-4 ws-mb-4">
+        <div class="ws-col-12 ws-col-lg-6">
             <div class="adm-table-card" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
                 <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
                     <h5 class="dash-section__title" style="margin:0;">
-                        <i class="bi bi-pie-chart me-2"></i> Attendance Breakdown
+                        <i class="bi bi-pie-chart ws-me-2"></i> Attendance Breakdown
                     </h5>
                 </div>
-                <div class="p-4" style="text-align:center;">
+                <div class="ws-p-4" style="text-align:center;">
                     <div class="dash-chart-container">
                         <canvas id="studentAttChart" width="220" height="220"></canvas>
                         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-                            <span style="font-size:32px;font-weight:800;color:#0f172a;line-height:1;">@Model.AttendancePercentage%</span>
-                            <span style="font-size:11px;color:#6b7280;margin-top:4px;">attendance</span>
+                            <span class="ws-fs-32 ws-fw-800 ws-text-body" style="line-height:1;">@Model.AttendancePercentage%</span>
+                            <span class="ws-fs-11 ws-text-muted" style="margin-top:4px;">attendance</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
+        <div class="ws-col-12 ws-col-lg-6">
             <div class="adm-table-card" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
                 <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
                     <h5 class="dash-section__title" style="margin:0;">
-                        <i class="bi bi-list-check me-2"></i> Recent Attendance History
+                        <i class="bi bi-list-check ws-me-2"></i> Recent Attendance History
                     </h5>
-                    <span style="font-size:12px;color:var(--adm-text-3);">Last 10 records</span>
+                    <span class="ws-fs-12" style="color:var(--adm-text-3);">Last 10 records</span>
                 </div>
                 <div style="overflow-x:auto;">
                     <table style="width:100%;border-collapse:collapse;font-size:14px;">
                         <thead>
                             <tr>
-                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">#</th>
-                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Date</th>
-                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Status</th>
-                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Remarks</th>
+                                <th class="ws-fs-11 ws-fw-700" style="padding:12px 18px;text-align:left;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">#</th>
+                                <th class="ws-fs-11 ws-fw-700" style="padding:12px 18px;text-align:left;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Date</th>
+                                <th class="ws-fs-11 ws-fw-700" style="padding:12px 18px;text-align:left;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Status</th>
+                                <th class="ws-fs-11 ws-fw-700" style="padding:12px 18px;text-align:left;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Remarks</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -364,8 +364,8 @@
                                 {
                                     var h = Model.AttendanceHistory[i];
                                     <tr style="border-bottom:1px solid var(--adm-border);">
-                                        <td style="padding:12px 18px;color:var(--adm-text-3);font-size:13px;">@(i + 1)</td>
-                                        <td style="padding:12px 18px;font-weight:600;">@h.AttendanceDate.ToString("dd MMM yyyy")</td>
+                                        <td class="ws-fs-13" style="padding:12px 18px;color:var(--adm-text-3);">@(i + 1)</td>
+                                        <td style="padding:12px 18px;" class="ws-fw-600">@h.AttendanceDate.ToString("dd MMM yyyy")</td>
                                         <td style="padding:12px 18px;">
                                             <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;background:@(h.StatusName == "Present" ? "#dcfce7" : h.StatusName == "Absent" ? "#fee2e2" : h.StatusName == "Late" ? "#fef9c3" : "#ede9fe");color:@(h.StatusName == "Present" ? "#15803d" : h.StatusName == "Absent" ? "#b91c1c" : h.StatusName == "Late" ? "#a16207" : "#6d28d9");">
                                                 <i class="bi @(h.StatusName == "Present" ? "bi-check-circle-fill" : h.StatusName == "Absent" ? "bi-x-circle-fill" : h.StatusName == "Late" ? "bi-clock-fill" : "bi-calendar-event-fill")"></i>
@@ -379,7 +379,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="4" style="text-align:center;padding:48px 24px;color:var(--adm-text-3);font-size:14px;">
+                                    <td colspan="4" style="text-align:center;padding:48px 24px;color:var(--adm-text-3);" class="ws-fs-14">
                                         <i class="bi bi-calendar-x" style="font-size:40px;opacity:.35;display:block;margin-bottom:12px;"></i>
                                         No recent attendance records found.
                                     </td>
@@ -393,24 +393,21 @@
     </div>
 
     <!-- TABLE SECTION -->
-    <div class="row g-4">
+    <div class="ws-row ws-g-4">
 
         <!-- ASSIGNMENTS -->
-        <div class="col-lg-6">
+        <div class="ws-col-12 ws-col-lg-6">
 
             <div class="adm-table-card">
 
-                <div style="
+                <div class="ws-flex ws-items-center ws-flex-between" style="
                     padding:20px 24px;
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
                     border-bottom:1px solid var(--adm-border);">
 
                     <h5 class="dash-section__title"
                         style="margin:0;">
 
-                        <i class="bi bi-journal-check me-2"></i>
+                        <i class="bi bi-journal-check ws-me-2"></i>
                         Assignments
 
                     </h5>
@@ -424,7 +421,7 @@
 
                 </div>
 
-                <div class="p-3">
+                <div class="ws-p-3">
 
                     <div id="assignment-grid"></div>
 
@@ -435,21 +432,18 @@
         </div>
 
         <!-- NOTICES -->
-        <div class="col-lg-6">
+        <div class="ws-col-12 ws-col-lg-6">
 
             <div class="adm-table-card">
 
-                <div style="
+                <div class="ws-flex ws-items-center ws-flex-between" style="
                     padding:20px 24px;
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
                     border-bottom:1px solid var(--adm-border);">
 
                     <h5 class="dash-section__title"
                         style="margin:0;">
 
-                        <i class="bi bi-megaphone me-2"></i>
+                        <i class="bi bi-megaphone ws-me-2"></i>
                         Recent Notices
 
                     </h5>
@@ -463,7 +457,7 @@
 
                 </div>
 
-                <div class="p-3">
+                <div class="ws-p-3">
 
                     <div id="notice-grid"></div>
 
@@ -476,7 +470,7 @@
     </div>
 
     <!-- QUICK LINKS -->
-    <div class="dash-section mt-4">
+    <div class="dash-section ws-mt-4">
 
         <div class="dash-section__header">
 
@@ -650,8 +644,8 @@
 
     <!-- TAB: FINANCE -->
     <div id="tab-finance" class="tab-panel" style="display:none;">
-        <div class="row g-3 mb-4" id="finance-summary">
-            <div class="col-md-3">
+        <div class="ws-row ws-g-3 ws-mb-4" id="finance-summary">
+            <div class="ws-col-12 ws-col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-receipt"></i></div>
                     <div class="dash-stat-card__body">
@@ -660,7 +654,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="ws-col-12 ws-col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-check-circle"></i></div>
                     <div class="dash-stat-card__body">
@@ -669,7 +663,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="ws-col-12 ws-col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-exclamation-circle"></i></div>
                     <div class="dash-stat-card__body">
@@ -678,7 +672,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="ws-col-12 ws-col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-clock-history"></i></div>
                     <div class="dash-stat-card__body">
@@ -689,43 +683,43 @@
             </div>
         </div>
 
-        <div class="adm-table-card mb-4">
+        <div class="adm-table-card ws-mb-4">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-file-text me-2"></i>Invoice List</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-file-text ws-me-2"></i>Invoice List</h5>
             </div>
-            <div class="p-3"><div id="invoice-grid"></div></div>
+            <div class="ws-p-3"><div id="invoice-grid"></div></div>
         </div>
 
-        <div class="adm-table-card mb-4">
+        <div class="adm-table-card ws-mb-4">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-credit-card me-2"></i>Payment History</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-credit-card ws-me-2"></i>Payment History</h5>
             </div>
-            <div class="p-3"><div id="payment-grid"></div></div>
+            <div class="ws-p-3"><div id="payment-grid"></div></div>
         </div>
 
-        <div class="adm-table-card mb-4">
+        <div class="adm-table-card ws-mb-4">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-journal-text me-2"></i>Fee Ledger</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-journal-text ws-me-2"></i>Fee Ledger</h5>
             </div>
-            <div class="p-3"><div id="ledger-grid"></div></div>
+            <div class="ws-p-3"><div id="ledger-grid"></div></div>
         </div>
     </div>
 
     <!-- TAB: ROUTINE -->
     <div id="tab-routine" class="tab-panel" style="display:none;">
-        <div class="adm-table-card mb-4">
+        <div class="adm-table-card ws-mb-4">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-clock me-2"></i>Today's Classes (@Model.RoutineWidget.TodayClasses.Count)</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-clock ws-me-2"></i>Today's Classes (@Model.RoutineWidget.TodayClasses.Count)</h5>
             </div>
-            <div class="p-3">
+            <div class="ws-p-3">
                 @if (Model.RoutineWidget.TodayClasses.Any())
                 {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
                         @foreach (var cls in Model.RoutineWidget.TodayClasses)
                         {
                             <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
-                                <div style="font-weight:700;font-size:14px;">@cls.SubjectName</div>
-                                <div style="font-size:12px;color:var(--adm-text-3);margin-top:8px;">
+                                <div class="ws-fw-700 ws-fs-14">@cls.SubjectName</div>
+                                <div class="ws-fs-12" style="color:var(--adm-text-3);margin-top:8px;">
                                     <div>@cls.StartTime.ToString(@"hh\:mm") - @cls.EndTime.ToString(@"hh\:mm")</div>
                                     <div>@cls.TeacherName</div>
                                     @if (!string.IsNullOrEmpty(cls.RoomNo)) { <div>Room: @cls.RoomNo</div> }
@@ -736,39 +730,39 @@
                 }
                 else
                 {
-                    <div class="text-center py-4" style="color:var(--adm-text-3);">No classes scheduled for today.</div>
+                    <div class="ws-text-center ws-py-4" style="color:var(--adm-text-3);">No classes scheduled for today.</div>
                 }
             </div>
         </div>
 
         <div class="adm-table-card">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-calendar-week me-2"></i>This Week</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-calendar-week ws-me-2"></i>This Week</h5>
             </div>
-            <div class="p-3">
+            <div class="ws-p-3">
                 @if (Model.RoutineWidget.ThisWeekClasses.Any())
                 {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
                         @foreach (var cls in Model.RoutineWidget.ThisWeekClasses)
                         {
                             <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
-                                <div style="display:flex;justify-content:space-between;align-items:center;">
-                                    <span class="adm-badge adm-badge--primary" style="font-size:11px;">@cls.DayOfWeek</span>
-                                    <span style="font-size:11px;color:var(--adm-text-3);">@cls.StartTime.ToString(@"hh\:mm")</span>
+                                <div class="ws-flex ws-flex-between ws-items-center">
+                                    <span class="adm-badge adm-badge--primary ws-fs-11">@cls.DayOfWeek</span>
+                                    <span class="ws-fs-11" style="color:var(--adm-text-3);">@cls.StartTime.ToString(@"hh\:mm")</span>
                                 </div>
-                                <div style="font-weight:700;font-size:14px;margin-top:8px;">@cls.SubjectName</div>
-                                <div style="font-size:12px;color:var(--adm-text-3);">@cls.TeacherName</div>
+                                <div class="ws-fw-700 ws-fs-14" style="margin-top:8px;">@cls.SubjectName</div>
+                                <div class="ws-fs-12" style="color:var(--adm-text-3);">@cls.TeacherName</div>
                             </div>
                         }
                     </div>
                 }
                 else
                 {
-                    <div class="text-center py-4" style="color:var(--adm-text-3);">No classes scheduled for this week.</div>
+                    <div class="ws-text-center ws-py-4" style="color:var(--adm-text-3);">No classes scheduled for this week.</div>
                 }
             </div>
         </div>
-        <div class="text-center mt-3">
+        <div class="ws-text-center ws-mt-3">
             <a href="/Routine/StudentView" class="adm-btn adm-btn--primary">
                 <i class="bi bi-calendar-week"></i> View Full Timetable
             </a>
@@ -777,8 +771,8 @@
 
     <!-- TAB: ASSIGNMENTS -->
     <div id="tab-assignments" class="tab-panel" style="display:none;">
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
+        <div class="ws-row ws-g-3 ws-mb-4">
+            <div class="ws-col-12 ws-col-md-4">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-clock"></i></div>
                     <div class="dash-stat-card__body">
@@ -787,7 +781,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="ws-col-12 ws-col-md-4">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-check-all"></i></div>
                     <div class="dash-stat-card__body">
@@ -796,7 +790,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="ws-col-12 ws-col-md-4">
                 <div class="dash-stat-card">
                     <div class="dash-stat-card__icon dash-stat-card__icon--danger"><i class="bi bi-exclamation-triangle"></i></div>
                     <div class="dash-stat-card__body">
@@ -807,25 +801,25 @@
             </div>
         </div>
         <div class="adm-table-card">
-            <div class="p-3"><div id="assignment-full-grid"></div></div>
+            <div class="ws-p-3"><div id="assignment-full-grid"></div></div>
         </div>
     </div>
 
     <!-- TAB: LIBRARY -->
     <div id="tab-library" class="tab-panel" style="display:none;">
-        <div class="adm-table-card mb-4">
+        <div class="adm-table-card ws-mb-4">
             <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-book me-2"></i>Issued Books (@Model.TotalIssuedBooks)</h5>
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-book ws-me-2"></i>Issued Books (@Model.TotalIssuedBooks)</h5>
             </div>
-            <div class="p-3">
+            <div class="ws-p-3">
                 @if (Model.IssuedBooks.Any())
                 {
                     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;">
                         @foreach (var book in Model.IssuedBooks)
                         {
                             <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
-                                <div style="font-weight:700;font-size:14px;">@book.BookTitle</div>
-                                <div style="font-size:12px;color:var(--adm-text-3);margin-top:6px;">
+                                <div class="ws-fw-700 ws-fs-14">@book.BookTitle</div>
+                                <div class="ws-fs-12" style="color:var(--adm-text-3);margin-top:6px;">
                                     <div>Author: @book.Author</div>
                                     <div>Issue: @book.IssueDate.ToString("dd MMM yyyy")</div>
                                     <div>Due: @book.DueDate.ToString("dd MMM yyyy")</div>
@@ -841,7 +835,7 @@
                 }
                 else
                 {
-                    <div class="text-center py-4" style="color:var(--adm-text-3);">No books currently issued.</div>
+                    <div class="ws-text-center ws-py-4" style="color:var(--adm-text-3);">No books currently issued.</div>
                 }
             </div>
         </div>
@@ -849,30 +843,30 @@
 
     <!-- TAB: NOTIFICATIONS -->
     <div id="tab-notifications" class="tab-panel" style="display:none;">
-        <div class="adm-table-card mb-4">
-            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);display:flex;align-items:center;justify-content:space-between;">
-                <h5 style="margin:0;font-weight:700;"><i class="bi bi-bell me-2"></i>Notifications</h5>
+        <div class="adm-table-card ws-mb-4">
+            <div class="ws-flex ws-items-center ws-flex-between" style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-bell ws-me-2"></i>Notifications</h5>
                 @if (Model.UnreadNotificationCount > 0)
                 {
                     <span class="adm-badge adm-badge--danger">@Model.UnreadNotificationCount unread</span>
                 }
             </div>
-            <div class="p-3">
+            <div class="ws-p-3">
                 @if (Model.RecentNotifications.Any())
                 {
                     <div style="display:flex;flex-direction:column;gap:8px;">
                         @foreach (var notif in Model.RecentNotifications)
                         {
                             <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:@(notif.IsRead ? "var(--adm-bg-2)" : "var(--adm-bg-sub)");@(notif.IsRead ? "" : "border-left:3px solid var(--adm-primary);")">
-                                <div style="display:flex;justify-content:space-between;align-items:center;">
-                                    <div style="font-weight:600;font-size:14px;">@notif.Title</div>
-                                    @if (!notif.IsRead) { <span class="adm-badge adm-badge--primary" style="font-size:10px;">New</span> }
+                                <div class="ws-flex ws-flex-between ws-items-center">
+                                    <div class="ws-fw-600 ws-fs-14">@notif.Title</div>
+                                    @if (!notif.IsRead) { <span class="adm-badge adm-badge--primary ws-fs-10">New</span> }
                                 </div>
                                 @if (!string.IsNullOrEmpty(notif.Body))
                                 {
-                                    <div style="font-size:12px;color:var(--adm-text-3);margin-top:6px;">@notif.Body</div>
+                                    <div class="ws-fs-12" style="color:var(--adm-text-3);margin-top:6px;">@notif.Body</div>
                                 }
-                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:8px;">
+                                <div class="ws-fs-11" style="color:var(--adm-text-3);margin-top:8px;">
                                     @(notif.SentAt?.ToString("dd MMM yyyy hh:mm tt") ?? notif.CreatedAt.ToString("dd MMM yyyy hh:mm tt"))
                                 </div>
                             </div>
@@ -881,7 +875,7 @@
                 }
                 else
                 {
-                    <div class="text-center py-4" style="color:var(--adm-text-3);">No notifications.</div>
+                    <div class="ws-text-center ws-py-4" style="color:var(--adm-text-3);">No notifications.</div>
                 }
             </div>
         </div>

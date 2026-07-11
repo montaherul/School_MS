@@ -280,7 +280,7 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var examLabels = [@Html.Raw(string.Join(",", examNames.Select(n => $"'{n?.Replace("'","\\'")}'")))];
+            var examLabels = [@Html.Raw(string.Join(",", examNames.Select(n => System.Text.Json.JsonSerializer.Serialize(n ?? ""))))];
 
             // GPA Trend Chart
             var gpaCtx = document.getElementById('comparisonGpaChart');

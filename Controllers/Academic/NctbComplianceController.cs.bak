@@ -1,0 +1,27 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Models.DTOs.Academic;
+using SchoolManagementSystem.Services.Interfaces.Academic;
+
+namespace SchoolManagementSystem.Controllers.Academic;
+
+[Authorize]
+[RequirePermission("Nctb.View")]
+public class NctbComplianceController : Controller
+{
+    private readonly INctbComplianceService _service;
+
+    public NctbComplianceController(INctbComplianceService service)
+    {
+        _service = service;
+    }
+
+    public async Task<IActionResult> Index(int? academicYearId, CancellationToken ct = default)
+    {
+        var report = await _service.GetComplianceReportAsync(academicYearId ?? 0, ct);
+        var versions = await _service.GetCurriculumVersionsAsync(ct);
+        ViewBag.CurriculumVersions = versions;
+        return View(report);
+    }
+}

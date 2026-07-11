@@ -592,11 +592,20 @@ public class Phase36A_ResultEngineFixTests
 
         var classPromoRuleRepoMock = new Mock<IBaseRepository<ClassPromotionRule>>(MockBehavior.Loose);
         classPromoRuleRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<ClassPromotionRule, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ClassPromotionRule?)null);
+            .ReturnsAsync(new ClassPromotionRule
+            {
+                Id = 1,
+                ClassId = 1,
+                MinimumGPA = 2.00m,
+                MaximumFailedSubjects = 2,
+                AllowConditionalPromotion = true,
+                ConditionalPromotionGPA = 1.00m,
+                IsActive = true
+            });
         uowMock.Setup(u => u.Repository<ClassPromotionRule>()).Returns(classPromoRuleRepoMock.Object);
         var schoolClassRepoMock = new Mock<IBaseRepository<SchoolClass>>(MockBehavior.Loose);
         schoolClassRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SchoolClass?)null);
+            .ReturnsAsync(new SchoolClass { Id = 1, Name = "Test Class" });
         uowMock.Setup(u => u.Repository<SchoolClass>()).Returns(schoolClassRepoMock.Object);
 
         var service = new PromotionService(
@@ -638,11 +647,20 @@ public class Phase36A_ResultEngineFixTests
 
         var classPromoRuleRepoMock = new Mock<IBaseRepository<ClassPromotionRule>>(MockBehavior.Loose);
         classPromoRuleRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<ClassPromotionRule, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ClassPromotionRule?)null);
+            .ReturnsAsync(new ClassPromotionRule
+            {
+                Id = 1,
+                ClassId = 1,
+                MinimumGPA = 2.00m,
+                MaximumFailedSubjects = 2,
+                AllowConditionalPromotion = true,
+                ConditionalPromotionGPA = 1.00m,
+                IsActive = true
+            });
         uowMock.Setup(u => u.Repository<ClassPromotionRule>()).Returns(classPromoRuleRepoMock.Object);
         var schoolClassRepoMock = new Mock<IBaseRepository<SchoolClass>>(MockBehavior.Loose);
         schoolClassRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SchoolClass?)null);
+            .ReturnsAsync(new SchoolClass { Id = 1, Name = "Test Class" });
         uowMock.Setup(u => u.Repository<SchoolClass>()).Returns(schoolClassRepoMock.Object);
 
         var service = new PromotionService(

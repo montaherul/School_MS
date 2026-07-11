@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
-using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Controllers.Academic;
 
@@ -13,20 +10,20 @@ namespace SchoolManagementSystem.Controllers.Academic;
 public class AcademicCalendarEventController : Controller
 {
     private readonly IAcademicCalendarEventService _service;
-    private readonly IUnitOfWork _uow;
 
-    public AcademicCalendarEventController(IAcademicCalendarEventService service, IUnitOfWork uow)
+    public AcademicCalendarEventController(IAcademicCalendarEventService service)
     {
         _service = service;
-        _uow = uow;
     }
 
+    [RequirePermission("Calendar.View")]
     public IActionResult Index()
     {
         return View();
     }
 
     [HttpGet]
+    [RequirePermission("Calendar.View")]
     public async Task<IActionResult> GetList(int calendarId, CancellationToken ct)
     {
         var events = await _service.GetEventsByCalendarAsync(calendarId, ct);
@@ -37,12 +34,12 @@ public class AcademicCalendarEventController : Controller
     [RequirePermission("Calendar.Create")]
     public async Task<IActionResult> Create(int calendarId, CancellationToken ct)
     {
-        var calendar = await _uow.Repository<AcademicCalendar>().GetByIdAsync(calendarId, ct);
+        var calendar = await _service.GetCalendarByIdAsync(calendarId, ct);
         if (calendar == null) return NotFound();
 
         ViewBag.Calendar = calendar;
         ViewBag.EventTypes = new[] { "Holiday", "WeeklyOff", "Exam", "Vacation", "Event" };
-        return View(new AcademicCalendarEventDto { IsActive = true });
+        return View(new AcademicCalendarEventDto { AcademicCalendarId = calendarId, IsActive = true });
     }
 
     [HttpPost]
@@ -52,13 +49,13 @@ public class AcademicCalendarEventController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var calendar = await _uow.Repository<AcademicCalendar>().GetByIdAsync(calendarId, ct);
+            var calendar = await _service.GetCalendarByIdAsync(calendarId, ct);
             ViewBag.Calendar = calendar;
             ViewBag.EventTypes = new[] { "Holiday", "WeeklyOff", "Exam", "Vacation", "Event" };
             return View(dto);
         }
 
-        dto.Id = calendarId;
+        dto.AcademicCalendarId = calendarId;
         await _service.CreateAsync(dto, User.Identity?.Name ?? "system", ct);
         TempData["Success"] = "Event created.";
         return RedirectToAction(nameof(Index));

@@ -1,0 +1,244 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.NctbComplianceReportDto
+@{
+    ViewData["Title"] = "NCTB Compliance Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="ws-section ws-section--flush">
+    <div class="ws-container">
+        <header class="ws-page-header ws-mb-8">
+            <h1 class="ws-title-section">NCTB Compliance Dashboard</h1>
+            <p class="ws-text-muted ws-mt-2">Monitor Bangladesh National Curriculum & Textbook Board compliance status</p>
+        </header>
+
+        <div class="ws-flex ws-items-center ws-gap-4 ws-mb-6 ws-flex-wrap">
+            <label class="ws-form-label ws-mb-0">Academic Year:</label>
+            <select id="academicYearSelect" class="ws-select ws-w-auto" style="min-width:220px;"
+                    onchange="window.location.href = '/Academic/NctbCompliance?academicYearId=' + this.value;">
+                @foreach (var v in ViewBag.CurriculumVersions)
+                {
+                    <option value="@v.Id" selected="@(v.Id == Model.AcademicYearId)">
+                        @v.VersionName @(v.IsCurrent ? "(Current)" : "")
+                    </option>
+                }
+            </select>
+            <span class="ws-badge ws-badge--primary ws-ms-3">@Model.ComplianceScore%</span>
+        </div>
+
+        <div class="ws-grid ws-grid-cols-1 ws-grid-cols-2 ws-grid-cols-lg-4 ws-gap-4 ws-mb-8">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon ws-bg-primary-light ws-text-primary">
+                    <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div class="dash-stat-card__content">
+                    <div class="dash-stat-card__value">@Model.TotalSubjectCount</div>
+                    <div class="dash-stat-card__label">Total Subjects</div>
+                </div>
+            </div>
+
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon ws-bg-warning-light ws-text-warning">
+                    <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <path d="M8 21h8M12 17v4"/>
+                    </svg>
+                </div>
+                <div class="dash-stat-card__content">
+                    <div class="dash-stat-card__value">@Model.VocationalSubjectCount</div>
+                    <div class="dash-stat-card__label">Vocational Subjects</div>
+                </div>
+            </div>
+
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon ws-bg-success-light ws-text-success">
+                    <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <div class="dash-stat-card__content">
+                    <div class="dash-stat-card__value">@(Model.MissingSubjects.Count)</div>
+                    <div class="dash-stat-card__label">Missing Subjects</div>
+                </div>
+            </div>
+
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon @(Model.ComplianceScore >= 80 ? "ws-bg-success-light ws-text-success" : Model.ComplianceScore >= 60 ? "ws-bg-warning-light ws-text-warning" : "ws-bg-danger-light ws-text-danger")">
+                    <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <div class="dash-stat-card__content">
+                    <div class="dash-stat-card__value">@Model.ComplianceScore%</div>
+                    <div class="dash-stat-card__label">Compliance Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-grid ws-grid-cols-1 ws-grid-cols-lg-2 ws-gap-6 ws-mb-8">
+            <section class="adm-card">
+                <header class="adm-card__header">
+                    <h2 class="ws-title-label">Group Requirements</h2>
+                </header>
+                <div class="adm-card__body ws-space-y-4">
+                    <div class="ws-flex ws-items-center ws-justify-between ws-p-3 ws-rounded @(Model.HasScienceGroup ? "ws-bg-success-light" : "ws-bg-danger-light")">
+                        <div class="ws-flex ws-items-center ws-gap-3">
+                            <span class="ws-icon-circle @(Model.HasScienceGroup ? "ws-bg-success" : "ws-bg-danger") ws-text-white">
+                                @(Model.HasScienceGroup ? "✓" : "✗")
+                            </span>
+                            <div>
+                                <div class="ws-fw-600">Science Group (Classes 9-10)</div>
+                                <div class="ws-fs-13 ws-text-muted">Physics, Chemistry, Biology, Higher Mathematics</div>
+                            </div>
+                        </div>
+                        <span class="ws-badge @(Model.HasScienceGroup ? "ws-badge--success" : "ws-badge--danger")">
+                            @(Model.HasScienceGroup ? "Configured" : "Incomplete")
+                        </span>
+                    </div>
+
+                    <div class="ws-flex ws-items-center ws-justify-between ws-p-3 @(Model.HasBusinessStudiesGroup ? "ws-bg-success-light" : "ws-bg-danger-light") ws-rounded">
+                        <div class="ws-flex ws-items-center ws-gap-3">
+                            <span class="ws-icon-circle @(Model.HasBusinessStudiesGroup ? "ws-bg-success" : "ws-bg-danger") ws-text-white">
+                                @(Model.HasBusinessStudiesGroup ? "✓" : "✗")
+                            </span>
+                            <div>
+                                <div class="ws-fw-600">Business Studies Group</div>
+                                <div class="ws-fs-13 ws-text-muted">Accounting, Business Studies, Finance, Banking</div>
+                            </div>
+                        </div>
+                        <span class="ws-badge @(Model.HasBusinessStudiesGroup ? "ws-badge--success" : "ws-badge--danger")">
+                            @(Model.HasBusinessStudiesGroup ? "Configured" : "Incomplete")
+                        </span>
+                    </div>
+
+                    <div class="ws-flex ws-items-center ws-justify-between ws-p-3 @(Model.HasHumanitiesGroup ? "ws-bg-success-light" : "ws-bg-danger-light") ws-rounded">
+                        <div class="ws-flex ws-items-center ws-gap-3">
+                            <span class="ws-icon-circle @(Model.HasHumanitiesGroup ? "ws-bg-success" : "ws-bg-danger") ws-text-white">
+                                @(Model.HasHumanitiesGroup ? "✓" : "✗")
+                            </span>
+                            <div>
+                                <div class="ws-fw-600">Humanities Group</div>
+                                <div class="ws-fs-13 ws-text-muted">History, Civics, Geography, Economics, Logic</div>
+                            </div>
+                        </div>
+                        <span class="ws-badge @(Model.HasHumanitiesGroup ? "ws-badge--success" : "ws-badge--danger")">
+                            @(Model.HasHumanitiesGroup ? "Configured" : "Incomplete")
+                        </span>
+                    </div>
+
+                    <div class="ws-flex ws-items-center ws-justify-between ws-p-3 @(Model.HasCompulsoryCoreSubjects ? "ws-bg-success-light" : "ws-bg-danger-light") ws-rounded">
+                        <div class="ws-flex ws-items-center ws-gap-3">
+                            <span class="ws-icon-circle @(Model.HasCompulsoryCoreSubjects ? "ws-bg-success" : "ws-bg-danger") ws-text-white">
+                                @(Model.HasCompulsoryCoreSubjects ? "✓" : "✗")
+                            </span>
+                            <div>
+                                <div class="ws-fw-600">Compulsory Core Subjects (All Classes)</div>
+                                <div class="ws-fs-13 ws-text-muted">Bangla, English, Mathematics, Religion (Islam)</div>
+                            </div>
+                        </div>
+                        <span class="ws-badge @(Model.HasCompulsoryCoreSubjects ? "ws-badge--success" : "ws-badge--danger")">
+                            @(Model.HasCompulsoryCoreSubjects ? "Complete" : "Incomplete")
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="adm-card">
+                <header class="adm-card__header">
+                    <h2 class="ws-title-label">Subject Category Breakdown</h2>
+                </header>
+                <div class="adm-card__body">
+                    @if (Model.SubjectCategoryBreakdown.Any())
+                    {
+                        <table class="adm-table adm-table--compact">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="ws-text-end">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SubjectCategoryBreakdown)
+                                {
+                                    <tr>
+                                        <td><span class="ws-badge ws-badge--info">@item.Category</span></td>
+                                        <td class="ws-text-end ws-fw-600">@item.Count</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="ws-text-muted ws-text-center ws-py-8">No subject data for selected academic year</p>
+                    }
+                </div>
+            </section>
+        </div>
+
+        @if (Model.MissingSubjects.Any())
+        {
+            <section class="adm-card ws-mb-6">
+                <header class="adm-card__header">
+                    <h2 class="ws-title-label">Missing NCTB-Required Subjects</h2>
+                </header>
+                <div class="adm-card__body">
+                    <div class="ws-flex ws-flex-wrap ws-gap-2">
+                        @foreach (var subj in Model.MissingSubjects.Distinct())
+                        {
+                            <span class="ws-badge ws-badge--danger">@subj</span>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (Model.Warnings.Any() || Model.Recommendations.Any())
+        {
+            <div class="ws-grid ws-grid-cols-1 ws-grid-cols-lg-2 ws-gap-6">
+                @if (Model.Warnings.Any())
+                {
+                    <section class="adm-card ws-border-warning">
+                        <header class="adm-card__header ws-bg-warning-light">
+                            <h2 class="ws-title-label ws-text-warning">Warnings</h2>
+                        </header>
+                        <div class="adm-card__body">
+                            <ul class="ws-list ws-list--spaced">
+                                @foreach (var w in Model.Warnings)
+                                {
+                                    <li class="ws-flex ws-items-start ws-gap-2">
+                                        <span class="ws-icon-circle ws-bg-warning ws-text-white ws-flex-shrink-0" style="width:18px;height:18px;font-size:10px;">!</span>
+                                        <span class="ws-fs-14">@w</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </section>
+                }
+
+                @if (Model.Recommendations.Any())
+                {
+                    <section class="adm-card ws-border-primary">
+                        <header class="adm-card__header ws-bg-primary-light">
+                            <h2 class="ws-title-label ws-text-primary">Recommendations</h2>
+                        </header>
+                        <div class="adm-card__body">
+                            <ul class="ws-list ws-list--spaced">
+                                @foreach (var r in Model.Recommendations)
+                                {
+                                    <li class="ws-flex ws-items-start ws-gap-2">
+                                        <span class="ws-icon-circle ws-bg-primary ws-text-white ws-flex-shrink-0" style="width:18px;height:18px;font-size:10px;">→</span>
+                                        <span class="ws-fs-14">@r</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </section>
+                }
+            </div>
+        }
+    </div>
+</div>

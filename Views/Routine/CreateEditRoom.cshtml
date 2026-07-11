@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #D97706, #F59E0B); box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-building"></i>
             </div>
             <div>
@@ -19,48 +19,48 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditRoom" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="RoomNo" class="form-label">Room No <span class="text-danger">*</span></label>
-                                <input asp-for="RoomNo" class="form-control" placeholder="e.g. 101, Lab-A" />
-                                <span asp-validation-for="RoomNo" class="text-danger small"></span>
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="RoomNo" class="adm-label">Room No <span class="ws-text-danger">*</span></label>
+                                <input asp-for="RoomNo" class="adm-input" placeholder="e.g. 101, Lab-A" />
+                                <span asp-validation-for="RoomNo" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Name" class="form-label">Name</label>
-                                <input asp-for="Name" class="form-control" placeholder="e.g. Physics Lab" />
-                                <span asp-validation-for="Name" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Capacity" class="form-label">Capacity <span class="text-danger">*</span></label>
-                                <input asp-for="Capacity" type="number" class="form-control" min="1" placeholder="e.g. 40" />
-                                <span asp-validation-for="Capacity" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Floor" class="form-label">Floor</label>
-                                <input asp-for="Floor" type="number" class="form-control" min="0" placeholder="e.g. 1" />
-                                <span asp-validation-for="Floor" class="text-danger small"></span>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Name" class="adm-label">Name</label>
+                                <input asp-for="Name" class="adm-input" placeholder="e.g. Physics Lab" />
+                                <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Building" class="form-label">Building</label>
-                            <input asp-for="Building" class="form-control" placeholder="e.g. Main Campus, Science Block" />
-                            <span asp-validation-for="Building" class="text-danger small"></span>
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Capacity" class="adm-label">Capacity <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Capacity" type="number" class="adm-input" min="1" placeholder="e.g. 40" />
+                                <span asp-validation-for="Capacity" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Floor" class="adm-label">Floor</label>
+                                <input asp-for="Floor" type="number" class="adm-input" min="0" placeholder="e.g. 1" />
+                                <span asp-validation-for="Floor" class="ws-text-danger ws-fs-13"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="RoomType" class="form-label">Room Type <span class="text-danger">*</span></label>
-                            <select asp-for="RoomType" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="Building" class="adm-label">Building</label>
+                            <input asp-for="Building" class="adm-input" placeholder="e.g. Main Campus, Science Block" />
+                            <span asp-validation-for="Building" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-mb-3">
+                            <label asp-for="RoomType" class="adm-label">Room Type <span class="ws-text-danger">*</span></label>
+                            <select asp-for="RoomType" class="adm-input">
                                 <option value="">Select Room Type</option>
                                 @if (ViewBag.RoomTypes is List<string> roomTypes)
                                 {
@@ -83,25 +83,25 @@
                                     <option value="StaffRoom">Staff Room</option>
                                 }
                             </select>
-                            <span asp-validation-for="RoomType" class="text-danger small"></span>
+                            <span asp-validation-for="RoomType" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input asp-for="IsLab" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsLab" class="form-check-label fw-semibold">Is Lab</label>
+                        <div class="ws-mb-3 adm-form-check">
+                            <input asp-for="IsLab" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsLab" class="adm-form-check-label ws-fw-600">Is Lab</label>
                         </div>
 
-                        <div class="mb-3 form-check">
-                            <input asp-for="RequiresDoublePeriod" class="form-check-input" type="checkbox" />
-                            <label asp-for="RequiresDoublePeriod" class="form-check-label fw-semibold">Requires Double Period</label>
+                        <div class="ws-mb-3 adm-form-check">
+                            <input asp-for="RequiresDoublePeriod" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="RequiresDoublePeriod" class="adm-form-check-label ws-fw-600">Requires Double Period</label>
                         </div>
 
-                        <div class="mb-4 form-check">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsActive" class="form-check-label fw-semibold">Active</label>
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Active</label>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/Rooms" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

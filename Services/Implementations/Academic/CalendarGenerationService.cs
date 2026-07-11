@@ -196,6 +196,11 @@ public class CalendarGenerationService : ICalendarGenerationService
             .Where(h => h.IsActive && !h.IsDeleted)
             .ToListAsync(ct);
 
+        var existingEntries = await _uow.Repository<AcademicCalendar>().Query()
+            .Where(x => x.AcademicYearId == academicYearId && !x.IsDeleted)
+            .ToListAsync(ct);
+        var calendarMap = existingEntries.ToDictionary(x => x.Date);
+
         var synced = 0;
         foreach (var holiday in holidays)
         {
@@ -205,10 +210,7 @@ public class CalendarGenerationService : ICalendarGenerationService
 
             if (targetDate.Year != year) continue;
 
-            var calendarEntry = await _uow.Repository<AcademicCalendar>().Query()
-                .FirstOrDefaultAsync(x => x.AcademicYearId == academicYearId && x.Date == targetDate && !x.IsDeleted, ct);
-
-            if (calendarEntry != null)
+            if (calendarMap.TryGetValue(targetDate, out var calendarEntry))
             {
                 calendarEntry.IsHoliday = true;
                 calendarEntry.IsWorkingDay = false;
@@ -236,10 +238,15 @@ public class CalendarGenerationService : ICalendarGenerationService
         var sw = Stopwatch.StartNew();
         _logger.LogInformation("Exam sync started for AcademicYearId={AcademicYearId}, Year={Year}", academicYearId, year);
 
-        var examSchedules = await _uow.Repository<ExamSchedule>().Query()
+        var examSchedules = await _uow.Repository<ExamSchedule>().QueryNoTracking()
             .Include(x => x.Exam)
             .Where(x => !x.IsDeleted && x.ExamDate.Year == year)
             .ToListAsync(ct);
+
+        var existingEntries = await _uow.Repository<AcademicCalendar>().Query()
+            .Where(x => x.AcademicYearId == academicYearId && !x.IsDeleted)
+            .ToListAsync(ct);
+        var calendarMap = existingEntries.ToDictionary(x => x.Date);
 
         var synced = 0;
         var conflicts = new List<string>();
@@ -248,10 +255,7 @@ public class CalendarGenerationService : ICalendarGenerationService
         {
             var date = schedule.ExamDate;
 
-            var calendarEntry = await _uow.Repository<AcademicCalendar>().Query()
-                .FirstOrDefaultAsync(x => x.AcademicYearId == academicYearId && x.Date == date && !x.IsDeleted, ct);
-
-            if (calendarEntry == null) continue;
+            if (!calendarMap.TryGetValue(date, out var calendarEntry)) continue;
 
             if (calendarEntry.IsHoliday)
             {

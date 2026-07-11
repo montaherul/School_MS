@@ -29,10 +29,10 @@
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert alert-danger">
+        <div class="adm-alert adm-alert--danger">
             @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
             {
-                <p class="mb-0">@err.ErrorMessage</p>
+                <p class="ws-mb-0">@err.ErrorMessage</p>
             }
         </div>
     }
@@ -41,8 +41,8 @@
         <form method="post" asp-action="BulkEdit" asp-route-subjectId="@Model.SubjectId">
             @Html.AntiForgeryToken()
 
-            <div class="table-responsive">
-                <table class="table adm-table">
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
                     <thead>
                         <tr>
                             <th>Enable</th>
@@ -60,21 +60,21 @@
                                     <input type="hidden" asp-for="Components[i].ComponentId" />
                                     <input type="hidden" asp-for="Components[i].ComponentName" />
                                     <input type="hidden" asp-for="Components[i].ComponentCode" />
-                                    <input asp-for="Components[i].IsEnabled" class="form-check-input" />
+                                    <input asp-for="Components[i].IsEnabled" class="adm-form-check-input" />
                                 </td>
                                 <td>@Model.Components[i].ComponentName</td>
                                 <td><code>@Model.Components[i].ComponentCode</code></td>
                                 <td>
-                                    <input asp-for="Components[i].FullMarks" class="form-control er-input" type="number" step="0.01" min="0" />
+                                    <input asp-for="Components[i].FullMarks" class="adm-input er-input" type="number" step="0.01" min="0" />
                                 </td>
                                 <td>
-                                    <input asp-for="Components[i].PassMarks" class="form-control er-input" type="number" step="0.01" min="0" />
+                                    <input asp-for="Components[i].PassMarks" class="adm-input er-input" type="number" step="0.01" min="0" />
                                 </td>
                             </tr>
                         }
                     </tbody>
                     <tfoot>
-                        <tr class="fw-bold">
+                        <tr class="ws-fw-700">
                             <td></td>
                             <td colspan="2">Totals</td>
                             <td id="totalFullMarks">0</td>
@@ -84,7 +84,7 @@
                 </table>
             </div>
 
-            <div class="mt-4 d-flex gap-2">
+            <div class="ws-mt-4 ws-flex ws-gap-2">
                 <button type="submit" class="er-btn er-btn--primary">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                     Save Configuration

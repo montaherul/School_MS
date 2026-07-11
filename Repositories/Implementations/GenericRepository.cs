@@ -20,6 +20,8 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
 
     public IQueryable<T> Query() => _set.AsQueryable();
 
+    public IQueryable<T> QueryNoTracking() => _set.AsNoTracking();
+
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         => await _set.FindAsync(new object[] { id }, cancellationToken);
 
@@ -52,6 +54,58 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     public void Remove(T entity) => _set.Remove(entity);
 
     public void RemoveRange(IEnumerable<T> entities) => _set.RemoveRange(entities);
+
+    public async Task<List<TResult>> ExecuteStoredProcAsync<TResult>(string spName, params object[] parameters) where TResult : class, new()
+    {
+        var sql = $"EXEC {spName}";
+        if (parameters != null && parameters.Length > 0)
+        {
+            var paramNames = new List<string>();
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                paramNames.Add($"@p{i}");
+            }
+            sql += " " + string.Join(", ", paramNames.Select(p => p));
+        }
+
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = sql;
+        command.CommandType = CommandType.Text;
+
+        if (parameters != null)
+        {
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var param = command.CreateParameter();
+                param.ParameterName = $"@p{i}";
+                param.Value = parameters[i] ?? DBNull.Value;
+                command.Parameters.Add(param);
+            }
+        }
+
+        await using var lease = await OpenConnectionAsync(command.Connection!, CancellationToken.None);
+
+        var results = new List<TResult>();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var item = new TResult();
+            var properties = typeof(TResult).GetProperties();
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                var name = reader.GetName(i);
+                var prop = Array.Find(properties, p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (prop != null && !reader.IsDBNull(i))
+                {
+                    var value = reader.GetValue(i);
+                    prop.SetValue(item, Convert.ChangeType(value, prop.PropertyType));
+                }
+            }
+            results.Add(item);
+        }
+
+        return results;
+    }
 
     // Stored procedure helpers (eliminate duplication across all repository implementations)
     protected static async Task<IAsyncDisposable> OpenConnectionAsync(DbConnection connection, CancellationToken ct)

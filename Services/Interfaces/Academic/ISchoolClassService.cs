@@ -16,6 +16,8 @@ public interface ISchoolClassService
     Task ArchiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task ToggleActiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default);
+    Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default);
     Task<bool> IsNameUniqueAsync(string name, int? excludeId = null, CancellationToken cancellationToken = default);
     Task<bool> IsCodeUniqueAsync(string code, int? excludeId = null, CancellationToken cancellationToken = default);
     Task<bool> CanDeleteAsync(int id, CancellationToken cancellationToken = default);

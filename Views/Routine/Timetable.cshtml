@@ -7,14 +7,14 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-table"></i>
             </div>
             <div>
@@ -22,14 +22,14 @@
                 <p class="adm-header__sub">Manage class-wise timetable entries and schedules</p>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="ws-flex ws-gap-2">
             <a href="/Routine/Dashboard" class="adm-btn adm-btn--ghost">
                 <i class="bi bi-grid"></i> <span>Dashboard</span>
             </a>
         </div>
     </div>
 
-    <div class="adm-filters mb-3">
+    <div class="adm-filters ws-mb-3">
         <div class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="adm-label">Academic Year</label>
@@ -57,7 +57,7 @@
             </div>
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">Day</label>
-                <div class="d-flex gap-1" id="dayFilter">
+                <div class="ws-flex ws-gap-1" id="dayFilter">
                     <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn active" data-value="">All</button>
                     <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="1">Sat</button>
                     <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="2">Sun</button>
@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    <div class="d-flex gap-2 mb-3 align-items-center">
+    <div class="ws-flex ws-gap-2 ws-mb-3 ws-items-center">
         <a href="/Routine/Generation" class="adm-btn adm-btn--success">
             <i class="bi bi-magic"></i> <span>Auto Generate</span>
         </a>
@@ -84,7 +84,7 @@
         <button type="button" id="reset-filters" class="adm-btn adm-btn--ghost">
             <i class="bi bi-x-circle"></i> Reset
         </button>
-        <div class="ms-auto d-flex gap-2" id="bulkToolbar">
+        <div class="ws-ms-auto ws-flex ws-gap-2" id="bulkToolbar">
             <button type="button" class="adm-btn adm-btn--danger" id="bulkDeleteBtn" disabled>
                 <i class="bi bi-trash"></i> <span>Delete Selected</span>
             </button>
@@ -101,7 +101,7 @@
     </div>
 </div>
 
-<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+<div class="adm-modal-backdrop ws-d-none" id="deleteModalBackdrop">
     <div class="adm-modal">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
@@ -119,7 +119,7 @@
         </div>
         <div class="adm-modal__body">
             Are you sure you want to delete this timetable entry?
-            <br><small class="text-muted">This action cannot be undone.</small>
+            <br><span class="ws-fs-13 ws-text-muted">This action cannot be undone.</span>
         </div>
         <div class="adm-modal__footer">
             <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
@@ -130,7 +130,7 @@
     </div>
 </div>
 
-<div class="adm-modal-backdrop d-none" id="entryModal">
+<div class="adm-modal-backdrop ws-d-none" id="entryModal">
     <div class="adm-modal adm-modal--lg">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
@@ -148,14 +148,14 @@
         </div>
         <div class="adm-modal__body">
             <input type="hidden" id="entryId" />
-            <div class="row g-3">
-                <div class="col-md-6">
+            <div class="ws-row ws-g-4">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Academic Year</label>
                     <select id="entryAcademicYearId" class="adm-select">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Day</label>
                     <select id="entryDayNumber" class="adm-select">
                         <option value="">-- Select --</option>
@@ -168,55 +168,55 @@
                         <option value="7">Friday</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Period</label>
                     <select id="entryPeriodId" class="adm-select">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Class</label>
                     <select id="entryClassId" class="adm-select">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Section</label>
                     <select id="entrySectionId" class="adm-select" disabled>
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Group</label>
                     <select id="entryGroupId" class="adm-select" disabled>
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Subject</label>
                     <select id="entrySubjectId" class="adm-select" disabled>
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Teacher</label>
                     <select id="entryTeacherId" class="adm-select">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="ws-col-md-6">
                     <label class="adm-label">Room</label>
                     <select id="entryRoomId" class="adm-select">
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-6 d-flex align-items-end pb-2">
-                    <div class="form-check">
-                        <input type="checkbox" id="entryIsLab" class="form-check-input" />
-                        <label class="form-check-label" for="entryIsLab">Is Lab</label>
+                <div class="ws-col-md-6 ws-flex ws-items-end ws-pb-2">
+                    <div class="adm-form-check">
+                        <input type="checkbox" id="entryIsLab" class="adm-form-check-input" />
+                        <label class="adm-form-check-label" for="entryIsLab">Is Lab</label>
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="ws-col-12">
                     <label class="adm-label">Note</label>
                     <textarea id="entryNote" class="adm-textarea" rows="2"></textarea>
                 </div>
@@ -239,11 +239,11 @@
 
         function openDeleteModal(id) {
             pendingDeleteId = id;
-            deleteModal.classList.remove('d-none');
+            deleteModal.classList.remove('ws-d-none');
         }
 
         function closeDeleteModal() {
-            deleteModal.classList.add('d-none');
+            deleteModal.classList.add('ws-d-none');
             pendingDeleteId = null;
         }
 
@@ -390,7 +390,7 @@
             { title: "Section", field: "sectionName", width: 100 },
             { title: "Group", field: "groupName", width: 100 },
             { title: "Subject", field: "subjectName", widthGrow: 2,
-                formatter: function(cell) { return '<span class="fw-semibold">' + cell.getValue() + '</span>'; }
+                formatter: function(cell) { return '<span class="ws-fw-600">' + cell.getValue() + '</span>'; }
             },
             { title: "Teacher", field: "teacherName", width: 150 },
             { title: "Room", field: "roomNo", width: 100, hozAlign: "center" },
@@ -444,7 +444,7 @@
                 return { data: response.data, last_page: response.last_page };
             },
             columns: columns,
-            placeholder: "<div class='dash-empty'><i class='bi bi-table fs-1'></i><div class='dash-empty__title'>No Timetable Entries Found</div><div class='dash-empty__sub'>Try adjusting your filters or generate a new timetable.</div></div>"
+            placeholder: "<div class='dash-empty'><i class='bi bi-table ws-fs-48'></i><div class='dash-empty__title'>No Timetable Entries Found</div><div class='dash-empty__sub'>Try adjusting your filters or generate a new timetable.</div></div>"
         });
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
@@ -486,4 +486,3 @@
         });
     </script>
 }
-<script src="~/js/routine-grid.js"></script>

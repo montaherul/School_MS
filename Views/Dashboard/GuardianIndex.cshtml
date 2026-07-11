@@ -323,10 +323,10 @@
 
     <div class="g-hero">
         <div class="g-hero-info">
-            <h1><i class="bi bi-shield-check me-2"></i>Guardian Portal</h1>
+            <h1><i class="bi bi-shield-check ws-me-2"></i>Guardian Portal</h1>
             <p><i class="bi bi-people-fill"></i> Guardian: <strong>@Model.GuardianName</strong></p>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div class="dash-actions">
             <div class="g-hero-badge">
                 <div class="badge-label">Unread Notifications</div>
                 <div class="badge-value">@Model.UnreadNotifications</div>
@@ -357,13 +357,13 @@
             @foreach (var child in Model.ChildSwitcher)
             {
                 var isActive = child.StudentId == Model.SelectedChildId || (!Model.SelectedChildId.HasValue && child.IsPrimaryGuardian);
-                <a href="@Url.Action("Dashboard", new { studentId = child.StudentId })" class="child-card @(isActive ? "active" : "")" style="text-decoration:none;color:inherit;">
+                <a href="@Url.Action("Dashboard", new { studentId = child.StudentId })" class="child-card @(isActive ? "active" : "") ws-text-body">
                     <div class="child-name">@child.FullName</div>
                     <div class="child-info">@child.ClassName - @child.SectionName | Roll: @child.RollNumber</div>
                     <div class="child-info">Attendance: @child.AttendancePercentage%</div>
                     @if (child.OutstandingFees > 0)
                     {
-                        <div class="child-info" style="color:#dc2626;">Due: ৳@child.OutstandingFees.ToString("N2")</div>
+                        <div class="child-info ws-text-danger">Due: ৳@child.OutstandingFees.ToString("N2")</div>
                     }
                 </a>
             }
@@ -372,21 +372,21 @@
 
     @if (!string.IsNullOrEmpty(Model.StudentName))
     {
-        <div class="g-hero" style="background:linear-gradient(135deg,#1e3a5f 0%,#2d5a87 100%);padding:20px 32px;margin-bottom:28px;">
+        <div class="g-hero" style="background:linear-gradient(135deg,#1e3a5f 0%,#2d5a87 100%);padding:20px 32px;">
             <div>
-                <div style="font-size:20px;font-weight:700;">@Model.StudentName</div>
-                <div style="opacity:.8;font-size:13px;">@Model.ClassName (@Model.SectionName) | Roll: @Model.RollNumber</div>
+                <div class="ws-fs-20 ws-fw-700">@Model.StudentName</div>
+                <div class="ws-fs-13" style="opacity:.8;">@Model.ClassName (@Model.SectionName) | Roll: @Model.RollNumber</div>
             </div>
         </div>
     }
 
     <div class="adm-tabs">
-        <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')"><i class="bi bi-grid-1x2 me-1"></i> Overview</button>
-        <button class="adm-tab" data-tab="finance" onclick="switchTab('finance')"><i class="bi bi-cash-coin me-1"></i> Finance</button>
-        <button class="adm-tab" data-tab="routine" onclick="switchTab('routine')"><i class="bi bi-calendar-week me-1"></i> Routine</button>
-        <button class="adm-tab" data-tab="assignments" onclick="switchTab('assignments')"><i class="bi bi-journal-text me-1"></i> Assignments</button>
-        <button class="adm-tab" data-tab="library" onclick="switchTab('library')"><i class="bi bi-book me-1"></i> Library</button>
-        <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')"><i class="bi bi-bell me-1"></i> Notifications</button>
+        <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')"><i class="bi bi-grid-1x2 ws-me-1"></i> Overview</button>
+        <button class="adm-tab" data-tab="finance" onclick="switchTab('finance')"><i class="bi bi-cash-coin ws-me-1"></i> Finance</button>
+        <button class="adm-tab" data-tab="routine" onclick="switchTab('routine')"><i class="bi bi-calendar-week ws-me-1"></i> Routine</button>
+        <button class="adm-tab" data-tab="assignments" onclick="switchTab('assignments')"><i class="bi bi-journal-text ws-me-1"></i> Assignments</button>
+        <button class="adm-tab" data-tab="library" onclick="switchTab('library')"><i class="bi bi-book ws-me-1"></i> Library</button>
+        <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')"><i class="bi bi-bell ws-me-1"></i> Notifications</button>
     </div>
 
     <div class="tab-panel tab-panel--active" data-tab="overview">
@@ -394,22 +394,22 @@
         <div class="widget">
             <div class="widget-icon token-present" style="display:flex;"><i class="bi bi-check-circle"></i></div>
             <div class="widget-title">Present (This Month)</div>
-            <div class="widget-value" style="color:#16a34a;">@Model.PresentCount</div>
+            <div class="widget-value ws-text-success">@Model.PresentCount</div>
         </div>
         <div class="widget">
             <div class="widget-icon token-absent" style="display:flex;"><i class="bi bi-x-circle"></i></div>
             <div class="widget-title">Absent (This Month)</div>
-            <div class="widget-value" style="color:#dc2626;">@Model.AbsentCount</div>
+            <div class="widget-value ws-text-danger">@Model.AbsentCount</div>
         </div>
         <div class="widget">
             <div class="widget-icon token-late" style="display:flex;"><i class="bi bi-clock"></i></div>
             <div class="widget-title">Late (This Month)</div>
-            <div class="widget-value" style="color:#ca8a04;">@Model.LateCount</div>
+            <div class="widget-value ws-text-warning">@Model.LateCount</div>
         </div>
         <div class="widget">
             <div class="widget-icon token-fee" style="display:flex;"><i class="bi bi-cash-coin"></i></div>
             <div class="widget-title">Outstanding Fees</div>
-            <div class="widget-value" style="color:#15803d;">৳@Model.SelectedChildOutstandingFees.ToString("N2")</div>
+            <div class="widget-value ws-text-success">৳@Model.SelectedChildOutstandingFees.ToString("N2")</div>
             <div class="widget-sub">@Model.SelectedChildInvoiceCount invoice(s) | Paid: ৳@Model.SelectedChildTotalPaid.ToString("N2")</div>
         </div>
         @if (!Model.IsResultBlocked)
@@ -419,70 +419,70 @@
                 <div class="widget-title">Latest Result</div>
                 @if (Model.SelectedChildLatestGPA.HasValue)
                 {
-                    <div class="widget-value" style="color:#c2410c;">GPA: @Model.SelectedChildLatestGPA.Value.ToString("F2")</div>
+                    <div class="widget-value ws-text-warning">GPA: @Model.SelectedChildLatestGPA.Value.ToString("F2")</div>
                     <div class="widget-sub">Grade: @Model.SelectedChildLatestGrade | @(Model.SelectedChildLatestPassed ? "Passed" : "Failed")</div>
                 }
                 else
                 {
-                    <div class="widget-value" style="color:#9ca3af;">No Result</div>
+                    <div class="widget-value ws-text-muted">No Result</div>
                 }
             </div>
         }
         else
         {
             <div class="widget">
-                <div class="widget-icon token-result" style="display:flex;background:#fef3c7;color:#d97706;"><i class="bi bi-exclamation-triangle"></i></div>
-                <div class="widget-title" style="color:#d97706;">Results Blocked</div>
-                <div class="widget-value" style="color:#d97706;font-size:14px;">Clear outstanding fees</div>
+                <div class="widget-icon token-result" style="display:flex;background:var(--ws-warning-bg,#fef3c7);color:var(--ws-warning,#d97706);"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="widget-title ws-text-warning">Results Blocked</div>
+                <div class="widget-value ws-text-warning ws-fs-14">Clear outstanding fees</div>
                 <div class="widget-sub">Results temporarily unavailable</div>
             </div>
         }
         <div class="widget">
             <div class="widget-icon token-leave" style="display:flex;"><i class="bi bi-calendar2-x"></i></div>
             <div class="widget-title">Leave Applications</div>
-            <div class="widget-value" style="color:#7c3aed;">@Model.SelectedChildLeaveCount</div>
+            <div class="widget-value ws-text-accent">@Model.SelectedChildLeaveCount</div>
             <div class="widget-sub">@Model.SelectedChildPendingLeaveCount pending</div>
         </div>
         <div class="widget">
             <div class="widget-icon token-notif" style="display:flex;"><i class="bi bi-bell"></i></div>
             <div class="widget-title">Notifications</div>
-            <div class="widget-value" style="color:#7e22ce;">@Model.UnreadNotifications</div>
-            <div class="widget-sub">unread <a asp-action="Notifications" asp-controller="GuardianPortalPages" style="color:#7e22ce;">View all</a></div>
+            <div class="widget-value ws-text-accent">@Model.UnreadNotifications</div>
+            <div class="widget-sub">unread <a asp-action="Notifications" asp-controller="GuardianPortalPages" class="ws-text-accent">View all</a></div>
         </div>
         <div class="widget">
             <div class="widget-icon token-notice" style="display:flex;"><i class="bi bi-megaphone"></i></div>
             <div class="widget-title">Recent Notices</div>
-            <div class="widget-value" style="color:#0369a1;font-size:18px;">@Model.RecentNotices.Count</div>
-            <div class="widget-sub"><a asp-action="Notices" asp-controller="GuardianPortalPages" style="color:#0369a1;">View notices</a></div>
+            <div class="widget-value ws-text-info ws-fs-18">@Model.RecentNotices.Count</div>
+            <div class="widget-sub"><a asp-action="Notices" asp-controller="GuardianPortalPages" class="ws-text-info">View notices</a></div>
         </div>
     </div>
 
     @if (Model.ChildSwitcher.Any())
     {
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
-            <a asp-action="Attendance" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
+        <div class="dash-actions ws-mb-4">
+            <a asp-action="Attendance" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-calendar-check ws-me-1"></i>Attendance</a>
             @if (!Model.IsResultBlocked)
             {
-                <a asp-action="Results" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-bar-chart me-1"></i>Results</a>
+                <a asp-action="Results" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-bar-chart ws-me-1"></i>Results</a>
             }
             else
             {
-                <span class="btn btn-outline-secondary btn-sm" style="opacity:0.6;cursor:not-allowed;" title="Results blocked due to outstanding fees"><i class="bi bi-bar-chart me-1"></i>Results</span>
+                <span class="adm-btn adm-btn--ghost adm-btn--sm" disabled title="Results blocked due to outstanding fees"><i class="bi bi-bar-chart ws-me-1"></i>Results</span>
             }
-            <a href="/Guardian/ExamRoutine?studentId=@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-event me-1"></i>Exam Routine</a>
-            <a asp-action="Fees" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash me-1"></i>Fees</a>
-            <a asp-action="Leaves" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar2-x me-1"></i>Leave</a>
-            <a asp-action="Notices" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-megaphone me-1"></i>Notices</a>
-            <a asp-action="Calendar" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i>Calendar</a>
-            <a asp-action="Notifications" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-bell me-1"></i>Notifications</a>
-            <a asp-action="Profile" asp-controller="GuardianPortalPages" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person me-1"></i>Profile</a>
+            <a href="/Guardian/ExamRoutine?studentId=@Model.SelectedChildId" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-calendar-event ws-me-1"></i>Exam Routine</a>
+            <a asp-action="Fees" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-cash ws-me-1"></i>Fees</a>
+            <a asp-action="Leaves" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-calendar2-x ws-me-1"></i>Leave</a>
+            <a asp-action="Notices" asp-controller="GuardianPortalPages" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-megaphone ws-me-1"></i>Notices</a>
+            <a asp-action="Calendar" asp-controller="GuardianPortalPages" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-calendar3 ws-me-1"></i>Calendar</a>
+            <a asp-action="Notifications" asp-controller="GuardianPortalPages" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-bell ws-me-1"></i>Notifications</a>
+            <a asp-action="Profile" asp-controller="GuardianPortalPages" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-person ws-me-1"></i>Profile</a>
         </div>
     }
 
     <div class="g-grid">
         <div class="g-panel">
             <div class="g-panel-header">
-                <span class="g-panel-header-title"><i class="bi bi-pie-chart" style="color:#0f172a;"></i> Attendance Rate</span>
+                <span class="g-panel-header-title"><i class="bi bi-pie-chart"></i> Attendance Rate</span>
             </div>
             <div class="g-chart-wrap">
                 <div class="gauge-wrap">
@@ -497,8 +497,8 @@
 
         <div class="g-panel">
             <div class="g-panel-header">
-                <span class="g-panel-header-title"><i class="bi bi-list-check" style="color:#0f172a;"></i> Recent Attendance History</span>
-                <span style="font-size:12px;color:var(--adm-text-muted,#6b7280);">Showing last 10 days</span>
+                <span class="g-panel-header-title"><i class="bi bi-list-check"></i> Recent Attendance History</span>
+                <span class="ws-fs-12 ws-text-muted">Showing last 10 days</span>
             </div>
             <div style="overflow-x:auto;">
                 <table class="g-table">
@@ -517,15 +517,15 @@
                             {
                                 var h = Model.AttendanceHistory[i];
                                 <tr>
-                                    <td style="color:#6b7280;font-size:13px;">@(i + 1)</td>
-                                    <td style="font-weight:600;">@h.AttendanceDate.ToString("dd MMM yyyy")</td>
+                                    <td class="ws-text-muted ws-fs-13">@(i + 1)</td>
+                                    <td class="ws-fw-600">@h.AttendanceDate.ToString("dd MMM yyyy")</td>
                                     <td>
                                         <span class="status-pill @h.StatusName">
                                             <i class="bi @(h.StatusName == "Present" ? "bi-check-circle-fill" : h.StatusName == "Absent" ? "bi-x-circle-fill" : h.StatusName == "Late" ? "bi-clock-fill" : "bi-calendar-event-fill")"></i>
                                             @h.StatusName
                                         </span>
                                     </td>
-                                    <td style="color:#6b7280;">@(string.IsNullOrWhiteSpace(h.Remarks) ? "—" : h.Remarks)</td>
+                                    <td class="ws-text-muted">@(string.IsNullOrWhiteSpace(h.Remarks) ? "—" : h.Remarks)</td>
                                 </tr>
                             }
                         }
@@ -545,10 +545,10 @@
 
     @if (Model.RecentNotices.Any())
     {
-        <div class="g-panel mt-4">
+        <div class="g-panel ws-mt-4">
             <div class="g-panel-header">
-                <span class="g-panel-header-title"><i class="bi bi-megaphone" style="color:#0f172a;"></i> Recent Notices</span>
-                <a asp-action="Notices" asp-controller="GuardianPortalPages" style="font-size:12px;">View all</a>
+                <span class="g-panel-header-title"><i class="bi bi-megaphone"></i> Recent Notices</span>
+                <a asp-action="Notices" asp-controller="GuardianPortalPages" class="ws-fs-12">View all</a>
             </div>
             <ul class="notice-list">
                 @foreach (var notice in Model.RecentNotices.Take(5))
@@ -562,11 +562,11 @@
         </div>
     }
 
-    <div class="g-panel mt-4">
+    <div class="g-panel ws-mt-4">
         <div class="g-panel-header">
-            <span class="g-panel-header-title"><i class="bi bi-calendar3" style="color:#0f172a;"></i> Monthly Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")</span>
+            <span class="g-panel-header-title"><i class="bi bi-calendar3"></i> Monthly Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")</span>
         </div>
-        <div class="p-4">
+        <div class="ws-p-4">
             <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
                 @for (int i = 1; i <= DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month); i++)
                 {
@@ -574,15 +574,15 @@
                     var att = Model.AttendanceCalendar.FirstOrDefault(a => a.Date.Date == date.Date);
                     var status = att?.Status ?? "No Record";
 
-                    <div style="padding:12px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;text-align:center;min-height:90px;flex-direction:column;justify-content:space-between;transition: all .2s;">
-                        <div style="font-size:12px; font-weight:700; color:#64748b;">@i</div>
+                    <div class="ws-p-3 ws-rounded ws-text-center" style="border:1px solid var(--ws-border,#e5e7eb);background:var(--ws-card-bg,#fff);min-height:90px;display:flex;flex-direction:column;justify-content:space-between;transition:all .2s;">
+                        <div class="ws-fs-12 ws-fw-700 ws-text-muted">@i</div>
                         @if (att != null)
                         {
-                            <div class="status-pill @status" style="font-size:10px; padding: 2px 8px;">@status</div>
+                            <div class="status-pill @status ws-fs-10" style="padding:2px 8px;">@status</div>
                         }
                         else
                         {
-                            <div style="font-size:10px; color:#94a3b8; font-style:italic;">—</div>
+                            <div class="ws-fs-10 ws-text-muted" style="font-style:italic;">—</div>
                         }
                     </div>
                 }
@@ -597,35 +597,35 @@
     <div class="dash-stats" id="finance-summary">
         <div class="dash-stat-card">
             <div class="dash-stat-label">Total Invoiced</div>
-            <div class="dash-stat-value" style="color:#2563eb;" id="fin-total-invoiced">—</div>
+            <div class="dash-stat-value ws-text-primary" id="fin-total-invoiced">—</div>
         </div>
         <div class="dash-stat-card">
             <div class="dash-stat-label">Total Paid</div>
-            <div class="dash-stat-value" style="color:#16a34a;" id="fin-total-paid">—</div>
+            <div class="dash-stat-value ws-text-success" id="fin-total-paid">—</div>
         </div>
         <div class="dash-stat-card">
             <div class="dash-stat-label">Total Due</div>
-            <div class="dash-stat-value" style="color:#dc2626;" id="fin-total-due">—</div>
+            <div class="dash-stat-value ws-text-danger" id="fin-total-due">—</div>
         </div>
         <div class="dash-stat-card">
             <div class="dash-stat-label">Last Payment</div>
-            <div class="dash-stat-value" style="color:#7c3aed;font-size:18px;" id="fin-last-payment">—</div>
+            <div class="dash-stat-value ws-text-accent ws-fs-18" id="fin-last-payment">—</div>
             <div class="dash-stat-sub" id="fin-last-date"></div>
         </div>
     </div>
 
     <div class="adm-table-card">
-        <h3><i class="bi bi-receipt me-1"></i> Invoices</h3>
+        <h3><i class="bi bi-receipt ws-me-1"></i> Invoices</h3>
         <div id="guardian-invoice-grid"></div>
     </div>
 
     <div class="adm-table-card">
-        <h3><i class="bi bi-cash me-1"></i> Payments</h3>
+        <h3><i class="bi bi-cash ws-me-1"></i> Payments</h3>
         <div id="guardian-payment-grid"></div>
     </div>
 
     <div class="adm-table-card">
-        <h3><i class="bi bi-journal-text me-1"></i> Fee Ledger</h3>
+        <h3><i class="bi bi-journal-text ws-me-1"></i> Fee Ledger</h3>
         <div id="guardian-ledger-grid"></div>
     </div>
 </div>
@@ -635,7 +635,7 @@
     @if (Model.SelectedChildRoutineWidget.TodayClasses.Any())
     {
         <div class="adm-table-card">
-            <h3><i class="bi bi-calendar-check me-1"></i> Today's Classes</h3>
+            <h3><i class="bi bi-calendar-check ws-me-1"></i> Today's Classes</h3>
             <div id="guardian-routine-grid-today"></div>
         </div>
     }
@@ -649,16 +649,16 @@
     @if (Model.SelectedChildRoutineWidget.ThisWeekClasses.Any())
     {
         <div class="adm-table-card">
-            <h3><i class="bi bi-calendar-week me-1"></i> This Week's Classes</h3>
+            <h3><i class="bi bi-calendar-week ws-me-1"></i> This Week's Classes</h3>
             <div id="guardian-routine-grid-week"></div>
         </div>
     }
 
     @if (Model.SelectedChildRoutineWidget.NextClass != null)
     {
-        <div class="dash-stat-card" style="margin-bottom:20px;">
+        <div class="dash-stat-card ws-mb-5">
             <div class="dash-stat-label">Next Class</div>
-            <div class="dash-stat-value" style="font-size:18px;color:#0f172a;">@Model.SelectedChildRoutineWidget.NextClass.SubjectName</div>
+            <div class="dash-stat-value ws-fs-18 ws-text-body">@Model.SelectedChildRoutineWidget.NextClass.SubjectName</div>
             <div class="dash-stat-sub">@Model.SelectedChildRoutineWidget.NextClass.TeacherName · @Model.SelectedChildRoutineWidget.NextClass.StartTime.ToString(@"hh\:mm") - @Model.SelectedChildRoutineWidget.NextClass.EndTime.ToString(@"hh\:mm")</div>
         </div>
     }
@@ -669,22 +669,22 @@
     <div class="dash-stats">
         <div class="dash-stat-card">
             <div class="dash-stat-label">Pending</div>
-            <div class="dash-stat-value" style="color:#ca8a04;">@Model.SelectedChildPendingAssignmentCount</div>
+            <div class="dash-stat-value ws-text-warning">@Model.SelectedChildPendingAssignmentCount</div>
         </div>
         <div class="dash-stat-card">
             <div class="dash-stat-label">Submitted</div>
-            <div class="dash-stat-value" style="color:#16a34a;">@Model.SelectedChildSubmittedAssignmentCount</div>
+            <div class="dash-stat-value ws-text-success">@Model.SelectedChildSubmittedAssignmentCount</div>
         </div>
         <div class="dash-stat-card">
             <div class="dash-stat-label">Overdue</div>
-            <div class="dash-stat-value" style="color:#dc2626;">@Model.SelectedChildOverdueAssignmentCount</div>
+            <div class="dash-stat-value ws-text-danger">@Model.SelectedChildOverdueAssignmentCount</div>
         </div>
     </div>
 
     @if (Model.SelectedChildRecentAssignments.Any())
     {
         <div class="adm-table-card">
-            <h3><i class="bi bi-journal-text me-1"></i> Recent Assignments</h3>
+            <h3><i class="bi bi-journal-text ws-me-1"></i> Recent Assignments</h3>
             <div id="guardian-assignment-grid"></div>
         </div>
     }
@@ -701,14 +701,14 @@
     <div class="dash-stats">
         <div class="dash-stat-card">
             <div class="dash-stat-label">Total Issued Books</div>
-            <div class="dash-stat-value" style="color:#2563eb;">@Model.SelectedChildTotalIssuedBooks</div>
+            <div class="dash-stat-value ws-text-primary">@Model.SelectedChildTotalIssuedBooks</div>
         </div>
     </div>
 
     @if (Model.SelectedChildIssuedBooks.Any())
     {
         <div class="adm-table-card">
-            <h3><i class="bi bi-book me-1"></i> Issued Books</h3>
+            <h3><i class="bi bi-book ws-me-1"></i> Issued Books</h3>
             <div id="guardian-library-grid"></div>
         </div>
     }
@@ -725,7 +725,7 @@
     <div class="dash-stats">
         <div class="dash-stat-card">
             <div class="dash-stat-label">Unread</div>
-            <div class="dash-stat-value" style="color:#7c3aed;">@Model.SelectedChildUnreadNotificationCount</div>
+            <div class="dash-stat-value ws-text-accent">@Model.SelectedChildUnreadNotificationCount</div>
             <div class="dash-stat-sub">notifications</div>
         </div>
     </div>
@@ -733,7 +733,7 @@
     @if (Model.SelectedChildRecentNotifications.Any())
     {
         <div class="adm-table-card">
-            <h3><i class="bi bi-bell me-1"></i> Recent Notifications</h3>
+            <h3><i class="bi bi-bell ws-me-1"></i> Recent Notifications</h3>
             <div id="guardian-notification-grid"></div>
         </div>
     }

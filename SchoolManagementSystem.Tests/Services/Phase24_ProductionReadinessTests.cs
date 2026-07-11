@@ -1154,20 +1154,20 @@ public class Phase24_ProductionReadinessTests
         var classSubjects = new List<ClassSubject>
         {
             // Common subjects
-            new() { SubjectId = 9, IsReligionSubject = false, IsGroupSubject = false },  // BAN1
-            new() { SubjectId = 10, IsReligionSubject = false, IsGroupSubject = false }, // BAN2
-            new() { SubjectId = 11, IsReligionSubject = false, IsGroupSubject = false }, // ENG1
-            new() { SubjectId = 12, IsReligionSubject = false, IsGroupSubject = false }, // ENG2
-            new() { SubjectId = 13, IsReligionSubject = false, IsGroupSubject = false }, // MAT
-            new() { SubjectId = 22, IsReligionSubject = false, IsGroupSubject = false }, // ICT
-            new() { SubjectId = 5, IsReligionSubject = false, IsGroupSubject = false },  // SOC
+            new() { SubjectId = 9 },  // BAN1
+            new() { SubjectId = 10 }, // BAN2
+            new() { SubjectId = 11 }, // ENG1
+            new() { SubjectId = 12 }, // ENG2
+            new() { SubjectId = 13 }, // MAT
+            new() { SubjectId = 22 }, // ICT
+            new() { SubjectId = 5 },  // SOC
             // Science group subjects
-            new() { SubjectId = 16, IsGroupSubject = true, StudentGroupId = 1 }, // PHY
-            new() { SubjectId = 17, IsGroupSubject = true, StudentGroupId = 1 }, // CHE
-            new() { SubjectId = 18, IsGroupSubject = true, StudentGroupId = 1 }, // BIO
+            new() { SubjectId = 16, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 17, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 18, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
             // Business subjects (should be excluded)
-            new() { SubjectId = 19, IsGroupSubject = true, StudentGroupId = 2 }, // ACC
-            new() { SubjectId = 24, IsGroupSubject = true, StudentGroupId = 2 }, // ECO
+            new() { SubjectId = 19, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 2 }] },
+            new() { SubjectId = 24, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 2 }] },
             // Religion subjects
             new() { SubjectId = 30, IsReligionSubject = true, ReligionType = "Islam" },
             new() { SubjectId = 31, IsReligionSubject = true, ReligionType = "Hindu" },
@@ -1183,10 +1183,10 @@ public class Phase24_ProductionReadinessTests
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }
-            if (cs.IsGroupSubject)
+            var csgLink = cs.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink != null)
             {
-                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
+                if (student.StudentGroupId.HasValue && csgLink.StudentGroupId == student.StudentGroupId.Value)
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }
@@ -1372,19 +1372,19 @@ public class Phase24_ProductionReadinessTests
 
         var classSubjects = new List<ClassSubject>
         {
-            new() { SubjectId = 9, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 10, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 11, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 12, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 13, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 22, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 5, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 16, IsGroupSubject = true, StudentGroupId = 1 }, // Science
-            new() { SubjectId = 17, IsGroupSubject = true, StudentGroupId = 1 },
-            new() { SubjectId = 18, IsGroupSubject = true, StudentGroupId = 1 },
-            new() { SubjectId = 19, IsGroupSubject = true, StudentGroupId = 2 }, // Business - excluded
+            new() { SubjectId = 9 },
+            new() { SubjectId = 10 },
+            new() { SubjectId = 11 },
+            new() { SubjectId = 12 },
+            new() { SubjectId = 13 },
+            new() { SubjectId = 22 },
+            new() { SubjectId = 5 },
+            new() { SubjectId = 16, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 17, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 18, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 19, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 2 }] },
             new() { SubjectId = 30, IsReligionSubject = true, ReligionType = "Islam" },
-            new() { SubjectId = 31, IsReligionSubject = true, ReligionType = "Hindu" }, // excluded
+            new() { SubjectId = 31, IsReligionSubject = true, ReligionType = "Hindu" },
         };
 
         var validSubjectIds = new HashSet<int>();
@@ -1396,10 +1396,10 @@ public class Phase24_ProductionReadinessTests
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }
-            if (cs.IsGroupSubject)
+            var csgLink = cs.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink != null)
             {
-                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
+                if (student.StudentGroupId.HasValue && csgLink.StudentGroupId == student.StudentGroupId.Value)
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }

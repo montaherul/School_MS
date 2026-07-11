@@ -1,65 +1,69 @@
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
 
 <div class="tab-pane fade" id="documents" role="tabpanel">
-    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-file-earmark-arrow-up-fill me-2"></i>Profile Pictures & Digital Signature</h5>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
-        <div style="padding-right:16px;border-right:1px solid var(--adm-border)">
-            <div style="display:flex;align-items:flex-start;gap:16px">
-                <div style="text-align:center">
-                    <img id="imgPicPreview" src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/default-user.png" : Model.ProfilePicturePath)" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid var(--adm-primary)" />
-                    <div style="font-size:12px;color:var(--adm-text-3);margin-top:8px">Recommended: Square Aspect Ratio</div>
-                </div>
-                <div style="flex:1">
-                    <div class="adm-form-group">
-                        <label asp-for="ProfilePictureFile" class="adm-form-label">Upload Profile Photo</label>
-                        <input asp-for="ProfilePictureFile" type="file" class="adm-input" accept="image/*" id="inputProfilePic" />
-                        <span style="font-size:12px;color:var(--adm-text-3)">Max file size: 2MB (.jpg, .jpeg, .png)</span>
+    <h5 class="er-heading"><i class="bi bi-file-earmark-arrow-up-fill ws-me-2"></i>Profile Pictures & Digital Signature</h5>
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-6">
+            <div class="er-upload-card" style="border-right:1px solid var(--adm-border);padding-right:16px">
+                <div class="ws-flex ws-items-start ws-gap-4">
+                    <div class="er-preview-col">
+                        <img id="imgPicPreview" src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/default-user.png" : Model.ProfilePicturePath)" class="er-avatar-preview" />
+                        <div class="er-preview-hint">Recommended: Square Aspect Ratio</div>
+                    </div>
+                    <div class="ws-flex-1">
+                        <div class="adm-form-group">
+                            <label asp-for="ProfilePictureFile" class="adm-form-label">Upload Profile Photo</label>
+                            <input asp-for="ProfilePictureFile" type="file" class="adm-input" accept="image/*" id="inputProfilePic" />
+                            <span class="er-hint">Max file size: 2MB (.jpg, .jpeg, .png)</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div>
-            <div style="display:flex;align-items:flex-start;gap:16px">
-                <div style="text-align:center">
-                    <img id="imgSigPreview" src="@(string.IsNullOrEmpty(Model.SignaturePath) ? "/images/default-sig.png" : Model.SignaturePath)" style="width:180px;height:70px;object-fit:contain;border:1px dashed var(--adm-border);padding:4px" />
-                    <div style="font-size:12px;color:var(--adm-text-3);margin-top:8px">Recommended: Transparent PNG</div>
-                </div>
-                <div style="flex:1">
-                    <div class="adm-form-group">
-                        <label asp-for="SignatureFile" class="adm-form-label">Upload Digital Signature</label>
-                        <input asp-for="SignatureFile" type="file" class="adm-input" accept="image/*" id="inputSignature" />
-                        <span style="font-size:12px;color:var(--adm-text-3)">Max file size: 1MB (.png, .jpg)</span>
+        <div class="ws-col-6">
+            <div class="er-upload-card">
+                <div class="ws-flex ws-items-start ws-gap-4">
+                    <div class="er-preview-col">
+                        <img id="imgSigPreview" src="@(string.IsNullOrEmpty(Model.SignaturePath) ? "/images/default-sig.png" : Model.SignaturePath)" class="er-sig-preview" />
+                        <div class="er-preview-hint">Recommended: Transparent PNG</div>
+                    </div>
+                    <div class="ws-flex-1">
+                        <div class="adm-form-group">
+                            <label asp-for="SignatureFile" class="adm-form-label">Upload Digital Signature</label>
+                            <input asp-for="SignatureFile" type="file" class="adm-input" accept="image/*" id="inputSignature" />
+                            <span class="er-hint">Max file size: 1MB (.png, .jpg)</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--adm-border);margin:24px 0 16px">
-        <h5 style="font-weight:700;color:var(--adm-text);margin:0"><i class="bi bi-file-text-fill me-2"></i>Legal Identity & Employment Documents</h5>
+    <div class="ws-flex ws-flex-between ws-items-center er-section-header" style="margin-top:24px">
+        <h5 class="er-heading ws-mb-0"><i class="bi bi-file-text-fill ws-me-2"></i>Legal Identity & Employment Documents</h5>
         <button type="button" class="adm-btn adm-btn--success" id="btnAddDoc"><i class="bi bi-plus-lg"></i> Attach Document</button>
     </div>
-    <div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);overflow-x:auto;background:var(--adm-surface);box-shadow:inset 0 1px 0 rgba(255,255,255,0.65)">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:900px" id="tblDocuments">
+    <div class="adm-card">
+        <table class="adm-table" id="tblDocuments">
             <thead>
-                <tr style="background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border)">
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:200px">Document Type <span class="adm-required">*</span></th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Document Description Name <span class="adm-required">*</span></th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:300px">Upload File <span class="adm-required">*</span></th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:160px">Expiry Date (If applicable)</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Additional Remarks</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:50px">Action</th>
+                <tr>
+                    <th style="width:200px">Document Type <span class="adm-required">*</span></th>
+                    <th>Document Description Name <span class="adm-required">*</span></th>
+                    <th style="width:300px">Upload File <span class="adm-required">*</span></th>
+                    <th style="width:160px">Expiry Date (If applicable)</th>
+                    <th>Additional Remarks</th>
+                    <th style="width:50px">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @for (int i = 0; i < Model.Documents.Count; i++)
                 {
-                    <tr style="border-bottom:1px solid var(--adm-border)">
-                        <td style="padding:8px 12px">
+                    <tr>
+                        <td>
                             <input type="hidden" name="Documents[@i].Id" value="@Model.Documents[i].Id" />
                             <input type="hidden" name="Documents[@i].EmployeeId" value="@Model.Documents[i].EmployeeId" />
                             <input type="hidden" name="Documents[@i].FilePath" value="@Model.Documents[i].FilePath" />
-                            <select name="Documents[@i].DocumentType" class="adm-select" style="padding:6px 10px;font-size:12px" required>
+                            <select name="Documents[@i].DocumentType" class="adm-select adm-input--sm" required>
                                 <option value="NID" selected="@(Model.Documents[i].DocumentType == "NID")">National ID Card</option>
                                 <option value="Passport" selected="@(Model.Documents[i].DocumentType == "Passport")">International Passport</option>
                                 <option value="Appointment" selected="@(Model.Documents[i].DocumentType == "Appointment")">Appointment Letter</option>
@@ -69,18 +73,18 @@
                                 <option value="Other" selected="@(Model.Documents[i].DocumentType == "Other")">Other Custom Document</option>
                             </select>
                         </td>
-                        <td style="padding:8px 12px"><input name="Documents[@i].DocumentName" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Documents[i].DocumentName" required /></td>
-                        <td style="padding:8px 12px">
-                            <input type="file" name="Documents[@i].DocumentFile" class="adm-input" style="padding:4px 8px;font-size:12px" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                        <td><input name="Documents[@i].DocumentName" class="adm-input adm-input--sm" value="@Model.Documents[i].DocumentName" required /></td>
+                        <td>
+                            <input type="file" name="Documents[@i].DocumentFile" class="adm-input adm-input--sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
                             @if (!string.IsNullOrEmpty(Model.Documents[i].FilePath))
                             {
-                                <div style="margin-top:4px;font-size:12px"><a href="@Model.Documents[i].FilePath" target="_blank" style="color:var(--adm-primary)"><i class="bi bi-file-earmark-pdf"></i> View Saved File</a></div>
+                                <div class="er-file-link"><a href="@Model.Documents[i].FilePath" target="_blank" class="adm-link"><i class="bi bi-file-earmark-pdf"></i> View Saved File</a></div>
                             }
                         </td>
-                        <td style="padding:8px 12px"><input name="Documents[@i].ExpiryDate" type="date" class="adm-input" style="padding:6px 10px;font-size:12px" value="@(Model.Documents[i].ExpiryDate?.ToString("yyyy-MM-dd"))" /></td>
-                        <td style="padding:8px 12px"><input name="Documents[@i].Remarks" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Documents[i].Remarks" /></td>
-                        <td style="padding:8px 12px;text-align:center">
-                            <button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;font-size:12px"><i class="bi bi-trash"></i></button>
+                        <td><input name="Documents[@i].ExpiryDate" type="date" class="adm-input adm-input--sm" value="@(Model.Documents[i].ExpiryDate?.ToString("yyyy-MM-dd"))" /></td>
+                        <td><input name="Documents[@i].Remarks" class="adm-input adm-input--sm" value="@Model.Documents[i].Remarks" /></td>
+                        <td style="text-align:center">
+                            <button type="button" class="adm-btn adm-btn--danger adm-btn--sm"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 }

@@ -22,4 +22,6 @@ public interface IClassSubjectMappingService
     Task DeleteAsync(int id, string userId, CancellationToken ct = default);
     
     Task<IEnumerable<SubjectListItemDto>> GetUnmappedSubjectsAsync(int classId, string? groupName, CancellationToken ct = default);
+
+    Task SeedMappingsAsync(CancellationToken ct = default);
 }

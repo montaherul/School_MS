@@ -1,0 +1,101 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.AcademicCalendarEventDto
+@{
+    ViewData["Title"] = "Edit Calendar Event";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Edit Calendar Event</h1>
+                <p class="adm-header__sub">Update event details</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" asp-route-calendarId="@Model.AcademicCalendarId" class="adm-btn adm-btn--ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to Events
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" class="adm-card">
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="AcademicCalendarId" />
+
+        <div class="adm-card__body">
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="Title" class="adm-label"></label>
+                    <input asp-for="Title" class="adm-input" placeholder="e.g. Science Fair Opening" required />
+                    <span asp-validation-for="Title" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="EventType" class="adm-label"></label>
+                    <select asp-for="EventType" class="adm-select" asp-items="@(new SelectList(ViewBag.EventTypes))">
+                        <option value="">-- Select Event Type --</option>
+                    </select>
+                    <span asp-validation-for="EventType" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="StartDate" class="adm-label"></label>
+                    <input asp-for="StartDate" class="adm-input" type="date" required />
+                    <span asp-validation-for="StartDate" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="EndDate" class="adm-label"></label>
+                    <input asp-for="EndDate" class="adm-input" type="date" />
+                    <span asp-validation-for="EndDate" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-group ws-mt-3">
+                <label asp-for="Description" class="adm-label"></label>
+                <textarea asp-for="Description" class="adm-input adm-textarea" rows="4" placeholder="Detailed description of the event..."></textarea>
+                <span asp-validation-for="Description" class="ws-text-danger ws-fs-13"></span>
+            </div>
+
+            <div class="adm-form-grid ws-mt-3">
+                <div class="ws-form-check">
+                    <input class="ws-form-check-input" type="checkbox" asp-for="IsRecurringWeekly" />
+                    <label class="ws-form-check-label" asp-for="IsRecurringWeekly">Recurring weekly</label>
+                </div>
+                <div class="ws-form-check">
+                    <input class="ws-form-check-input" type="checkbox" asp-for="IsActive" />
+                    <label class="ws-form-check-label" asp-for="IsActive">Active</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="adm-card__header ws-flex-between">
+            <a asp-action="Index" asp-route-calendarId="@Model.AcademicCalendarId" class="adm-btn adm-btn--ghost">Cancel</a>
+            <button type="submit" class="adm-btn adm-btn--primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

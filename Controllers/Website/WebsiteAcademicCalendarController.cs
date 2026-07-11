@@ -1,27 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Website;
-using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.Data;
 
 namespace SchoolManagementSystem.Controllers.Website;
 
 public class WebsiteAcademicCalendarController : Controller
 {
     private readonly IAcademicCalendarService _calendarService;
-    private readonly SchoolDbContext _db;
 
-    public WebsiteAcademicCalendarController(IAcademicCalendarService calendarService, SchoolDbContext db)
+    public WebsiteAcademicCalendarController(IAcademicCalendarService calendarService)
     {
         _calendarService = calendarService;
-        _db = db;
     }
 
     [HttpGet("/academic-calendar")]
@@ -42,25 +30,17 @@ public class WebsiteAcademicCalendarController : Controller
         var endDateOnly = DateOnly.FromDateTime(end);
 
         var days = await _calendarService.GetCalendarDaysAsync(start, end, ct);
+        var webEvents = await _calendarService.GetPublishedEventsAsync(start, end, ct);
+        var examSchedules = await _calendarService.GetExamSchedulesAsync(startDateOnly, endDateOnly, ct);
 
-        var webEvents = await _db.Events.AsNoTracking()
-            .Where(e => e.IsPublished && e.EventDate >= start && e.EventDate <= end)
-            .ToListAsync(ct);
-
-        var examSchedules = await _db.ExamSchedules.AsNoTracking()
-            .Include(es => es.Exam)
-            .Include(es => es.Subject)
-            .Include(es => es.Class)
-            .Where(es => es.ExamDate >= startDateOnly && es.ExamDate <= endDateOnly)
-            .ToListAsync(ct);
-
-        var result = new List<object>();
+        var result = new List<(string date, object item)>();
 
         foreach (var d in days.Where(d => d.IsActive))
         {
-            result.Add(new
+            var dateStr = d.Date.ToString("yyyy-MM-dd");
+            result.Add((dateStr, new
             {
-                date = d.Date.ToString("yyyy-MM-dd"),
+                date = dateStr,
                 title = d.Title ?? "",
                 description = d.Description ?? "",
                 isHoliday = d.IsHoliday,
@@ -72,14 +52,15 @@ public class WebsiteAcademicCalendarController : Controller
                 holidayType = d.HolidayType,
                 venue = (string?)null,
                 source = "academic"
-            });
+            }));
         }
 
         foreach (var ev in webEvents)
         {
-            result.Add(new
+            var dateStr = ev.EventDate.ToString("yyyy-MM-dd");
+            result.Add((dateStr, new
             {
-                date = ev.EventDate.ToString("yyyy-MM-dd"),
+                date = dateStr,
                 title = ev.Title ?? "",
                 description = ev.Description ?? "",
                 isHoliday = false,
@@ -91,48 +72,41 @@ public class WebsiteAcademicCalendarController : Controller
                 holidayType = (string?)null,
                 venue = ev.EventLocation,
                 source = "website_event"
-            });
+            }));
         }
 
-        var examDayGroups = examSchedules
-            .GroupBy(es => new { es.ExamId, es.ExamDate })
-            .Select(g =>
-            {
-                var first = g.First();
-                var exam = first.Exam;
-                var subjects = g
-                    .Select(es => es.Subject?.Name)
-                    .Where(n => !string.IsNullOrEmpty(n));
-                var classNames = g
-                    .Select(es => es.Class?.Name)
-                    .Where(n => !string.IsNullOrEmpty(n))
-                    .Distinct();
-                return new
-                {
-                    date = g.Key.ExamDate.ToString("yyyy-MM-dd"),
-                    title = exam?.Name ?? "Exam",
-                    description = $"{g.Count()} subject(s)",
-                    isHoliday = false,
-                    isWorkingDay = false,
-                    isExamDay = true,
-                    isEventDay = false,
-                    isWebsiteEvent = false,
-                    remarks = string.Join(", ", subjects),
-                    holidayType = (string?)null,
-                    venue = (string?)null,
-                    source = "exam",
-                    examId = g.Key.ExamId,
-                    totalSubjects = g.Count(),
-                    classes = classNames.ToList()
-                };
-            });
-
-        foreach (var eg in examDayGroups)
+        foreach (var g in examSchedules.GroupBy(es => new { es.ExamId, es.ExamDate }))
         {
-            result.Add(eg);
+            var first = g.First();
+            var subjects = g
+                .Select(es => es.SubjectName)
+                .Where(n => !string.IsNullOrEmpty(n));
+            var classNames = g
+                .Select(es => es.ClassName)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .Distinct();
+            var dateStr = g.Key.ExamDate.ToString("yyyy-MM-dd");
+            result.Add((dateStr, new
+            {
+                date = dateStr,
+                title = first.ExamName ?? "Exam",
+                description = $"{g.Count()} subject(s)",
+                isHoliday = false,
+                isWorkingDay = false,
+                isExamDay = true,
+                isEventDay = false,
+                isWebsiteEvent = false,
+                remarks = string.Join(", ", subjects),
+                holidayType = (string?)null,
+                venue = (string?)null,
+                source = "exam",
+                examId = g.Key.ExamId,
+                totalSubjects = g.Count(),
+                classes = classNames.ToList()
+            }));
         }
 
-        return Json(result.OrderBy(r => ((dynamic)r).date).ToList());
+        return Json(result.OrderBy(r => r.date).Select(r => r.item).ToList());
     }
 
     [HttpGet("/api/website/academic-calendar/upcoming")]
@@ -144,27 +118,18 @@ public class WebsiteAcademicCalendarController : Controller
         var futureDt = future.ToDateTime(TimeOnly.MaxValue);
 
         var days = await _calendarService.GetCalendarDaysAsync(todayDt, futureDt, ct);
-
-        var webEvents = await _db.Events.AsNoTracking()
-            .Where(e => e.IsPublished && e.EventDate >= todayDt && e.EventDate <= futureDt)
-            .ToListAsync(ct);
-
-        var examSchedules = await _db.ExamSchedules.AsNoTracking()
-            .Include(es => es.Exam)
-            .Include(es => es.Subject)
-            .Include(es => es.Class)
-            .Include(es => es.StudentGroup)
-            .Where(es => es.ExamDate >= today && es.ExamDate <= future)
-            .ToListAsync(ct);
+        var webEvents = await _calendarService.GetPublishedEventsAsync(todayDt, futureDt, ct);
+        var examSchedules = await _calendarService.GetExamSchedulesAsync(today, future, ct);
 
         var itemsWithSortKey = new List<(string sortDate, object item)>();
 
         foreach (var d in days.Where(d => d.IsActive && d.Date >= today && (d.IsHoliday || d.IsExamDay || d.IsEventDay)))
         {
-            itemsWithSortKey.Add((d.Date.ToString("yyyy-MM-dd"), new
+            var sortKey = d.Date.ToString("yyyy-MM-dd");
+            itemsWithSortKey.Add((sortKey, new
             {
                 date = d.Date.ToString("dd MMM yyyy"),
-                sortDate = d.Date.ToString("yyyy-MM-dd"),
+                sortDate = sortKey,
                 title = d.Title ?? "",
                 description = d.Description ?? "",
                 isHoliday = d.IsHoliday,
@@ -180,10 +145,11 @@ public class WebsiteAcademicCalendarController : Controller
 
         foreach (var ev in webEvents)
         {
-            itemsWithSortKey.Add((ev.EventDate.ToString("yyyy-MM-dd"), new
+            var sortKey = ev.EventDate.ToString("yyyy-MM-dd");
+            itemsWithSortKey.Add((sortKey, new
             {
                 date = ev.EventDate.ToString("dd MMM yyyy"),
-                sortDate = ev.EventDate.ToString("yyyy-MM-dd"),
+                sortDate = sortKey,
                 title = ev.Title ?? "",
                 description = ev.Description ?? "",
                 isHoliday = false,
@@ -197,64 +163,55 @@ public class WebsiteAcademicCalendarController : Controller
             }));
         }
 
-        var examGroups = examSchedules
-            .GroupBy(es => es.ExamId)
-            .Select(g =>
-            {
-                var first = g.First();
-                var exam = first.Exam;
-                var minDate = g.Min(es => es.ExamDate);
-                var maxDate = g.Max(es => es.ExamDate);
-                var classNames = g
-                    .Select(es => es.Class?.Name)
-                    .Where(n => !string.IsNullOrEmpty(n))
-                    .Distinct()
-                    .ToList();
-                var groupNames = g
-                    .Where(es => es.StudentGroup != null)
-                    .Select(es => es.StudentGroup!.Name)
-                    .Distinct()
-                    .ToList();
-                var allSubjects = g
-                    .Select(es => es.Subject?.Name)
-                    .Where(n => !string.IsNullOrEmpty(n))
-                    .ToList();
-
-                return new
-                {
-                    sortDate = minDate.ToString("yyyy-MM-dd"),
-                    date = minDate.ToString("dd MMM yyyy"),
-                    startDate = minDate.ToString("dd MMM yyyy"),
-                    endDate = maxDate.ToString("dd MMM yyyy"),
-                    title = exam?.Name ?? "Exam",
-                    description = $"{g.Count()} subjects across {(maxDate.DayNumber - minDate.DayNumber + 1)} day(s)",
-                    isHoliday = false,
-                    isExamDay = true,
-                    isEventDay = false,
-                    isWebsiteEvent = false,
-                    holidayType = (string?)null,
-                    remarks = $"Total Subjects: {g.Count()}",
-                    venue = (string?)null,
-                    source = "exam",
-                    examId = g.Key,
-                    totalSubjects = g.Count(),
-                    classes = classNames,
-                    groups = groupNames,
-                    subjects = allSubjects
-                };
-            });
-
-        foreach (var eg in examGroups)
+        foreach (var g in examSchedules.GroupBy(es => es.ExamId))
         {
-            itemsWithSortKey.Add((((dynamic)eg).sortDate, eg));
+            var first = g.First();
+            var minDate = g.Min(es => es.ExamDate);
+            var maxDate = g.Max(es => es.ExamDate);
+            var classNames = g
+                .Select(es => es.ClassName)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .Distinct()
+                .ToList();
+            var groupNames = g
+                .Where(es => !string.IsNullOrEmpty(es.StudentGroupName))
+                .Select(es => es.StudentGroupName!)
+                .Distinct()
+                .ToList();
+            var allSubjects = g
+                .Select(es => es.SubjectName)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToList();
+
+            var sortKey = minDate.ToString("yyyy-MM-dd");
+            itemsWithSortKey.Add((sortKey, new
+            {
+                sortDate = sortKey,
+                date = minDate.ToString("dd MMM yyyy"),
+                startDate = minDate.ToString("dd MMM yyyy"),
+                endDate = maxDate.ToString("dd MMM yyyy"),
+                title = first.ExamName ?? "Exam",
+                description = $"{g.Count()} subjects across {(maxDate.DayNumber - minDate.DayNumber + 1)} day(s)",
+                isHoliday = false,
+                isExamDay = true,
+                isEventDay = false,
+                isWebsiteEvent = false,
+                holidayType = (string?)null,
+                remarks = $"Total Subjects: {g.Count()}",
+                venue = (string?)null,
+                source = "exam",
+                examId = g.Key,
+                totalSubjects = g.Count(),
+                classes = classNames,
+                groups = groupNames,
+                subjects = allSubjects
+            }));
         }
 
-        var ordered = itemsWithSortKey
+        return Json(itemsWithSortKey
             .OrderBy(i => i.sortDate)
             .Take(count)
             .Select(i => i.item)
-            .ToList();
-
-        return Json(ordered);
+            .ToList());
     }
 }

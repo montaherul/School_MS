@@ -129,6 +129,8 @@ public class SchoolDbContext : DbContext
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<StoredProcedureDeploymentHistory> StoredProcedureDeploymentHistories => Set<StoredProcedureDeploymentHistory>();
     public DbSet<StudentGroup> StudentGroups => Set<StudentGroup>();
+    public DbSet<CurriculumVersion> CurriculumVersions => Set<CurriculumVersion>();
+    public DbSet<CurriculumSubject> CurriculumSubjects => Set<CurriculumSubject>();
 
     public DbSet<TeacherClassAssignment> TeacherClassAssignments => Set<TeacherClassAssignment>();
     public DbSet<TeacherSubjectAssignment> TeacherSubjectAssignments => Set<TeacherSubjectAssignment>();
@@ -148,6 +150,12 @@ public class SchoolDbContext : DbContext
     public DbSet<EmployeeSalary> EmployeeSalaries => Set<EmployeeSalary>();
     public DbSet<EmployeeAcademicAssignment> EmployeeAcademicAssignments => Set<EmployeeAcademicAssignment>();
     public DbSet<EmployeeInvitation> EmployeeInvitations => Set<EmployeeInvitation>();
+    public DbSet<EmployeeBankAccount> EmployeeBankAccounts => Set<EmployeeBankAccount>();
+    public DbSet<EmployeePromotion> EmployeePromotions => Set<EmployeePromotion>();
+    public DbSet<EmployeeTransfer> EmployeeTransfers => Set<EmployeeTransfer>();
+    public DbSet<EmployeeTraining> EmployeeTrainings => Set<EmployeeTraining>();
+    public DbSet<EmployeeAward> EmployeeAwards => Set<EmployeeAward>();
+    public DbSet<EmployeeDisciplinaryAction> EmployeeDisciplinaryActions => Set<EmployeeDisciplinaryAction>();
 
     // Public Website DbSets
     public DbSet<SchoolSetting> SchoolSettings => Set<SchoolSetting>();
@@ -171,6 +179,7 @@ public class SchoolDbContext : DbContext
     public DbSet<ReminderConfig> ReminderConfigs => Set<ReminderConfig>();
 
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
+    public DbSet<ClassSubjectGroup> ClassSubjectGroups => Set<ClassSubjectGroup>();
 
     // Exam Configuration DbSets
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
@@ -269,12 +278,25 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<Employee>().HasIndex(x => x.EmployeeCode).IsUnique();
         modelBuilder.Entity<Employee>().HasIndex(x => x.Phone).IsUnique();
         modelBuilder.Entity<Employee>().HasIndex(x => x.Email).IsUnique();
-        modelBuilder.Entity<Employee>().HasIndex(x => x.NIDNumber).IsUnique();
+        modelBuilder.Entity<Employee>().HasIndex(x => x.NIDNumber).IsUnique().HasFilter("[NIDNumber] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.EmployeeCardNumber).IsUnique().HasFilter("[EmployeeCardNumber] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.QRVerificationCode).IsUnique().HasFilter("[QRVerificationCode] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.BirthCertificateNo).IsUnique().HasFilter("[BirthCertificateNo] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.PassportNo).IsUnique().HasFilter("[PassportNo] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.TIN).IsUnique().HasFilter("[TIN] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.DrivingLicenseNo).IsUnique().HasFilter("[DrivingLicenseNo] IS NOT NULL");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.Status).HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.DepartmentId).HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.DesignationId).HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.UserId).HasFilter("[UserId] IS NOT NULL AND [IsDeleted] = 0");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.IsTeachingStaff).HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<Employee>().HasIndex(x => x.JoiningDate).HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<DesignationRoleMapping>().HasIndex(x => new { x.DesignationId, x.RoleId }).IsUnique();
         modelBuilder.Entity<EmployeeAttendance>().HasIndex(x => new { x.EmployeeId, x.AttendanceDate }).IsUnique();
 
         modelBuilder.Entity<EmployeeInvitation>().HasIndex(x => x.InvitationCode).IsUnique();
         modelBuilder.Entity<EmployeeInvitation>().HasIndex(x => x.InvitationToken).IsUnique();
+        modelBuilder.Entity<EmployeeInvitation>().HasIndex(x => x.Email).HasFilter("[IsDeleted] = 0");
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
@@ -303,7 +325,7 @@ public class SchoolDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Section>()
-            .HasIndex(x => new { x.SchoolClassId, x.StudentGroupId, x.Name })
+            .HasIndex(x => new { x.SchoolClassId, x.Name })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
 
@@ -330,11 +352,27 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<ExamComponent>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<SubjectMarkStructure>().HasIndex(x => new { x.ComponentId, x.SubjectId, x.StudentGroupId }).IsUnique();
 
-        // ClassSubject unique constraint
+        // ClassSubject unique constraint (no more GroupName — junction table handles multi-group)
         modelBuilder.Entity<ClassSubject>()
-            .HasIndex(x => new { x.SchoolClassId, x.SubjectId, x.GroupName })
+            .HasIndex(x => new { x.SchoolClassId, x.SubjectId })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
+
+        // ClassSubjectGroup junction: each (ClassSubject, StudentGroup) once
+        modelBuilder.Entity<ClassSubjectGroup>()
+            .HasIndex(x => new { x.ClassSubjectId, x.StudentGroupId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<ClassSubjectGroup>()
+            .HasOne(x => x.ClassSubject)
+            .WithMany(cs => cs.ClassSubjectGroups)
+            .HasForeignKey(x => x.ClassSubjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ClassSubjectGroup>()
+            .HasOne(x => x.StudentGroup)
+            .WithMany(g => g.ClassSubjectGroups)
+            .HasForeignKey(x => x.StudentGroupId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Result Indexes
         modelBuilder.Entity<ResultLock>().HasIndex(x => x.ExamId);

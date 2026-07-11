@@ -46,14 +46,14 @@
                                     <th>Term</th>
                                     <th>Dates</th>
                                     <th>Status</th>
-                                    <th class="text-end pe-4">Actions</th>
+                                    <th class="ws-text-end pe-4">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var exam in Model.Exams)
                                 {
                                     <tr>
-                                        <td class="ps-4 fw-bold">@exam.Name</td>
+                                        <td class="ps-4 ws-fw-700">@exam.Name</td>
                                         <td>@exam.Term</td>
                                         <td>
                                             <span class="adm-cell-dob">@exam.StartsOn.ToShortDateString() - @exam.EndsOn.ToShortDateString()</span>
@@ -88,7 +88,7 @@
                                                 <span class="adm-badge adm-badge--info">Draft</span>
                                             }
                                         </td>
-                                        <td class="text-end pe-4">
+                                        <td class="ws-text-end pe-4">
                                             <div class="actions-cell" style="justify-content:flex-end;">
                                                 @if (exam.Status != SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                                 {
@@ -156,7 +156,7 @@
 
             <div class="er-card" style="margin-top:16px;background:linear-gradient(135deg,#1e293b,#0f172a);border-color:#334155;">
                 <div class="er-card__body" style="color:#fff;">
-                    <h5 class="fw-bold mb-3" style="color:#fff;">Overall Pass Rate</h5>
+                    <h5 class="ws-fw-700 ws-mb-3" style="color:#fff;">Overall Pass Rate</h5>
                     <div style="font-size:32px;font-weight:800;">87.5%</div>
                     <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:2px 0 12px;">Combined stats for Midterm 2026</p>
                     <div style="height:8px;background:rgba(255,255,255,0.15);border-radius:99px;overflow:hidden;">

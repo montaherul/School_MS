@@ -116,7 +116,15 @@
                 <h4 class="ws-fw-700 ws-mb-6 ws-text-center"><i class="bi bi-map ws-me-2 ws-text-accent"></i> Location Map</h4>
                 <div class="ws-rounded-xl ws-overflow-hidden ws-shadow-lg">
                     <div class="ws-relative ws-w-full ws-h-400">
-                        @Html.Raw(Model.GoogleMapEmbed)
+                        @if (!string.IsNullOrWhiteSpace(Model.GoogleMapEmbed))
+                        {
+                            var srcMatch = System.Text.RegularExpressions.Regex.Match(Model.GoogleMapEmbed, @"src\s*=\s*""([^""]+)""");
+                            var src = srcMatch.Success ? srcMatch.Groups[1].Value : "";
+                            if (Uri.TryCreate(src, UriKind.Absolute, out var uri) && (uri.Host.Contains("google.com") || uri.Host.Contains("maps.google")))
+                            {
+                                <iframe src="@uri.ToString()" width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                            }
+                        }
                     </div>
                 </div>
             </div>

@@ -22,7 +22,7 @@ public class ResultPolicyService : IResultPolicyService
 
     public async Task<ResultPolicy?> GetResultPolicyAsync(int academicYearId, int? schoolClassId, CancellationToken ct = default)
     {
-        return await _uow.Repository<ResultPolicy>().Query()
+        return await _uow.Repository<ResultPolicy>().QueryNoTracking()
             .Include(p => p.ExamWeights).ThenInclude(w => w.ExamType)
             .Where(p => p.AcademicYearId == academicYearId
                 && p.SchoolClassId == schoolClassId
@@ -32,7 +32,7 @@ public class ResultPolicyService : IResultPolicyService
 
     public async Task<List<ResultPolicy>> GetAllResultPoliciesAsync(int academicYearId, CancellationToken ct = default)
     {
-        return await _uow.Repository<ResultPolicy>().Query()
+        return await _uow.Repository<ResultPolicy>().QueryNoTracking()
             .Include(p => p.ExamWeights).ThenInclude(w => w.ExamType)
             .Where(p => p.AcademicYearId == academicYearId && !p.IsDeleted)
             .OrderBy(p => p.SchoolClassId)

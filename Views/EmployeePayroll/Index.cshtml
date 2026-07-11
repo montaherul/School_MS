@@ -1,0 +1,78 @@
+@model List<EmployeeSalaryDto>
+@{
+    ViewData["Title"] = "Salary History";
+    var employeeName = ViewBag.EmployeeName as string;
+    var employeeId = Context.Request.Query["employeeId"];
+}
+
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Salary History</h1>
+                <p class="er-page-header__sub">@employeeName</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Details", "Employee", new { id = employeeId })" class="er-btn er-btn--secondary">Back to Employee</a>
+            <a href="@Url.Action("Create", new { employeeId })" class="er-btn er-btn--primary">Add Salary</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="er-alert er-alert--success">@TempData["Success"]</div>
+    }
+
+    <div class="er-card">
+        <div class="er-card__body">
+            @if (Model.Count == 0)
+            {
+                <div class="er-empty-state"><p>No salary records found.</p></div>
+            }
+            else
+            {
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Effective From</th>
+                            <th>Basic</th>
+                            <th>House Rent</th>
+                            <th>Medical</th>
+                            <th>Transport</th>
+                            <th>Other</th>
+                            <th>Deduction</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td>@s.EffectiveFrom.ToString("dd MMM yyyy")</td>
+                                <td>@s.BasicSalary.ToString("N2")</td>
+                                <td>@s.HouseRent.ToString("N2")</td>
+                                <td>@s.MedicalAllowance.ToString("N2")</td>
+                                <td>@s.TransportAllowance.ToString("N2")</td>
+                                <td>@s.OtherAllowance.ToString("N2")</td>
+                                <td>@s.Deduction.ToString("N2")</td>
+                                <td><strong>@s.TotalSalary.ToString("N2")</strong></td>
+                                <td>
+                                    <a href="@Url.Action("Edit", new { id = s.Id })" class="er-btn er-btn--sm er-btn--secondary">Edit</a>
+                                    <form method="post" action="@Url.Action("Delete", new { id = s.Id, employeeId })" style="display:inline" onsubmit="return confirm('Delete this salary record?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="er-btn er-btn--sm er-btn--danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

@@ -18,5 +18,8 @@ public interface ISectionService
     Task<int> CreateAjaxAsync(int classId, string name, int? parentId, string createdBy, CancellationToken ct = default);
     Task<IEnumerable<object>> GetAdmissionSectionsAsync(int classId, CancellationToken ct = default);
     Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default);
+
+    Task<IEnumerable<SectionOptionDto>> GetSectionsByClassWithFilterAsync(int classId, bool isStaff, List<int>? assignedSectionIds, int? studentGroupId, CancellationToken ct = default);
+    Task AssignStudentToSectionAsync(int studentId, int sectionId, CancellationToken ct = default);
 }
 

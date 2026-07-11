@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -26,7 +28,7 @@ public class PromotionPolicyService : IPromotionPolicyService
 
     public async Task<PromotionPolicy?> GetPromotionPolicyAsync(int academicYearId, int schoolClassId, CancellationToken ct = default)
     {
-        return await _uow.Repository<PromotionPolicy>().Query()
+        return await _uow.Repository<PromotionPolicy>().QueryNoTracking()
             .Include(p => p.Rules)
             .Where(p => p.AcademicYearId == academicYearId
                 && p.SchoolClassId == schoolClassId
@@ -36,7 +38,7 @@ public class PromotionPolicyService : IPromotionPolicyService
 
     public async Task<List<PromotionPolicy>> GetAllPromotionPoliciesAsync(int academicYearId, CancellationToken ct = default)
     {
-        return await _uow.Repository<PromotionPolicy>().Query()
+        return await _uow.Repository<PromotionPolicy>().QueryNoTracking()
             .Include(p => p.Rules)
             .Where(p => p.AcademicYearId == academicYearId && !p.IsDeleted)
             .ToListAsync(ct);
@@ -137,11 +139,20 @@ public class PromotionPolicyService : IPromotionPolicyService
         var policy = await GetPromotionPolicyAsync(academicYearId, classId, ct);
         var finalResultDict = finalResults.ToDictionary(f => f.StudentId);
 
+        // Pre-load subject results for critical subject evaluation (avoids N+1)
+        var subjectResults = await _uow.Repository<StudentSubjectResult>().Query()
+            .Where(sr => studentIds.Contains(sr.StudentId))
+            .ToListAsync(ct);
+        var subjectResultsByStudent = subjectResults
+            .GroupBy(sr => sr.StudentId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         var results = new List<PromotionEligibilityResult>();
         foreach (var student in students)
         {
             finalResultDict.TryGetValue(student.Id, out var fr);
-            results.Add(EvaluateStudent(student, fr, policy));
+            subjectResultsByStudent.TryGetValue(student.Id, out var srList);
+            results.Add(EvaluateStudent(student, fr, policy, srList));
         }
 
         return results;
@@ -173,8 +184,24 @@ public class PromotionPolicyService : IPromotionPolicyService
         }
         nextClassId = nextClass.Id;
 
+        // Pre-load students, final results, history, and settings before the transaction loop
+        var studentIds = evaluations.Select(e => e.StudentId).ToList();
+        var studentsDict = await _uow.Repository<StudentEntity>().Query()
+            .Where(s => studentIds.Contains(s.Id) && !s.IsDeleted)
+            .ToDictionaryAsync(s => s.Id, ct);
+        var finalResultsDict = await _uow.Repository<FinalResult>().Query()
+            .Where(f => f.AcademicYearId == academicYearId && studentIds.Contains(f.StudentId))
+            .ToDictionaryAsync(f => f.StudentId, ct);
+        var existingHistories = await _uow.Repository<PromotionHistory>().Query()
+            .Where(h => studentIds.Contains(h.StudentId) && h.AcademicYearId == academicYearId)
+            .ToDictionaryAsync(h => h.StudentId, ct);
+
         await _uow.ExecuteInTransactionAsync(async () =>
         {
+            // Pre-load settings and target class once for group revalidation
+            var promoSettings = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct);
+            var promoNextClass = await _uow.Repository<SchoolClass>().GetByIdAsync(nextClassId);
+
             foreach (var eval in evaluations)
             {
                 var status = eval.Status;
@@ -191,9 +218,36 @@ public class PromotionPolicyService : IPromotionPolicyService
                 };
                 await _uow.Repository<PromotionHistory>().AddAsync(history);
 
-                var finalResult = await _uow.Repository<FinalResult>().Query()
-                    .FirstOrDefaultAsync(f => f.StudentId == eval.StudentId && f.AcademicYearId == academicYearId);
-                if (finalResult != null)
+                // Update student's class assignment and revalidate group
+                if (status == PromotionStatus.Promoted)
+                {
+                    if (studentsDict.TryGetValue(eval.StudentId, out var student))
+                    {
+                        student.ClassId = nextClassId;
+
+                        if (promoSettings != null && promoNextClass != null)
+                        {
+                            bool targetRequiresGroup = promoNextClass.SortOrder >= promoSettings.GroupStartsFromClassId;
+                            if (targetRequiresGroup && !student.StudentGroupId.HasValue)
+                                throw new InvalidOperationException($"Student {student.FullName} requires an academic group for {promoNextClass.Name}.");
+                            if (!targetRequiresGroup)
+                                student.StudentGroupId = null;
+                        }
+
+                        _uow.Repository<StudentEntity>().Update(student);
+
+                        // Cascade updates to attendance, exam results, and group assignment
+                        await RebuildStudentCascadeAsync(
+                            student.Id,
+                            student.ClassId,
+                            student.SectionId,
+                            student.StudentGroupId,
+                            academicYearId,
+                            ct);
+                    }
+                }
+
+                if (finalResultsDict.TryGetValue(eval.StudentId, out var finalResult))
                 {
                     finalResult.PromotionStatus = status;
                     finalResult.PromotionRemarks = eval.Reason;
@@ -238,6 +292,77 @@ public class PromotionPolicyService : IPromotionPolicyService
         });
 
         return result;
+    }
+
+    private async Task RebuildStudentCascadeAsync(int studentId, int newClassId, int? newSectionId, int? newGroupId, int academicYearId, CancellationToken ct = default)
+    {
+        // 1. Batch-update AttendanceRecord
+        await _uow.Repository<AttendanceRecord>().Query()
+            .Where(a => a.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(a => a.SchoolClassId, newClassId)
+                .SetProperty(a => a.SectionId, a => newSectionId ?? a.SectionId), ct);
+
+        // 2. Batch-update StudentExamResult
+        await _uow.Repository<StudentExamResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.ClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 3. Batch-update StudentSubjectResult
+        await _uow.Repository<StudentSubjectResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.ClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 4. Batch-update FinalResult
+        await _uow.Repository<FinalResult>().Query()
+            .Where(r => r.StudentId == studentId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(r => r.SchoolClassId, newClassId)
+                .SetProperty(r => r.SectionId, r => newSectionId ?? r.SectionId)
+                .SetProperty(r => r.StudentGroupId, newGroupId), ct);
+
+        // 5. Handle StudentGroupAssignment
+        if (newGroupId.HasValue)
+        {
+            var existing = await _uow.Repository<StudentGroupAssignment>()
+                .FirstOrDefaultAsync(a => a.StudentId == studentId && a.SchoolClassId == newClassId && a.AcademicYearId == academicYearId, ct);
+
+            if (existing != null)
+            {
+                if (existing.StudentGroupId != newGroupId.Value)
+                {
+                    existing.StudentGroupId = newGroupId.Value;
+                    _uow.Repository<StudentGroupAssignment>().Update(existing);
+                }
+            }
+            else
+            {
+                var newAssignment = new StudentGroupAssignment
+                {
+                    StudentId = studentId,
+                    StudentGroupId = newGroupId.Value,
+                    SchoolClassId = newClassId,
+                    AcademicYearId = academicYearId,
+                    AssignedDate = DateTime.Now
+                };
+                await _uow.Repository<StudentGroupAssignment>().AddAsync(newAssignment, ct);
+            }
+        }
+        else
+        {
+            var existing = await _uow.Repository<StudentGroupAssignment>()
+                .FirstOrDefaultAsync(a => a.StudentId == studentId && a.SchoolClassId == newClassId && a.AcademicYearId == academicYearId, ct);
+            if (existing != null)
+            {
+                _uow.Repository<StudentGroupAssignment>().Remove(existing);
+            }
+        }
     }
 
     public async Task<List<GroupAssignmentResult>> AssignGroupsAsync(int fromClassId, int toClassId, int academicYearId, int? processedByUserId, CancellationToken ct = default)
@@ -344,7 +469,7 @@ public class PromotionPolicyService : IPromotionPolicyService
         return results;
     }
 
-    private PromotionEligibilityResult EvaluateStudent(StudentEntity student, FinalResult? finalResult, PromotionPolicy? policy)
+    private PromotionEligibilityResult EvaluateStudent(StudentEntity student, FinalResult? finalResult, PromotionPolicy? policy, List<StudentSubjectResult>? subjectResults = null)
     {
         var eval = new PromotionEligibilityResult
         {
@@ -389,12 +514,13 @@ public class PromotionPolicyService : IPromotionPolicyService
             var criticalSubjects = System.Text.Json.JsonSerializer.Deserialize<List<string>>(policy.CriticalSubjectsJson) ?? [];
             if (criticalSubjects.Count > 0)
             {
-                var subjectResults = _uow.Repository<StudentSubjectResult>().Query()
+                // Use pre-loaded subject results if available, otherwise load (for single-student evaluation)
+                var srList = subjectResults ?? _uow.Repository<StudentSubjectResult>().Query()
                     .Where(sr => sr.StudentId == student.Id && sr.ExamId > 0)
                     .ToList();
-                var failedCritical = subjectResults
+                var failedCritical = srList
                     .Where(sr => !sr.IsPassed && criticalSubjects.Any(cs =>
-                        sr.SubjectId > 0 && subjectResults.Any(x => x.SubjectId == sr.SubjectId)))
+                        sr.SubjectId > 0 && srList.Any(x => x.SubjectId == sr.SubjectId)))
                     .GroupBy(sr => sr.SubjectId).Count();
                 criticalSubjectsMet = failedCritical <= policy.MaxCriticalSubjectFailures;
             }

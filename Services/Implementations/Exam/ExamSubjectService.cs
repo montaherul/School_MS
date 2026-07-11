@@ -37,12 +37,14 @@ public class ExamSubjectService : IExamSubjectService
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
             .AsNoTracking()
             .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => !cs.IsDeleted && cs.IsActive && cs.SchoolClassId == exam.ClassId)
             .ToListAsync();
 
         if (exam.StudentGroupId.HasValue)
             classSubjects = classSubjects.Where(cs =>
-                cs.StudentGroupId == null || cs.StudentGroupId == exam.StudentGroupId.Value).ToList();
+                !cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted) ||
+                cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted && csg.StudentGroupId == exam.StudentGroupId.Value)).ToList();
 
         var classNumber = ExtractClassNumber(exam.ClassId);
         if (classNumber >= 1 && classNumber <= 8)

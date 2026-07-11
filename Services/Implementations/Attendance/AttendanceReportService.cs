@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
@@ -30,39 +31,27 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<AttendanceDashboardVm> GetDashboardSummaryAsync(CancellationToken ct = default)
         {
-            var today = DateOnly.FromDateTime(DateTime.Today);
+            var summary = await _uow.Repository<AttendanceRecord>()
+                .ExecuteStoredProcAsync<DashboardAttendanceSummaryDto>("sp_GetAttendanceDashboardSummary");
 
-            var studentPresent = await _uow.Repository<AttendanceRecord>().Query().CountAsync(
-                a => a.AttendanceDate == today && !a.IsDeleted &&
-                     (a.Status == AttendanceStatus.Present ||
-                      a.Status == AttendanceStatus.Late), ct);
-            var studentAbsent = await _uow.Repository<AttendanceRecord>().Query().CountAsync(
-                a => a.AttendanceDate == today && !a.IsDeleted &&
-                     a.Status == AttendanceStatus.Absent, ct);
-
-            var employeePresent = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(
-                a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted &&
-                     (a.Status == AttendanceStatus.Present ||
-                      a.Status == AttendanceStatus.Late), ct);
-            var employeeAbsent = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(
-                a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted &&
-                     a.Status == AttendanceStatus.Absent, ct);
+            var data = summary.FirstOrDefault() ?? new DashboardAttendanceSummaryDto();
 
             var pendingLeaves = await _leaveRepo.Query().CountAsync(
                 l => l.ApprovalStatus == LeaveStatus.Pending, ct);
 
-            var studentTotal = await _uow.Repository<AttendanceRecord>().Query().CountAsync(a => a.AttendanceDate == today && !a.IsDeleted, ct);
-            var employeeTotal = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted, ct);
-
             return new AttendanceDashboardVm
             {
-                TotalPresentStudents = studentPresent,
-                TotalAbsentStudents = studentAbsent,
-                TotalPresentEmployees = employeePresent,
-                TotalAbsentEmployees = employeeAbsent,
+                TotalPresentStudents = data.StudentPresent + data.StudentLate,
+                TotalAbsentStudents = data.StudentAbsent,
+                TotalPresentEmployees = data.EmployeePresent + data.EmployeeLate,
+                TotalAbsentEmployees = data.EmployeeAbsent,
                 PendingLeaveRequests = pendingLeaves,
-                StudentAttendancePercentage = studentTotal > 0 ? Math.Round((double)studentPresent / studentTotal * 100, 2) : 0,
-                EmployeeAttendancePercentage = employeeTotal > 0 ? Math.Round((double)employeePresent / employeeTotal * 100, 2) : 0
+                StudentAttendancePercentage = data.TotalStudents > 0
+                    ? Math.Round((double)(data.StudentPresent + data.StudentLate) / data.TotalStudents * 100, 2)
+                    : 0,
+                EmployeeAttendancePercentage = data.TotalEmployees > 0
+                    ? Math.Round((double)(data.EmployeePresent + data.EmployeeLate) / data.TotalEmployees * 100, 2)
+                    : 0
             };
         }
 

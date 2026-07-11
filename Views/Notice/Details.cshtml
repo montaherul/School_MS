@@ -23,7 +23,7 @@
                     </div>
 
                     <div style="color:var(--ws-text);font-size:1.1rem;line-height:1.8;margin-bottom:40px;">
-                        @Html.Raw(Model.Body.Replace("\r\n", "<br/>").Replace("\n", "<br/>"))
+                        @Html.SanitizedHtml(Model.Body?.Replace("\r\n", "<br/>")?.Replace("\n", "<br/>"))
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.AttachmentPath))

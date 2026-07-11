@@ -19,7 +19,7 @@ public class HolidayMasterService : IHolidayMasterService
 
     public async Task<PagedResult<HolidayMasterDto>> GetPagedAsync(int page, int pageSize, string? search, string? type, string? religion, CancellationToken ct = default)
     {
-        var query = _uow.Repository<HolidayMaster>().Query().Where(x => !x.IsDeleted);
+        var query = _uow.Repository<HolidayMaster>().Query().AsNoTracking().Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrEmpty(search))
             query = query.Where(x => x.Name.Contains(search) || (x.NameBn != null && x.NameBn.Contains(search)));
@@ -53,7 +53,7 @@ public class HolidayMasterService : IHolidayMasterService
 
     public async Task<HolidayMasterDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        var entity = await _uow.Repository<HolidayMaster>().Query().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
+        var entity = await _uow.Repository<HolidayMaster>().QueryNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
         if (entity == null) return null;
 
         return new HolidayMasterDto
@@ -127,6 +127,28 @@ public class HolidayMasterService : IHolidayMasterService
         await _uow.SaveChangesAsync(ct);
     }
 
+    public async Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        if (ids == null || ids.Count == 0) return;
+        await _uow.Repository<HolidayMaster>().Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.IsActive, true)
+                .SetProperty(x => x.UpdatedBy, updatedBy)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+    }
+
+    public async Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        if (ids == null || ids.Count == 0) return;
+        await _uow.Repository<HolidayMaster>().Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.IsActive, false)
+                .SetProperty(x => x.UpdatedBy, updatedBy)
+                .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+    }
+
     public async Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default)
     {
         var entity = await _uow.Repository<HolidayMaster>().Query().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct)
@@ -149,23 +171,47 @@ public class HolidayMasterService : IHolidayMasterService
 
     public async Task<int> ImportAsync(List<HolidayMasterUpsertDto> holidays, string createdBy, CancellationToken ct = default)
     {
-        var imported = 0;
+        var existingItems = await _uow.Repository<HolidayMaster>().QueryNoTracking()
+            .Where(x => !x.IsDeleted)
+            .Select(x => new { x.Name, x.HolidayDate })
+            .ToListAsync(ct);
+        var existingSet = new HashSet<(string Name, DateOnly HolidayDate)>(
+            existingItems.Select(x => (x.Name, x.HolidayDate)));
+
+        var toAdd = new List<HolidayMaster>();
         foreach (var dto in holidays)
         {
-            var existing = await _uow.Repository<HolidayMaster>().Query()
-                .FirstOrDefaultAsync(x => x.Name == dto.Name.Trim() && x.HolidayDate == dto.HolidayDate && !x.IsDeleted, ct);
+            if (existingSet.Contains((dto.Name.Trim(), dto.HolidayDate))) continue;
 
-            if (existing != null) continue;
-
-            await CreateAsync(dto, createdBy, ct);
-            imported++;
+            toAdd.Add(new HolidayMaster
+            {
+                Name = dto.Name.Trim(),
+                NameBn = dto.NameBn?.Trim(),
+                HolidayType = dto.HolidayType,
+                HolidayDate = dto.HolidayDate,
+                IsRecurring = dto.IsRecurring,
+                Religion = dto.Religion,
+                CountryCode = dto.CountryCode ?? "BD",
+                Description = dto.Description?.Trim(),
+                DisplayOrder = dto.DisplayOrder,
+                IsActive = dto.IsActive,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.UtcNow
+            });
         }
-        return imported;
+
+        if (toAdd.Count > 0)
+        {
+            await _uow.Repository<HolidayMaster>().AddRangeAsync(toAdd, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        return toAdd.Count;
     }
 
     public async Task<byte[]> ExportAsync(CancellationToken ct = default)
     {
-        var holidays = await _uow.Repository<HolidayMaster>().Query()
+        var holidays = await _uow.Repository<HolidayMaster>().QueryNoTracking()
             .Where(x => !x.IsDeleted && x.IsActive)
             .OrderBy(x => x.HolidayDate)
             .ToListAsync(ct);
@@ -181,9 +227,29 @@ public class HolidayMasterService : IHolidayMasterService
         return Encoding.UTF8.GetBytes(sb.ToString());
     }
 
+    public async Task<int> GenerateBangladeshHolidaysAsync(int year, string createdBy, CancellationToken ct)
+    {
+        var holidays = HolidayProvider.GetAllAnnualHolidays(year);
+        var dtoList = holidays.Select(h => new HolidayMasterUpsertDto
+        {
+            Name = h.Name,
+            NameBn = h.NameBn,
+            HolidayType = h.HolidayType,
+            HolidayDate = h.HolidayDate,
+            IsRecurring = h.IsRecurring,
+            Religion = h.Religion,
+            CountryCode = "BD",
+            Description = h.Description,
+            DisplayOrder = h.DisplayOrder,
+            IsActive = true
+        }).ToList();
+
+        return await ImportAsync(dtoList, createdBy, ct);
+    }
+
     public async Task<List<HolidayMasterDto>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _uow.Repository<HolidayMaster>().Query()
+        return await _uow.Repository<HolidayMaster>().QueryNoTracking()
             .Where(x => !x.IsDeleted && x.IsActive)
             .OrderBy(x => x.HolidayDate).ThenBy(x => x.DisplayOrder)
             .Select(x => new HolidayMasterDto

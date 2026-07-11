@@ -41,8 +41,8 @@ public class SecurityHeadersMiddleware
             "style-src 'self' 'unsafe-inline' " +
                 "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.quilljs.com https://fonts.googleapis.com; " +
             "img-src 'self' data: https://www.transparenttextures.com; " +
-            "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; " +
-            "connect-src 'self' https://cdn.jsdelivr.net; " +
+            "font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; " +
+            "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com ws://localhost:* http://localhost:*; " +
             "frame-ancestors 'none';";
 
         // Permissions-Policy

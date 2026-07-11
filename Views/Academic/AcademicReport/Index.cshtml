@@ -1,0 +1,461 @@
+@model AcademicReportViewModel
+@using SchoolManagementSystem.Models.DTOs.Academic
+@{
+    ViewData["Title"] = "Academic Reports";
+    var reportType = Model.Filter.ReportType;
+}
+
+<div class="adm-page">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--danger ws-mb-3">
+            <i class="bi bi-exclamation-circle-fill ws-me-2"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Reports</h1>
+                <p class="adm-header__sub">Comprehensive reports across all academic modules</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__body">
+            <form method="post" action="@Url.Action("Generate", "AcademicReport")" id="reportForm" class="ws-flex ws-gap-3 ws-items-end ws-flex-wrap">
+                @Html.AntiForgeryToken()
+
+                <div class="ws-flex-col ws-gap-1">
+                    <label for="ReportType" class="ws-fs-13 ws-fw-600 ws-text-muted">Report Type</label>
+                    <select name="ReportType" id="ReportType" class="adm-select" onchange="toggleFilters()">
+                        <option value="academic-year" selected="@(reportType == "academic-year")">Academic Year Report</option>
+                        <option value="class" selected="@(reportType == "class")">Class Report</option>
+                        <option value="section" selected="@(reportType == "section")">Section Report</option>
+                        <option value="subject" selected="@(reportType == "subject")">Subject Report</option>
+                        <option value="teacher-load" selected="@(reportType == "teacher-load")">Teacher Load Report</option>
+                        <option value="syllabus" selected="@(reportType == "syllabus")">Syllabus Progress Report</option>
+                        <option value="student-distribution" selected="@(reportType == "student-distribution")">Student Distribution</option>
+                        <option value="capacity" selected="@(reportType == "capacity")">Capacity / Occupancy Report</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <i class="bi bi-search ws-me-1"></i> Generate
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.AcademicYearReports != null || Model.ClassReports != null || Model.SectionReports != null ||
+         Model.SubjectReports != null || Model.TeacherLoadReports != null || Model.SyllabusReports != null ||
+         Model.StudentDistribution != null || Model.CapacityReports != null)
+    {
+        <div class="adm-card ws-mb-4">
+            <div class="adm-card__body">
+                <form method="post" action="@Url.Action("ExportPdf", "AcademicReport")" class="ws-inline-flex ws-gap-2 ws-mb-0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReportType" value="@reportType" />
+                    <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                        <i class="bi bi-filetype-pdf ws-me-1"></i> Export PDF
+                    </button>
+                </form>
+                <form method="post" action="@Url.Action("ExportExcel", "AcademicReport")" class="ws-inline-flex ws-gap-2 ws-mb-0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReportType" value="@reportType" />
+                    <button type="submit" class="adm-btn adm-btn--success adm-btn--sm ws-ms-2">
+                        <i class="bi bi-file-earmark-excel ws-me-1"></i> Export Excel
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="adm-table-card">
+            <div class="adm-table-card__body">
+                @{
+                    var hasData = true;
+                }
+
+                @switch (reportType)
+                {
+                    case "academic-year":
+                        if (Model.AcademicYearReports == null || Model.AcademicYearReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Starts On</th>
+                                        <th>Ends On</th>
+                                        <th>Classes</th>
+                                        <th>Sections</th>
+                                        <th>Students</th>
+                                        <th>Subjects</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.AcademicYearReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.Name</td>
+                                            <td>@r.StartsOn.ToString("dd MMM yyyy")</td>
+                                            <td>@r.EndsOn.ToString("dd MMM yyyy")</td>
+                                            <td>@r.ClassCount</td>
+                                            <td>@r.SectionCount</td>
+                                            <td>@r.StudentCount</td>
+                                            <td>@r.SubjectCount</td>
+                                            <td>
+                                                @if (r.IsActive)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">Inactive</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "class":
+                        if (Model.ClassReports == null || Model.ClassReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Sections</th>
+                                        <th>Students</th>
+                                        <th>Capacity</th>
+                                        <th>Occupancy</th>
+                                        <th>Subjects</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.ClassReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.Name</td>
+                                            <td>@r.Code</td>
+                                            <td>@r.SectionCount</td>
+                                            <td>@r.StudentCount</td>
+                                            <td>@r.Capacity</td>
+                                            <td>
+                                                <div class="ws-flex ws-items-center ws-gap-2">
+                                                    <div class="dash-progress" style="width:80px;">
+                                                        <div class="dash-progress__bar dash-progress__bar--@(r.OccupancyPercent >= 90 ? "danger" : r.OccupancyPercent >= 70 ? "warning" : "success")" style="width:@(r.OccupancyPercent)%"></div>
+                                                    </div>
+                                                    <span>@r.OccupancyPercent%</span>
+                                                </div>
+                                            </td>
+                                            <td>@r.SubjectCount</td>
+                                            <td>
+                                                @if (r.IsActive)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">Inactive</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "section":
+                        if (Model.SectionReports == null || Model.SectionReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Section</th>
+                                        <th>Class</th>
+                                        <th>Group</th>
+                                        <th>Capacity</th>
+                                        <th>Occupied</th>
+                                        <th>Occupancy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.SectionReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.Name</td>
+                                            <td>@r.ClassName</td>
+                                            <td>@(string.IsNullOrEmpty(r.GroupName) ? "-" : r.GroupName)</td>
+                                            <td>@r.Capacity</td>
+                                            <td>@r.Occupied</td>
+                                            <td>
+                                                <div class="ws-flex ws-items-center ws-gap-2">
+                                                    <div class="dash-progress" style="width:80px;">
+                                                        <div class="dash-progress__bar dash-progress__bar--@(r.OccupancyPercent >= 90 ? "danger" : r.OccupancyPercent >= 70 ? "warning" : "success")" style="width:@(r.OccupancyPercent)%"></div>
+                                                    </div>
+                                                    <span>@r.OccupancyPercent%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "subject":
+                        if (Model.SubjectReports == null || Model.SubjectReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Mandatory</th>
+                                        <th>Practical</th>
+                                        <th>Classes</th>
+                                        <th>Teachers</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.SubjectReports)
+                                    {
+                                        <tr>
+                                            <td>@r.Code</td>
+                                            <td class="ws-fw-600">@r.Name</td>
+                                            <td><span class="adm-status adm-status--info">@r.Category</span></td>
+                                            <td>
+                                                @if (r.IsMandatory)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Yes</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">No</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (r.IsPractical)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Yes</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">No</span>
+                                                }
+                                            </td>
+                                            <td>@r.ClassCount</td>
+                                            <td>@r.TeacherCount</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "teacher-load":
+                        if (Model.TeacherLoadReports == null || Model.TeacherLoadReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Teacher</th>
+                                        <th>Subjects</th>
+                                        <th>Classes</th>
+                                        <th>Sections</th>
+                                        <th>Periods / Week</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.TeacherLoadReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.TeacherName</td>
+                                            <td>@r.SubjectNames</td>
+                                            <td>@r.AssignedClasses</td>
+                                            <td>@r.AssignedSections</td>
+                                            <td><span class="adm-status adm-status--info">@r.TotalPeriodsPerWeek</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "syllabus":
+                        if (Model.SyllabusReports == null || Model.SyllabusReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Class</th>
+                                        <th>Subject</th>
+                                        <th>Academic Year</th>
+                                        <th>Uploaded By</th>
+                                        <th>Uploaded At</th>
+                                        <th>Active</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.SyllabusReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.Title</td>
+                                            <td>@r.ClassName</td>
+                                            <td>@r.SubjectName</td>
+                                            <td>@r.AcademicYear</td>
+                                            <td>@r.UploadedBy</td>
+                                            <td>@r.UploadedAt.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                @if (r.IsActive)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Yes</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">No</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "student-distribution":
+                        if (Model.StudentDistribution == null || Model.StudentDistribution.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Section</th>
+                                        <th>Group</th>
+                                        <th>Students</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.StudentDistribution)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.ClassName</td>
+                                            <td>@r.SectionName</td>
+                                            <td>@(string.IsNullOrEmpty(r.GroupName) ? "-" : r.GroupName)</td>
+                                            <td><span class="adm-status adm-status--info">@r.StudentCount</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    case "capacity":
+                        if (Model.CapacityReports == null || Model.CapacityReports.Count == 0) { hasData = false; }
+                        else
+                        {
+                            <table class="adm-table">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Total Capacity</th>
+                                        <th>Total Occupied</th>
+                                        <th>Available Seats</th>
+                                        <th>Occupancy</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.CapacityReports)
+                                    {
+                                        <tr>
+                                            <td class="ws-fw-600">@r.ClassName</td>
+                                            <td>@r.TotalCapacity</td>
+                                            <td>@r.TotalOccupied</td>
+                                            <td>
+                                                <span class="adm-status adm-status--@(r.AvailableSeats > 0 ? "approved" : "rejected")">@r.AvailableSeats</span>
+                                            </td>
+                                            <td>
+                                                <div class="ws-flex ws-items-center ws-gap-2">
+                                                    <div class="dash-progress" style="width:80px;">
+                                                        <div class="dash-progress__bar dash-progress__bar--@(r.OccupancyPercent >= 90 ? "danger" : r.OccupancyPercent >= 70 ? "warning" : "success")" style="width:@(r.OccupancyPercent)%"></div>
+                                                    </div>
+                                                    <span>@r.OccupancyPercent%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+
+                    default:
+                        hasData = false;
+                        break;
+                }
+
+                @if (!hasData)
+                {
+                    <div class="dash-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <div class="dash-empty__title">No Data Found</div>
+                        <div class="dash-empty__sub">Select a report type and click Generate to view results.</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dash-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <div class="dash-empty__title">Select a Report</div>
+            <div class="dash-empty__sub">Choose a report type from the dropdown and click Generate.</div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleFilters() {
+            // Future: show/hide conditional filter fields
+        }
+    </script>
+}

@@ -241,8 +241,28 @@ public class StudentService : IStudentService
         student.PermanentThana = dto.PermanentThana;
         student.PermanentDistrict = dto.PermanentDistrict;
         student.BirthCertificateNo = dto.BirthCertificateNo;
+        var classChanged = student.ClassId != dto.ClassId;
         student.ClassId = dto.ClassId;
         student.SectionId = dto.SectionId;
+
+        // Revalidate group when class changes
+        if (classChanged)
+        {
+            var schoolClassForGroup = await _classRepository.GetByIdAsync(dto.ClassId, cancellationToken);
+            if (schoolClassForGroup != null)
+            {
+                var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+                if (settings != null)
+                {
+                    bool classRequiresGroup = schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
+                    if (classRequiresGroup && !dto.StudentGroupId.HasValue && !student.StudentGroupId.HasValue)
+                        throw new InvalidOperationException("An academic group is required for the selected class.");
+                    if (!classRequiresGroup)
+                        dto.StudentGroupId = null;
+                }
+            }
+        }
+
         student.StudentGroupId = dto.StudentGroupId ?? (dto.SectionId > 0
             ? (await _sectionRepository.GetByIdAsync(dto.SectionId, cancellationToken))?.StudentGroupId
             : null);
@@ -366,7 +386,7 @@ public class StudentService : IStudentService
     public async Task<List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>> GetOptionalSubjectsAsync(int classId, CancellationToken cancellationToken = default)
     {
         var optionalSubjectIds = await _unitOfWork.Repository<ClassSubject>()
-            .Query()
+            .QueryNoTracking()
             .Where(cs => cs.SchoolClassId == classId && cs.IsOptional && !cs.IsDeleted)
             .Select(cs => cs.SubjectId)
             .Distinct()

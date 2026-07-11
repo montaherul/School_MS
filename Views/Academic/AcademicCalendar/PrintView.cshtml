@@ -1,0 +1,109 @@
+@model List<SchoolManagementSystem.Models.DTOs.Academic.AcademicCalendarDto>
+@{
+    ViewData["Title"] = "Academic Calendar " + ViewBag.Year + " - Print";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Academic Calendar @ViewBag.Year</title>
+    <link rel="stylesheet" href="~/css/schoolms-universal.css" />
+    <style>
+        @@page { size: A4 landscape; margin: 15mm; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 10pt; color: #333; max-width: 1100px; margin: 0 auto; padding: 10px 20px; }
+        .header { text-align: center; margin-bottom: 16px; border-bottom: 2px solid var(--adm-primary, #1B4D8C); padding-bottom: 10px; }
+        .header h1 { color: var(--adm-primary, #1B4D8C); font-size: 18pt; margin: 0 0 4px; }
+        .header p { color: #666; margin: 0; font-size: 9pt; }
+        .summary { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+        .summary-item { flex: 1; text-align: center; padding: 8px; border-radius: 6px; background: #f8f9fa; min-width: 80px; }
+        .summary-item .num { font-size: 18pt; font-weight: 700; }
+        .summary-item .lbl { font-size: 9pt; color: #666; }
+        .legend { margin: 10px 0; padding: 6px 12px; background: #f8f9fa; border-radius: 6px; font-size: 9pt; }
+        .legend span { display: inline-block; margin-right: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+        th { background: var(--adm-primary, #1B4D8C); color: #fff; padding: 6px 8px; text-align: left; font-weight: 600; }
+        td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; }
+        tr:nth-child(even) { background: #f9fafb; }
+        .badge { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 100px; font-size: 8pt; font-weight: 600; }
+        .badge--holiday { background: #fee2e2; color: #b91c1c; }
+        .badge--exam { background: #fef3c7; color: #92400e; }
+        .badge--event { background: #ede9fe; color: #6d28d9; }
+        .badge--working { background: #d1fae5; color: #047857; }
+        .footer { text-align: center; margin-top: 16px; font-size: 8pt; color: #999; }
+        @@media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Academic Calendar @ViewBag.Year</h1>
+        <p>School Management System — Generated on @DateTime.Today.ToString("dd MMM yyyy")</p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-item"><div class="num" style="color:#059669;">@ViewBag.WorkingDays</div><div class="lbl">Working Days</div></div>
+        <div class="summary-item"><div class="num" style="color:#dc2626;">@ViewBag.HolidayCount</div><div class="lbl">Holidays</div></div>
+        <div class="summary-item"><div class="num" style="color:#d97706;">@ViewBag.ExamDayCount</div><div class="lbl">Exam Days</div></div>
+        <div class="summary-item"><div class="num" style="color:#6d28d9;">@ViewBag.EventDayCount</div><div class="lbl">Events</div></div>
+        <div class="summary-item"><div class="num" style="color:#1B4D8C;">@ViewBag.TotalDays</div><div class="lbl">Total Days</div></div>
+    </div>
+
+    <div class="legend">
+        <span><span class="badge badge--holiday">&#9632; Holiday</span></span>
+        <span><span class="badge badge--exam">&#9632; Exam</span></span>
+        <span><span class="badge badge--event">&#9632; Event</span></span>
+        <span><span class="badge badge--working">&#9632; Working Day</span></span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model)
+            {
+                var typeLabel = "";
+                var badgeClass = "working";
+                if (d.IsHoliday) { typeLabel = "Holiday"; badgeClass = "holiday"; }
+                else if (d.IsExamDay) { typeLabel = "Exam"; badgeClass = "exam"; }
+                else if (d.IsEventDay) { typeLabel = "Event"; badgeClass = "event"; }
+                else { typeLabel = "Working"; badgeClass = "working"; }
+                <tr>
+                    <td>@d.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@d.Date.DayOfWeek</td>
+                    <td>@(d.Title ?? "")</td>
+                    <td><span class="badge badge--@badgeClass">@typeLabel</span></td>
+                    <td>@(d.Remarks ?? "")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Academic Calendar @ViewBag.Year — School Management System — Page 1 of 1
+    </div>
+
+    <div class="no-print ws-text-center ws-mt-4">
+        <button class="adm-btn adm-btn--primary" onclick="window.print()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:middle;">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print
+        </button>
+        <button class="adm-btn adm-btn--ghost" onclick="window.close()">Close</button>
+    </div>
+</body>
+</html>

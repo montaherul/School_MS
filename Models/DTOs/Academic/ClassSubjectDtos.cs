@@ -13,7 +13,7 @@ public class ClassSubjectListItemDto
     public string SubjectNameEn { get; set; } = string.Empty;
     public string SubjectNameBn { get; set; } = string.Empty;
 
-    public int? StudentGroupId { get; set; }
+    public List<int> SelectedGroupIds { get; set; } = [];
     public string GroupName { get; set; } = string.Empty;
 
     public decimal FullMarks { get; set; }
@@ -38,9 +38,8 @@ public class ClassSubjectUpsertDto
     [Required]
     public int SubjectId { get; set; }
 
-    public int? StudentGroupId { get; set; }
+    public List<int> SelectedGroupIds { get; set; } = [];
 
-    [RegularExpression("^(General|Science|BusinessStudies|Humanities)$", ErrorMessage = "Group must be General, Science, BusinessStudies, or Humanities.")]
     public string GroupName { get; set; } = string.Empty;
 
     [Required]

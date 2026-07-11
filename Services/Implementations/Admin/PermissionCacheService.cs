@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 
@@ -8,14 +9,14 @@ namespace SchoolManagementSystem.Services.Implementations.Admin;
 
 public class PermissionCacheService : IPermissionCacheService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMemoryCache _cache;
     private readonly ConcurrentBag<string> _trackedKeys = new();
     private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(60);
 
-    public PermissionCacheService(IServiceProvider serviceProvider, IMemoryCache cache)
+    public PermissionCacheService(IServiceScopeFactory scopeFactory, IMemoryCache cache)
     {
-        _serviceProvider = serviceProvider;
+        _scopeFactory = scopeFactory;
         _cache = cache;
     }
 
@@ -28,7 +29,7 @@ public class PermissionCacheService : IPermissionCacheService
         if (_cache.TryGetValue(cacheKey, out bool cached))
             return cached;
 
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
 
         var allowed = await db.RolePermissions

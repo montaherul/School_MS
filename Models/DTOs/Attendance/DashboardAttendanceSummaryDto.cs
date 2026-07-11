@@ -14,8 +14,11 @@ namespace SchoolManagementSystem.Models.DTOs.Attendance
         public int EmployeeAbsent { get; set; }
         public int EmployeeLate { get; set; }
         public int EmployeeLeave { get; set; }
+        public decimal EmployeeAttendancePercentage { get; set; }
         
         public int ClassesMissingAttendance { get; set; }
+        public int PendingSessions { get; set; }
         public int LockedSessions { get; set; }
+        public int ApprovedSessions { get; set; }
     }
 }

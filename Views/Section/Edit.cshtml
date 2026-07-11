@@ -3,76 +3,77 @@
     ViewData["Title"] = Model.IsEditMode ? "Edit Section" : "Add Section"; 
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/Section/Index" class="btn btn-outline-secondary btn-sm me-3">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-            <h2 class="mb-0">
-                @(Model.IsEditMode ? "Edit Section" : "Add Section")
-            </h2>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div></div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Section" : "Add Section")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify section details" : "Create a new section for a class")</p>
+            </div>
         </div>
+        <a href="/Section/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form asp-action="CreateEdit" method="post">
-                    <input type="hidden" asp-for="Id" />
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
 
-                    <!-- CLASS DROPDOWN -->
-                    <div class="mb-3">
-                        <label asp-for="SchoolClassId" class="form-label">
-                            Class <span class="text-danger">*</span>
-                        </label>
-
-                        <select asp-for="SchoolClassId" class="form-select" id="classSelect" onchange="loadGroupsForClass(this.value)">
-                            <option value="">Select Class</option>
-                            @foreach (var c in ViewBag.Classes)
-                            {
-                                if(c.Id == Model.SchoolClassId)
+                        <div class="ws-mb-3">
+                            <label asp-for="SchoolClassId" class="adm-label">
+                                Class <span class="ws-text-danger">*</span>
+                            </label>
+                            <select asp-for="SchoolClassId" class="adm-input" id="classSelect" onchange="loadGroupsForClass(this.value)">
+                                <option value="">Select Class</option>
+                                @foreach (var c in ViewBag.Classes)
                                 {
-                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" selected>@c.Name</option>
+                                    if(c.Id == Model.SchoolClassId)
+                                    {
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" selected>@c.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                    }
                                 }
-                                else
-                                {
-                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
-                                }
-                            }
-                        </select>
-
-                        <span asp-validation-for="SchoolClassId" class="text-danger small"></span>
-                    </div>
-
-                    <!-- PARENT GROUP (only shows for group-based classes) -->
-                    <div class="mb-3" id="parentGroupRow" style="display:none;">
-                        <label asp-for="ParentSectionId" class="form-label">
-                            Parent Group <span class="text-muted small">(for group-based class sub-sections)</span>
-                        </label>
-                        <select asp-for="ParentSectionId" class="form-select" id="parentGroupSelect">
-                            <option value="">— None (this IS the group) —</option>
-                        </select>
-                        <div class="form-text">
-                            Leave blank to create a top-level group (e.g. "Science"). 
-                            Select a group to create a sub-section under it (e.g. "Science A").
+                            </select>
+                            <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
                         </div>
-                    </div>
 
-                    <!-- SECTION NAME -->
-                    <div class="mb-4">
-                        <label asp-for="Name" class="form-label">
-                            Section Name <span class="text-danger">*</span>
-                        </label>
-                        <input asp-for="Name" class="form-control" placeholder="e.g. A, B, Science A" />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
-                    </div>
+                        <div class="ws-mb-3" id="parentGroupRow" style="display:none;">
+                            <label asp-for="ParentSectionId" class="adm-label">
+                                Parent Group <span class="ws-text-muted ws-fs-13">(for group-based class sub-sections)</span>
+                            </label>
+                            <select asp-for="ParentSectionId" class="adm-input" id="parentGroupSelect">
+                                <option value="">— None (this IS the group) —</option>
+                            </select>
+                            <div class="adm-form-text">
+                                Leave blank to create a top-level group (e.g. "Science"). 
+                                Select a group to create a sub-section under it (e.g. "Science A").
+                            </div>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-save me-1"></i> Save
-                        </button>
-                        <a href="/Section/Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                    </div>
-                </form>
+                        <div class="ws-mb-4">
+                            <label asp-for="Name" class="adm-label">
+                                Section Name <span class="ws-text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. A, B, Science A" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary ws-px-4">
+                                <i class="bi bi-save ws-me-1"></i> Save
+                            </button>
+                            <a href="/Section/Index" class="adm-btn adm-btn--ghost ws-px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -103,17 +104,13 @@
             fetch(`/Admission/GetClassSections?classId=${classId}`)
                 .then(r => r.json())
                 .then(data => {
-                    // Extract unique group names from sub-sections
                     const groups = {};
                     data.forEach(s => {
                         if (s.groupName && !groups[s.groupName]) {
-                            // We need the parent section ID - not returned here.
-                            // We'll use a separate endpoint.
                             groups[s.groupName] = true;
                         }
                     });
 
-                    // Also load parent-level sections directly
                     return fetch(`/Section/GetGroupsForClass?classId=${classId}`)
                         .then(r => r.json())
                         .then(groupData => {
@@ -121,7 +118,7 @@
                             groupData.forEach(g => {
                                 const opt = document.createElement('option');
                                 opt.value = g.id;
-                                opt.textContent = g.name;
+                                opt.textContent = g.groupName || g.name;
                                 if (opt.value == '@Model.ParentSectionId') opt.selected = true;
                                 parentSelect.appendChild(opt);
                             });
@@ -132,7 +129,6 @@
                 });
         }
 
-        // On page load, if class is already selected (edit mode), trigger load
         document.addEventListener('DOMContentLoaded', function() {
             const classId = document.getElementById('classSelect').value;
             if (classId) loadGroupsForClass(classId);

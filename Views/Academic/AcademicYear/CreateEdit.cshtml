@@ -1,0 +1,67 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.AcademicYearViewModel
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Academic Year" : "Add Academic Year";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Academic Year" : "Add Academic Year")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify academic year session details" : "Create a new academic year session")</p>
+            </div>
+        </div>
+        <a href="/Academic/AcademicYear/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="ws-mb-3">
+                            <label asp-for="Name" class="adm-label">Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. 2026-2027" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="StartsOn" class="adm-label">Starts On <span class="ws-text-danger">*</span></label>
+                                <input asp-for="StartsOn" type="date" class="adm-input" value="@Model.StartsOn.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="StartsOn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="EndsOn" class="adm-label">Ends On <span class="ws-text-danger">*</span></label>
+                                <input asp-for="EndsOn" type="date" class="adm-input" value="@Model.EndsOn.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="EndsOn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Set as Active Year</label>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Academic/AcademicYear/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -11,9 +11,6 @@ public class ClassSubject : BaseEntity
     public int SubjectId { get; set; }
     public Subject? Subject { get; set; }
 
-    public int? StudentGroupId { get; set; }
-    public StudentGroup? StudentGroup { get; set; }
-
     public int? SectionId { get; set; }
     public Section? Section { get; set; }
 
@@ -24,7 +21,6 @@ public class ClassSubject : BaseEntity
 
     public bool IsMandatory { get; set; } = true;
     public bool IsOptional { get; set; } = false;
-    public bool IsGroupSubject { get; set; } = false;
     public bool IsReligionSubject { get; set; } = false;
 
     [MaxLength(50)]
@@ -36,4 +32,5 @@ public class ClassSubject : BaseEntity
     public bool IsActive { get; set; } = true;
 
     public virtual ICollection<ClassSubjectTeacher> ClassSubjectTeachers { get; set; } = [];
+    public virtual ICollection<ClassSubjectGroup> ClassSubjectGroups { get; set; } = [];
 }

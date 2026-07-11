@@ -12,7 +12,7 @@
     foreach (var e in lastFive)
     {
         if (chartLabels.Length > 0) { chartLabels.Append(","); chartData.Append(","); }
-        chartLabels.Append($"'{e.ExamName.Replace("'", "\\'")}'");
+        chartLabels.Append(System.Text.Json.JsonSerializer.Serialize(e.ExamName));
         chartData.Append(e.Gpa.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
     }
 }

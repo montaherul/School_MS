@@ -149,7 +149,7 @@ public class ReEvaluationService : IReEvaluationService
 
     public async Task<ReEvaluationDashboardDto> GetReEvaluationDashboardAsync()
     {
-        var requests = await _reEvaluationRequestRepository.Query()
+        var requests = await _reEvaluationRequestRepository.QueryNoTracking()
             .Include(r => r.Exam)
             .Include(r => r.Student)
             .Include(r => r.Subject)

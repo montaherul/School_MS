@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Models.Entities.Employee;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Repositories.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -14,6 +16,7 @@ namespace SchoolManagementSystem.Services.Implementations.Employee;
 public class EmployeeService : IEmployeeService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmployeeRepository _employeeRepository;
     private readonly IUserProvisionService _userProvisionService;
     private readonly IEmailService _emailService;
     private readonly ILogger<EmployeeService> _logger;
@@ -21,7 +24,8 @@ public class EmployeeService : IEmployeeService
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSynchronizationService;
 
     public EmployeeService(
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
+        IEmployeeRepository employeeRepository,
         IUserProvisionService userProvisionService, 
         IEmailService emailService,
         ILogger<EmployeeService> logger,
@@ -29,6 +33,7 @@ public class EmployeeService : IEmployeeService
         SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSynchronizationService)
     {
         _unitOfWork = unitOfWork;
+        _employeeRepository = employeeRepository;
         _userProvisionService = userProvisionService;
         _emailService = emailService;
         _logger = logger;
@@ -39,11 +44,7 @@ public class EmployeeService : IEmployeeService
     public async Task<(List<EmployeeListItemDto> items, int totalRecords)> GetPagedAsync(
         int page, int pageSize, string? search, int? departmentId, int? designationId, bool? isTeachingStaff, string? status, CancellationToken ct)
     {
-        return await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>()
-            .Query()
-            .AsNoTracking()
-            .Where(e => !e.IsDeleted)
-            .GetPagedAsync(page, pageSize, search, departmentId, designationId, isTeachingStaff, status, ct);
+        return await _employeeRepository.GetPagedBySpAsync(page, pageSize, search, departmentId, designationId, isTeachingStaff, status, ct);
     }
 
     public async Task<EmployeeUpsertDto?> GetForEditAsync(int id, CancellationToken ct)
@@ -56,10 +57,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeDetailsDto?> GetDetailsAsync(int id, CancellationToken ct)
     {
-        return await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>()
-            .Query()
-            .AsNoTracking()
-            .GetDetailsAsync(id, ct);
+        return await _employeeRepository.GetDetailsBySpAsync(id, ct);
     }
 
     public async Task<EmployeeUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct)
@@ -113,7 +111,7 @@ public class EmployeeService : IEmployeeService
                 EmergencyContactPhone = dto.EmergencyContactPhone,
                 Remarks = dto.Remarks,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = GetCurrentUserName()
             };
 
             // File uploads
@@ -195,8 +193,8 @@ public class EmployeeService : IEmployeeService
             employee.EmergencyContactName = dto.EmergencyContactName;
             employee.EmergencyContactPhone = dto.EmergencyContactPhone;
             employee.Remarks = dto.Remarks;
-            employee.UpdatedAt = DateTime.UtcNow;
-            employee.UpdatedBy = "System";
+                employee.UpdatedAt = DateTime.UtcNow;
+                employee.UpdatedBy = GetCurrentUserName();
 
             // Profile Picture
             if (dto.ProfilePictureFile != null && dto.ProfilePictureFile.Length > 0)
@@ -345,6 +343,12 @@ public class EmployeeService : IEmployeeService
             .AnyAsync(e => e.Phone == phone && e.Id != excludeId && !e.IsDeleted, ct);
     }
 
+    public async Task<EmployeeDashboardDto> GetDashboardAsync(CancellationToken ct)
+    {
+        return await _employeeRepository.GetDashboardBySpAsync(ct)
+            ?? new EmployeeDashboardDto();
+    }
+
     private async Task<string> GenerateEmployeeCodeAsync(CancellationToken ct)
     {
         var prefix = $"EMP-{DateTime.Today.Year}-";
@@ -365,11 +369,33 @@ public class EmployeeService : IEmployeeService
         return $"{prefix}{nextNum:D4}";
     }
 
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx" };
+    private static readonly HashSet<string> AllowedMimeTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/png", "application/pdf",
+        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    };
+    private const long MaxFileSize = 5 * 1024 * 1024; // 5 MB
+
     private async Task<string> SaveFileAsync(IFormFile file, string subFolder, CancellationToken ct)
     {
+        if (file == null || file.Length == 0)
+            throw new InvalidOperationException("File is empty.");
+
+        if (file.Length > MaxFileSize)
+            throw new InvalidOperationException($"File size exceeds maximum allowed size of 5 MB.");
+
+        var ext = Path.GetExtension(file.FileName);
+        if (!AllowedExtensions.Contains(ext))
+            throw new InvalidOperationException($"File type '{ext}' is not allowed. Allowed types: {string.Join(", ", AllowedExtensions)}");
+
+        var mime = file.ContentType;
+        if (!string.IsNullOrEmpty(mime) && !AllowedMimeTypes.Contains(mime))
+            throw new InvalidOperationException($"File MIME type '{mime}' is not allowed.");
+
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", subFolder);
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-        var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+        var fileName = Guid.NewGuid() + ext;
         var filePath = Path.Combine(folderPath, fileName);
         using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream, ct);
@@ -402,6 +428,15 @@ public class EmployeeService : IEmployeeService
 
         await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
         await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    private string GetCurrentUserName()
+        => _httpContextAccessor?.HttpContext?.User?.Identity?.Name ?? "system";
+
+    private int? GetCurrentUserId()
+    {
+        var userIdStr = _httpContextAccessor?.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
     }
 
     private async Task ProcessQualificationsAsync(SchoolManagementSystem.Models.Entities.Employee.Employee employee, List<EmployeeQualificationDto> list, CancellationToken ct)
@@ -441,7 +476,7 @@ public class EmployeeService : IEmployeeService
                     CGPAOrDivision = dto.CGPAOrDivision,
                     CertificateFilePath = certPath,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = GetCurrentUserName()
                 };
                 await repo.AddAsync(q, ct);
             }
@@ -499,7 +534,7 @@ public class EmployeeService : IEmployeeService
                     ExpiryDate = dto.ExpiryDate,
                     Remarks = dto.Remarks,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = GetCurrentUserName()
                 };
                 await repo.AddAsync(d, ct);
             }
@@ -546,7 +581,7 @@ public class EmployeeService : IEmployeeService
                     EndDate = dto.EndDate,
                     Remarks = dto.Remarks,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = GetCurrentUserName()
                 };
                 await repo.AddAsync(ex, ct);
             }
@@ -705,6 +740,12 @@ public static class EmployeeExtensions
             .Include(e => e.Qualifications.Where(q => !q.IsDeleted))
             .Include(e => e.Documents.Where(d => !d.IsDeleted))
             .Include(e => e.Experiences.Where(ex => !ex.IsDeleted))
+            .Include(e => e.BankAccounts.Where(b => !b.IsDeleted))
+            .Include(e => e.Promotions.Where(p => !p.IsDeleted))
+            .Include(e => e.Transfers.Where(t => !t.IsDeleted))
+            .Include(e => e.Trainings.Where(t => !t.IsDeleted))
+            .Include(e => e.Awards.Where(a => !a.IsDeleted))
+            .Include(e => e.DisciplinaryActions.Where(d => !d.IsDeleted))
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);
 
         if (employee == null) return null;
@@ -777,6 +818,75 @@ public static class EmployeeExtensions
                 StartDate = ex.StartDate,
                 EndDate = ex.EndDate,
                 Remarks = ex.Remarks
+            }).ToList(),
+            BankAccounts = employee.BankAccounts.Select(b => new EmployeeBankAccountDto
+            {
+                Id = b.Id,
+                EmployeeId = b.EmployeeId,
+                BankName = b.BankName,
+                BranchName = b.BranchName,
+                AccountNumber = b.AccountNumber,
+                RoutingNumber = b.RoutingNumber,
+                AccountType = b.AccountType,
+                IsDefault = b.IsDefault,
+                IsActive = b.IsActive
+            }).ToList(),
+            Promotions = employee.Promotions.Select(p => new EmployeePromotionDto
+            {
+                Id = p.Id,
+                EmployeeId = p.EmployeeId,
+                PreviousDesignationId = p.PreviousDesignationId,
+                NewDesignationId = p.NewDesignationId,
+                Reason = p.Reason,
+                PromotionDate = p.PromotionDate,
+                PreviousSalary = p.PreviousSalary,
+                NewSalary = p.NewSalary,
+                Remarks = p.Remarks
+            }).ToList(),
+            Transfers = employee.Transfers.Select(t => new EmployeeTransferDto
+            {
+                Id = t.Id,
+                EmployeeId = t.EmployeeId,
+                FromDepartmentId = t.FromDepartmentId,
+                ToDepartmentId = t.ToDepartmentId,
+                Reason = t.Reason,
+                TransferDate = t.TransferDate,
+                Remarks = t.Remarks
+            }).ToList(),
+            Trainings = employee.Trainings.Select(t => new EmployeeTrainingDto
+            {
+                Id = t.Id,
+                EmployeeId = t.EmployeeId,
+                TrainingName = t.TrainingName,
+                InstitutionName = t.InstitutionName,
+                Duration = t.Duration,
+                StartDate = t.StartDate,
+                EndDate = t.EndDate,
+                CertificatePath = t.CertificatePath,
+                Remarks = t.Remarks
+            }).ToList(),
+            Awards = employee.Awards.Select(a => new EmployeeAwardDto
+            {
+                Id = a.Id,
+                EmployeeId = a.EmployeeId,
+                AwardName = a.AwardName,
+                AwardedBy = a.AwardedBy,
+                AwardDate = a.AwardDate,
+                Description = a.Description,
+                CertificatePath = a.CertificatePath
+            }).ToList(),
+            DisciplinaryActions = employee.DisciplinaryActions.Select(d => new EmployeeDisciplinaryActionDto
+            {
+                Id = d.Id,
+                EmployeeId = d.EmployeeId,
+                ActionType = d.ActionType,
+                Reason = d.Reason,
+                ActionDate = d.ActionDate,
+                Description = d.Description,
+                DocumentPath = d.DocumentPath,
+                IsResolved = d.IsResolved,
+                ResolvedAt = d.ResolvedAt,
+                ResolutionRemarks = d.ResolutionRemarks
             }).ToList()
         };
     }

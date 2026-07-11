@@ -1,48 +1,48 @@
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
 
 <div class="tab-pane fade" id="qualifications" role="tabpanel">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--adm-border);margin-bottom:16px">
-        <h5 style="font-weight:700;color:var(--adm-text);margin:0"><i class="bi bi-mortarboard-fill me-2"></i>Educational Qualifications</h5>
+    <div class="ws-flex ws-flex-between ws-items-center er-section-header">
+        <h5 class="er-heading ws-mb-0"><i class="bi bi-mortarboard-fill ws-me-2"></i>Educational Qualifications</h5>
         <button type="button" class="adm-btn adm-btn--primary" id="btnAddQual"><i class="bi bi-plus-lg"></i> Add Qualification</button>
     </div>
-    <div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);overflow-x:auto;background:var(--adm-surface);box-shadow:inset 0 1px 0 rgba(255,255,255,0.65)">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:1000px" id="tblQualifications">
+    <div class="adm-card">
+        <table class="adm-table" id="tblQualifications">
             <thead>
-                <tr style="background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border)">
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Exam/Degree Name <span class="adm-required">*</span></th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Board/University</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Institute Name</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Subject/Group</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:100px">Passing Year</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:100px">GPA/CGPA</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:250px">Upload Certificate</th>
-                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:50px">Action</th>
+                <tr>
+                    <th>Exam/Degree Name <span class="adm-required">*</span></th>
+                    <th>Board/University</th>
+                    <th>Institute Name</th>
+                    <th>Subject/Group</th>
+                    <th style="width:100px">Passing Year</th>
+                    <th style="width:100px">GPA/CGPA</th>
+                    <th style="width:250px">Upload Certificate</th>
+                    <th style="width:50px">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @for (int i = 0; i < Model.Qualifications.Count; i++)
                 {
-                    <tr style="border-bottom:1px solid var(--adm-border)">
-                        <td style="padding:8px 12px">
+                    <tr>
+                        <td>
                             <input type="hidden" name="Qualifications[@i].Id" value="@Model.Qualifications[i].Id" />
                             <input type="hidden" name="Qualifications[@i].EmployeeId" value="@Model.Qualifications[i].EmployeeId" />
                             <input type="hidden" name="Qualifications[@i].CertificateFilePath" value="@Model.Qualifications[i].CertificateFilePath" />
-                            <input name="Qualifications[@i].ExamName" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Qualifications[i].ExamName" required />
+                            <input name="Qualifications[@i].ExamName" class="adm-input adm-input--sm" value="@Model.Qualifications[i].ExamName" required />
                         </td>
-                        <td style="padding:8px 12px"><input name="Qualifications[@i].BoardOrUniversity" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Qualifications[i].BoardOrUniversity" /></td>
-                        <td style="padding:8px 12px"><input name="Qualifications[@i].InstituteName" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Qualifications[i].InstituteName" /></td>
-                        <td style="padding:8px 12px"><input name="Qualifications[@i].GroupOrSubject" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Qualifications[i].GroupOrSubject" /></td>
-                        <td style="padding:8px 12px"><input name="Qualifications[@i].PassingYear" class="adm-input" style="padding:6px 10px;font-size:12px;text-align:center" value="@Model.Qualifications[i].PassingYear" placeholder="e.g. 2018" /></td>
-                        <td style="padding:8px 12px"><input name="Qualifications[@i].CGPAOrDivision" class="adm-input" style="padding:6px 10px;font-size:12px;text-align:center" value="@Model.Qualifications[i].CGPAOrDivision" placeholder="e.g. 5.00" /></td>
-                        <td style="padding:8px 12px">
-                            <input type="file" name="Qualifications[@i].CertificateFile" class="adm-input" style="padding:4px 8px;font-size:12px" accept=".pdf,.jpg,.jpeg,.png" />
+                        <td><input name="Qualifications[@i].BoardOrUniversity" class="adm-input adm-input--sm" value="@Model.Qualifications[i].BoardOrUniversity" /></td>
+                        <td><input name="Qualifications[@i].InstituteName" class="adm-input adm-input--sm" value="@Model.Qualifications[i].InstituteName" /></td>
+                        <td><input name="Qualifications[@i].GroupOrSubject" class="adm-input adm-input--sm" value="@Model.Qualifications[i].GroupOrSubject" /></td>
+                        <td><input name="Qualifications[@i].PassingYear" class="adm-input adm-input--sm" style="text-align:center" value="@Model.Qualifications[i].PassingYear" placeholder="e.g. 2018" /></td>
+                        <td><input name="Qualifications[@i].CGPAOrDivision" class="adm-input adm-input--sm" style="text-align:center" value="@Model.Qualifications[i].CGPAOrDivision" placeholder="e.g. 5.00" /></td>
+                        <td>
+                            <input type="file" name="Qualifications[@i].CertificateFile" class="adm-input adm-input--sm" accept=".pdf,.jpg,.jpeg,.png" />
                             @if (!string.IsNullOrEmpty(Model.Qualifications[i].CertificateFilePath))
                             {
-                                <div style="margin-top:4px;font-size:12px"><a href="@Model.Qualifications[i].CertificateFilePath" target="_blank" style="color:var(--adm-primary)"><i class="bi bi-file-earmark-pdf"></i> Current Certificate</a></div>
+                                <div class="er-file-link"><a href="@Model.Qualifications[i].CertificateFilePath" target="_blank" class="adm-link"><i class="bi bi-file-earmark-pdf"></i> Current Certificate</a></div>
                             }
                         </td>
-                        <td style="padding:8px 12px;text-align:center">
-                            <button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;font-size:12px"><i class="bi bi-trash"></i></button>
+                        <td style="text-align:center">
+                            <button type="button" class="adm-btn adm-btn--danger adm-btn--sm"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 }

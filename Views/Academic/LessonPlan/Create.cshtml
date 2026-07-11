@@ -1,0 +1,132 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.LessonPlanUpsertDto
+@{
+    ViewData["Title"] = "Create Lesson Plan";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Action = "Create";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-richtext"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Lesson Plan</h1>
+                <p class="adm-header__sub">Design a new lesson plan with objectives, materials, and procedure.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header"><h3 class="adm-card__title">Lesson Plan Details</h3></div>
+        <div class="adm-card__body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+                <div class="adm-form-grid adm-form-grid--3">
+                    <div class="adm-form-group">
+                        <label asp-for="Title" class="adm-label"></label>
+                        <input asp-for="Title" class="adm-input" required />
+                        <span asp-validation-for="Title" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SchoolClassId" class="adm-label"></label>
+                        <select asp-for="SchoolClassId" class="adm-select" asp-items="ViewBag.SchoolClasses">
+                            <option value="">-- Select Class --</option>
+                        </select>
+                        <span asp-validation-for="SchoolClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="SubjectId" class="adm-label"></label>
+                        <select asp-for="SubjectId" class="adm-select" asp-items="ViewBag.Subjects">
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                        <span asp-validation-for="SubjectId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="AcademicYearId" class="adm-label"></label>
+                        <select asp-for="AcademicYearId" class="adm-select" asp-items="ViewBag.AcademicYears">
+                            <option value="">-- Select Academic Year --</option>
+                        </select>
+                        <span asp-validation-for="AcademicYearId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="TeacherId" class="adm-label"></label>
+                        <select asp-for="TeacherId" class="adm-select" asp-items="ViewBag.Teachers">
+                            <option value="">-- Select Teacher --</option>
+                        </select>
+                        <span asp-validation-for="TeacherId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="Status" class="adm-label"></label>
+                        <input asp-for="Status" class="adm-input" placeholder="Draft, Published, etc." />
+                        <span asp-validation-for="Status" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="DurationMinutes" class="adm-label"></label>
+                        <input asp-for="DurationMinutes" class="adm-input" type="number" min="1" />
+                        <span asp-validation-for="DurationMinutes" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="LessonDate" class="adm-label"></label>
+                        <input asp-for="LessonDate" class="adm-input" type="date" />
+                        <span asp-validation-for="LessonDate" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="StartDate" class="adm-label"></label>
+                        <input asp-for="StartDate" class="adm-input" type="date" />
+                        <span asp-validation-for="StartDate" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="EndDate" class="adm-label"></label>
+                        <input asp-for="EndDate" class="adm-input" type="date" />
+                        <span asp-validation-for="EndDate" class="adm-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="adm-form-grid adm-form-grid--2">
+                    <div class="adm-form-group">
+                        <label asp-for="Objectives" class="adm-label"></label>
+                        <textarea asp-for="Objectives" class="adm-textarea" rows="4"></textarea>
+                        <span asp-validation-for="Objectives" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="Materials" class="adm-label"></label>
+                        <textarea asp-for="Materials" class="adm-textarea" rows="4"></textarea>
+                        <span asp-validation-for="Materials" class="adm-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="adm-form-grid adm-form-grid--2">
+                    <div class="adm-form-group">
+                        <label asp-for="Procedure" class="adm-label"></label>
+                        <textarea asp-for="Procedure" class="adm-textarea" rows="6"></textarea>
+                        <span asp-validation-for="Procedure" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="AssessmentMethod" class="adm-label"></label>
+                        <textarea asp-for="AssessmentMethod" class="adm-textarea" rows="6"></textarea>
+                        <span asp-validation-for="AssessmentMethod" class="adm-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="adm-form-actions">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

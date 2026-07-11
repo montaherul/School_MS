@@ -1,0 +1,154 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.SubjectViewModel
+@{ 
+    ViewData["Title"] = Model.IsEditMode ? "Edit Subject" : "Add Subject";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-book"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Subject" : "Add Subject")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify subject specifications and metadata" : "Create a new curriculum subject")</p>
+            </div>
+        </div>
+        <a href="/Academic/Subject/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-xl-8 ws-col-lg-10">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__header">
+                    <h5 class="ws-mb-0"><i class="bi bi-journal-bookmark-fill ws-me-2"></i>@(Model.IsEditMode ? "Modify Subject Profile" : "Create Master Subject")</h5>
+                </div>
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3"><i class="bi bi-card-text ws-me-2 ws-text-primary"></i>Core Identity</h6>
+                        <div class="ws-row ws-g-4 ws-mb-4">
+                            <div class="ws-col-md-4">
+                                <label asp-for="Code" class="adm-label ws-fw-600">Subject Code <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Code" class="adm-input ws-text-uppercase" placeholder="e.g. PHY101" required />
+                                <span asp-validation-for="Code" class="ws-text-danger ws-fs-13"></span>
+                                <div class="adm-form-text ws-fs-13">Unique code (e.g. BAN101)</div>
+                            </div>
+                            <div class="ws-col-md-4">
+                                <label asp-for="Name" class="adm-label ws-fw-600">English Name <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Name" class="adm-input" placeholder="e.g. Physics" required />
+                                <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-4">
+                                <label asp-for="NameBn" class="adm-label ws-fw-600">Bangla Name <span class="ws-text-danger">*</span></label>
+                                <input asp-for="NameBn" class="adm-input" placeholder="e.g. পদার্থবিজ্ঞান" required />
+                                <span asp-validation-for="NameBn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3"><i class="bi bi-tags ws-me-2 ws-text-primary"></i>Classification & Stream</h6>
+                        <div class="ws-row ws-g-4 ws-mb-4">
+                            <div class="ws-col-md-6">
+                                <label asp-for="SubjectGroup" class="adm-label ws-fw-600">Academic Stream / Group</label>
+                                <select asp-for="SubjectGroup" class="adm-input" required>
+                                    <option value="">-- Select Subject Group --</option>
+                                    <option value="General">General (Common Education)</option>
+                                    <option value="Science">Science Group</option>
+                                    <option value="BusinessStudies">Business Studies Group</option>
+                                    <option value="Humanities">Humanities Group</option>
+                                    <option value="Religion">Religion Stream</option>
+                                    <option value="Optional">Optional / Fourth Subject</option>
+                                </select>
+                                <span asp-validation-for="SubjectGroup" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6">
+                                <label class="adm-label ws-fw-600 ws-d-block">Religion Mapping</label>
+                                <div class="adm-form-check ws-pt-2">
+                                    <input class="adm-form-check-input" type="checkbox" asp-for="IsReligionSubject" id="chkIsReligion" />
+                                    <label class="adm-form-check-label" for="chkIsReligion">Is this a Religion-specific Subject?</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ws-row ws-g-4 ws-mb-4 ws-d-none" id="religionSelectionPanel">
+                            <div class="ws-col-md-12">
+                                <div class="adm-alert adm-alert--info ws-border-none ws-py-3 ws-px-4 ws-flex ws-items-center">
+                                    <i class="bi bi-info-circle-fill ws-me-3 ws-fs-24 ws-text-info"></i>
+                                    <div>
+                                        <label asp-for="ReligionType" class="adm-label ws-fw-700 ws-mb-1">Religion Type <span class="ws-text-danger">*</span></label>
+                                        <select asp-for="ReligionType" class="adm-input" id="ddlReligionType">
+                                            <option value="">-- Choose Religion --</option>
+                                            <option value="Islam">Islam & Moral Education</option>
+                                            <option value="Hindu">Hindu Religion & Moral Education</option>
+                                            <option value="Buddhist">Buddhist Religion & Moral Education</option>
+                                            <option value="Christian">Christian Religion & Moral Education</option>
+                                        </select>
+                                        <span asp-validation-for="ReligionType" class="ws-text-danger ws-fs-13"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3"><i class="bi bi-toggle-on ws-me-2 ws-text-primary"></i>Subject Attributes</h6>
+                        <div class="ws-row ws-g-4 ws-mb-4">
+                            <div class="ws-col-md-4">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsOptional">Is Optional Subject</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ws-col-md-4">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsPractical" id="chkIsPractical" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsPractical">Includes Practical / Lab</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ws-col-md-4">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsActive">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="ws-my-4" />
+                        <div class="ws-flex ws-justify-end ws-gap-2">
+                            <a href="/Academic/Subject/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-x-circle"></i> Cancel</a>
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save Subject</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            function toggleReligionPanel() {
+                if ($('#chkIsReligion').is(':checked')) {
+                    $('#religionSelectionPanel').slideDown(300);
+                    $('#ddlReligionType').prop('required', true);
+                } else {
+                    $('#religionSelectionPanel').slideUp(200);
+                    $('#ddlReligionType').prop('required', false).val('');
+                }
+            }
+            $('#chkIsReligion').on('change', toggleReligionPanel);
+            toggleReligionPanel();
+        });
+    </script>
+}

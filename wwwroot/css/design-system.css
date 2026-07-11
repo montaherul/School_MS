@@ -239,12 +239,15 @@ ul, ol { padding-left: 24px; }
 
 @media (min-width: 768px) {
   .ws-col-md-12 { flex: 0 0 100%; max-width: 100%; }
+  .ws-col-md-10 { flex: 0 0 83.333%; max-width: 83.333%; }
+  .ws-col-md-9  { flex: 0 0 75%; max-width: 75%; }
   .ws-col-md-8  { flex: 0 0 66.667%; max-width: 66.667%; }
   .ws-col-md-7  { flex: 0 0 58.333%; max-width: 58.333%; }
   .ws-col-md-6  { flex: 0 0 50%; max-width: 50%; }
   .ws-col-md-5  { flex: 0 0 41.667%; max-width: 41.667%; }
   .ws-col-md-4  { flex: 0 0 33.333%; max-width: 33.333%; }
   .ws-col-md-3  { flex: 0 0 25%; max-width: 25%; }
+  .ws-col-md-2  { flex: 0 0 16.667%; max-width: 16.667%; }
 }
 
 @media (min-width: 1024px) {
@@ -473,8 +476,20 @@ ul, ol { padding-left: 24px; }
 
 /* Flex additions */
 .ws-items-center { align-items: center !important; }
+.ws-items-end { align-items: flex-end !important; }
 .ws-justify-center { justify-content: center !important; }
+.ws-justify-end { justify-content: flex-end !important; }
 .ws-flex-1 { flex: 1 !important; }
+.ws-flex-grow-1 { flex-grow: 1 !important; }
+.ws-text-end { text-align: right !important; }
+.ws-opacity-50 { opacity: 0.5 !important; }
+.ws-cursor-pointer { cursor: pointer !important; }
+.ws-mx-1 { margin-left: 4px !important; margin-right: 4px !important; }
+
+/* Form check (checkbox/radio) */
+.ws-form-check { display: flex !important; align-items: center !important; gap: 6px !important; }
+.ws-form-check-input { width: 16px !important; height: 16px !important; cursor: pointer !important; accent-color: var(--adm-primary) !important; }
+.ws-form-check-label { cursor: pointer !important; user-select: none !important; }
 
 /* Object fit */
 .ws-object-cover { object-fit: cover !important; }
@@ -1002,6 +1017,16 @@ ul, ol { padding-left: 24px; }
   .ws-section { padding: 100px 0; }
   .ws-section--lg { padding: 140px 0; }
   .ws-section--xl { padding: 180px 0; }
+  .ws-col-xl-12 { flex: 0 0 100%; max-width: 100%; }
+  .ws-col-xl-10 { flex: 0 0 83.333%; max-width: 83.333%; }
+  .ws-col-xl-9  { flex: 0 0 75%; max-width: 75%; }
+  .ws-col-xl-8  { flex: 0 0 66.667%; max-width: 66.667%; }
+  .ws-col-xl-7  { flex: 0 0 58.333%; max-width: 58.333%; }
+  .ws-col-xl-6  { flex: 0 0 50%; max-width: 50%; }
+  .ws-col-xl-5  { flex: 0 0 41.667%; max-width: 41.667%; }
+  .ws-col-xl-4  { flex: 0 0 33.333%; max-width: 33.333%; }
+  .ws-col-xl-3  { flex: 0 0 25%; max-width: 25%; }
+  .ws-col-xl-2  { flex: 0 0 16.667%; max-width: 16.667%; }
 }
 @media (min-width: 1600px) {
   .ws-container { max-width: 1440px; }

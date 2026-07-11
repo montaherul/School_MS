@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Student Groups";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-layers"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Student Groups</h1>
+                <p class="adm-header__sub">Manage group streams for Science, Humanities, Business Studies.</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>New Group</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActive(id) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/StudentGroup/ToggleActive/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.success) SchoolMS.Grid.reload('studentGroup'); });
+        }
+
+        SchoolMS.Grid.create('studentGroup', {
+            ajaxUrl: '@Url.Action("GetList", "StudentGroup")',
+            editUrl: '/StudentGroup/Edit',
+            deleteUrl: '/StudentGroup/Delete',
+            pageSize: 20,
+            pageSizeSelector: [10,20,50,100],
+            actionsWidth: 160,
+            actionItems: function(d) {
+                return [
+                    { url: '/StudentGroup/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete("studentGroup",' + d.id + ')' }
+                ];
+            },
+            columns: [
+                { title: "Name", field: "name", minWidth: 200, cssClass: "entity-cell__name" },
+                { title: "Code", field: "code", hozAlign: "center", width: 100,
+                  formatter: function(c) { return c.getValue() || '-'; }
+                },
+                { title: "Min Class", field: "minClass", hozAlign: "center", width: 100 },
+                { title: "Max Class", field: "maxClass", hozAlign: "center", width: 100 },
+                { title: "Display Order", field: "displayOrder", hozAlign: "center", width: 120 },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center", width: 100,
+                    formatter: function(cell) {
+                        var id = cell.getRow().getData().id;
+                        var active = cell.getValue();
+                        return '<a href="#" onclick="toggleActive(' + id + ');return false">'
+                            + (active ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>') + '</a>';
+                    }
+                }
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-layers ws-fs-48"></i><div class="dash-empty__title">No Groups Found</div><div class="dash-empty__sub">Create a new student group to get started.</div></div>'
+        });
+    </script>
+}

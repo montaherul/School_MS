@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces;
@@ -14,40 +15,43 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class SectionService : ISectionService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ISectionRepository _repo;
 
-    public SectionService(IUnitOfWork unitOfWork) { _unitOfWork = unitOfWork; }
+    public SectionService(IUnitOfWork unitOfWork, ISectionRepository repo)
+    {
+        _unitOfWork = unitOfWork;
+        _repo = repo;
+    }
 
     public async Task<PagedResult<SectionListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
-        // For simplicity, I'll use the generic repository Query() for now, 
-        // but real apps should use repositories for SP calls as shown in AdmissionRepository.
-        
-        var query = _unitOfWork.Repository<Section>().Query()
-            .Include(s => s.SchoolClass)
-            .Include(s => s.ParentSection)
-            .Where(s => !s.IsDeleted);
+        var spResults = await _repo.GetListSpAsync(page, pageSize, search);
+        if (spResults.Count == 0)
+            return new PagedResult<SectionListItemDto> { Items = [], Page = page, PageSize = pageSize, TotalItems = 0 };
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var lower = search.ToLower();
-            query = query.Where(s => s.Name.ToLower().Contains(lower) || s.SchoolClass!.Name.ToLower().Contains(lower));
-        }
+        var totalCount = spResults[0].TotalRecords;
+        var ids = spResults.Select(x => x.Id).ToList();
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderBy(s => s.SchoolClass!.Name).ThenBy(s => s.Name)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(s => new SectionListItemDto
-            {
-                Id = s.Id,
-                Name = s.Name,
-                SchoolClassId = s.SchoolClassId,
-                ClassName = s.SchoolClass!.Name,
-                ParentSectionId = s.ParentSectionId,
-                GroupName = s.ParentSection != null ? s.ParentSection.Name : null
-            })
+        var sectionEntities = await _unitOfWork.Repository<Section>().Query().AsNoTracking()
+            .Where(s => ids.Contains(s.Id))
+            .Select(s => new { s.Id, s.ParentSectionId, ParentName = s.ParentSection != null ? s.ParentSection.Name : (string?)null })
             .ToListAsync(cancellationToken);
+        var parentLookup = sectionEntities.ToDictionary(x => x.Id);
+
+        var items = spResults.Select(x =>
+        {
+            var entity = parentLookup.GetValueOrDefault(x.Id);
+            return new SectionListItemDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                SchoolClassId = x.SchoolClassId,
+                ClassName = x.ClassName,
+                StudentCount = x.StudentCount,
+                ParentSectionId = entity?.ParentSectionId,
+                GroupName = entity?.ParentName
+            };
+        }).ToList();
 
         return new PagedResult<SectionListItemDto>
         {
@@ -123,34 +127,48 @@ public class SectionService : ISectionService
         var leafSections = sections.Where(s => !parentIds.Contains(s.Id)).ToList();
 
         var studentRepo = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
-        
-        var result = new List<SectionOptionDto>();
-        foreach (var s in leafSections)
+
+        var sectionIds = leafSections.Select(s => s.Id).ToList();
+        var counts = sectionIds.Count > 0
+            ? await studentRepo.Query()
+                .Where(st => sectionIds.Contains(st.SectionId) && !st.IsDeleted)
+                .GroupBy(st => st.SectionId)
+                .Select(g => new { SectionId = g.Key, Count = g.Count() })
+                .ToListAsync(ct)
+            : [];
+        var countDict = counts.ToDictionary(c => c.SectionId, c => c.Count);
+
+        return leafSections.Select(s => new SectionOptionDto
         {
-            var studentCount = await studentRepo.CountAsync(st => st.SectionId == s.Id && !st.IsDeleted, ct);
-            result.Add(new SectionOptionDto
-            {
-                Id = s.Id,
-                Name = s.Name,
-                GroupName = s.ParentSection?.Name ?? "General",
-                StudentCount = studentCount,
-                Capacity = s.Capacity
-            });
-        }
-        return result;
+            Id = s.Id,
+            Name = s.Name,
+            GroupName = s.ParentSection?.Name ?? "General",
+            StudentCount = countDict.GetValueOrDefault(s.Id, 0),
+            Capacity = s.Capacity
+        }).ToList();
     }
 
     public async Task<IEnumerable<SectionListItemDto>> GetGroupsByClassIdAsync(int classId, CancellationToken ct = default)
     {
-        return await _unitOfWork.Repository<Section>().Query()
+        var sections = await _unitOfWork.Repository<Section>().Query()
+            .Include(s => s.StudentGroup)
             .Where(s => s.SchoolClassId == classId && s.ParentSectionId == null && !s.IsDeleted)
             .Select(s => new SectionListItemDto
             {
                 Id = s.Id,
                 Name = s.Name,
-                StudentGroupId = s.StudentGroupId
+                StudentGroupId = s.StudentGroupId,
+                GroupName = s.StudentGroup != null ? s.StudentGroup.Name : null
             })
             .ToListAsync(ct);
+
+        var displayKey = new Func<SectionListItemDto, string>(s => s.GroupName ?? s.Name);
+
+        return sections
+            .GroupBy(s => displayKey(s))
+            .Select(g => g.First())
+            .OrderBy(s => displayKey(s))
+            .ToList();
     }
 
     public async Task<IEnumerable<SectionListItemDto>> GetStudentGroupsByClassIdAsync(int classId, CancellationToken ct = default)
@@ -186,20 +204,25 @@ public class SectionService : ISectionService
             studentGroupId = parent?.StudentGroupId;
         }
         var section = new Section { SchoolClassId = classId, Name = name, ParentSectionId = parentId, StudentGroupId = studentGroupId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow, Capacity = 50 };
-        await _unitOfWork.Repository<Section>().AddAsync(section, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
 
-        if (parentId.HasValue)
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            var csRepo = _unitOfWork.Repository<ClassSubject>();
-            var parentSubjects = await csRepo.ListAsync(cs => cs.SectionId == parentId.Value && !cs.IsDeleted);
-            if (parentSubjects.Any())
+            await _unitOfWork.Repository<Section>().AddAsync(section, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            if (parentId.HasValue)
             {
-                var newSubjects = parentSubjects.Select(ps => new ClassSubject { SchoolClassId = ps.SchoolClassId, SubjectId = ps.SubjectId, SectionId = section.Id, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow }).ToList();
-                foreach (var ns in newSubjects) await csRepo.AddAsync(ns, ct);
-                await _unitOfWork.SaveChangesAsync(ct);
+                var csRepo = _unitOfWork.Repository<ClassSubject>();
+                var parentSubjects = await csRepo.ListAsync(cs => cs.SectionId == parentId.Value && !cs.IsDeleted);
+                if (parentSubjects.Any())
+                {
+                    var newSubjects = parentSubjects.Select(ps => new ClassSubject { SchoolClassId = ps.SchoolClassId, SubjectId = ps.SubjectId, SectionId = section.Id, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow }).ToList();
+                    await csRepo.AddRangeAsync(newSubjects, ct);
+                    await _unitOfWork.SaveChangesAsync(ct);
+                }
             }
-        }
+        }, ct);
+
         return section.Id;
     }
 
@@ -213,21 +236,26 @@ public class SectionService : ISectionService
 
         var studentRepo = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
 
-        var allSections = new List<SectionAdmissionInfo>();
-        foreach (var section in sections)
+        var sectionIds = sections.Select(s => s.Id).ToList();
+        var counts = sectionIds.Count > 0
+            ? await studentRepo.Query()
+                .Where(st => sectionIds.Contains(st.SectionId) && !st.IsDeleted && st.Status == StudentStatus.Active)
+                .GroupBy(st => st.SectionId)
+                .Select(g => new { SectionId = g.Key, Count = g.Count() })
+                .ToListAsync(ct)
+            : [];
+        var countDict = counts.ToDictionary(c => c.SectionId, c => c.Count);
+
+        var allSections = sections.Select(section => new SectionAdmissionInfo
         {
-            var studentCount = await studentRepo.CountAsync(st => st.SectionId == section.Id && !st.IsDeleted && st.Status == StudentStatus.Active, ct);
-            allSections.Add(new SectionAdmissionInfo
-            {
-                Id = section.Id,
-                Name = section.Name,
-                Capacity = section.Capacity,
-                ParentSectionId = section.ParentSectionId,
-                ParentName = section.ParentSection != null ? section.ParentSection.Name : null,
-                StudentGroupId = section.StudentGroupId,
-                StudentCount = studentCount
-            });
-        }
+            Id = section.Id,
+            Name = section.Name,
+            Capacity = section.Capacity,
+            ParentSectionId = section.ParentSectionId,
+            ParentName = section.ParentSection?.Name,
+            StudentGroupId = section.StudentGroupId,
+            StudentCount = countDict.GetValueOrDefault(section.Id, 0)
+        }).ToList();
 
         var hasChildren = sections.Any(s => s.ParentSectionId != null);
         if (hasChildren)
@@ -256,6 +284,24 @@ public class SectionService : ISectionService
         public string? ParentName { get; set; }
         public int? StudentGroupId { get; set; }
         public int StudentCount { get; set; }
+    }
+
+    public async Task<IEnumerable<SectionOptionDto>> GetSectionsByClassWithFilterAsync(int classId, bool isStaff, List<int>? assignedSectionIds, int? studentGroupId, CancellationToken ct)
+    {
+        var sections = await GetByClassIdAsync(classId, studentGroupId, ct);
+
+        if (!isStaff && assignedSectionIds != null)
+        {
+            sections = sections.Where(s => assignedSectionIds.Contains(s.Id)).ToList();
+        }
+
+        return sections;
+    }
+
+    public async Task AssignStudentToSectionAsync(int studentId, int sectionId, CancellationToken ct = default)
+    {
+        await _unitOfWork.Repository<Section>().ExecuteStoredProcAsync<object>(
+            "sp_AssignStudentToSection", studentId, sectionId);
     }
 
     public async Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default)

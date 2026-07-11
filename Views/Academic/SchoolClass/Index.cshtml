@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Classes";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Classes</h1>
+                <p class="adm-header__sub">Manage school classes, sections, and student capacity</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Academic/SchoolClass/CreateEdit" class="adm-btn adm-btn--primary">
+                <i class="bi bi-plus-circle"></i> <span>Add Class</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        SchoolMS.Grid.create('schoolClass', {
+            container: '#data-table',
+            ajaxUrl: '@Url.Action("GetList", "SchoolClass")',
+            editUrl: '/Academic/SchoolClass/CreateEdit',
+            deleteUrl: '/Academic/SchoolClass/DeleteConfirmed',
+            pageSize: 10,
+            columns: [
+                { title: "Sort", field: "sortOrder", width: 80, hozAlign: "center", cssClass: "ws-fw-600 ws-text-muted" },
+                { title: "Class Name", field: "name", widthGrow: 2, formatter: function(c) { return '<div class=\"entity-cell__name\">' + c.getValue() + '</div>'; } },
+                { title: "Code", field: "code", width: 120, hozAlign: "center", cssClass: "adm-cell-mono" },
+                { title: "Sections", field: "sectionCount", width: 110, hozAlign: "center", formatter: function(c) { var id = c.getRow().getData().id; return '<a href=\"/Section/Index?classId=' + id + '\" class=\"adm-badge adm-badge--info ws-text-decoration-none\">' + c.getValue() + ' Sections</a>'; } },
+                { title: "Students", field: "studentCount", width: 110, hozAlign: "center", formatter: function(c) { return '<span class=\"adm-badge adm-badge--success\">' + c.getValue() + ' Students</span>'; } },
+                { title: "Status", field: "isActive", width: 110, hozAlign: "center", formatter: function(c) { return c.getValue() ? '<span class=\"adm-status adm-status--approved\">Active</span>' : '<span class=\"adm-status adm-status--rejected\">Inactive</span>'; } }
+            ],
+            actionItems: function(d) {
+                var items = [
+                    { url: '/Academic/SchoolClass/Details/' + d.id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                    { url: '/Academic/SchoolClass/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete(\'schoolClass\', ' + d.id + ')' }
+                ];
+                items.push({ className: 'action-btn--toggle', icon: 'toggle-on', title: d.isActive ? 'Deactivate' : 'Activate', onClick: 'SchoolMS.Grid.toggleActive(\'schoolClass\', ' + d.id + ')' });
+                items.push({ className: 'action-btn--clone', icon: 'copy', title: 'Clone', onClick: 'SchoolMS.Grid.clone(\'schoolClass\', ' + d.id + ')' });
+                if (!d.isActive) {
+                    items.push({ className: 'action-btn--archive', icon: 'archive', title: 'Archive', onClick: 'SchoolMS.Grid.archive(\'schoolClass\', ' + d.id + ')' });
+                    items.push({ className: 'action-btn--restore', icon: 'arrow-counterclockwise', title: 'Restore', onClick: 'SchoolMS.Grid.restore(\'schoolClass\', ' + d.id + ')' });
+                }
+                return items;
+            },
+            placeholder: '<div class=\"dash-empty\"><i class=\"bi bi-building ws-fs-48\"></i><div class=\"dash-empty__title\">No Classes Found</div><div class=\"dash-empty__sub\">Try adjusting your filters.</div></div>'
+        });
+    </script>
+}

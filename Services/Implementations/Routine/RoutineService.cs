@@ -180,6 +180,18 @@ public class SubjectRequirementService : ISubjectRequirementService
 
     public async Task<int> CreateAsync(SubjectRequirementUpsertDto dto, string createdBy, CancellationToken cancellationToken = default)
     {
+        // Validate subject is offered for this class+group via ClassSubjectGroup junction
+        if (dto.GroupId.HasValue)
+        {
+            var valid = await _unitOfWork.Repository<ClassSubjectGroup>().AnyAsync(csg =>
+                csg.StudentGroupId == dto.GroupId.Value &&
+                csg.ClassSubject!.SchoolClassId == dto.ClassId &&
+                csg.ClassSubject.SubjectId == dto.SubjectId &&
+                !csg.IsDeleted && !csg.ClassSubject.IsDeleted, cancellationToken);
+            if (!valid)
+                throw new InvalidOperationException("The selected subject is not offered for this class and group.");
+        }
+
         var entity = new RoutineEnt.SubjectRequirement
         {
             AcademicYearId = dto.AcademicYearId,
@@ -514,6 +526,38 @@ public class RoutineEntryService : IRoutineEntryService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         await LogAuditAsync("Move", "RoutineEntry", entryId, null, $"To Period={targetPeriodId},Day={targetDayNumber}", cancellationToken);
+    }
+
+    public async Task BulkDeleteAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entities = await _routineEntryRepo.Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ToListAsync(cancellationToken);
+        foreach (var entity in entities)
+        {
+            entity.IsDeleted = true;
+            entity.UpdatedBy = updatedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await LogAuditAsync("BulkDelete", "RoutineEntry", null, null, $"Deleted {ids.Count} entries", cancellationToken);
+    }
+
+    public async Task BulkUpdateAsync(List<int> ids, int roomId, int routinePeriodId, int dayNumber, string updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entities = await _routineEntryRepo.Query()
+            .Where(x => ids.Contains(x.Id) && !x.IsDeleted)
+            .ToListAsync(cancellationToken);
+        foreach (var entity in entities)
+        {
+            entity.RoomId = roomId;
+            entity.RoutinePeriodId = routinePeriodId;
+            entity.DayNumber = dayNumber;
+            entity.UpdatedBy = updatedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await LogAuditAsync("BulkUpdate", "RoutineEntry", null, null, $"Updated {ids.Count} entries: Room={roomId},Period={routinePeriodId},Day={dayNumber}", cancellationToken);
     }
 
     private async Task LogAuditAsync(string action, string entity, int? entityId, string? oldValue, string? newValue, CancellationToken cancellationToken)

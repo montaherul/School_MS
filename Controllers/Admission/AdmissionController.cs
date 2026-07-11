@@ -45,6 +45,7 @@ public class AdmissionController : Controller
     {
         ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
         ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
+        ViewBag.GroupStartsFromClassId = await _admissionService.GetGroupStartThresholdAsync(ct);
         return View(new AdmissionCreateDto { DateOfBirth = DateTime.Today.AddYears(-6) });
     }
 
@@ -68,6 +69,7 @@ public class AdmissionController : Controller
         {
             ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
             ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
+            ViewBag.GroupStartsFromClassId = await _admissionService.GetGroupStartThresholdAsync(ct);
             return View(model);
         }
 

@@ -25,9 +25,9 @@
     </div>
 
     <div class="adm-card">
-        <div class="row">
-            <div class="col-md-6">
-                <table class="table table-bordered">
+        <div class="ws-row">
+            <div class="ws-col-md-6">
+                <table class="adm-table">
                     <tr><th>Component</th><td>@Model.ComponentName (<code>@Model.ComponentCode</code>)</td></tr>
                     <tr><th>Full Marks</th><td>@Model.FullMarks</td></tr>
                     <tr><th>Pass Marks</th><td>@Model.PassMarks</td></tr>
@@ -35,8 +35,8 @@
                     <tr><th>Status</th><td>@(Model.IsActive ? "Active" : "Inactive")</td></tr>
                 </table>
             </div>
-            <div class="col-md-6">
-                <table class="table table-bordered">
+            <div class="ws-col-md-6">
+                <table class="adm-table">
                     <tr><th>Subject</th><td>@Model.SubjectName</td></tr>
                     <tr><th>Class</th><td>@Model.ClassName</td></tr>
                     <tr><th>Group</th><td>@Model.StudentGroupName</td></tr>

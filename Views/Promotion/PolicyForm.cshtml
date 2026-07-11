@@ -39,8 +39,8 @@
         </div>
     </div>
 
-    <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);max-width:800px;">
-        <div class="er-card__body" style="padding:28px;">
+    <div class="er-card ws-max-w-800">
+        <div class="er-card__body ws-p-7">
             <form asp-action="@(isEdit ? "PolicyEdit" : "PolicyCreate")" asp-controller="Promotion" method="post">
                 @Html.AntiForgeryToken()
                 @if (isEdit)
@@ -49,13 +49,13 @@
                 }
                 <input type="hidden" asp-for="IsActive" value="true" />
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="er-label">Policy Name <span style="color:var(--adm-rejected);">*</span></label>
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-6">
+                        <label class="er-label">Policy Name <span class="ws-text-danger">*</span></label>
                         <input asp-for="Name" class="er-filters__select" required placeholder="e.g., Standard Promotion Rules" />
                     </div>
-                    <div class="col-md-6">
-                        <label class="er-label">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                    <div class="ws-col-md-6">
+                        <label class="er-label">Academic Year <span class="ws-text-danger">*</span></label>
                         <select asp-for="AcademicYearId" class="er-filters__select" required>
                             @foreach (var y in academicYears)
                             {
@@ -65,9 +65,9 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="er-label">School Class <span style="color:var(--adm-rejected);">*</span></label>
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-6">
+                        <label class="er-label">School Class <span class="ws-text-danger">*</span></label>
                         <select asp-for="SchoolClassId" class="er-filters__select" required>
                             <option value="">Select Class</option>
                             @foreach (var c in classes)
@@ -76,8 +76,8 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="er-label">Primary Method <span style="color:var(--adm-rejected);">*</span></label>
+                    <div class="ws-col-md-6">
+                        <label class="er-label">Primary Method <span class="ws-text-danger">*</span></label>
                         <select asp-for="PrimaryMethod" class="er-filters__select" required>
                             <option value="GpaBased">GPA Based</option>
                             <option value="PositionBased">Position Based</option>
@@ -89,45 +89,45 @@
                     </div>
                 </div>
 
-                <hr style="margin:20px 0;border-color:var(--adm-border);" />
-                <h5 style="font-size:14px;font-weight:700;color:var(--adm-text);margin-bottom:16px;">Promotion Thresholds</h5>
+                <hr class="ws-hr" />
+                <h5 class="ws-fs-14 ws-fw-700 ws-mb-4">Promotion Thresholds</h5>
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Minimum GPA</label>
                         <input asp-for="MinimumGpa" class="er-filters__select" type="number" step="0.01" min="0" max="5" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Max Position for Promotion</label>
                         <input asp-for="MaxPositionForPromotion" class="er-filters__select" type="number" min="1" placeholder="Leave empty if not used" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Top Percentage to Promote (%)</label>
                         <input asp-for="TopPercentagePromote" class="er-filters__select" type="number" step="0.1" min="0" max="100" placeholder="Leave empty if not used" />
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Minimum Attendance %</label>
                         <input asp-for="MinimumAttendancePercentage" class="er-filters__select" type="number" step="0.1" min="0" max="100" placeholder="Leave empty if not used" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Minimum Passed Subjects</label>
                         <input asp-for="MinimumPassedSubjects" class="er-filters__select" type="number" min="0" placeholder="Leave empty if not used" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="ws-col-md-4">
                         <label class="er-label">Max Critical Subject Failures</label>
                         <input asp-for="MaxCriticalSubjectFailures" class="er-filters__select" type="number" min="0" />
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-6">
                         <label class="er-label">Critical Subjects (comma-separated)</label>
                         <input name="criticalSubjects" class="er-filters__select" value="@criticalSubjects" placeholder="e.g., Bangla, English, Mathematics" />
                     </div>
-                    <div class="col-md-6">
+                    <div class="ws-col-md-6">
                         <label class="er-label">Use Combined Rules</label>
                         <select asp-for="UseCombinedRules" class="er-filters__select">
                             <option value="false">No - Single rule based on Primary Method</option>
@@ -136,7 +136,7 @@
                     </div>
                 </div>
 
-                <div style="margin-top:24px;display:flex;gap:12px;">
+                <div class="ws-mt-6 ws-flex ws-gap-3">
                     <button type="submit" class="er-btn er-btn--primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                         @(isEdit ? "Update Policy" : "Create Policy")

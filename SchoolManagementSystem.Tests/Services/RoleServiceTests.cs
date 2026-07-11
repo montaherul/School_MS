@@ -225,6 +225,7 @@ public class RoleServiceTests
 
         var uowMock = new Mock<IUnitOfWork>(MockBehavior.Loose);
         uowMock.Setup(u => u.Repository<RolePermission>()).Returns(rolePermRepoMock.Object);
+        uowMock.Setup(u => u.Repository<AuditLog>()).Returns(CreateRepoMock<AuditLog>().Object);
         uowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var cacheMock = new Mock<IPermissionCacheService>(MockBehavior.Loose);
@@ -244,6 +245,7 @@ public class RoleServiceTests
         var rolePermRepoMock = CreateRepoMock<RolePermission>();
         var uowMock = new Mock<IUnitOfWork>(MockBehavior.Loose);
         uowMock.Setup(u => u.Repository<RolePermission>()).Returns(rolePermRepoMock.Object);
+        uowMock.Setup(u => u.Repository<AuditLog>()).Returns(CreateRepoMock<AuditLog>().Object);
         uowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var cacheMock = new Mock<IPermissionCacheService>(MockBehavior.Loose);
@@ -262,6 +264,7 @@ public class RoleServiceTests
 
         var uowMock = new Mock<IUnitOfWork>(MockBehavior.Loose);
         uowMock.Setup(u => u.Repository<RolePermission>()).Returns(rolePermRepoMock.Object);
+        uowMock.Setup(u => u.Repository<AuditLog>()).Returns(CreateRepoMock<AuditLog>().Object);
         uowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var cacheMock = new Mock<IPermissionCacheService>(MockBehavior.Loose);

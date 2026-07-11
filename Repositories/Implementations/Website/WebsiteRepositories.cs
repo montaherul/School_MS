@@ -63,6 +63,7 @@ public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
     public async Task<Gallery?> GetWithImagesAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _set
+            .AsNoTracking()
             .Include(g => g.Images.Where(i => !i.IsDeleted))
             .FirstOrDefaultAsync(g => g.Id == id && !g.IsDeleted, cancellationToken);
     }
@@ -105,6 +106,7 @@ public class EventNotificationRepository : BaseRepository<EventNotification>, IE
     public async Task<EventNotification?> GetWithRecipientsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _set
+            .AsNoTracking()
             .Include(n => n.Event)
             .Include(n => n.Recipients.Where(r => !r.IsDeleted))
             .Include(n => n.Logs.Where(l => !l.IsDeleted))

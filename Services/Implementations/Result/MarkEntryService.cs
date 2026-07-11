@@ -135,11 +135,14 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             ValidateComponentMarks(markDto, configuredComponents, markDto.StudentId);
         }
 
+        var existingMarks = await _markRepository.QueryNoTracking()
+            .Where(m => m.ExamId == dto.ExamId && dto.Marks.Select(x => x.StudentId).Contains(m.StudentId) && m.SubjectId == dto.SubjectId)
+            .ToListAsync();
+        var existingMarkLookup = existingMarks.ToLookup(m => m.StudentId);
+
         foreach (var markDto in dto.Marks)
         {
-            var existingMark = (await _markRepository
-                .ListAsync(x => x.ExamId == dto.ExamId && x.StudentId == markDto.StudentId && x.SubjectId == dto.SubjectId))
-                .FirstOrDefault();
+            var existingMark = existingMarkLookup[markDto.StudentId].FirstOrDefault();
 
             if (existingMark != null && (existingMark.IsLocked || existingMark.Status == ResultWorkflowStatus.Approved))
             {
@@ -230,6 +233,11 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             col++;
         }
 
+        ws.Cell(1, col++).SetValue("Total");
+        ws.Cell(1, col++).SetValue("Grade");
+        ws.Cell(1, col++).SetValue("GradePoint");
+        ws.Cell(1, col).SetValue("PassStatus");
+
         int row = 2;
         foreach (var s in students)
         {
@@ -237,6 +245,15 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             ws.Cell(row, col++).SetValue(s.RollNumber);
             ws.Cell(row, col++).SetValue(s.StudentName);
             ws.Cell(row, col++).SetValue(s.StudentNo);
+
+            foreach (var c in components)
+            {
+                ws.Cell(row, col++).SetValue(string.Empty);
+            }
+
+            ws.Cell(row, col++).SetValue(string.Empty);
+            ws.Cell(row, col++).SetValue(string.Empty);
+            ws.Cell(row, col).SetValue(string.Empty);
             row++;
         }
 
@@ -603,7 +620,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     public async Task<EntryStatusSummaryDto> GetEntryStatusAsync(int examId, int? classId = null)
     {
         var exam = await _examRepository.GetByIdAsync(examId);
-        var classSubjectsQuery = _unitOfWork.Repository<ClassSubject>().Query()
+        var classSubjectsQuery = _unitOfWork.Repository<ClassSubject>().QueryNoTracking()
             .Include(cs => cs.Subject)
             .Include(cs => cs.SchoolClass)
             .Where(cs => !cs.IsDeleted);

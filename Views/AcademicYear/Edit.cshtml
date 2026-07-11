@@ -3,47 +3,57 @@
     ViewData["Title"] = Model.IsEditMode ? "Edit Academic Year" : "Add Academic Year";
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/AcademicYear/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
-            <h2 class="mb-0">@(Model.IsEditMode ? "Edit Academic Year" : "Add Academic Year")</h2>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div></div>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify academic year dates" : "Create a new academic year")</p>
+            </div>
         </div>
+        <a href="/AcademicYear/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form asp-action="CreateEdit" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label">Name <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control" placeholder="e.g. 2026-2027" />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="StartsOn" class="form-label">Starts On <span class="text-danger">*</span></label>
-                            <input asp-for="StartsOn" type="date" class="form-control" />
-                            <span asp-validation-for="StartsOn" class="text-danger small"></span>
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="ws-mb-3">
+                            <label asp-for="Name" class="adm-label">Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. 2026-2027" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="EndsOn" class="form-label">Ends On <span class="text-danger">*</span></label>
-                            <input asp-for="EndsOn" type="date" class="form-control" />
-                            <span asp-validation-for="EndsOn" class="text-danger small"></span>
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="StartsOn" class="adm-label">Starts On <span class="ws-text-danger">*</span></label>
+                                <input asp-for="StartsOn" type="date" class="adm-input" />
+                                <span asp-validation-for="StartsOn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="EndsOn" class="adm-label">Ends On <span class="ws-text-danger">*</span></label>
+                                <input asp-for="EndsOn" type="date" class="adm-input" />
+                                <span asp-validation-for="EndsOn" class="ws-text-danger ws-fs-13"></span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-4 form-check">
-                        <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                        <label asp-for="IsActive" class="form-check-label fw-semibold">Set as Active Year</label>
-                    </div>
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Set as Active Year</label>
+                        </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button>
-                        <a href="/AcademicYear/Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                    </div>
-                </form>
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary ws-px-4"><i class="bi bi-save ws-me-1"></i> Save</button>
+                            <a href="/AcademicYear/Index" class="adm-btn adm-btn--ghost ws-px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

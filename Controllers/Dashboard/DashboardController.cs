@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ public class DashboardController : Controller
         _service = service;
     }
 
+    [RequirePermission("Dashboard.View")]
     public async Task<IActionResult> Index()
     {
         if (User.IsInRole("Student"))

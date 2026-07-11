@@ -95,7 +95,7 @@ public class SchoolClassController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Classes.Create")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Classes.Create")]
     public async Task<IActionResult> Clone(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -104,7 +104,7 @@ public class SchoolClassController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Classes.Edit")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -112,7 +112,7 @@ public class SchoolClassController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Classes.Edit")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> Archive(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -121,7 +121,7 @@ public class SchoolClassController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Classes.Edit")]
+    [HttpPost, ValidateAntiForgeryToken, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> Restore(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

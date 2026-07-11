@@ -8,7 +8,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #F59E0B, #FBBF24); box-shadow: 0 4px 12px rgba(245,158,11,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-people"></i>
             </div>
             <div>
@@ -21,16 +21,16 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-8">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditSubstituteAssignment" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="mb-3">
-                            <label asp-for="RoutineEntryId" class="form-label">Routine Entry <span class="text-danger">*</span></label>
-                            <select asp-for="RoutineEntryId" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="RoutineEntryId" class="adm-label">Routine Entry <span class="ws-text-danger">*</span></label>
+                            <select asp-for="RoutineEntryId" class="adm-input">
                                 <option value="">Select Routine Entry</option>
                                 @if (routineEntries != null)
                                 {
@@ -40,12 +40,12 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="RoutineEntryId" class="text-danger small"></span>
+                            <span asp-validation-for="RoutineEntryId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="SubstituteTeacherId" class="form-label">Substitute Teacher <span class="text-danger">*</span></label>
-                            <select asp-for="SubstituteTeacherId" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="SubstituteTeacherId" class="adm-label">Substitute Teacher <span class="ws-text-danger">*</span></label>
+                            <select asp-for="SubstituteTeacherId" class="adm-input">
                                 <option value="">Select Teacher</option>
                                 @if (teachers != null)
                                 {
@@ -55,28 +55,28 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="SubstituteTeacherId" class="text-danger small"></span>
+                            <span asp-validation-for="SubstituteTeacherId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="EffectiveDate" class="form-label">Effective Date</label>
-                            <input asp-for="EffectiveDate" type="date" class="form-control" />
-                            <span asp-validation-for="EffectiveDate" class="text-danger small"></span>
+                        <div class="ws-mb-3">
+                            <label asp-for="EffectiveDate" class="adm-label">Effective Date</label>
+                            <input asp-for="EffectiveDate" type="date" class="adm-input" />
+                            <span asp-validation-for="EffectiveDate" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Reason" class="form-label">Reason</label>
-                            <textarea asp-for="Reason" class="form-control" rows="3" placeholder="Reason for substitution (e.g. teacher on leave)"></textarea>
-                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        <div class="ws-mb-3">
+                            <label asp-for="Reason" class="adm-label">Reason</label>
+                            <textarea asp-for="Reason" class="adm-input" rows="3" placeholder="Reason for substitution (e.g. teacher on leave)"></textarea>
+                            <span asp-validation-for="Reason" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Notes" class="form-label">Notes</label>
-                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Additional notes"></textarea>
-                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        <div class="ws-mb-4">
+                            <label asp-for="Notes" class="adm-label">Notes</label>
+                            <textarea asp-for="Notes" class="adm-input" rows="2" placeholder="Additional notes"></textarea>
+                            <span asp-validation-for="Notes" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/SubstituteAssignments" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

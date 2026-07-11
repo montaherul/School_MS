@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0F766E, #14B8A6); box-shadow: 0 4px 12px rgba(15,118,110,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-gear-fill"></i>
             </div>
             <div>
@@ -19,29 +19,28 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-xl-9 col-lg-11">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Mark & Attributes Configuration</h5>
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-xl-9 ws-col-lg-11">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__header">
+                    <h5 class="ws-mb-0"><i class="bi bi-gear-fill ws-me-2"></i>Mark & Attributes Configuration</h5>
                 </div>
-                <div class="card-body p-4">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="Edit" method="post" id="editForm">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="SchoolClassId" />
                         <input type="hidden" asp-for="SubjectId" />
-                        <input type="hidden" asp-for="StudentGroupId" />
 
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-info-circle-fill me-2 text-primary"></i>Subject Profile
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3">
+                            <i class="bi bi-info-circle-fill ws-me-2 ws-text-primary"></i>Subject Profile
                         </h6>
-                        <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
-                            <div class="col-md-3">
-                                <label class="form-label text-muted small fw-semibold mb-1">Stream Group</label>
-                                <div class="fw-semibold fs-6">@(Model.GroupName == "General" || string.IsNullOrEmpty(Model.GroupName) ? "General" : Model.GroupName == "BusinessStudies" ? "Business Studies" : Model.GroupName)</div>
+                        <div class="ws-row ws-g-4 ws-mb-4 ws-p-3 ws-bg-surface ws-rounded">
+                            <div class="ws-col-md-3">
+                                <label class="adm-label ws-text-muted ws-fs-13 ws-fw-600 ws-mb-1">Stream Group</label>
+                                <div class="ws-fw-600 ws-fs-16">@(Model.GroupName == "General" || string.IsNullOrEmpty(Model.GroupName) ? "General" : Model.GroupName == "BusinessStudies" ? "Business Studies" : Model.GroupName)</div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label text-muted small fw-semibold mb-1">Subject Attributes</label>
+                            <div class="ws-col-md-3">
+                                <label class="adm-label ws-text-muted ws-fs-13 ws-fw-600 ws-mb-1">Subject Attributes</label>
                                 <div>
                                     @if (Model.IsReligionSubject)
                                     {
@@ -55,64 +54,64 @@
                             </div>
                         </div>
 
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-sliders me-2 text-primary"></i>1. Total Marks & Pass Score
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3">
+                            <i class="bi bi-sliders ws-me-2 ws-text-primary"></i>1. Total Marks & Pass Score
                         </h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label asp-for="FullMarks" class="form-label fw-bold">Full Marks <span class="text-danger">*</span></label>
-                                <input asp-for="FullMarks" class="form-control" type="number" step="0.5" id="txtFullMarks" required />
-                                <span asp-validation-for="FullMarks" class="text-danger small"></span>
+                        <div class="ws-row ws-g-4 ws-mb-4">
+                            <div class="ws-col-md-6">
+                                <label asp-for="FullMarks" class="adm-label ws-fw-700">Full Marks <span class="ws-text-danger">*</span></label>
+                                <input asp-for="FullMarks" class="adm-input" type="number" step="0.5" id="txtFullMarks" required />
+                                <span asp-validation-for="FullMarks" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="PassMarks" class="form-label fw-bold">Pass Marks <span class="text-danger">*</span></label>
-                                <input asp-for="PassMarks" class="form-control" type="number" step="0.5" id="txtPassMarks" required />
-                                <span asp-validation-for="PassMarks" class="text-danger small"></span>
+                            <div class="ws-col-md-6">
+                                <label asp-for="PassMarks" class="adm-label ws-fw-700">Pass Marks <span class="ws-text-danger">*</span></label>
+                                <input asp-for="PassMarks" class="adm-input" type="number" step="0.5" id="txtPassMarks" required />
+                                <span asp-validation-for="PassMarks" class="ws-text-danger ws-fs-13"></span>
                             </div>
-                            <div class="col-md-4">
-                                <label asp-for="DisplayOrder" class="form-label fw-bold">Display Order</label>
-                                <input asp-for="DisplayOrder" class="form-control" type="number" step="1" />
-                                <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                            <div class="ws-col-md-4">
+                                <label asp-for="DisplayOrder" class="adm-label ws-fw-700">Display Order</label>
+                                <input asp-for="DisplayOrder" class="adm-input" type="number" step="1" />
+                                <span asp-validation-for="DisplayOrder" class="ws-text-danger ws-fs-13"></span>
                             </div>
                         </div>
 
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
-                            <i class="bi bi-tag-fill me-2 text-primary"></i>2. Subject Specifications
+                        <h6 class="ws-text-uppercase ws-text-secondary ws-fw-700 ws-fs-13 ws-mb-3">
+                            <i class="bi bi-tag-fill ws-me-2 ws-text-primary"></i>2. Subject Specifications
                         </h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-light rounded-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
-                                        <label class="form-check-label fw-semibold" for="chkIsOptional">Is Optional Subject</label>
+                        <div class="ws-row ws-g-4 ws-mb-4">
+                            <div class="ws-col-md-6 ws-col-lg-3">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsOptional">Is Optional Subject</label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-light rounded-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" asp-for="IsReligionSubject" id="chkIsReligion" />
-                                        <label class="form-check-label fw-semibold" for="chkIsReligion">Is Religion Specific</label>
+                            <div class="ws-col-md-6 ws-col-lg-3">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsReligionSubject" id="chkIsReligion" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsReligion">Is Religion Specific</label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-light rounded-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
-                                        <label class="form-check-label fw-semibold" for="chkIsActive">Mapping Active</label>
+                            <div class="ws-col-md-6 ws-col-lg-3">
+                                <div class="ws-p-3 ws-bg-surface ws-rounded">
+                                    <div class="adm-form-check">
+                                        <input class="adm-form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
+                                        <label class="adm-form-check-label ws-fw-600" for="chkIsActive">Mapping Active</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row g-3 mb-4" id="religionPanel" style="display: none;">
-                            <div class="col-md-12">
-                                <div class="alert alert-info border-0 py-3 px-4 d-flex align-items-center">
-                                    <i class="bi bi-info-circle-fill me-3 fs-4 text-info"></i>
+                        <div class="ws-row ws-g-4 ws-mb-4 ws-d-none" id="religionPanel">
+                            <div class="ws-col-md-12">
+                                <div class="adm-alert adm-alert--info ws-border-none ws-py-3 ws-px-4 ws-flex ws-items-center">
+                                    <i class="bi bi-info-circle-fill ws-me-3 ws-fs-24 ws-text-info"></i>
                                     <div>
-                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1">Religion Type</label>
-                                        <select asp-for="ReligionType" class="form-select bg-white" id="ddlReligionType">
+                                        <label asp-for="ReligionType" class="adm-label ws-fw-700 ws-mb-1">Religion Type</label>
+                                        <select asp-for="ReligionType" class="adm-input" id="ddlReligionType">
                                             <option value="">-- Choose Religion --</option>
                                             <option value="Islam">Islam & Moral Education</option>
                                             <option value="Hindu">Hindu Religion & Moral Education</option>
@@ -124,8 +123,8 @@
                             </div>
                         </div>
 
-                        <hr class="my-4" />
-                        <div class="d-flex justify-content-end gap-2">
+                        <hr class="ws-my-4" />
+                        <div class="ws-flex ws-justify-end ws-gap-2">
                             <a href="/ClassSubjectMapping/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-x-circle"></i> Cancel</a>
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Update Configuration</button>
                         </div>

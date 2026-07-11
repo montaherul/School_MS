@@ -1,0 +1,113 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.HolidayMasterUpsertDto
+@{
+    ViewData["Title"] = "Create Holiday";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 3a6 6 0 0 0 6 6v0a6 6 0 0 0-6-6Z"/>
+                    <path d="M12 3a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6"/>
+                    <path d="M12 15v6"/>
+                    <path d="M8 21h8"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Holiday</h1>
+                <p class="adm-header__sub">Add a new holiday to the master list</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" class="adm-card">
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+        <div class="adm-card__body">
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="Name" class="adm-label"></label>
+                    <input asp-for="Name" class="adm-input" placeholder="e.g. Independence Day" required />
+                    <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="HolidayDate" class="adm-label"></label>
+                    <input asp-for="HolidayDate" class="adm-input" type="date" value="@Model.HolidayDate.ToString("yyyy-MM-dd")" required />
+                    <span asp-validation-for="HolidayDate" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="HolidayType" class="adm-label"></label>
+                    <select asp-for="HolidayType" class="adm-select" asp-items="@(new SelectList(ViewBag.HolidayTypes))">
+                        <option value="">-- Select Type --</option>
+                    </select>
+                    <span asp-validation-for="HolidayType" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="Religion" class="adm-label"></label>
+                    <select asp-for="Religion" class="adm-select">
+                        <option value="">-- Select Religion --</option>
+                        <option value="Islam">Islam</option>
+                        <option value="Hinduism">Hinduism</option>
+                        <option value="Buddhism">Buddhism</option>
+                        <option value="Christianity">Christianity</option>
+                        <option value="Secular">Secular</option>
+                    </select>
+                    <span asp-validation-for="Religion" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="NameBn" class="adm-label"></label>
+                    <input asp-for="NameBn" class="adm-input" placeholder="Bangla name (optional)" />
+                    <span asp-validation-for="NameBn" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="DisplayOrder" class="adm-label"></label>
+                    <input asp-for="DisplayOrder" class="adm-input" type="number" value="0" />
+                    <span asp-validation-for="DisplayOrder" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="ws-form-check ws-mt-6">
+                    <input asp-for="IsActive" class="ws-form-check-input" />
+                    <label asp-for="IsActive" class="ws-form-check-label">Active</label>
+                </div>
+            </div>
+
+            <div class="adm-form-group ws-mt-3">
+                <label asp-for="Description" class="adm-label"></label>
+                <textarea asp-for="Description" class="adm-input adm-textarea" rows="3" placeholder="Optional description..."></textarea>
+                <span asp-validation-for="Description" class="ws-text-danger ws-fs-13"></span>
+            </div>
+        </div>
+
+        <div class="adm-card__header ws-flex-between">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            <button type="submit" class="adm-btn adm-btn--primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Create Holiday
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -405,11 +405,12 @@ public class ExamService : IExamService
         var query = _uow.Repository<ClassSubject>().Query()
             .AsNoTracking()
             .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted);
 
         if (groupId.HasValue)
         {
-            query = query.Where(cs => cs.StudentGroupId == groupId.Value);
+            query = query.Where(cs => cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted && csg.StudentGroupId == groupId.Value) || !cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted));
         }
 
         // Filter by SubjectGroup based on Bangladesh curriculum rules
@@ -440,7 +441,7 @@ public class ExamService : IExamService
 
         if (sectionId.HasValue)
         {
-            query = query.Where(cs => cs.SectionId == sectionId.Value);
+            query = query.Where(cs => cs.SectionId == null || cs.SectionId == sectionId.Value);
         }
 
         return await query.Select(cs => new
@@ -492,6 +493,7 @@ public class ExamService : IExamService
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
             .AsNoTracking()
             .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted && cs.IsActive)
             .ToListAsync(ct);
 
@@ -499,7 +501,8 @@ public class ExamService : IExamService
         if (groupId.HasValue)
         {
             classSubjects = classSubjects.Where(cs =>
-                cs.StudentGroupId == null || cs.StudentGroupId == groupId.Value).ToList();
+                !cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted) ||
+                cs.ClassSubjectGroups.Any(csg => !csg.IsDeleted && csg.StudentGroupId == groupId.Value)).ToList();
         }
 
         // Filter by SubjectGroup based on Bangladesh curriculum

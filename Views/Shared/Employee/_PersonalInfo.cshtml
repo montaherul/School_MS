@@ -1,14 +1,14 @@
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
 
 <div class="tab-pane fade show active" id="personal" role="tabpanel">
-    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-person-badge me-2"></i>Personal Particulars</h5>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
-        <div class="adm-form-group">
+    <h5 class="er-heading"><i class="bi bi-person-badge ws-me-2"></i>Personal Particulars</h5>
+    <div class="ws-row ws-g-4 ws-mb-6">
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="FullName" class="adm-form-label">Full Name (English) <span class="adm-required">*</span></label>
             <input asp-for="FullName" class="adm-input" placeholder="Enter Full Name" required />
-            <span asp-validation-for="FullName" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="FullName" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="Gender" class="adm-form-label">Gender <span class="adm-required">*</span></label>
             <select asp-for="Gender" class="adm-select" required>
                 <option value="">Select Gender</option>
@@ -16,24 +16,24 @@
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
             </select>
-            <span asp-validation-for="Gender" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="Gender" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="DateOfBirth" class="adm-form-label">Date of Birth <span class="adm-required">*</span></label>
             <input asp-for="DateOfBirth" type="date" class="adm-input" required />
-            <span asp-validation-for="DateOfBirth" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="DateOfBirth" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="FatherName" class="adm-form-label">Father's Name</label>
             <input asp-for="FatherName" class="adm-input" placeholder="Father's Name" />
-            <span asp-validation-for="FatherName" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="FatherName" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="MotherName" class="adm-form-label">Mother's Name</label>
             <input asp-for="MotherName" class="adm-input" placeholder="Mother's Name" />
-            <span asp-validation-for="MotherName" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="MotherName" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="BloodGroup" class="adm-form-label">Blood Group</label>
             <select asp-for="BloodGroup" class="adm-select">
                 <option value="">Select</option>
@@ -46,41 +46,41 @@
                 <option value="O+">O+</option>
                 <option value="O-">O-</option>
             </select>
-        </div>
-        <div class="adm-form-group">
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="Religion" class="adm-form-label">Religion</label>
             <input asp-for="Religion" class="adm-input" placeholder="e.g. Islam, Hinduism" />
-        </div>
-        <div class="adm-form-group">
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="Nationality" class="adm-form-label">Nationality</label>
             <input asp-for="Nationality" class="adm-input" />
-        </div>
-        <div class="adm-form-group">
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="NIDNumber" class="adm-form-label">NID/National ID Number</label>
             <input asp-for="NIDNumber" class="adm-input" placeholder="10 or 17 digit NID" />
-            <span asp-validation-for="NIDNumber" style="font-size:12px;color:var(--adm-rejected)"></span>
-        </div>
-        <div class="adm-form-group">
+            <span asp-validation-for="NIDNumber" class="er-validation-error" role="alert"></span>
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="BirthCertificateNo" class="adm-form-label">Birth Certificate Number</label>
             <input asp-for="BirthCertificateNo" class="adm-input" placeholder="Birth Reg Number" />
-        </div>
+        </div></div>
     </div>
 
-    <h6 style="font-weight:700;color:var(--adm-success);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-geo-alt-fill me-2"></i>Residential Addresses</h6>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="adm-form-group">
+    <h6 class="er-heading er-heading--success"><i class="bi bi-geo-alt-fill ws-me-2"></i>Residential Addresses</h6>
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-6"><div class="adm-form-group">
             <label asp-for="PresentAddress" class="adm-form-label">Present Address</label>
             <textarea asp-for="PresentAddress" class="adm-input" rows="3" placeholder="Village, Post, Thana, District"></textarea>
-        </div>
-        <div class="adm-form-group">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <label asp-for="PermanentAddress" class="adm-form-label" style="margin-bottom:0">Permanent Address</label>
-                <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--adm-text-2)">
+        </div></div>
+        <div class="ws-col-6"><div class="adm-form-group">
+            <div class="ws-flex ws-flex-between ws-items-center ws-mb-2">
+                <label asp-for="PermanentAddress" class="adm-form-label ws-mb-0">Permanent Address</label>
+                <label class="ws-flex ws-items-center ws-gap-1" style="font-size:12px;cursor:pointer;color:var(--adm-text-2)">
                     <input type="checkbox" id="chkSameAddress" style="accent-color:var(--adm-primary)" />
                     Same as Present
                 </label>
             </div>
             <textarea asp-for="PermanentAddress" class="adm-input" rows="3" placeholder="Village, Post, Thana, District"></textarea>
-        </div>
+        </div></div>
     </div>
 </div>

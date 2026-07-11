@@ -79,7 +79,7 @@ else
                     {
                         <h3 class="ws-fw-700 ws-mb-3"><i class="bi bi-info-circle ws-me-2 ws-text-secondary"></i> General Guidelines</h3>
                         <div class="ws-text-light ws-fs-15 ws-lh-lg ws-mb-8">
-                            @Html.Raw(Model.AdmissionGuidelines)
+                            @Html.SanitizedHtml(Model.AdmissionGuidelines)
                         </div>
                     }
 
@@ -87,7 +87,7 @@ else
                     {
                         <h4 class="ws-fw-700 ws-mt-8 ws-mb-3"><i class="bi bi-patch-check ws-me-2 ws-text-secondary"></i> Eligibility Requirements</h4>
                         <div class="ws-text-light ws-fs-15 ws-lh-lg">
-                            @Html.Raw(Model.AdmissionEligibility)
+                            @Html.SanitizedHtml(Model.AdmissionEligibility)
                         </div>
                     }
 
@@ -95,7 +95,7 @@ else
                     {
                         <h4 class="ws-fw-700 ws-mt-8 ws-mb-3"><i class="bi bi-file-earmark-check ws-me-2 ws-text-secondary"></i> Required Documents</h4>
                         <div class="ws-text-light ws-fs-15 ws-lh-lg">
-                            @Html.Raw(Model.AdmissionRequirements)
+                            @Html.SanitizedHtml(Model.AdmissionRequirements)
                         </div>
                     }
 
@@ -103,7 +103,7 @@ else
                     {
                         <h4 class="ws-fw-700 ws-mt-8 ws-mb-3"><i class="bi bi-list-steps ws-me-2 ws-text-secondary"></i> Admission Process</h4>
                         <div class="ws-text-light ws-fs-15 ws-lh-lg">
-                            @Html.Raw(Model.AdmissionProcess)
+                            @Html.SanitizedHtml(Model.AdmissionProcess)
                         </div>
                     }
 

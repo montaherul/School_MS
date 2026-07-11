@@ -1,4 +1,4 @@
-@model SchoolManagementSystem.Models.Entities.Academic.AcademicCalendar
+@model SchoolManagementSystem.Models.DTOs.Academic.AcademicCalendarUpsertDto
 @{
     ViewData["Title"] = "Edit Calendar Entry";
     var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>;
@@ -15,16 +15,14 @@
         </div>
     </div>
 
-    <div class="er-card" style="max-width:800px">
+    <div class="er-card ac-create-card">
         <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-calendar-range-fill"></i> Calendar Entry Details</h3></div>
         <div class="er-card__body">
             <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
-                <input type="hidden" asp-for="CreatedAt" />
-                <input type="hidden" asp-for="CreatedBy" />
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="adm-form-grid">
                     <div>
                         <label class="er-label">Academic Year</label>
                         <select asp-for="AcademicYearId" class="er-select" required>
@@ -35,69 +33,69 @@
                                 { <option value="@y.Id">@y.Name</option> }
                             }
                         </select>
-                        <span asp-validation-for="AcademicYearId" class="er-error" style="display:block"></span>
+                        <span asp-validation-for="AcademicYearId" class="er-error"></span>
                     </div>
                     <div>
                         <label class="er-label">Date</label>
                         <input asp-for="Date" type="date" class="er-input" required />
-                        <span asp-validation-for="Date" class="er-error" style="display:block"></span>
+                        <span asp-validation-for="Date" class="er-error"></span>
                     </div>
                 </div>
 
-                <div style="margin-top:16px">
+                <div class="ac-field-spacer">
                     <label class="er-label">Title</label>
                     <input asp-for="Title" class="er-input" placeholder="e.g. Independence Day, Final Examination" required />
-                    <span asp-validation-for="Title" class="er-error" style="display:block"></span>
+                    <span asp-validation-for="Title" class="er-error"></span>
                 </div>
 
-                <div style="margin-top:16px">
+                <div class="ac-field-spacer">
                     <label class="er-label">Description</label>
                     <textarea asp-for="Description" class="er-textarea" rows="3" placeholder="Optional details..."></textarea>
-                    <span asp-validation-for="Description" class="er-error" style="display:block"></span>
+                    <span asp-validation-for="Description" class="er-error"></span>
                 </div>
 
-                <div style="margin-top:16px;padding:16px;border:1px solid var(--er-border);border-radius:var(--er-radius);background:var(--er-surface-2)">
-                    <label class="er-label" style="margin-bottom:12px"><i class="bi bi-gear"></i> Day Type Flags</label>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                            <input class="form-check-input" type="checkbox" asp-for="IsWorkingDay" id="IsWorkingDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                            <div><div style="font-weight:600;color:var(--er-text)">Is Working Day</div><div style="font-size:12px;color:var(--er-text-3)">Checked if students/staff attend today.</div></div>
+                <div class="ac-flags-box">
+                    <label class="er-label ac-flags-box__label"><i class="bi bi-gear"></i> Day Type Flags</label>
+                    <div class="ac-flags-grid">
+                        <label class="ac-check-label">
+                            <input class="adm-form-check-input" type="checkbox" asp-for="IsWorkingDay" id="IsWorkingDay" />
+                            <div><div class="ac-check-label__title">Is Working Day</div><div class="ac-check-label__desc">Checked if students/staff attend today.</div></div>
                         </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                            <input class="form-check-input" type="checkbox" asp-for="IsHoliday" id="IsHoliday" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                            <div><div style="font-weight:600;color:var(--er-text)">Is Holiday</div><div style="font-size:12px;color:var(--er-text-3)">No attendance is permitted on holidays.</div></div>
+                        <label class="ac-check-label">
+                            <input class="adm-form-check-input" type="checkbox" asp-for="IsHoliday" id="IsHoliday" />
+                            <div><div class="ac-check-label__title">Is Holiday</div><div class="ac-check-label__desc">No attendance is permitted on holidays.</div></div>
                         </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                            <input class="form-check-input" type="checkbox" asp-for="IsExamDay" id="IsExamDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                            <div><div style="font-weight:600;color:var(--er-text)">Is Exam Day</div><div style="font-size:12px;color:var(--er-text-3)">Special tag for examinations.</div></div>
+                        <label class="ac-check-label">
+                            <input class="adm-form-check-input" type="checkbox" asp-for="IsExamDay" id="IsExamDay" />
+                            <div><div class="ac-check-label__title">Is Exam Day</div><div class="ac-check-label__desc">Special tag for examinations.</div></div>
                         </label>
-                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                            <input class="form-check-input" type="checkbox" asp-for="IsEventDay" id="IsEventDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                            <div><div style="font-weight:600;color:var(--er-text)">Is Event Day</div><div style="font-size:12px;color:var(--er-text-3)">Special tag for festivals/events.</div></div>
+                        <label class="ac-check-label">
+                            <input class="adm-form-check-input" type="checkbox" asp-for="IsEventDay" id="IsEventDay" />
+                            <div><div class="ac-check-label__title">Is Event Day</div><div class="ac-check-label__desc">Special tag for festivals/events.</div></div>
                         </label>
                     </div>
                 </div>
 
-                <div id="holidayTypeContainer" style="display:none;margin-top:16px">
+                <div id="holidayTypeContainer" class="ac-field-spacer">
                     <label class="er-label">Holiday Type</label>
                     <input asp-for="HolidayType" class="er-input" placeholder="e.g. National, Religious, Public" />
-                    <span asp-validation-for="HolidayType" class="er-error" style="display:block"></span>
+                    <span asp-validation-for="HolidayType" class="er-error"></span>
                 </div>
 
-                <div style="margin-top:16px">
+                <div class="ac-field-spacer">
                     <label class="er-label">Remarks</label>
                     <input asp-for="Remarks" class="er-input" placeholder="Optional comments..." />
-                    <span asp-validation-for="Remarks" class="er-error" style="display:block"></span>
+                    <span asp-validation-for="Remarks" class="er-error"></span>
                 </div>
 
-                <div style="margin-top:16px">
-                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                        <input class="form-check-input" type="checkbox" asp-for="IsActive" id="IsActive" style="width:18px;height:18px;accent-color:var(--er-primary)" />
-                        <span style="font-weight:600;color:var(--er-text)">Is Active</span>
+                <div class="ac-field-spacer">
+                    <label class="ac-check-label">
+                        <input class="adm-form-check-input" type="checkbox" asp-for="IsActive" id="IsActive" />
+                        <span class="ac-check-label__title">Is Active</span>
                     </label>
                 </div>
 
-                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--er-border)">
+                <div class="adm-form-actions">
                     <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
                     <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-cloud-arrow-up"></i> Save Changes</button>
                 </div>

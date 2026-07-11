@@ -6,7 +6,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0891B2, #22D3EE); box-shadow: 0 4px 12px rgba(8,145,178,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-grid-3x3-gap"></i>
             </div>
             <div>
@@ -19,16 +19,16 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEdit" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="mb-3">
-                            <label asp-for="SchoolClassId" class="form-label">Class <span class="text-danger">*</span></label>
-                            <select asp-for="SchoolClassId" class="form-select" id="classSelect" onchange="loadGroupsForClass(this.value)">
+                        <div class="ws-mb-3">
+                            <label asp-for="SchoolClassId" class="adm-label">Class <span class="ws-text-danger">*</span></label>
+                            <select asp-for="SchoolClassId" class="adm-select" id="classSelect" onchange="loadGroupsForClass(this.value)">
                                 <option value="">Select Class</option>
                                 @foreach (var c in ViewBag.Classes)
                                 {
@@ -42,29 +42,29 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="SchoolClassId" class="text-danger small"></span>
+                            <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3" id="parentGroupRow" style="display:none;">
-                            <label asp-for="ParentSectionId" class="form-label">
-                                Parent Group <span class="text-muted small">(for group-based class sub-sections)</span>
+                        <div class="ws-mb-3" id="parentGroupRow" style="display:none;">
+                            <label asp-for="ParentSectionId" class="adm-label">
+                                Parent Group <span class="ws-text-muted ws-fs-13">(for group-based class sub-sections)</span>
                             </label>
-                            <select asp-for="ParentSectionId" class="form-select" id="parentGroupSelect">
+                            <select asp-for="ParentSectionId" class="adm-select" id="parentGroupSelect">
                                 <option value="">— None (this IS the group) —</option>
                             </select>
-                            <div class="form-text">
+                            <div class="adm-form-text">
                                 Leave blank to create a top-level group (e.g. "Science"). 
                                 Select a group to create a sub-section under it (e.g. "Science A").
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Name" class="form-label">Section Name <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" placeholder="e.g. A, B, Science A" />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        <div class="ws-mb-4">
+                            <label asp-for="Name" class="adm-label">Section Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. A, B, Science A" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Section/Index" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>
@@ -107,7 +107,7 @@
                             groupData.forEach(g => {
                                 const opt = document.createElement('option');
                                 opt.value = g.id;
-                                opt.textContent = g.name;
+                                opt.textContent = g.groupName || g.name;
                                 if (opt.value == '@Model.ParentSectionId') opt.selected = true;
                                 parentSelect.appendChild(opt);
                             });

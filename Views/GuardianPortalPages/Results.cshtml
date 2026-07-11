@@ -309,7 +309,7 @@
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: [@Html.Raw(string.Join(",", resultList.OrderBy(r => r.ExamId).Select(r => $"'{r.Exam?.Name?.Replace("'","\\'")}'")))]],
+                        labels: [@Html.Raw(string.Join(",", resultList.OrderBy(r => r.ExamId).Select(r => System.Text.Json.JsonSerializer.Serialize(r.Exam?.Name ?? ""))))],
                         datasets: [{
                             label: 'GPA',
                             data: [@string.Join(",", resultList.OrderBy(r => r.ExamId).Select(r => r.Gpa.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)))],

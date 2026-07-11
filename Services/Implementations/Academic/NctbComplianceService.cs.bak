@@ -1,0 +1,156 @@
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Academic;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+
+namespace SchoolManagementSystem.Services.Implementations.Academic;
+
+public class NctbComplianceService : INctbComplianceService
+{
+    private readonly IUnitOfWork _uow;
+
+    public NctbComplianceService(IUnitOfWork uow)
+    {
+        _uow = uow;
+    }
+
+    public async Task<NctbComplianceReportDto> GetComplianceReportAsync(int academicYearId, CancellationToken ct = default)
+    {
+        var activeYear = academicYearId > 0
+            ? await _uow.Repository<AcademicYear>().GetByIdAsync(academicYearId, ct)
+            : await _uow.Repository<AcademicYear>().Query().AsNoTracking().FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+
+        if (activeYear == null)
+        {
+            return new NctbComplianceReportDto
+            {
+                AcademicYearId = 0,
+                AcademicYearName = "N/A",
+                ComplianceScore = 0,
+                Warnings = new List<string> { "No active academic year found" },
+                Recommendations = new List<string> { "Create and activate an academic year" }
+            };
+        }
+
+        var report = new NctbComplianceReportDto
+        {
+            AcademicYearId = activeYear.Id,
+            AcademicYearName = activeYear.Name,
+            HasScienceGroup = false,
+            HasBusinessStudiesGroup = false,
+            HasHumanitiesGroup = false,
+            HasCompulsoryCoreSubjects = false,
+            MissingSubjects = new List<string>(),
+            VocationalSubjectCount = 0,
+            TotalSubjectCount = 0,
+            ComplianceScore = 0,
+            Warnings = new List<string>(),
+            Recommendations = new List<string>(),
+            SubjectCategoryBreakdown = new List<SubjectCategoryBreakdown>()
+        };
+
+        var classSubjects = await _uow.Repository<Syllabus>().Query().AsNoTracking()
+            .Where(s => s.AcademicYearId == activeYear.Id && !s.IsDeleted)
+            .ToListAsync(ct);
+
+        var subjectIds = classSubjects.Select(s => s.SubjectId).Distinct().ToList();
+        var schoolClassIds = classSubjects.Select(s => s.SchoolClassId).Distinct().ToList();
+
+        var subjects = await _uow.Repository<Subject>().Query().AsNoTracking()
+            .Where(sub => subjectIds.Contains(sub.Id))
+            .ToListAsync(ct);
+
+        var schoolClasses = await _uow.Repository<SchoolClass>().Query().AsNoTracking()
+            .Where(sc => schoolClassIds.Contains(sc.Id))
+            .ToListAsync(ct);
+
+        var availableSubjectNames = subjects.Select(s => s.Name).ToHashSet();
+
+        report.HasScienceGroup = scienceGroupSubjects.All(s => availableSubjectNames.Contains(s));
+        if (!report.HasScienceGroup)
+        {
+            var missing = scienceGroupSubjects.Where(s => !availableSubjectNames.Contains(s)).ToList();
+            report.MissingSubjects.AddRange(missing);
+            report.Warnings.Add($"Science group incomplete. Missing: {string.Join(", ", missing)}");
+        }
+
+        report.HasBusinessStudiesGroup = businessGroupSubjects.All(s => availableSubjectNames.Contains(s));
+        if (!report.HasBusinessStudiesGroup)
+        {
+            var missing = businessGroupSubjects.Where(s => !availableSubjectNames.Contains(s)).ToList();
+            report.MissingSubjects.AddRange(missing);
+            report.Warnings.Add($"Business Studies group incomplete. Missing: {string.Join(", ", missing)}");
+        }
+
+        report.HasHumanitiesGroup = humanitiesGroupSubjects.All(s => availableSubjectNames.Contains(s));
+        if (!report.HasHumanitiesGroup)
+        {
+            var missing = humanitiesGroupSubjects.Where(s => !availableSubjectNames.Contains(s)).ToList();
+            report.MissingSubjects.AddRange(missing);
+            report.Warnings.Add($"Humanities group incomplete. Missing: {string.Join(", ", missing)}");
+        }
+
+        report.HasCompulsoryCoreSubjects = compulsorySubjects.All(s => availableSubjectNames.Contains(s));
+        if (!report.HasCompulsoryCoreSubjects)
+        {
+            var missing = compulsorySubjects.Where(s => !availableSubjectNames.Contains(s)).ToList();
+            report.MissingSubjects.AddRange(missing);
+            report.Warnings.Add($"Compulsory subjects incomplete. Missing: {string.Join(", ", missing)}");
+        }
+
+        report.VocationalSubjectCount = classSubjects
+            .Where(csm => vocationalSubjects.Any(v => csm.Subject.Name.Contains(v, StringComparison.OrdinalIgnoreCase)))
+            .Select(csm => csm.SubjectId)
+            .Distinct()
+            .Count();
+
+        var class9and10 = classSubjects.Where(csm => csm.SchoolClass.Name.Contains("9") || csm.SchoolClass.Name.Contains("10")).ToList();
+        if (!class9and10.Any())
+        {
+            report.Warnings.Add("No Class 9 or 10 configurations found for NCTB group validation");
+        }
+
+        var checksPassed = 0;
+        var totalChecks = 5;
+        if (report.HasScienceGroup) checksPassed++;
+        if (report.HasBusinessStudiesGroup) checksPassed++;
+        if (report.HasHumanitiesGroup) checksPassed++;
+        if (report.HasCompulsoryCoreSubjects) checksPassed++;
+        if (report.VocationalSubjectCount > 0) checksPassed++;
+
+        report.ComplianceScore = Math.Round((double)checksPassed / totalChecks * 100, 1);
+
+        if (report.ComplianceScore < 100)
+        {
+            report.Recommendations.Add("Add missing NCTB-required subjects for all groups");
+            report.Recommendations.Add("Ensure vocational subjects (ICT, Agriculture, Home Economics) are configured");
+            report.Recommendations.Add("Verify Class 9-10 group-based subject mappings");
+        }
+
+        if (report.VocationalSubjectCount == 0)
+        {
+            report.Recommendations.Add("Add at least one vocational subject (ICT, Agriculture, Home Economics)");
+        }
+
+        return report;
+    }
+
+    public async Task<List<CurriculumVersionDto>> GetCurriculumVersionsAsync(CancellationToken ct = default)
+    {
+        var years = await _uow.Repository<AcademicYear>().Query().AsNoTracking()
+            .Where(y => !y.IsDeleted)
+            .OrderByDescending(y => y.StartsOn)
+            .ToListAsync(ct);
+
+        return years.Select(y => new CurriculumVersionDto
+        {
+            Id = y.Id,
+            VersionName = $"NCTB {y.Name}",
+            AcademicYearId = y.Id,
+            EffectiveFrom = DateOnly.FromDateTime(y.StartsOn),
+            IsCurrent = y.IsActive,
+            Description = $"Curriculum effective for academic year {y.Name}"
+        }).ToList();
+    }
+}

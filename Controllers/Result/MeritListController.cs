@@ -42,6 +42,7 @@ public class MeritListController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("MeritList.Recalculate")]
     public async Task<IActionResult> Recalculate(int examId)
     {

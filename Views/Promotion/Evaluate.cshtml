@@ -78,9 +78,9 @@
         <div class="dash-section__header">
             <h2 class="dash-section__title">Student Evaluation Results</h2>
         </div>
-        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="er-card__body">
-                <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                <div class="adm-table-wrapper">
                     <table class="dash-table" id="evalTable">
                         <thead>
                             <tr>
@@ -131,7 +131,7 @@
         </div>
     </div>
 
-    <div class="er-page-header__right" style="margin-top:20px;">
+    <div class="ws-mt-5 ws-text-right">
         <form asp-action="Execute" asp-controller="Promotion" method="post" id="executeForm">
             @Html.AntiForgeryToken()
             <input type="hidden" name="classId" value="@classId" />
@@ -144,11 +144,11 @@
     </div>
 </div>
 
-<div class="adm-modal-backdrop" id="confirmModal" style="display:none;">
+<div class="adm-modal-backdrop ws-d-none" id="confirmModal">
     <div class="adm-modal" role="dialog">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
-                <div class="adm-modal__header-icon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                <div class="adm-modal__header-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                 </div>
                 <div>
@@ -160,12 +160,12 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
         </div>
-        <div class="adm-modal__body" style="padding-top:4px;">
-            <p style="font-size:14px;color:var(--adm-text-2);line-height:1.5;">
+        <div class="adm-modal__body">
+            <p>
                 You are about to execute promotion for <strong>@Model.Count students</strong> in <strong>@(cls?.Name ?? "")</strong>.
                 Students will be moved to the next class based on the evaluation results.
             </p>
-            <p style="font-size:13px;color:var(--adm-text-3);margin-top:8px;">
+            <p>
                 Promoted: <strong>@promoteCount</strong> | Repeat: <strong>@repeatCount</strong> | Pending: <strong>@pendingCount</strong>
             </p>
         </div>
@@ -193,17 +193,6 @@
 
         document.getElementById('confirmModal').addEventListener('click', function (e) {
             if (e.target === this) closeConfirm();
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#evalTable').DataTable({
-                    responsive: true,
-                    pageLength: 50,
-                    order: [[7, 'asc'], [2, 'desc']],
-                    language: { emptyTable: "No evaluation data found" }
-                });
-            }
         });
     </script>
 }

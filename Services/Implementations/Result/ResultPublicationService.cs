@@ -95,6 +95,7 @@ public class ResultPublicationService : IResultPublicationService
 
         // Get Marks and preload needed data
         var marks = await _markEntryRepository.Query()
+            .AsNoTracking()
             .Include(x => x.Subject)
             .Where(x => x.ExamId == dto.ExamId)
             .ToListAsync();
@@ -114,6 +115,7 @@ public class ResultPublicationService : IResultPublicationService
 
         var gradingRules = await _gradingRuleRepository.ListAsync();
         var examSubjects = await _uow.Repository<ExamSubject>().Query()
+            .AsNoTracking()
             .Where(es => es.ExamId == dto.ExamId)
             .ToDictionaryAsync(es => es.SubjectId);
 
@@ -121,11 +123,20 @@ public class ResultPublicationService : IResultPublicationService
         var classIds = marks.Where(m => m.ClassId > 0).Select(m => m.ClassId).Distinct().ToList();
         var subjectIds = marks.Select(m => m.SubjectId).Distinct().ToList();
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
             .Where(cs => classIds.Contains(cs.SchoolClassId) && subjectIds.Contains(cs.SubjectId) && !cs.IsDeleted && cs.IsActive)
             .ToListAsync();
         var classSubjectLookup = classSubjects
             .GroupBy(cs => (cs.SchoolClassId, cs.SubjectId))
             .ToDictionary(g => g.Key, g => g.First());
+
+        // Pre-load existing subject results into a HashSet to avoid N+1 AnyAsync queries
+        var existingResults = await _subjectResultRepository.Query()
+            .Where(x => x.ExamId == dto.ExamId)
+            .Select(x => new { x.StudentId, x.SubjectId })
+            .ToListAsync();
+        var existingResultSet = new HashSet<(int StudentId, int SubjectId)>(
+            existingResults.Select(x => (x.StudentId, x.SubjectId)));
 
         // Update Mark Status + Create StudentSubjectResults using GradeCalculator
         foreach (var mark in marks)
@@ -143,11 +154,8 @@ public class ResultPublicationService : IResultPublicationService
             var cs = classSubjectLookup.GetValueOrDefault((mark.ClassId, mark.SubjectId));
             examSubjects.TryGetValue(mark.SubjectId, out var examSubject);
 
-            // Prevent Duplicate Result Insert
-            bool exists = await _subjectResultRepository.AnyAsync(x =>
-                x.StudentId == mark.StudentId &&
-                x.ExamId == mark.ExamId &&
-                x.SubjectId == mark.SubjectId);
+            // Prevent Duplicate Result Insert (in-memory check, no N+1)
+            bool exists = existingResultSet.Contains((mark.StudentId, mark.SubjectId));
 
             if (!exists)
             {

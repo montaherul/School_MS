@@ -19,11 +19,11 @@
             </div>
         </div>
         <div class="er-page-header__right">
-            <button class="er-btn er-btn--ghost" onclick="window.location.href='/AcademicCalendar/PrintView'">
-                <i class="bi bi-printer"></i> <span class="d-none d-sm-inline">Print</span>
+            <button class="er-btn er-btn--secondary" onclick="window.location.href='/AcademicCalendar/PrintView'">
+                <i class="bi bi-printer"></i> Print
             </button>
-            <button class="er-btn er-btn--ghost" onclick="AcademicCalendar.refreshAll()">
-                <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-sm-inline">Refresh</span>
+            <button class="er-btn er-btn--secondary" onclick="AcademicCalendar.refreshAll()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
             </button>
             @if (canManage)
             {
@@ -40,7 +40,7 @@
     <!-- ═══ SUCCESS ALERT ═══ -->
     @if (TempData["Success"] != null)
     {
-        <div class="er-alert er-alert--success mb-3">
+        <div class="er-alert er-alert--success ws-mb-3">
             <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
         </div>
     }
@@ -48,16 +48,16 @@
     <!-- ═══ SEGMENTED VIEW NAV ═══ -->
     <nav class="ac-nav" aria-label="Calendar view navigation">
         <a class="ac-nav__item ac-nav__item--active" asp-action="Index">
-            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+            <i class="bi bi-calendar3"></i> Month
         </a>
         <a class="ac-nav__item" asp-action="WeekView">
-            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+            <i class="bi bi-calendar-week"></i> Week
         </a>
         <a class="ac-nav__item" asp-action="Agenda">
-            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+            <i class="bi bi-list-task"></i> Agenda
         </a>
         <a class="ac-nav__item" asp-action="YearView">
-            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+            <i class="bi bi-calendar-range"></i> Year
         </a>
     </nav>
 
@@ -90,7 +90,7 @@
             </div>
             <div class="ac-filters__group ac-filters__group--actions">
                 <label class="ac-filters__label">&nbsp;</label>
-                <button class="er-btn er-btn--primary" id="btnRefresh" style="width:100%">
+                <button class="er-btn er-btn--primary" id="btnRefresh">
                     <i class="bi bi-arrow-clockwise"></i> Search
                 </button>
             </div>
@@ -102,7 +102,7 @@
             <button type="button" class="ac-filters__quick-btn" data-range="year">This Year</button>
             <button type="button" class="ac-filters__quick-btn" data-range="reset">Reset</button>
         </div>
-        <div class="ac-filters__quick" style="margin-top:8px">
+        <div class="ac-filters__quick">
             <button type="button" class="ac-filters__quick-btn ac-filters__quick-btn--active" data-cat="all">All</button>
             <button type="button" class="ac-filters__quick-btn" data-cat="exam">Exams</button>
             <button type="button" class="ac-filters__quick-btn" data-cat="holiday">Holidays</button>
@@ -124,13 +124,13 @@
         <div class="er-card__body">
             <div class="ac-calendar-wrapper">
                 <div id="monthGridContainer">
-                    <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading calendar...</div>
+                    <div class="ws-text-center ws-py-5"><span class="ws-text-muted ws-me-2">Loading calendar...</span></div>
                 </div>
             </div>
         </div>
 
         <!-- ═══ LEGEND ═══ -->
-        <div class="er-card__body" style="padding-top:0">
+        <div class="er-card__body ac-legend-padless">
             <div class="ac-legend">
                 <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
                 <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
@@ -142,9 +142,9 @@
     </div>
 
     <!-- ═══ EVENT LIST (Tabulator) ═══ -->
-    <div class="er-card er-card-animate" style="margin-top:20px">
+    <div class="er-card er-card-animate ac-card-spaced">
         <div class="er-card__header">
-            <h5 class="er-card__title"><i class="bi bi-list-ul" style="color:var(--adm-primary)"></i> Event Details</h5>
+            <h5 class="er-card__title"><i class="bi bi-list-ul ac-icon-primary"></i> Event Details</h5>
             <span class="er-badge er-badge--neutral" id="eventCount">0 entries</span>
         </div>
         <div class="er-card__body er-card__body--flush">
@@ -153,10 +153,10 @@
     </div>
 
     <!-- ═══ CHARTS ═══ -->
-    <div class="er-dash-grid" style="margin-top:20px">
+    <div class="er-dash-grid ac-card-spaced">
         <div class="er-card er-card-animate">
             <div class="er-card__header">
-                <h6 class="er-card__title"><i class="bi bi-bar-chart-line" style="color:var(--adm-primary)"></i> Monthly Distribution</h6>
+                <h6 class="er-card__title"><i class="bi bi-bar-chart-line ac-icon-primary"></i> Monthly Distribution</h6>
             </div>
             <div class="er-card__body">
                 <canvas id="acChartMonthly" height="200"></canvas>
@@ -164,7 +164,7 @@
         </div>
         <div class="er-card er-card-animate">
             <div class="er-card__header">
-                <h6 class="er-card__title"><i class="bi bi-pie-chart" style="color:var(--adm-primary)"></i> Year Overview</h6>
+                <h6 class="er-card__title"><i class="bi bi-pie-chart ac-icon-primary"></i> Year Overview</h6>
             </div>
             <div class="er-card__body">
                 <canvas id="acChartPie" height="200"></canvas>
@@ -173,24 +173,7 @@
     </div>
 </div>
 
-<!-- ═══ DELETE MODAL ═══ -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title" id="deleteConfirmLabel">Confirm Delete</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0">Are you sure you want to delete this calendar entry?</p>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="er-btn er-btn--ghost" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="er-btn er-btn--danger" id="confirmDeleteBtn">Delete</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- ═══ DELETE HANDLER ═══ (uses shared _DeleteModal via SchoolMS.Grid) -->
 
 @Html.AntiForgeryToken()
 
@@ -262,7 +245,7 @@
                     height: false,
                     layout: "fitColumns",
                     movableColumns: false,
-                    placeholder: "<div class='er-empty'><div class='er-empty__icon'><i class='bi bi-calendar-x fs-2'></i></div><div class='er-empty__title'>No entries found</div><div class='er-empty__desc'>Try adjusting your date range or filters.</div></div>",
+                    placeholder: "<div class='er-empty'><div class='er-empty__icon'><i class='bi bi-calendar-x'></i></div><div class='er-empty__title'>No entries found</div><div class='er-empty__desc'>Try adjusting your date range or filters.</div></div>",
                     columns: [
                         { title: "Date", field: "date", width: 120, sorter: "string", hozAlign: "center",
                           formatter: function(cell) {
@@ -270,13 +253,13 @@
                               if (!val) return "";
                               var parts = val.split('-');
                               var d = new Date(parts[0], parts[1] - 1, parts[2]);
-                              return '<span class="fw-semibold">' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</span>';
+                              return '<span>' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</span>';
                           }
                         },
                         { title: "Title", field: "title", minWidth: 180,
                           formatter: function(cell) {
-                              return '<div class="fw-semibold" style="color:var(--adm-text)">' + (cell.getValue() || '') + '</div>' +
-                                     '<div class="small" style="color:var(--adm-text-3)">' + (cell.getRow().getData().description || '') + '</div>';
+                              return '<div>' + (cell.getValue() || '') + '</div>' +
+                                     '<div>' + (cell.getRow().getData().description || '') + '</div>';
                           }
                         },
                         { title: "Type", field: "source", minWidth: 130, hozAlign: "center",
@@ -294,12 +277,12 @@
                               var val = cell.getRow().getData().date;
                               if (!val) return "";
                               var d = new Date(val.split('-')[0], val.split('-')[1] - 1, val.split('-')[2]);
-                              return '<span class="small" style="color:var(--adm-text-2)">' + d.toLocaleDateString(undefined, { weekday: 'long' }) + '</span>';
+                              return '<span>' + d.toLocaleDateString(undefined, { weekday: 'long' }) + '</span>';
                           }
                         },
                         { title: "Venue", field: "venue", width: 140, hozAlign: "center",
                           formatter: function(cell) {
-                              return cell.getValue() ? '<span class="small" style="color:var(--adm-text-2)"><i class="bi bi-geo-alt"></i> ' + cell.getValue() + '</span>' : '';
+                              return cell.getValue() ? '<span><i class="bi bi-geo-alt"></i> ' + cell.getValue() + '</span>' : '';
                           }
                         },
                         { title: "Remarks", field: "remarks", minWidth: 120 },
@@ -517,58 +500,60 @@
                     });
             }
 
-            // ── Delete handler ──
-            var deleteId = null;
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-
+            // ── Delete handler (shared _DeleteModal via SchoolMS.Grid) ──
             document.addEventListener('click', function (e) {
                 var deleteBtn = e.target.closest('.btn-delete');
                 if (deleteBtn) {
-                    deleteId = deleteBtn.getAttribute('data-id');
-                    deleteModal.show();
+                    var id = deleteBtn.getAttribute('data-id');
+                    SchoolMS.Grid._deleteMeta.name = 'academicCalendar';
+                    SchoolMS.Grid._deleteMeta.id = id;
+                    SchoolMS.Grid.delete('academicCalendar', id);
                 }
             });
 
-            document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-                if (!deleteId) return;
-                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                fetch('/AcademicCalendar/Delete/' + deleteId, {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token,
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
-                })
-                .then(function (res) { return res.json(); })
-                .then(function (res) {
-                    deleteModal.hide();
-                    if (res.success) {
-                        toastr.success(res.message);
-                        refreshData();
-                        loadMonthView();
-                        AcademicCalendar.loadKpiCards('acKpiCards');
-                        loadCharts();
-                    } else {
-                        toastr.error(res.message || 'Error occurred');
-                    }
-                })
-                .catch(function () {
-                    deleteModal.hide();
-                    toastr.error('Network error occurred.');
-                });
+            // Override confirmDelete for this module (needs extra refresh steps)
+            document.addEventListener('click', function (e) {
+                if (e.target.id === 'gridConfirmDeleteBtn') {
+                    var meta = SchoolMS.Grid._deleteMeta;
+                    if (!meta || meta.name !== 'academicCalendar' || !meta.id) return;
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    fetch('/AcademicCalendar/Delete/' + meta.id, {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function (res) { return res.json(); })
+                    .then(function (res) {
+                        SchoolMS.Grid.cancelDelete();
+                        if (res.success) {
+                            toastr.success(res.message);
+                            refreshData();
+                            loadMonthView();
+                            AcademicCalendar.loadKpiCards('acKpiCards');
+                            loadCharts();
+                        } else {
+                            toastr.error(res.message || 'Error occurred');
+                        }
+                    })
+                    .catch(function () {
+                        SchoolMS.Grid.cancelDelete();
+                        toastr.error('Network error occurred.');
+                    });
+                }
             });
 
+            // ── Init ──
+            loadMonthView();
+            initTable();
+            loadCharts();
+
+            // Expose refreshAll for global access
+            window.AcademicCalendar = window.AcademicCalendar || {};
             AcademicCalendar.refreshAll = function () {
                 refreshData();
                 loadMonthView();
                 AcademicCalendar.loadKpiCards('acKpiCards');
                 loadCharts();
             };
-
-            // ── Init ──
-            loadMonthView();
-            initTable();
-            loadCharts();
 
         })();
     </script>

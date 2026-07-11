@@ -62,7 +62,7 @@
                     <label class="adm-form-label">Page HTML Body Content</label>
                     <input type="hidden" name="Content" id="hiddenContent" value="@Model.Content"/>
                     <div id="editor-container" style="height:350px;background-color:#fff;border-radius:4px;">
-                        @Html.Raw(Model.Content)
+                        @Html.SanitizedHtml(Model.Content)
                     </div>
                 </div>
 

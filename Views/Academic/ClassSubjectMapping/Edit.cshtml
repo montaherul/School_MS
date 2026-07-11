@@ -1,0 +1,131 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.ClassSubjectUpsertDto
+@{
+    ViewData["Title"] = "Edit Subject Mapping";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Edit Subject Mapping</h1>
+                <p class="adm-header__sub">Update marks and properties for this subject mapping</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" class="adm-card">
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error ws-d-none"></div>
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="adm-card__body">
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="SchoolClassId" class="adm-label"></label>
+                    <select asp-for="SchoolClassId" class="adm-select" asp-items="ViewBag.Classes">
+                        <option value="">-- Select Class --</option>
+                    </select>
+                    <span asp-validation-for="SchoolClassId" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="SubjectId" class="adm-label"></label>
+                    <select asp-for="SubjectId" class="adm-select" asp-items="ViewBag.Subjects">
+                        <option value="">-- Select Subject --</option>
+                    </select>
+                    <span asp-validation-for="SubjectId" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="GroupName" class="adm-label"></label>
+                    <select asp-for="GroupName" class="adm-select">
+                        <option value="">General</option>
+                        <option value="Science">Science</option>
+                        <option value="Business Studies">Business Studies</option>
+                        <option value="Humanities">Humanities</option>
+                    </select>
+                    <span asp-validation-for="GroupName" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid">
+                <div class="adm-form-group">
+                    <label asp-for="FullMarks" class="adm-label"></label>
+                    <input asp-for="FullMarks" class="adm-input" type="number" step="0.01" />
+                    <span asp-validation-for="FullMarks" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="PassMarks" class="adm-label"></label>
+                    <input asp-for="PassMarks" class="adm-input" type="number" step="0.01" />
+                    <span asp-validation-for="PassMarks" class="ws-text-danger ws-fs-13"></span>
+                </div>
+                <div class="adm-form-group">
+                    <label asp-for="DisplayOrder" class="adm-label"></label>
+                    <input asp-for="DisplayOrder" class="adm-input" type="number" />
+                    <span asp-validation-for="DisplayOrder" class="ws-text-danger ws-fs-13"></span>
+                </div>
+            </div>
+
+            <div class="adm-form-grid ws-mt-3">
+                <div class="ws-form-check">
+                    <input asp-for="IsMandatory" class="ws-form-check-input" />
+                    <label asp-for="IsMandatory" class="ws-form-check-label">Mandatory subject</label>
+                </div>
+                <div class="ws-form-check">
+                    <input asp-for="IsOptional" class="ws-form-check-input" />
+                    <label asp-for="IsOptional" class="ws-form-check-label">Optional subject</label>
+                </div>
+                <div class="ws-form-check">
+                    <input asp-for="IsReligionSubject" class="ws-form-check-input" />
+                    <label asp-for="IsReligionSubject" class="ws-form-check-label">Religion subject</label>
+                </div>
+                <div class="ws-form-check">
+                    <input asp-for="IsActive" class="ws-form-check-input" />
+                    <label asp-for="IsActive" class="ws-form-check-label">Active</label>
+                </div>
+            </div>
+
+            <div class="adm-form-group ws-mt-3">
+                <label asp-for="ReligionType" class="adm-label"></label>
+                <select asp-for="ReligionType" class="adm-select">
+                    <option value="">-- None --</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Hinduism">Hinduism</option>
+                    <option value="Buddhism">Buddhism</option>
+                    <option value="Christianity">Christianity</option>
+                </select>
+                <span asp-validation-for="ReligionType" class="ws-text-danger ws-fs-13"></span>
+            </div>
+        </div>
+
+        <div class="adm-card__header ws-flex-between">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            <button type="submit" class="adm-btn adm-btn--primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

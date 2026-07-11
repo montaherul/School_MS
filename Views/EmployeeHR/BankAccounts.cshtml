@@ -1,0 +1,110 @@
+@model List<EmployeeBankAccountDto>
+@{
+    ViewData["Title"] = "Bank Accounts";
+    var employeeName = ViewBag.EmployeeName as string;
+    var employeeId = ViewBag.EmployeeId;
+}
+
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <h1 class="er-page-header__title">Bank Accounts</h1>
+            <p class="er-page-header__sub">@employeeName</p>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Details", "Employee", new { id = employeeId })" class="er-btn er-btn--secondary">Back</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="er-alert er-alert--success">@TempData["Success"]</div>
+    }
+
+    <div class="er-card">
+        <div class="er-card__body">
+            <form method="post" asp-controller="EmployeeHR" asp-action="SaveBankAccount" class="er-inline-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EmployeeId" value="@employeeId" />
+                <input type="hidden" name="Id" value="0" />
+                <div class="adm-form-grid adm-form-grid--4">
+                    <div class="adm-form-group">
+                        <label class="er-label">Bank Name</label>
+                        <input name="BankName" class="er-input" required data-val="true" data-val-required="The Bank Name field is required." />
+                        <span class="adm-field-error" data-valmsg-for="BankName" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Branch</label>
+                        <input name="BranchName" class="er-input" required data-val="true" data-val-required="The Branch Name field is required." />
+                        <span class="adm-field-error" data-valmsg-for="BranchName" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Account No</label>
+                        <input name="AccountNumber" class="er-input" required data-val="true" data-val-required="The Account Number field is required." />
+                        <span class="adm-field-error" data-valmsg-for="AccountNumber" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Routing No</label>
+                        <input name="RoutingNumber" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="RoutingNumber" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Account Type</label>
+                        <input name="AccountType" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="AccountType" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">
+                            <input name="IsDefault" type="checkbox" value="true" /> Default
+                        </label>
+                    </div>
+                    <div class="adm-form-group adm-form-actions">
+                        <button type="submit" class="er-btn er-btn--primary">Add Account</button>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.Count == 0)
+            {
+                <div class="er-empty-state"><p>No bank accounts.</p></div>
+            }
+            else
+            {
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Bank</th>
+                            <th>Branch</th>
+                            <th>Account No</th>
+                            <th>Routing</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model)
+                        {
+                            <tr>
+                                <td>@b.BankName</td>
+                                <td>@b.BranchName</td>
+                                <td>@b.AccountNumber</td>
+                                <td>@b.RoutingNumber</td>
+                                <td>@b.AccountType</td>
+                                <td>@(b.IsDefault ? "Yes" : "No")</td>
+                                <td>
+                                    <form method="post" asp-controller="EmployeeHR" asp-action="DeleteBankAccount" class="er-inline-form" onsubmit="return confirm('Delete this bank account?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@b.Id" />
+                                        <input type="hidden" name="employeeId" value="@employeeId" />
+                                        <button type="submit" class="er-btn er-btn--sm er-btn--danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

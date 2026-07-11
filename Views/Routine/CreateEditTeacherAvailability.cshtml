@@ -8,7 +8,7 @@
 <div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #6366F1, #A5B4FC); box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
+            <div class="adm-header__icon-wrap">
                 <i class="bi bi-person-check"></i>
             </div>
             <div>
@@ -21,16 +21,16 @@
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
                     <form asp-action="CreateEditTeacherAvailability" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <div class="mb-3">
-                            <label asp-for="TeacherId" class="form-label">Teacher <span class="text-danger">*</span></label>
-                            <select asp-for="TeacherId" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="TeacherId" class="adm-label">Teacher <span class="ws-text-danger">*</span></label>
+                            <select asp-for="TeacherId" class="adm-input">
                                 <option value="">Select Teacher</option>
                                 @if (teachers != null)
                                 {
@@ -40,12 +40,12 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="TeacherId" class="text-danger small"></span>
+                            <span asp-validation-for="TeacherId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="RoutinePeriodId" class="form-label">Period <span class="text-danger">*</span></label>
-                            <select asp-for="RoutinePeriodId" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="RoutinePeriodId" class="adm-label">Period <span class="ws-text-danger">*</span></label>
+                            <select asp-for="RoutinePeriodId" class="adm-input">
                                 <option value="">Select Period</option>
                                 @if (periods != null)
                                 {
@@ -55,12 +55,12 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="RoutinePeriodId" class="text-danger small"></span>
+                            <span asp-validation-for="RoutinePeriodId" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="DayNumber" class="form-label">Day <span class="text-danger">*</span></label>
-                            <select asp-for="DayNumber" class="form-select">
+                        <div class="ws-mb-3">
+                            <label asp-for="DayNumber" class="adm-label">Day <span class="ws-text-danger">*</span></label>
+                            <select asp-for="DayNumber" class="adm-input">
                                 <option value="">Select Day</option>
                                 <option value="1">Saturday</option>
                                 <option value="2">Sunday</option>
@@ -70,15 +70,15 @@
                                 <option value="6">Thursday</option>
                                 <option value="7">Friday</option>
                             </select>
-                            <span asp-validation-for="DayNumber" class="text-danger small"></span>
+                            <span asp-validation-for="DayNumber" class="ws-text-danger ws-fs-13"></span>
                         </div>
 
-                        <div class="mb-4 form-check">
-                            <input asp-for="IsAvailable" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsAvailable" class="form-check-label fw-semibold">Is Available</label>
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsAvailable" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsAvailable" class="adm-form-check-label ws-fw-600">Is Available</label>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="ws-flex ws-gap-2">
                             <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
                             <a href="/Routine/TeacherAvailabilities" class="adm-btn adm-btn--ghost">Cancel</a>
                         </div>

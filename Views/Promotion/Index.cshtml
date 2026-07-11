@@ -27,7 +27,7 @@
                     }
                     else
                     {
-                        <span style="color:var(--adm-pending);">No active academic year configured</span>
+                        <span class="ws-text-pending">No active academic year configured</span>
                     }
                 </p>
             </div>
@@ -44,8 +44,8 @@
         </div>
     </div>
 
-    <div class="adm-filters mb-4">
-        <form method="get" action="@Url.Action("Index")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+    <div class="adm-filters ws-mb-4">
+        <form method="get" action="@Url.Action("Index")" class="adm-filters__row">
             <div class="adm-filters__field">
                 <label class="er-label">Academic Year</label>
                 <select name="academicYearId" class="er-filters__select">
@@ -104,9 +104,9 @@
         <div class="dash-section__header">
             <h2 class="dash-section__title">Class-wise Promotion Status</h2>
         </div>
-        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="er-card__body">
-                <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                <div class="adm-table-wrapper">
                     <table class="dash-table" id="promotionTable">
                         <thead>
                             <tr>
@@ -117,7 +117,7 @@
                                 <th>Failed</th>
                                 <th>Policy</th>
                                 <th>Last Execution</th>
-                                <th style="text-align:right;">Actions</th>
+                                <th class="ws-text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -182,7 +182,7 @@
         </div>
         <div class="dash-actions">
             <a href="@Url.Action("Policies", "Promotion", new { academicYearId = selectedYearId })" class="dash-action-card">
-                <div class="dash-action-card__icon" style="background:var(--adm-primary-bg);color:var(--adm-primary);">
+                <div class="dash-action-card__icon dash-action-card__icon--primary">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                 </div>
                 <div class="dash-action-card__body">
@@ -192,7 +192,7 @@
                 <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </a>
             <a href="@Url.Action("RollGeneration", "Promotion")" class="dash-action-card">
-                <div class="dash-action-card__icon" style="background:var(--adm-success-bg);color:var(--adm-success);">
+                <div class="dash-action-card__icon dash-action-card__icon--success">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="10" x2="16" y2="10" /></svg>
                 </div>
                 <div class="dash-action-card__body">
@@ -202,7 +202,7 @@
                 <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </a>
             <a href="@Url.Action("GroupAssignment", "Promotion")" class="dash-action-card">
-                <div class="dash-action-card__icon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                <div class="dash-action-card__icon dash-action-card__icon--warning">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 </div>
                 <div class="dash-action-card__body">
@@ -212,7 +212,7 @@
                 <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </a>
             <a href="@Url.Action("History", "Promotion", new { academicYearId = selectedYearId })" class="dash-action-card">
-                <div class="dash-action-card__icon" style="background:var(--adm-converted-bg);color:var(--adm-converted);">
+                <div class="dash-action-card__icon dash-action-card__icon--info">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                 </div>
                 <div class="dash-action-card__body">
@@ -225,7 +225,7 @@
     </div>
 </div>
 
-<div class="er-skeleton-overlay" id="loadingOverlay" style="display:none;">
+<div class="er-skeleton-overlay ws-d-none" id="loadingOverlay">
     <div class="er-skeleton-spinner">
         <div class="er-skeleton-spinner__ring"></div>
         <span class="er-skeleton-spinner__text">Processing...</span>
@@ -234,15 +234,31 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof $ !== 'undefined' && $.fn.DataTable) {
-                $('#promotionTable').DataTable({
-                    responsive: true,
-                    pageLength: 25,
-                    order: [[0, 'asc']],
-                    language: { emptyTable: "No class promotion data found" }
-                });
+        @if (TempData["Success"] != null)
+        {
+            <text>showErAlert('@TempData["Success"]', 'success');</text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>showErAlert('@TempData["Error"]', 'error');</text>
+        }
+
+        function showErAlert(message, type) {
+            var container = document.getElementById('alertContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'alertContainer';
+                container.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px';
+                document.body.appendChild(container);
             }
+            var el = document.createElement('div');
+            el.className = 'er-alert er-alert--' + type;
+            el.innerHTML = '<span>' + message + '</span><button class="er-alert__close" onclick="this.parentElement.remove()">&times;</button>';
+            container.appendChild(el);
+            setTimeout(function () { if (el.parentElement) el.remove(); }, 4000);
+        }
+    </script>
+}
         });
 
         @if (TempData["Success"] != null)

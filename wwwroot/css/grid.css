@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SchoolMS — Enterprise Grid Styles
+   Shared Tabulator overrides & grid utilities
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Grid container */
+.adm-grid {
+    position: relative;
+    width: 100%;
+}
+
+/* Toolbar */
+.adm-filters__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.adm-filters__field--actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* Search icon */
+.adm-input-wrap {
+    position: relative;
+}
+
+.adm-input-wrap__icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--adm-text-muted, #8a8f9e);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.adm-input-wrap .adm-input {
+    padding-left: 34px;
+}
+
+/* Dropdown (ws-dropdown) */
+.ws-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.ws-dropdown--up .ws-dropdown__menu {
+    bottom: 100%;
+    top: auto;
+    margin-bottom: 4px;
+}
+
+.ws-dropdown__menu {
+    position: absolute;
+    right: 0;
+    z-index: 1000;
+    min-width: 180px;
+    background: var(--adm-surface, #fff);
+    border: 1px solid var(--adm-border, #e2e5ed);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+}
+
+.ws-dropdown__item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--adm-text, #2d3047);
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.ws-dropdown__item:hover {
+    background: var(--adm-hover, #f0f2f8);
+}
+
+.ws-dropdown__divider {
+    height: 1px;
+    margin: 6px 0;
+    background: var(--adm-border, #e2e5ed);
+}
+
+/* Tabulator overrides */
+.tabulator {
+    border: 1px solid var(--adm-border, #e2e5ed) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    font-family: inherit !important;
+    background: var(--adm-surface, #fff) !important;
+}
+
+.tabulator .tabulator-header {
+    background: var(--adm-header-bg, #f8f9fc) !important;
+    border-bottom: 2px solid var(--adm-border, #e2e5ed) !important;
+    font-weight: 600 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+    background: transparent !important;
+    border-right: 1px solid var(--adm-border, #e2e5ed) !important;
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    color: var(--adm-text-muted, #6b7280) !important;
+}
+
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable:hover {
+    background: var(--adm-hover, #f0f2f8) !important;
+}
+
+.tabulator .tabulator-row {
+    border-bottom: 1px solid var(--adm-border-lighter, #eef0f6) !important;
+    transition: background 0.15s;
+}
+
+.tabulator .tabulator-row:hover {
+    background: var(--adm-hover, #f0f2f8) !important;
+}
+
+.tabulator .tabulator-row .tabulator-cell {
+    padding: 10px 8px !important;
+    font-size: 13px !important;
+    color: var(--adm-text, #2d3047) !important;
+    border-right: 1px solid var(--adm-border-lighter, #eef0f6) !important;
+}
+
+.tabulator .tabulator-row.tabulator-row-even {
+    background: var(--adm-stripe, #fafbfd) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected {
+    background: var(--adm-primary-light, #e8f0fe) !important;
+}
+
+.tabulator .tabulator-footer {
+    background: var(--adm-header-bg, #f8f9fc) !important;
+    border-top: 1px solid var(--adm-border, #e2e5ed) !important;
+    padding: 8px 12px !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page-counter {
+    font-size: 12px !important;
+    color: var(--adm-text-muted, #6b7280) !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tabulator .tabulator-footer .tabulator-page {
+    border: 1px solid var(--adm-border, #e2e5ed) !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    color: var(--adm-text, #2d3047) !important;
+    background: var(--adm-surface, #fff) !important;
+    cursor: pointer !important;
+    transition: all 0.15s;
+}
+
+.tabulator .tabulator-footer .tabulator-page:hover {
+    background: var(--adm-hover, #f0f2f8) !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page.active {
+    background: var(--adm-primary, #4f6ef7) !important;
+    border-color: var(--adm-primary, #4f6ef7) !important;
+    color: #fff !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page.disabled {
+    opacity: 0.4 !important;
+    cursor: default !important;
+}
+
+/* Density: compact */
+.tabulator.tabulator--compact .tabulator-row .tabulator-cell {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+}
+
+/* Density: minimal */
+.tabulator.tabulator--minimal .tabulator-row .tabulator-cell {
+    padding: 2px 8px !important;
+    font-size: 11px !important;
+}
+
+/* Loading overlay */
+.grid-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border-radius: 8px;
+}
+
+.grid-loader .adm-loading {
+    margin: 0;
+}
+
+/* Holiday type badges */
+.badge-national { background: var(--adm-danger, #dc2626); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; display: inline-block; }
+.badge-religious { background: var(--adm-secondary, #7c3aed); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; display: inline-block; }
+.badge-cultural { background: var(--adm-warning, #d97706); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; display: inline-block; }
+.badge-government { background: var(--adm-primary, #2563eb); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; display: inline-block; }
+.badge-weekly { background: var(--adm-text-muted, #64748b); color: #fff; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 650; display: inline-block; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .adm-filters__row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .adm-filters__field--actions {
+        margin-left: 0;
+        justify-content: flex-end;
+    }
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 11px !important;
+        padding: 8px 4px !important;
+    }
+    .tabulator .tabulator-row .tabulator-cell {
+        padding: 8px 4px !important;
+        font-size: 12px !important;
+    }
+}

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -11,31 +12,45 @@ public class AcademicYearService : IAcademicYearService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICalendarGenerationService _calendarGen;
+    private readonly IAcademicYearRepository _repo;
 
-    public AcademicYearService(IUnitOfWork unitOfWork, ICalendarGenerationService calendarGen)
+    public AcademicYearService(IUnitOfWork unitOfWork, ICalendarGenerationService calendarGen, IAcademicYearRepository repo)
     {
         _unitOfWork = unitOfWork;
         _calendarGen = calendarGen;
+        _repo = repo;
     }
 
     public async Task<PagedResult<AcademicYearListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
-        var query = _unitOfWork.Repository<AcademicYear>().Query().AsNoTracking().Where(x => !x.IsDeleted);
-        if (!string.IsNullOrEmpty(search)) query = query.Where(x => x.Name.Contains(search));
+        var spResults = await _repo.GetListSpAsync(page, pageSize, search);
+        if (spResults.Count == 0)
+            return new PagedResult<AcademicYearListItemDto> { Items = [], Page = page, PageSize = pageSize, TotalItems = 0 };
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query.OrderByDescending(x => x.StartsOn)
-            .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(x => new AcademicYearListItemDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                StartsOn = x.StartsOn.ToString("yyyy-MM-dd"),
-                EndsOn = x.EndsOn.ToString("yyyy-MM-dd"),
-                IsActive = x.IsActive
-            }).ToListAsync(cancellationToken);
+        var totalCount = spResults[0].TotalRecords;
+        var items = spResults.Select(x => new AcademicYearListItemDto
+        {
+            Id = x.Id,
+            Name = x.Name,
+            StartsOn = x.StartsOn.ToString("yyyy-MM-dd"),
+            EndsOn = x.EndsOn.ToString("yyyy-MM-dd"),
+            IsActive = x.IsActive
+        }).ToList();
 
         return new PagedResult<AcademicYearListItemDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = totalCount };
+    }
+
+    public async Task<AcademicYear?> GetActiveYearAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<AcademicYear>().Query().AsNoTracking()
+            .FirstOrDefaultAsync(x => x.IsActive && !x.IsDeleted, ct);
+    }
+
+    public async Task<IReadOnlyList<AcademicYear>> GetAllYearsAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<AcademicYear>().Query().AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .ToListAsync(ct);
     }
 
     public async Task<AcademicYearUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)

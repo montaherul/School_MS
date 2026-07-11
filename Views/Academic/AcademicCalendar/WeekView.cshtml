@@ -1,0 +1,147 @@
+@{
+    ViewData["Title"] = "Week View - Academic Calendar";
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Week View</h1>
+                <p class="adm-header__sub">7-day planner overview</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--ghost" id="todayWeekBtn">Today</button>
+        </div>
+    </div>
+
+    <nav class="ws-flex ws-gap-1 ws-mb-4" aria-label="Calendar view navigation">
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">Month</a>
+        <a asp-action="WeekView" class="adm-btn adm-btn--primary">Week</a>
+        <a asp-action="Agenda" class="adm-btn adm-btn--ghost">Agenda</a>
+        <a asp-action="YearView" class="adm-btn adm-btn--ghost">Year</a>
+    </nav>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__body">
+            <div class="ws-flex ws-items-center ws-justify-between">
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="prevWeek">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <h3 class="ws-fw-700" id="weekLabel">Loading...</h3>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="nextWeek">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-flex ws-gap-3 ws-mb-4 ws-flex-wrap">
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-converted);display:inline-block;"></span> Working Day</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected);display:inline-block;"></span> Holiday</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-pending);display:inline-block;"></span> Exam</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-info);display:inline-block;"></span> Event</span>
+    </div>
+
+    <div id="weekGridContainer">
+        <div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading week...</span></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var currentDate = new Date('@startDate.ToString("yyyy-MM-dd")');
+            var dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            function pad(n) { return n < 10 ? '0' + n : n; }
+            function formatDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+            function getWeekStart(d) {
+                var dt = new Date(d);
+                dt.setDate(dt.getDate() - dt.getDay());
+                return dt;
+            }
+
+            function loadWeek() {
+                var ws = getWeekStart(currentDate);
+                var we = new Date(ws);
+                we.setDate(we.getDate() + 6);
+
+                var options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+                document.getElementById('weekLabel').textContent = ws.toLocaleDateString(undefined, options) + ' — ' + we.toLocaleDateString(undefined, options);
+
+                var container = document.getElementById('weekGridContainer');
+                container.innerHTML = '<div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading week...</span></div>';
+
+                fetch('/AcademicCalendar/GetWeekData?date=' + formatDate(ws))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var today = new Date();
+                        var todayStr = formatDate(today);
+                        var dayData = {};
+                        if (data && data.days) { data.days.forEach(function(d) { dayData[d.date] = d; }); }
+
+                        var html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;">';
+
+                        for (var i = 0; i < 7; i++) {
+                            var d = new Date(ws);
+                            d.setDate(d.getDate() + i);
+                            var dateStr = formatDate(d);
+                            var isToday = dateStr === todayStr;
+                            var dayInfo = dayData[dateStr];
+
+                            html += '<div class="adm-card" style="' + (isToday ? 'outline:2px solid var(--adm-primary);' : '') + '">';
+                            html += '<div class="ws-p-3 ws-text-center ws-border-bottom" style="background:var(--adm-surface-1);">';
+                            html += '<div class="ws-fs-13 ws-text-muted">' + dayNamesShort[d.getDay()] + '</div>';
+                            html += '<div class="ws-fs-20 ws-fw-700">' + d.getDate() + '</div>';
+                            html += '</div>';
+
+                            if (dayInfo) {
+                                var bg = 'var(--adm-surface)';
+                                var badgeClass = 'success';
+                                var badgeLabel = 'Working';
+                                if (dayInfo.isHoliday) { bg = 'var(--adm-rejected-bg, #fef2f2)'; badgeClass = 'danger'; badgeLabel = 'Holiday'; }
+                                else if (dayInfo.isExamDay) { bg = 'var(--adm-pending-bg, #fffbeb)'; badgeClass = 'warning'; badgeLabel = 'Exam'; }
+                                else if (dayInfo.isEventDay) { bg = 'var(--adm-info-bg, #eff6ff)'; badgeClass = 'info'; badgeLabel = 'Event'; }
+
+                                html += '<div class="ws-p-3" style="background:' + bg + ';">';
+                                html += '<span class="adm-badge adm-badge--' + badgeClass + ' ws-mb-2">' + badgeLabel + '</span>';
+                                if (dayInfo.title) { html += '<div class="ws-fw-600 ws-fs-13">' + dayInfo.title + '</div>'; }
+                                if (dayInfo.description) { html += '<div class="ws-fs-12 ws-text-muted">' + dayInfo.description + '</div>'; }
+                                if (dayInfo.holidayType) { html += '<div class="ws-fs-12 ws-text-muted ws-mt-1">' + dayInfo.holidayType + '</div>'; }
+                                html += '</div>';
+                            } else {
+                                html += '<div class="ws-p-3"><div class="ws-text-center ws-text-muted ws-fs-12">Regular</div></div>';
+                            }
+                            html += '</div>';
+                        }
+                        html += '</div>';
+                        container.innerHTML = html;
+                    })
+                    .catch(function() {
+                        container.innerHTML = '<div class="adm-alert adm-alert--danger">Failed to load week data.</div>';
+                    });
+            }
+
+            document.getElementById('prevWeek').addEventListener('click', function() { currentDate.setDate(currentDate.getDate() - 7); loadWeek(); });
+            document.getElementById('nextWeek').addEventListener('click', function() { currentDate.setDate(currentDate.getDate() + 7); loadWeek(); });
+            document.getElementById('todayWeekBtn').addEventListener('click', function() { currentDate = new Date(); loadWeek(); });
+
+            loadWeek();
+        })();
+    </script>
+}

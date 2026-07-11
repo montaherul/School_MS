@@ -1,0 +1,177 @@
+@{
+    ViewData["Title"] = "Year View - Academic Calendar";
+    var year = ViewBag.Year as int? ?? DateTime.Today.Year;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Year View</h1>
+                <p class="adm-header__sub">12-month academic year planner with monthly statistics</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--ghost" id="currentYearBtn">Current Year</button>
+        </div>
+    </div>
+
+    <nav class="ws-flex ws-gap-1 ws-mb-4" aria-label="Calendar view navigation">
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">Month</a>
+        <a asp-action="WeekView" class="adm-btn adm-btn--ghost">Week</a>
+        <a asp-action="Agenda" class="adm-btn adm-btn--ghost">Agenda</a>
+        <a asp-action="YearView" class="adm-btn adm-btn--primary">Year</a>
+    </nav>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__body">
+            <div class="ws-flex ws-items-center ws-justify-between">
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="prevYear">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <h3 class="ws-fw-700 ws-fs-20" id="yearLabel">@year</h3>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" id="nextYear">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-flex ws-gap-3 ws-mb-4 ws-flex-wrap">
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-converted);display:inline-block;"></span> Working Day</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected);display:inline-block;"></span> Holiday</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-pending);display:inline-block;"></span> Exam</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-info);display:inline-block;"></span> Event</span>
+    </div>
+
+    <div id="yearGridContainer">
+        <div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading year data...</span></div>
+    </div>
+
+    <div id="yearSummaryContainer" class="ws-mt-4"></div>
+
+    <div class="adm-card ws-mt-4">
+        <div class="adm-card__header">
+            <h2 class="adm-card__title">Monthly Distribution</h2>
+        </div>
+        <div class="adm-card__body">
+            <canvas id="yearChartMonthly" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            var currentYear = @year;
+            var yearChart = null;
+
+            function loadYear() {
+                var label = document.getElementById('yearLabel');
+                if (label) label.textContent = currentYear;
+
+                var grid = document.getElementById('yearGridContainer');
+                var summaryContainer = document.getElementById('yearSummaryContainer');
+                grid.innerHTML = '<div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading...</span></div>';
+                if (summaryContainer) summaryContainer.innerHTML = '';
+
+                fetch('/AcademicCalendar/GetYearData?year=' + currentYear)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (!data || !data.months) {
+                            grid.innerHTML = '<div class="adm-alert adm-alert--danger">No data available for this year.</div>';
+                            return;
+                        }
+
+                        var months = data.months;
+
+                        var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">';
+                        months.forEach(function(m) {
+                            var ratio = m.totalDays > 0 ? m.holidays / m.totalDays : 0;
+                            var borderColor = 'var(--adm-converted)';
+                            if (ratio > 0.3) borderColor = 'var(--adm-rejected)';
+                            else if (ratio > 0.15) borderColor = 'var(--adm-pending)';
+                            var totalAcEvents = (m.events || 0) + (m.websiteEvents || 0);
+
+                            html += '<div class="adm-card" style="border-top:3px solid ' + borderColor + ';">';
+                            html += '<div class="adm-card__header"><h3 class="ws-fw-700 ws-fs-16">' + m.monthName + ' ' + currentYear + '</h3></div>';
+                            html += '<div class="adm-card__body ws-p-3">';
+                            html += '<div class="ws-flex ws-items-center ws-justify-between ws-mb-2"><span class="ws-text-muted ws-fs-13">Total Days</span><span class="ws-fw-700 ws-fs-18">' + m.totalDays + '</span></div>';
+                            html += '<div class="ws-flex ws-items-center ws-justify-between ws-mb-1"><span style="color:var(--adm-converted);" class="ws-fs-13">Working</span><span class="ws-fw-600">' + m.workingDays + '</span></div>';
+                            html += '<div class="ws-flex ws-items-center ws-justify-between ws-mb-1"><span style="color:var(--adm-rejected);" class="ws-fs-13">Holidays</span><span class="ws-fw-600 ws-text-danger">' + m.holidays + '</span></div>';
+                            html += '<div class="ws-flex ws-items-center ws-justify-between ws-mb-1"><span style="color:var(--adm-pending);" class="ws-fs-13">Exam Days</span><span class="ws-fw-600 ws-text-warning">' + m.examDays + '</span></div>';
+                            html += '<div class="ws-flex ws-items-center ws-justify-between"><span style="color:var(--adm-info);" class="ws-fs-13">Events</span><span class="ws-fw-600 ws-text-info">' + totalAcEvents + '</span></div>';
+                            html += '</div></div>';
+                        });
+                        html += '</div>';
+                        grid.innerHTML = html;
+
+                        var totalHolidays = months.reduce(function(s, m) { return s + m.holidays; }, 0);
+                        var totalExams = months.reduce(function(s, m) { return s + m.examDays; }, 0);
+                        var totalWorking = months.reduce(function(s, m) { return s + m.workingDays; }, 0);
+                        var totalEvents = months.reduce(function(s, m) { return s + (m.events || 0) + (m.websiteEvents || 0); }, 0);
+                        var totalDays = months.reduce(function(s, m) { return s + m.totalDays; }, 0);
+
+                        if (summaryContainer) {
+                            summaryContainer.innerHTML = '<div class="dash-stats">' +
+                                '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--success"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Working Days</span><span class="dash-stat-card__value">' + totalWorking + '</span></div></div>' +
+                                '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--danger"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 6 6v0a6 6 0 0 0-6-6Z"/><path d="M12 3a6 6 0 0 0-6 6v0a6 6 0 0 0 6 6"/><path d="M12 15v6"/><path d="M8 21h8"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Holidays</span><span class="dash-stat-card__value">' + totalHolidays + '</span></div></div>' +
+                                '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--warning"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Exam Days</span><span class="dash-stat-card__value">' + totalExams + '</span></div></div>' +
+                                '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--info"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Events</span><span class="dash-stat-card__value">' + totalEvents + '</span></div></div>' +
+                                '<div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--primary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="dash-stat-card__body"><span class="dash-stat-card__label">Total Days</span><span class="dash-stat-card__value">' + totalDays + '</span></div></div>' +
+                                '</div>';
+                        }
+
+                        var ctx = document.getElementById('yearChartMonthly');
+                        if (ctx) {
+                            if (yearChart) yearChart.destroy();
+                            var labels = months.map(function(m) { return m.monthName.substring(0, 3); });
+                            yearChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: 'Working', data: months.map(function(m) { return m.workingDays; }), backgroundColor: 'var(--adm-converted)', borderRadius: 3 },
+                                        { label: 'Holidays', data: months.map(function(m) { return m.holidays; }), backgroundColor: 'var(--adm-rejected)', borderRadius: 3 },
+                                        { label: 'Exams', data: months.map(function(m) { return m.examDays; }), backgroundColor: 'var(--adm-pending)', borderRadius: 3 },
+                                        { label: 'Events', data: months.map(function(m) { return (m.events || 0) + (m.websiteEvents || 0); }), backgroundColor: 'var(--adm-info)', borderRadius: 3 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+                                    scales: {
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, stepSize: 1 } }
+                                    }
+                                }
+                            });
+                        }
+                    })
+                    .catch(function() {
+                        grid.innerHTML = '<div class="adm-alert adm-alert--danger">Failed to load year data.</div>';
+                    });
+            }
+
+            document.getElementById('prevYear').addEventListener('click', function() { currentYear--; loadYear(); });
+            document.getElementById('nextYear').addEventListener('click', function() { currentYear++; loadYear(); });
+            document.getElementById('currentYearBtn').addEventListener('click', function() { currentYear = new Date().getFullYear(); loadYear(); });
+
+            loadYear();
+        })();
+    </script>
+}

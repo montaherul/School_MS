@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "Lesson Plans";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-richtext"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Lesson Plans</h1>
+                <p class="adm-header__sub">Manage lesson plans by teacher, class, and subject.</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Lesson Plan</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActive(id) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/LessonPlan/ToggleActive/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.success) SchoolMS.Grid.reload('lessonPlan'); });
+        }
+
+        SchoolMS.Grid.create('lessonPlan', {
+            ajaxUrl: '@Url.Action("GetList", "LessonPlan")',
+            editUrl: '/LessonPlan/Edit',
+            deleteUrl: '/LessonPlan/Delete',
+            pageSize: 10,
+            pageSizeSelector: [10,25,50,100],
+            actionsWidth: 200,
+            actionItems: function(d) {
+                var items = [
+                    { url: '/LessonPlan/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete("lessonPlan",' + d.id + ')' },
+                    { url: '/LessonPlan/ExportPdf/' + d.id, className: 'action-btn--view', icon: 'filetype-pdf', title: 'PDF' }
+                ];
+                return items;
+            },
+            columns: [
+                { title: "Title", field: "title", minWidth: 200, cssClass: "entity-cell__name" },
+                { title: "Class", field: "className", hozAlign: "center", width: 120 },
+                { title: "Subject", field: "subjectName", hozAlign: "center", width: 150 },
+                { title: "Teacher", field: "teacherName", hozAlign: "center", width: 150 },
+                { title: "Status", field: "status", hozAlign: "center", width: 100 },
+                { title: "Lesson Date", field: "lessonDate", hozAlign: "center", width: 120,
+                  formatter: function(c) { var v = c.getValue(); return v ? new Date(v).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : ''; }
+                },
+                { title: "Duration", field: "durationMinutes", hozAlign: "center", width: 90,
+                  formatter: function(c) { var v = c.getValue(); return v ? v + ' min' : ''; }
+                },
+                {
+                    title: "Active", field: "isActive", hozAlign: "center", width: 100,
+                    formatter: function(cell) {
+                        var id = cell.getRow().getData().id;
+                        var active = cell.getValue();
+                        return '<a href="#" onclick="toggleActive(' + id + ');return false">'
+                            + (active ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>') + '</a>';
+                    }
+                }
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-journal-richtext ws-fs-40"></i><div class="dash-empty__title">No Lesson Plans Found</div><div class="dash-empty__sub">Create a new lesson plan to get started.</div></div>'
+        });
+    </script>
+}

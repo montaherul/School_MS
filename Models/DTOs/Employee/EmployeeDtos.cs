@@ -34,6 +34,13 @@ public class EmployeeListItemDto
     public List<EmployeeQualificationDto> Qualifications { get; set; } = new();
     public List<EmployeeDocumentDto> Documents { get; set; } = new();
     public List<EmployeeExperienceDto> Experiences { get; set; } = new();
+    public List<EmployeeBankAccountDto> BankAccounts { get; set; } = new();
+    public List<EmployeePromotionDto> Promotions { get; set; } = new();
+    public List<EmployeeTransferDto> Transfers { get; set; } = new();
+    public List<EmployeeTrainingDto> Trainings { get; set; } = new();
+    public List<EmployeeAwardDto> Awards { get; set; } = new();
+    public List<EmployeeDisciplinaryActionDto> DisciplinaryActions { get; set; } = new();
+    public int TotalRecords { get; set; }
 }
 
 public class EmployeeUpsertDto
@@ -46,14 +53,23 @@ public class EmployeeUpsertDto
     [Required, MaxLength(120), Display(Name = "Full Name")]
     public string FullName { get; set; } = string.Empty;
 
+    [MaxLength(120), Display(Name = "Bangla Name")]
+    public string? BanglaName { get; set; }
+
     [MaxLength(120), Display(Name = "Father's Name")]
     public string? FatherName { get; set; }
 
     [MaxLength(120), Display(Name = "Mother's Name")]
     public string? MotherName { get; set; }
 
+    [MaxLength(120), Display(Name = "Spouse Name")]
+    public string? SpouseName { get; set; }
+
     [Required, MaxLength(20)]
     public string Gender { get; set; } = string.Empty;
+
+    [MaxLength(20), Display(Name = "Marital Status")]
+    public string? MaritalStatus { get; set; }
 
     [Required, Display(Name = "Date of Birth")]
     public DateTime DateOfBirth { get; set; } = DateTime.Today.AddYears(-25);
@@ -73,8 +89,20 @@ public class EmployeeUpsertDto
     [MaxLength(50), Display(Name = "Birth Certificate No")]
     public string? BirthCertificateNo { get; set; }
 
+    [MaxLength(50), Display(Name = "Passport No")]
+    public string? PassportNo { get; set; }
+
+    [MaxLength(50)]
+    public string? TIN { get; set; }
+
+    [MaxLength(50), Display(Name = "Driving License No")]
+    public string? DrivingLicenseNo { get; set; }
+
     [Required, Phone, MaxLength(30)]
     public string Phone { get; set; } = string.Empty;
+
+    [Phone, MaxLength(30), Display(Name = "Alternate Mobile")]
+    public string? AlternateMobile { get; set; }
 
     [EmailAddress, MaxLength(160)]
     public string? Email { get; set; }
@@ -123,6 +151,9 @@ public class EmployeeUpsertDto
     public List<EmployeeQualificationDto> Qualifications { get; set; } = new();
     public List<EmployeeDocumentDto> Documents { get; set; } = new();
     public List<EmployeeExperienceDto> Experiences { get; set; } = new();
+    public List<EmployeeBankAccountDto> BankAccounts { get; set; } = new();
+    public List<EmployeeTrainingDto> Trainings { get; set; } = new();
+    public List<EmployeeAwardDto> Awards { get; set; } = new();
 }
 
 public class EmployeeDetailsDto
@@ -130,16 +161,23 @@ public class EmployeeDetailsDto
     public int Id { get; set; }
     public string EmployeeCode { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
+    public string? BanglaName { get; set; }
     public string? FatherName { get; set; }
     public string? MotherName { get; set; }
+    public string? SpouseName { get; set; }
     public string Gender { get; set; } = string.Empty;
+    public string? MaritalStatus { get; set; }
     public DateTime DateOfBirth { get; set; }
     public string? BloodGroup { get; set; }
     public string? Religion { get; set; }
     public string Nationality { get; set; } = "Bangladeshi";
     public string? NIDNumber { get; set; }
     public string? BirthCertificateNo { get; set; }
+    public string? PassportNo { get; set; }
+    public string? TIN { get; set; }
+    public string? DrivingLicenseNo { get; set; }
     public string Phone { get; set; } = string.Empty;
+    public string? AlternateMobile { get; set; }
     public string? Email { get; set; }
     public string? PresentAddress { get; set; }
     public string? PermanentAddress { get; set; }
@@ -167,6 +205,12 @@ public class EmployeeDetailsDto
     public List<EmployeeQualificationDto> Qualifications { get; set; } = new();
     public List<EmployeeDocumentDto> Documents { get; set; } = new();
     public List<EmployeeExperienceDto> Experiences { get; set; } = new();
+    public List<EmployeeBankAccountDto> BankAccounts { get; set; } = new();
+    public List<EmployeePromotionDto> Promotions { get; set; } = new();
+    public List<EmployeeTransferDto> Transfers { get; set; } = new();
+    public List<EmployeeTrainingDto> Trainings { get; set; } = new();
+    public List<EmployeeAwardDto> Awards { get; set; } = new();
+    public List<EmployeeDisciplinaryActionDto> DisciplinaryActions { get; set; } = new();
 }
 
 public class EmployeeQualificationDto

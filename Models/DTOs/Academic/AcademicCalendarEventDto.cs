@@ -1,17 +1,30 @@
-﻿namespace SchoolManagementSystem.Models.DTOs.Academic
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SchoolManagementSystem.Models.DTOs.Academic;
+
+public class AcademicCalendarEventDto
 {
-    public class AcademicCalendarEventDto
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string Title { get; set; } = "";
+    public int AcademicCalendarId { get; set; }
 
-        public string EventType { get; set; } = "";
+    [Required]
+    [StringLength(200)]
+    public string Title { get; set; } = "";
 
-        public DateTime StartDate { get; set; }
+    [Required]
+    public string EventType { get; set; } = "";
 
-        public DateTime EndDate { get; set; }
+    [StringLength(500)]
+    public string? Description { get; set; }
 
-        public bool IsActive { get; set; }
-    }
+    [Required]
+    public DateTime StartDate { get; set; }
+
+    [Required]
+    public DateTime EndDate { get; set; }
+
+    public bool IsRecurringWeekly { get; set; }
+
+    public bool IsActive { get; set; }
 }

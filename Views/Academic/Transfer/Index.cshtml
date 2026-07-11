@@ -1,0 +1,86 @@
+@{
+    ViewData["Title"] = "Transfer Certificates";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Transfer Certificates</h1>
+                <p class="adm-header__sub">Manage student transfer certificates and TC records.</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>New TC</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActive(id) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/Transfer/ToggleActive/' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.success) SchoolMS.Grid.reload('transfer'); });
+        }
+
+        SchoolMS.Grid.create('transfer', {
+            ajaxUrl: '@Url.Action("GetList", "Transfer")',
+            editUrl: '/Transfer/Edit',
+            deleteUrl: '/Transfer/Delete',
+            pageSize: 20,
+            pageSizeSelector: [10,20,50,100],
+            actionsWidth: 160,
+            actionItems: function(d) {
+                return [
+                    { url: '/Transfer/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'SchoolMS.Grid.delete("transfer",' + d.id + ')' }
+                ];
+            },
+            columns: [
+                { title: "Certificate No", field: "certificateNo", minWidth: 140, cssClass: "entity-cell__name" },
+                { title: "Student ID", field: "studentId", hozAlign: "center", width: 100 },
+                { title: "New School", field: "newSchoolName", hozAlign: "center", width: 200 },
+                { title: "Issue Date", field: "issueDate", hozAlign: "center", width: 130,
+                  formatter: function(c) { var v = c.getValue(); return v ? new Date(v).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : ''; }
+                },
+                { title: "Reason", field: "reason", minWidth: 200,
+                  formatter: function(c) { return c.getValue() || '-'; }
+                },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center", width: 100,
+                    formatter: function(cell) {
+                        var id = cell.getRow().getData().id;
+                        var active = cell.getValue();
+                        return '<a href="#" onclick="toggleActive(' + id + ');return false">'
+                            + (active ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>') + '</a>';
+                    }
+                }
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-arrow-right-circle ws-fs-48"></i><div class="dash-empty__title">No Transfer Certificates Found</div><div class="dash-empty__sub">Create a new transfer certificate to get started.</div></div>'
+        });
+    </script>
+}

@@ -11,6 +11,7 @@ public class SectionListItemDto
     public int? ParentSectionId { get; set; }
     public int? StudentGroupId { get; set; }
     public string? GroupName { get; set; }   // Parent group name for Class 9/10
+    public int StudentCount { get; set; }
     public int TotalRecords { get; set; }
 }
 

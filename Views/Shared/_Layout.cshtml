@@ -26,7 +26,9 @@
     <!-- App styles -->
     <link rel="stylesheet" href="~/css/schoolms-universal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/schoolms-modern.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/grid.css" asp-append-version="true" />
 </head>
 
 @{
@@ -425,28 +427,78 @@
                             <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
                         }
 
-                        @* ── 2. Academic Management ── *@
-                        @if (CanAny("Academic.View","Classes.View","Subjects.View"))
+                        @* ── 2. Academic (Master Module — all academic pages) ── *@
+                        @if (Can("Dashboard.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">Academic Management</span></span>
-                            <a asp-controller="SchoolClass" asp-action="Index" data-title="Classes"><i class="bi bi-building"></i><span class="nav-text">Classes</span></a>
+                            <span class="nav-section-label"><span class="nav-text">Academic</span></span>
+                            <a href="/Academic/AcademicDashboard" data-title="Academic Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                             @if (Can("Academic.View"))
                             {
-                                <a asp-controller="Section" asp-action="Index" data-title="Sections"><i class="bi bi-columns"></i><span class="nav-text">Sections</span></a>
+                                <a asp-controller="AcademicYear" asp-action="Index" data-title="Academic Year"><i class="bi bi-calendar3"></i><span class="nav-text">Academic Year</span></a>
+                            }
+                            @if (Can("Classes.View"))
+                            {
+                                <a asp-controller="SchoolClass" asp-action="Index" data-title="Classes"><i class="bi bi-layers"></i><span class="nav-text">Classes</span></a>
+                            }
+                            @if (Can("Sections.View"))
+                            {
+                                <a asp-controller="Section" asp-action="Index" data-title="Sections"><i class="bi bi-columns-gap"></i><span class="nav-text">Sections</span></a>
+                            }
+                            @if (Can("Academics.View"))
+                            {
+                                <a asp-controller="StudentGroup" asp-action="Index" data-title="Student Groups"><i class="bi bi-people-fill"></i><span class="nav-text">Student Groups</span></a>
                             }
                             @if (Can("Subjects.View"))
                             {
                                 <a asp-controller="Subject" asp-action="Index" data-title="Subjects"><i class="bi bi-book"></i><span class="nav-text">Subjects</span></a>
                             }
-                            @if (Can("Classes.View"))
+                            @if (Can("ClassSubjectMappings.View"))
                             {
-                                <a asp-controller="ClassSubjectMapping" asp-action="Index" data-title="Subject Mapping"><i class="bi bi-diagram-3-fill"></i><span class="nav-text">Subject Mapping</span></a>
+                                <a asp-controller="ClassSubjectMapping" asp-action="Index" data-title="Subject Mapping"><i class="bi bi-diagram-3"></i><span class="nav-text">Subject Mapping</span></a>
                             }
-                            @if (Can("Academic.View"))
+                            @if (CanAny("Teachers.View","Teachers.Assign"))
                             {
-                                <a asp-controller="AcademicYear" asp-action="Index" data-title="Academic Years"><i class="bi bi-calendar-range"></i><span class="nav-text">Academic Years</span></a>
-                                <a asp-controller="AcademicCalendar" asp-action="Index" data-title="Academic Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Academic Calendar</span></a>
-                                <a asp-controller="HolidayMaster" asp-action="Index" data-title="Holidays"><i class="bi bi-sun"></i><span class="nav-text">Holidays</span></a>
+                                <a asp-controller="TeacherAssignment" asp-action="Index" data-title="Teacher Assignment"><i class="bi bi-person-check"></i><span class="nav-text">Teacher Assignment</span></a>
+                            }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Routine/Dashboard" data-title="Routine"><i class="bi bi-calendar-range"></i><span class="nav-text">Routine</span></a>
+                                <a href="/Routine/ClassView" data-title="Class Routine"><i class="bi bi-calendar-week"></i><span class="nav-text">Class Routine</span></a>
+                            }
+                            @if (Can("Calendar.View"))
+                            {
+                                <a asp-controller="AcademicCalendar" asp-action="Index" data-title="Academic Calendar"><i class="bi bi-calendar4-event"></i><span class="nav-text">Academic Calendar</span></a>
+                                <a asp-controller="HolidayMaster" asp-action="Index" data-title="Holidays"><i class="bi bi-calendar-heart"></i><span class="nav-text">Holidays</span></a>
+                            }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Routine/Rooms" data-title="Classrooms"><i class="bi bi-door-open"></i><span class="nav-text">Classrooms</span></a>
+                            }
+                            @if (Can("Syllabus.View"))
+                            {
+                                <a asp-controller="Syllabus" asp-action="Index" data-title="Syllabus"><i class="bi bi-file-text"></i><span class="nav-text">Syllabus</span></a>
+                            }
+                            @if (Can("LessonPlan.View"))
+                            {
+                                <a asp-controller="LessonPlan" asp-action="Index" data-title="Lesson Plans"><i class="bi bi-journal-text"></i><span class="nav-text">Lesson Plans</span></a>
+                            }
+                            @if (Can("StudyMaterial.View"))
+                            {
+                                <a asp-controller="StudyMaterial" asp-action="Index" data-title="Study Materials"><i class="bi bi-folder"></i><span class="nav-text">Study Materials</span></a>
+                            }
+                            @if (Can("Promotion.View"))
+                            {
+                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promo Policies</span></a>
+                                <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
+                            }
+                            @if (Can("Academics.View"))
+                            {
+                                <a asp-controller="Transfer" asp-action="Index" data-title="Transfer"><i class="bi bi-arrow-left-right"></i><span class="nav-text">Transfer</span></a>
+                            }
+                            @if (Can("Reports.View"))
+                            {
+                                <a asp-controller="AcademicReport" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
                             }
                         }
 
@@ -462,16 +514,10 @@
                         }
 
                         @* ── 4. Student Management ── *@
-                        @if (CanAny("Students.View","Student.View","Promotion.View","StudentIdCard.View","Health.View"))
+                        @if (CanAny("Students.View","Student.View","StudentIdCard.View","Health.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Student Management</span></span>
                             <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
-                            @if (Can("Promotion.View"))
-                            {
-                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotions"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotions</span></a>
-                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promo Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promo Policies</span></a>
-                                <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Gen"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
-                            }
                             @if (Can("StudentIdCard.View"))
                             {
                                 <a asp-controller="IdCard" asp-action="Students" data-title="ID Cards"><i class="bi bi-person-vcard"></i><span class="nav-text">ID Cards</span></a>
@@ -483,17 +529,10 @@
                         }
 
                         @* ── 5. Teacher Management ── *@
-                        @if (CanAny("Teachers.View","Assignments.View"))
+                        @if (Can("Teachers.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Teacher Management</span></span>
-                            @if (Can("Teachers.View"))
-                            {
-                                <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
-                            }
-                            @if (Can("Assignments.View"))
-                            {
-                                <a asp-controller="TeacherAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
-                            }
+                            <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
                         }
 
                         @* ── 6. Employee Management ── *@
@@ -502,10 +541,10 @@
                             <span class="nav-section-label"><span class="nav-text">Employee Management</span></span>
                             @if (Can("Employees.View"))
                             {
+                                <a asp-controller="Employee" asp-action="Dashboard" data-title="HR Dashboard"><i class="bi bi-speedometer2"></i><span class="nav-text">HR Dashboard</span></a>
+
                                 <a asp-controller="Employee" asp-action="Index" data-title="Employees"><i class="bi bi-person-badge"></i><span class="nav-text">Employees</span></a>
-                            }
-                            @if (Can("Employees.Invite"))
-                            {
+
                                 <a asp-controller="EmployeeInvitation" asp-action="Index" data-title="Onboarding"><i class="bi bi-envelope-paper"></i><span class="nav-text">Onboarding</span></a>
                             }
                             @if (Can("EmployeeIdCard.View"))
@@ -530,23 +569,6 @@
                             <a asp-controller="EmployeeAttendance" asp-action="Index" data-title="Employee Attendance"><i class="bi bi-person-lines-fill"></i><span class="nav-text">Employee Attendance</span></a>
                             <a asp-controller="Leave" asp-action="Index" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave Applications</span></a>
                             <a asp-controller="AttendanceSetting" asp-action="Index" data-title="Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Settings</span></a>
-                        }
-
-                        @* ── 9. Routine Management ── *@
-                        @if (Can("Routine.View"))
-                        {
-                            <span class="nav-section-label"><span class="nav-text">Routine Management</span></span>
-                            <a href="/Routine/Dashboard" data-title="Routine Dashboard"><i class="bi bi-calendar-range"></i><span class="nav-text">Dashboard</span></a>
-                            <a href="/Routine/Timetable" data-title="Timetable"><i class="bi bi-table"></i><span class="nav-text">Timetable</span></a>
-                            <a href="/Routine/Periods" data-title="Periods"><i class="bi bi-clock"></i><span class="nav-text">Time Slots</span></a>
-                            <a href="/Routine/Rooms" data-title="Rooms"><i class="bi bi-door-open"></i><span class="nav-text">Rooms</span></a>
-                            <a href="/Routine/WorkingDays" data-title="Working Days"><i class="bi bi-calendar-day"></i><span class="nav-text">Working Days</span></a>
-                            <a href="/Routine/TeacherAvailabilities" data-title="Teacher Availability"><i class="bi bi-person-check"></i><span class="nav-text">Teacher Availability</span></a>
-                            <a href="/Routine/SubjectRequirements" data-title="Subject Requirements"><i class="bi bi-list-check"></i><span class="nav-text">Subject Reqs</span></a>
-                            <a href="/Routine/Generation" data-title="Auto Generator"><i class="bi bi-gear"></i><span class="nav-text">Auto Generator</span></a>
-                            <a href="/Routine/Conflicts" data-title="Conflicts"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Conflicts</span></a>
-                            <a href="/Routine/Versions" data-title="Versions"><i class="bi bi-clock-history"></i><span class="nav-text">Versions</span></a>
-                            <a href="/Routine/Settings" data-title="Routine Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Settings</span></a>
                         }
 
                         @* ── 10. Examination & Results ── *@
@@ -578,7 +600,6 @@
                             @if (Can("Results.View"))
                             {
                                 <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
-                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
                                 <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
                                 <a asp-controller="ReportCard" asp-action="Index" data-title="Report Cards"><i class="bi bi-card-list"></i><span class="nav-text">Report Cards</span></a>
                             }
@@ -901,6 +922,8 @@
         </div>
     </div>
 
+    @await Html.PartialAsync("_DeleteModal")
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -909,6 +932,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/people-grid.js" asp-append-version="true"></script>
     <script src="~/js/routine-grid.js" asp-append-version="true"></script>
+    <script src="~/js/schoolms-grid.js" asp-append-version="true"></script>
 
     <!-- CENTRALIZED RESPONSIVE: Tabulator default config & mobile utilities -->
     <script>

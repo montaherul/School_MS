@@ -456,8 +456,8 @@ public class NctbCurriculumTests
 
         var classSubjects = new List<ClassSubject>
         {
-            new() { SubjectId = 16, StudentGroupId = 1, IsGroupSubject = true },
-            new() { SubjectId = 20, StudentGroupId = 2, IsGroupSubject = true },
+            new() { SubjectId = 16, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 20, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 2 }] },
         };
 
         var student = new Student { Id = 1, StudentGroupId = 1 }; // Science group
@@ -465,9 +465,11 @@ public class NctbCurriculumTests
         var filteredResults = subjectResults.Where(sr =>
         {
             var cs = classSubjects.FirstOrDefault(c => c.SubjectId == sr.SubjectId);
-            if (cs == null || !cs.IsGroupSubject) return true;
-            if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue)
-                return cs.StudentGroupId.Value == student.StudentGroupId.Value;
+            if (cs == null) return true;
+            var csgLink = cs.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink == null) return true;
+            if (student.StudentGroupId.HasValue)
+                return csgLink.StudentGroupId == student.StudentGroupId.Value;
             return true;
         }).ToList();
 
@@ -493,8 +495,8 @@ public class NctbCurriculumTests
 
         var classSubjects = new List<ClassSubject>
         {
-            new() { SubjectId = 1, IsReligionSubject = false, IsGroupSubject = false }, // Bangla
-            new() { SubjectId = 2, IsReligionSubject = false, IsGroupSubject = false }, // English
+            new() { SubjectId = 1 }, // Bangla
+            new() { SubjectId = 2 }, // English
             new() { SubjectId = 30, IsReligionSubject = true, ReligionType = "Islam" }, // IRE
             new() { SubjectId = 31, IsReligionSubject = true, ReligionType = "Hindu" }, // HRE (should be excluded)
         };
@@ -545,10 +547,10 @@ public class NctbCurriculumTests
 
         var classSubjects = new List<ClassSubject>
         {
-            new() { SubjectId = 1, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 9, IsReligionSubject = false, IsGroupSubject = false },
-            new() { SubjectId = 16, IsGroupSubject = true, StudentGroupId = 1 },
-            new() { SubjectId = 20, IsGroupSubject = true, StudentGroupId = 2 },
+            new() { SubjectId = 1 },
+            new() { SubjectId = 9 },
+            new() { SubjectId = 16, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 1 }] },
+            new() { SubjectId = 20, ClassSubjectGroups = [new ClassSubjectGroup { StudentGroupId = 2 }] },
             new() { SubjectId = 30, IsReligionSubject = true, ReligionType = "Islam" },
             new() { SubjectId = 31, IsReligionSubject = true, ReligionType = "Hindu" },
         };
@@ -562,10 +564,10 @@ public class NctbCurriculumTests
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }
-            if (cs.IsGroupSubject)
+            var csgLink = cs.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+            if (csgLink != null)
             {
-                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
+                if (student.StudentGroupId.HasValue && csgLink.StudentGroupId == student.StudentGroupId.Value)
                     validSubjectIds.Add(cs.SubjectId);
                 continue;
             }

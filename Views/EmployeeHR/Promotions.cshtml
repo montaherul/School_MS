@@ -1,0 +1,119 @@
+@model List<EmployeePromotionDto>
+@{
+    ViewData["Title"] = "Promotions";
+    var employeeName = ViewBag.EmployeeName as string;
+    var employeeId = ViewBag.EmployeeId;
+}
+
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <h1 class="er-page-header__title">Promotions</h1>
+            <p class="er-page-header__sub">@employeeName</p>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Details", "Employee", new { id = employeeId })" class="er-btn er-btn--secondary">Back</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="er-alert er-alert--success">@TempData["Success"]</div>
+    }
+
+    <div class="er-card">
+        <div class="er-card__body">
+            <form method="post" asp-controller="EmployeeHR" asp-action="SavePromotion" class="er-inline-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EmployeeId" value="@employeeId" />
+                <input type="hidden" name="Id" value="0" />
+                <div class="adm-form-grid adm-form-grid--4">
+                    <div class="adm-form-group">
+                        <label class="er-label">Previous Designation</label>
+                        <select name="PreviousDesignationId" class="er-input" required data-val="true" data-val-required="The Previous Designation field is required.">
+                            <option value="">Select...</option>
+                        </select>
+                        <span class="adm-field-error" data-valmsg-for="PreviousDesignationId" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">New Designation</label>
+                        <select name="NewDesignationId" class="er-input" required data-val="true" data-val-required="The New Designation field is required.">
+                            <option value="">Select...</option>
+                        </select>
+                        <span class="adm-field-error" data-valmsg-for="NewDesignationId" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Promotion Date</label>
+                        <input name="PromotionDate" class="er-input" type="date" required data-val="true" data-val-required="The Promotion Date field is required." />
+                        <span class="adm-field-error" data-valmsg-for="PromotionDate" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Reason</label>
+                        <input name="Reason" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Previous Salary</label>
+                        <input name="PreviousSalary" class="er-input" type="number" step="0.01" />
+                        <span class="adm-field-error" data-valmsg-for="PreviousSalary" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">New Salary</label>
+                        <input name="NewSalary" class="er-input" type="number" step="0.01" />
+                        <span class="adm-field-error" data-valmsg-for="NewSalary" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Remarks</label>
+                        <input name="Remarks" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="Remarks" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group adm-form-actions">
+                        <button type="submit" class="er-btn er-btn--primary">Add Promotion</button>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.Count == 0)
+            {
+                <div class="er-empty-state"><p>No promotions.</p></div>
+            }
+            else
+            {
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Previous Desig.</th>
+                            <th>New Desig.</th>
+                            <th>Reason</th>
+                            <th>Prev Salary</th>
+                            <th>New Salary</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            <tr>
+                                <td>@p.PromotionDate.ToString("dd MMM yyyy")</td>
+                                <td>@p.PreviousDesignation</td>
+                                <td>@p.NewDesignation</td>
+                                <td>@p.Reason</td>
+                                <td>@p.PreviousSalary?.ToString("N2")</td>
+                                <td>@p.NewSalary?.ToString("N2")</td>
+                                <td>
+                                    <form method="post" asp-controller="EmployeeHR" asp-action="DeletePromotion" class="er-inline-form" onsubmit="return confirm('Delete this promotion record?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@p.Id" />
+                                        <input type="hidden" name="employeeId" value="@employeeId" />
+                                        <button type="submit" class="er-btn er-btn--sm er-btn--danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

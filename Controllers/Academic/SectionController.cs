@@ -45,6 +45,7 @@ public class SectionController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Sections.View")]
     public async Task<IActionResult> GetStudentGroupsForClass(int classId, CancellationToken ct)
     {
         var groups = await _service.GetStudentGroupsByClassIdAsync(classId, ct);
@@ -52,24 +53,26 @@ public class SectionController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Sections.View")]
     public async Task<IActionResult> GetSectionsByClass(int classId, int? studentGroupId = null, CancellationToken ct = default)
     {
-        var sections = await _service.GetByClassIdAsync(classId, studentGroupId, ct);
-        
         bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        List<int>? assignedSectionIds = null;
+
         if (!isStaff)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))
             {
-                var assignedSectionIds = await _teacherScopeService.GetAssignedSectionIdsAsync(userId, classId, ct);
-                sections = sections.Where(s => assignedSectionIds.Contains(s.Id)).ToList();
+                assignedSectionIds = (await _teacherScopeService.GetAssignedSectionIdsAsync(userId, classId, ct)).ToList();
             }
             else
             {
-                sections = new List<SectionOptionDto>();
+                assignedSectionIds = [];
             }
         }
+
+        var sections = await _service.GetSectionsByClassWithFilterAsync(classId, isStaff, assignedSectionIds, studentGroupId, ct);
         return Json(sections);
     }
 

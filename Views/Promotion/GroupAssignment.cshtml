@@ -32,14 +32,14 @@
         </div>
     </div>
 
-    <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);max-width:800px;margin-bottom:24px;">
-        <div class="er-card__body" style="padding:28px;">
+    <div class="er-card ws-mb-6">
+        <div class="er-card__body ws-p-7">
             <form asp-action="GroupAssignment" asp-controller="Promotion" method="post" id="groupForm">
                 @Html.AntiForgeryToken()
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="er-label">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-4">
+                        <label class="er-label">Academic Year <span class="ws-text-danger">*</span></label>
                         <select name="academicYearId" class="er-filters__select" required>
                             @foreach (var y in academicYears)
                             {
@@ -47,8 +47,8 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="er-label">From Class <span style="color:var(--adm-rejected);">*</span></label>
+                    <div class="ws-col-md-4">
+                        <label class="er-label">From Class <span class="ws-text-danger">*</span></label>
                         <select name="fromClassId" class="er-filters__select" required>
                             <option value="">Select Class</option>
                             @foreach (var c in classes)
@@ -57,8 +57,8 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="er-label">To Class <span style="color:var(--adm-rejected);">*</span></label>
+                    <div class="ws-col-md-4">
+                        <label class="er-label">To Class <span class="ws-text-danger">*</span></label>
                         <select name="toClassId" class="er-filters__select" required>
                             <option value="">Select Class</option>
                             @foreach (var c in classes)
@@ -69,9 +69,9 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="er-label">Assignment Method <span style="color:var(--adm-rejected);">*</span></label>
+                <div class="ws-row ws-mb-3">
+                    <div class="ws-col-md-6">
+                        <label class="er-label">Assignment Method <span class="ws-text-danger">*</span></label>
                         <select name="method" class="er-filters__select" required>
                             <option value="MeritBased">Merit Based (GPA Ranking)</option>
                             <option value="SubjectGpaBased">Subject GPA Based</option>
@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div style="margin-top:8px;">
+                <div class="ws-mt-2">
                     <button type="submit" class="er-btn er-btn--primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                         Assign Groups
@@ -98,9 +98,9 @@
                 <h2 class="dash-section__title">Group Assignment Results</h2>
                 <span class="dash-count-badge">@results.Count Students</span>
             </div>
-            <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-card">
                 <div class="er-card__body">
-                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                    <div class="adm-table-wrapper">
                         <table class="dash-table" id="groupTable">
                             <thead>
                                 <tr>
@@ -140,17 +140,4 @@
     }
 </div>
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (typeof $ !== 'undefined' && $.fn.DataTable && $('#groupTable').length) {
-                $('#groupTable').DataTable({
-                    responsive: true,
-                    pageLength: 50,
-                    order: [[0, 'asc']],
-                    language: { emptyTable: "No group assignment results" }
-                });
-            }
-        });
-    </script>
-}
+

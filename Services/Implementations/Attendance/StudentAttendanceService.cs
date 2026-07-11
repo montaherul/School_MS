@@ -231,7 +231,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 }
 
                 // Get existing records for this date/class/section — filter group via Students join
-                var existingQuery = repo.Query()
+                var existingQuery = repo.QueryNoTracking()
                     .Include(a => a.Student)
                     .Where(a => a.SchoolClassId == dto.ClassId
                         && a.SectionId == dto.SectionId
@@ -466,7 +466,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             var attendanceRepo = _uow.Repository<AttendanceRecord>();
 
             // Get active students
-            var studentsQuery = studentRepo.Query()
+            var studentsQuery = studentRepo.QueryNoTracking()
                 .Include(s => s.Class)
                 .Include(s => s.Section)
                 .Include(s => s.StudentGroup)
@@ -772,7 +772,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             var startDate = new DateOnly(year, month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
 
-            var records = await repo.Query()
+            var records = await repo.QueryNoTracking()
                 .Include(a => a.Student)
                 .Where(a => a.StudentId == studentId 
                     && a.AttendanceDate >= startDate 

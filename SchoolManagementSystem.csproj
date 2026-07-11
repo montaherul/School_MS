@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
+    <PackageReference Include="HtmlSanitizer" Version="9.0.892" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="8.0.5" />
     <PackageReference Include="itext7" Version="8.0.5" />
     <PackageReference Include="MailKit" Version="4.16.0" />

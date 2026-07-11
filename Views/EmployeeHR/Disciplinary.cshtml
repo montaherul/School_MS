@@ -1,0 +1,119 @@
+@model List<EmployeeDisciplinaryActionDto>
+@{
+    ViewData["Title"] = "Disciplinary Actions";
+    var employeeName = ViewBag.EmployeeName as string;
+    var employeeId = ViewBag.EmployeeId;
+}
+
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <h1 class="er-page-header__title">Disciplinary Actions</h1>
+            <p class="er-page-header__sub">@employeeName</p>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Details", "Employee", new { id = employeeId })" class="er-btn er-btn--secondary">Back</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="er-alert er-alert--success">@TempData["Success"]</div>
+    }
+
+    <div class="er-card">
+        <div class="er-card__body">
+            <form method="post" asp-controller="EmployeeHR" asp-action="SaveDisciplinary" class="er-inline-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EmployeeId" value="@employeeId" />
+                <input type="hidden" name="Id" value="0" />
+                <div class="adm-form-grid adm-form-grid--4">
+                    <div class="adm-form-group">
+                        <label class="er-label">Action Type</label>
+                        <input name="ActionType" class="er-input" required data-val="true" data-val-required="The Action Type field is required." placeholder="e.g. Warning, Suspension" />
+                        <span class="adm-field-error" data-valmsg-for="ActionType" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Reason</label>
+                        <input name="Reason" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Action Date</label>
+                        <input name="ActionDate" class="er-input" type="date" required data-val="true" data-val-required="The Action Date field is required." />
+                        <span class="adm-field-error" data-valmsg-for="ActionDate" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Description</label>
+                        <input name="Description" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="Description" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">
+                            <input name="IsResolved" type="checkbox" value="true" /> Is Resolved
+                        </label>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="er-label">Resolution Remarks</label>
+                        <input name="ResolutionRemarks" class="er-input" />
+                        <span class="adm-field-error" data-valmsg-for="ResolutionRemarks" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="adm-form-group adm-form-actions">
+                        <button type="submit" class="er-btn er-btn--primary">Add Action</button>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.Count == 0)
+            {
+                <div class="er-empty-state"><p>No disciplinary actions.</p></div>
+            }
+            else
+            {
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Action Type</th>
+                            <th>Reason</th>
+                            <th>Action Date</th>
+                            <th>Description</th>
+                            <th>Resolved</th>
+                            <th>Resolution Remarks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model)
+                        {
+                            <tr>
+                                <td><strong>@d.ActionType</strong></td>
+                                <td>@d.Reason</td>
+                                <td>@d.ActionDate.ToString("dd MMM yyyy")</td>
+                                <td>@d.Description</td>
+                                <td>
+                                    @if (d.IsResolved)
+                                    {
+                                        <span class="adm-badge adm-badge--success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="adm-badge adm-badge--danger">No</span>
+                                    }
+                                </td>
+                                <td>@d.ResolutionRemarks</td>
+                                <td>
+                                    <form method="post" asp-controller="EmployeeHR" asp-action="DeleteDisciplinary" class="er-inline-form" onsubmit="return confirm('Delete this disciplinary record?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@d.Id" />
+                                        <input type="hidden" name="employeeId" value="@employeeId" />
+                                        <button type="submit" class="er-btn er-btn--sm er-btn--danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

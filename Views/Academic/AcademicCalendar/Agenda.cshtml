@@ -1,0 +1,222 @@
+@{
+    ViewData["Title"] = "Agenda View - Academic Calendar";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Agenda View</h1>
+                <p class="adm-header__sub">Upcoming items sorted by date in timeline layout</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--ghost" id="refreshAgendaBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36A9 9 0 0 1 20.49 15"/>
+                </svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <nav class="ws-flex ws-gap-1 ws-mb-4" aria-label="Calendar view navigation">
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">Month</a>
+        <a asp-action="WeekView" class="adm-btn adm-btn--ghost">Week</a>
+        <a asp-action="Agenda" class="adm-btn adm-btn--primary">Agenda</a>
+        <a asp-action="YearView" class="adm-btn adm-btn--ghost">Year</a>
+    </nav>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Start Date</label>
+                <input type="date" id="agendaStart" class="adm-input" />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Days Ahead</label>
+                <select id="agendaCount" class="adm-select">
+                    <option value="10">10 Days</option>
+                    <option value="30" selected>30 Days</option>
+                    <option value="60">60 Days</option>
+                    <option value="90">90 Days</option>
+                    <option value="180">180 Days</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Category</label>
+                <select id="agendaCategory" class="adm-select">
+                    <option value="">All</option>
+                    <option value="holiday">Holiday</option>
+                    <option value="exam">Exam</option>
+                    <option value="event">Academic Event</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="agendaSearch" class="adm-input" placeholder="Search agenda items...">
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">&nbsp;</label>
+                <button class="adm-btn adm-btn--primary" id="applyAgendaFilters">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    Apply
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-flex ws-gap-3 ws-mb-4 ws-flex-wrap">
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-converted);display:inline-block;"></span> Working Day</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected);display:inline-block;"></span> Holiday</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-pending);display:inline-block;"></span> Exam</span>
+        <span class="ws-flex ws-items-center ws-gap-1 ws-fs-13"><span style="width:12px;height:12px;border-radius:50%;background:var(--adm-info);display:inline-block;"></span> Event</span>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h2 class="adm-card__title">Timeline</h2>
+            <span class="adm-badge adm-badge--neutral" id="agendaCountLabel">0 items</span>
+        </div>
+        <div class="adm-card__body">
+            <div id="agendaList" aria-live="polite" role="region" aria-label="Agenda items list">
+                <div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading agenda...</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var allItems = [];
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            function pad(n) { return n < 10 ? '0' + n : n; }
+            function formatDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+
+            document.getElementById('agendaStart').value = formatDate(today);
+
+            function loadAgenda() {
+                var list = document.getElementById('agendaList');
+                list.innerHTML = '<div class="ws-text-center ws-py-5"><span class="ws-text-muted">Loading agenda...</span></div>';
+
+                var startVal = document.getElementById('agendaStart').value;
+                var count = document.getElementById('agendaCount').value;
+                var url = '/AcademicCalendar/GetAgendaData?count=' + count;
+                if (startVal) { url += '&start=' + startVal; }
+
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(items) {
+                        allItems = items;
+                        applyFilters();
+                    })
+                    .catch(function() {
+                        list.innerHTML = '<div class="adm-alert adm-alert--danger">Failed to load agenda data.</div>';
+                    });
+            }
+
+            function applyFilters() {
+                var categoryFilter = document.getElementById('agendaCategory').value;
+                var searchQuery = document.getElementById('agendaSearch').value.toLowerCase().trim();
+
+                var filtered = allItems.filter(function(item) {
+                    if (categoryFilter) {
+                        if (categoryFilter === 'holiday' && !item.isHoliday) return false;
+                        if (categoryFilter === 'exam' && !item.isExamDay) return false;
+                        if (categoryFilter === 'event' && !item.isEventDay) return false;
+                    }
+                    if (searchQuery) {
+                        var match = (item.title && item.title.toLowerCase().includes(searchQuery)) ||
+                                    (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+                                    (item.holidayType && item.holidayType.toLowerCase().includes(searchQuery));
+                        if (!match) return false;
+                    }
+                    return true;
+                });
+
+                document.getElementById('agendaCountLabel').textContent = filtered.length + ' item' + (filtered.length !== 1 ? 's' : '');
+
+                var list = document.getElementById('agendaList');
+                if (!filtered.length) {
+                    list.innerHTML = '<div class="ws-text-center ws-py-6 ws-text-muted">No agenda items found for the selected criteria.</div>';
+                    return;
+                }
+
+                var grouped = {};
+                filtered.forEach(function(item) {
+                    var d = item.date || item.holidayDate;
+                    if (!d) return;
+                    if (!grouped[d]) grouped[d] = [];
+                    grouped[d].push(item);
+                });
+
+                var html = '';
+                var sortedDates = Object.keys(grouped).sort();
+                sortedDates.forEach(function(dateStr) {
+                    var parts = dateStr.split('-');
+                    var d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    var dayName = d.toLocaleDateString(undefined, { weekday: 'long' });
+                    var formattedDate = d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    html += '<div class="ws-mb-4">';
+                    html += '<div class="ws-flex ws-items-center ws-gap-2 ws-mb-2 ws-pb-2 ws-border-bottom">';
+                    html += '<span class="ws-fw-700 ws-fs-16">' + dayName + '</span>';
+                    html += '<span class="ws-text-muted ws-fs-13">' + formattedDate + '</span>';
+                    html += '</div>';
+
+                    grouped[dateStr].forEach(function(item) {
+                        var badgeClass = 'success';
+                        var badgeLabel = 'Working';
+                        if (item.isHoliday) { badgeClass = 'danger'; badgeLabel = 'Holiday'; }
+                        else if (item.isExamDay) { badgeClass = 'warning'; badgeLabel = 'Exam'; }
+                        else if (item.isEventDay) { badgeClass = 'info'; badgeLabel = 'Event'; }
+
+                        html += '<div class="ws-flex ws-items-start ws-gap-3 ws-p-3 ws-border ws-border-radius ws-mb-2">';
+                        html += '<span class="adm-badge adm-badge--' + badgeClass + ' ws-mt-1">' + badgeLabel + '</span>';
+                        html += '<div class="ws-flex-1"><div class="ws-fw-600">' + (item.title || item.holidayName || '') + '</div>';
+                        if (item.description) html += '<div class="ws-fs-13 ws-text-muted">' + item.description + '</div>';
+                        if (item.holidayType) html += '<div class="ws-fs-12 ws-text-muted ws-mt-1">' + item.holidayType + '</div>';
+                        html += '</div></div>';
+                    });
+                    html += '</div>';
+                });
+
+                list.innerHTML = html;
+            }
+
+            document.getElementById('applyAgendaFilters').addEventListener('click', loadAgenda);
+            document.getElementById('refreshAgendaBtn').addEventListener('click', loadAgenda);
+
+            var searchTimer;
+            document.getElementById('agendaSearch').addEventListener('keyup', function() {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(applyFilters, 300);
+            });
+            document.getElementById('agendaCategory').addEventListener('change', applyFilters);
+
+            loadAgenda();
+        })();
+    </script>
+}
