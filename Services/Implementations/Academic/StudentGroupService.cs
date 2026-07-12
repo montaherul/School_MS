@@ -115,6 +115,26 @@ public class StudentGroupService : IStudentGroupService
         await _uow.SaveChangesAsync(ct);
     }
 
+    public async Task<List<StudentGroupListItemDto>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _uow.Repository<StudentGroup>().Query().AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.Name)
+            .Select(x => new StudentGroupListItemDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Code = x.Code,
+                Description = x.Description,
+                MinClass = x.MinClass,
+                MaxClass = x.MaxClass,
+                DisplayOrder = x.DisplayOrder,
+                IsActive = x.IsActive
+            })
+            .ToListAsync(ct);
+    }
+
     public async Task<bool> IsCodeUniqueAsync(string code, int? excludeId, CancellationToken ct = default)
     {
         return !await _uow.Repository<StudentGroup>().AnyAsync(

@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -13,19 +11,19 @@ namespace SchoolManagementSystem.Controllers.Result;
 public class MeritListController : Controller
 {
     private readonly IMeritCalculationService _meritService;
-    private readonly IUnitOfWork _uow;
+    private readonly IExamService _examService;
 
-    public MeritListController(IMeritCalculationService meritService, IUnitOfWork uow)
+    public MeritListController(IMeritCalculationService meritService, IExamService examService)
     {
         _meritService = meritService;
-        _uow = uow;
+        _examService = examService;
     }
 
     [HttpGet]
     [RequirePermission("MeritList.View")]
     public async Task<IActionResult> Index(int? examId, MeritCategory category = MeritCategory.Class, CancellationToken ct = default)
     {
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
+        var exams = await _examService.GetAllExamsAsync(ct);
         ViewBag.Exams = exams;
         ViewBag.SelectedExamId = examId;
         ViewBag.SelectedCategory = category;

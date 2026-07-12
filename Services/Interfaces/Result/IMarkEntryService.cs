@@ -19,4 +19,7 @@ public interface IMarkEntryService : IBaseService<MarkEntry>
     Task UnlockMarksForClassAsync(int examId, int subjectId, int classId);
     Task<BatchSaveResultDto> SubmitMarksBatchTrackedAsync(MarkBatchDto dto);
     Task<EntryStatusSummaryDto> GetEntryStatusAsync(int examId, int? classId = null);
+
+    // DIP compliance: replaces direct IMarkEntryRepository access from controllers
+    Task<List<MarkEntryStatusDto>> GetMarkEntryStatusByExamIdsAsync(List<int> examIds, CancellationToken ct = default);
 }

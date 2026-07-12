@@ -383,3 +383,66 @@ public class SubstituteAssignmentUpsertDto
     [StringLength(500)]
     public string? Notes { get; set; }
 }
+
+public class TeacherWorkloadListItemDto
+{
+    public int TeacherId { get; set; }
+    public string TeacherName { get; set; } = string.Empty;
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string? Department { get; set; }
+    public int TotalPeriodsPerWeek { get; set; }
+    public int TotalClasses { get; set; }
+    public int TotalSubjects { get; set; }
+    public int MaxPeriodsPerDay { get; set; }
+    public int WorkingDays { get; set; }
+    public double AveragePerDay { get; set; }
+    public double UtilizationPercent { get; set; }
+    public string OverloadStatus { get; set; } = "Normal";
+    public int RoutineEntryCount { get; set; }
+}
+
+public class TeacherWorkloadDetailDto
+{
+    public int TeacherId { get; set; }
+    public string TeacherName { get; set; } = string.Empty;
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string? Department { get; set; }
+    public string? Designation { get; set; }
+    public int TotalPeriodsPerWeek { get; set; }
+    public int TotalClasses { get; set; }
+    public int TotalSubjects { get; set; }
+    public int MaxPeriodsPerDay { get; set; }
+    public int WorkingDays { get; set; }
+    public double AveragePerDay { get; set; }
+    public double UtilizationPercent { get; set; }
+    public Dictionary<int, int> WeeklyPeriodsByDay { get; set; } = new();
+    public List<TeacherDayScheduleDto> DaySchedules { get; set; } = new();
+}
+
+public class TeacherDayScheduleDto
+{
+    public int DayNumber { get; set; }
+    public string DayName { get; set; } = string.Empty;
+    public int PeriodCount { get; set; }
+    public List<TeacherPeriodDto> Periods { get; set; } = new();
+}
+
+public class TeacherPeriodDto
+{
+    public int RoutineEntryId { get; set; }
+    public string PeriodName { get; set; } = string.Empty;
+    public string StartTime { get; set; } = string.Empty;
+    public string EndTime { get; set; } = string.Empty;
+    public string SubjectName { get; set; } = string.Empty;
+    public string ClassName { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public string RoomNo { get; set; } = string.Empty;
+    public bool IsBreak { get; set; }
+}
+
+public class TeacherWorkloadFilterDto
+{
+    public int? DepartmentId { get; set; }
+    public string? SearchTerm { get; set; }
+    public string? OverloadFilter { get; set; }
+}

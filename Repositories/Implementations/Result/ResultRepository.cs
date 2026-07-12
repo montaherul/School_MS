@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Exam;
+using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using System.Data;
@@ -275,5 +276,70 @@ public class ExamRepository : BaseRepository<Exam>, IExamRepository
             CreatedAt = exam.CreatedAt,
             CreatedBy = exam.CreatedBy
         };
+    }
+
+    public async Task<ExamReadinessReportDto> GetExamReadinessReportAsync(int academicYearId, CancellationToken ct)
+    {
+        var report = new ExamReadinessReportDto();
+        var connection = _db.Database.GetDbConnection();
+        await using var _ = await OpenConnectionAsync(connection, ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "sp_GetExamReadinessReport";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@AcademicYearId", academicYearId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        if (await reader.ReadAsync(ct))
+        {
+            report.TotalExams = GetInt32(reader, "TotalExams");
+            report.DraftExams = GetInt32(reader, "DraftExams");
+            report.ReadyExams = GetInt32(reader, "ReadyExams");
+            report.ClassesWithExams = GetInt32(reader, "ClassesWithExams");
+            report.TotalActiveClasses = GetInt32(reader, "TotalActiveClasses");
+        }
+
+        if (await reader.NextResultAsync(ct))
+        {
+            while (await reader.ReadAsync(ct))
+            {
+                report.ExamsWithoutSubjects.Add(new ExamReadinessIssueDto
+                {
+                    ExamId = GetInt32(reader, "ExamId"),
+                    ExamName = GetString(reader, "ExamName"),
+                    ClassName = GetString(reader, "ClassName"),
+                    SubjectCount = GetInt32(reader, "SubjectCount")
+                });
+            }
+        }
+
+        if (await reader.NextResultAsync(ct))
+        {
+            while (await reader.ReadAsync(ct))
+            {
+                report.ExamsWithoutSchedule.Add(new ExamReadinessIssueDto
+                {
+                    ExamId = GetInt32(reader, "ExamId"),
+                    ExamName = GetString(reader, "ExamName"),
+                    ClassName = GetString(reader, "ClassName"),
+                    SubjectCount = GetInt32(reader, "SubjectCount"),
+                    ScheduledCount = GetInt32(reader, "ScheduledCount")
+                });
+            }
+        }
+
+        if (await reader.NextResultAsync(ct))
+        {
+            while (await reader.ReadAsync(ct))
+            {
+                report.ExamsWithoutGradingRules.Add(new ExamReadinessIssueDto
+                {
+                    ExamId = GetInt32(reader, "ExamId"),
+                    ExamName = GetString(reader, "ExamName"),
+                    ClassName = GetString(reader, "ClassName")
+                });
+            }
+        }
+
+        return report;
     }
 }

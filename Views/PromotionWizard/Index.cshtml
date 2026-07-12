@@ -1,0 +1,886 @@
+@{
+    ViewData["Title"] = "Promotion Wizard";
+    var years = ViewBag.AcademicYears as IReadOnlyList<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? [];
+    var activeYear = ViewBag.ActiveYear as SchoolManagementSystem.Models.Entities.Academic.AcademicYear;
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? [];
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="17 1 21 5 17 9" />
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                    <polyline points="7 23 3 19 7 15" />
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">@ViewData["Title"]</h1>
+                <p class="er-page-header__sub">4-step guided promotion process</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "Promotion")" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="ws-wizard" id="promotionWizard">
+        <div class="ws-wizard__progress" id="wizardProgress">
+            <div class="ws-wizard__step ws-wizard__step--active" data-step="1">
+                <div class="ws-wizard__step-number">1</div>
+                <div class="ws-wizard__step-label">Select Years & Classes</div>
+            </div>
+            <div class="ws-wizard__step" data-step="2">
+                <div class="ws-wizard__step-number">2</div>
+                <div class="ws-wizard__step-label">Select Exam</div>
+            </div>
+            <div class="ws-wizard__step" data-step="3">
+                <div class="ws-wizard__step-number">3</div>
+                <div class="ws-wizard__step-label">Preview</div>
+            </div>
+            <div class="ws-wizard__step" data-step="4">
+                <div class="ws-wizard__step-number">4</div>
+                <div class="ws-wizard__step-label">Execute</div>
+            </div>
+        </div>
+
+        <div class="er-card ws-mt-4">
+            <div class="er-card__body">
+                <form id="wizardForm" autocomplete="off">
+                    @Html.AntiForgeryToken()
+
+                    <div id="step1" class="ws-wizard__panel ws-wizard__panel--active">
+                        <h2 class="dash-section__title ws-mb-3">Select Academic Years & Classes</h2>
+                        <p class="ws-text-muted ws-mb-4">Choose the source and target academic years and classes for promotion.</p>
+                        <div class="adm-form-grid adm-form-grid--2">
+                            <div class="adm-form-group">
+                                <label class="er-label">From Academic Year</label>
+                                <select id="fromAcademicYearId" class="er-filters__select" required>
+                                    <option value="">-- Select --</option>
+                                    @foreach (var y in years)
+                                    {
+                                        <option value="@y.Id" selected="@(y.Id == activeYear?.Id)">@y.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="er-label">To Academic Year</label>
+                                <select id="toAcademicYearId" class="er-filters__select" required>
+                                    <option value="">-- Select --</option>
+                                    @foreach (var y in years)
+                                    {
+                                        <option value="@y.Id">@y.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="er-label">From Class</label>
+                                <select id="fromClassId" class="er-filters__select" required>
+                                    <option value="">-- Select --</option>
+                                    @foreach (var c in classes)
+                                    {
+                                        <option value="@c.Id">@c.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="er-label">To Class</label>
+                                <select id="toClassId" class="er-filters__select" required>
+                                    <option value="">-- Select --</option>
+                                    @foreach (var c in classes)
+                                    {
+                                        <option value="@c.Id">@c.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ws-flex ws-gap-2 ws-mt-4">
+                            <button type="button" class="er-btn er-btn--primary" onclick="goToStep(2)">Next &rarr;</button>
+                        </div>
+                    </div>
+
+                    <div id="step2" class="ws-wizard__panel">
+                        <h2 class="dash-section__title ws-mb-3">Select Annual Exam</h2>
+                        <p class="ws-text-muted ws-mb-4">Choose the annual/final exam used for promotion evaluation.</p>
+                        <div class="adm-form-grid adm-form-grid--1">
+                            <div class="adm-form-group">
+                                <label class="er-label">Annual Exam</label>
+                                <select id="examId" class="er-filters__select">
+                                    <option value="">-- Auto-detect best exam --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ws-flex ws-gap-2 ws-mt-4">
+                            <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(1)">&larr; Back</button>
+                            <button type="button" class="er-btn er-btn--primary" onclick="loadPreview()">Preview &rarr;</button>
+                        </div>
+                    </div>
+
+                    <div id="step3" class="ws-wizard__panel">
+                        <h2 class="dash-section__title ws-mb-3">Promotion Preview</h2>
+                        <p class="ws-text-muted ws-mb-4">Review student eligibility before executing promotion.</p>
+
+                        <div class="er-stats ws-mb-4" id="previewStats">
+                            <div class="er-stat">
+                                <div class="er-stat__icon er-stat__icon--success">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                </div>
+                                <div class="er-stat__body">
+                                    <span class="er-stat__label">Eligible</span>
+                                    <span class="er-stat__value" id="eligibleCount">0</span>
+                                </div>
+                            </div>
+                            <div class="er-stat">
+                                <div class="er-stat__icon er-stat__icon--warning">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                </div>
+                                <div class="er-stat__body">
+                                    <span class="er-stat__label">Conditional</span>
+                                    <span class="er-stat__value" id="conditionalCount">0</span>
+                                </div>
+                            </div>
+                            <div class="er-stat">
+                                <div class="er-stat__icon er-stat__icon--danger">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                                </div>
+                                <div class="er-stat__body">
+                                    <span class="er-stat__label">Failed</span>
+                                    <span class="er-stat__value" id="failedCount">0</span>
+                                </div>
+                            </div>
+                            <div class="er-stat">
+                                <div class="er-stat__icon er-stat__icon--info">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                </div>
+                                <div class="er-stat__body">
+                                    <span class="er-stat__label">Total Students</span>
+                                    <span class="er-stat__value" id="totalCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Filter Tabs -->
+                        <div class="er-filter-tabs ws-mb-3" id="studentFilterTabs">
+                            <button type="button" class="er-filter-tab er-filter-tab--active" data-filter="All" onclick="filterStudents('All')">
+                                All <span class="er-filter-tab__badge" id="filterBadgeAll">0</span>
+                            </button>
+                            <button type="button" class="er-filter-tab" data-filter="Eligible" onclick="filterStudents('Eligible')">
+                                Eligible <span class="er-filter-tab__badge er-filter-tab__badge--success" id="filterBadgeEligible">0</span>
+                            </button>
+                            <button type="button" class="er-filter-tab" data-filter="Conditional" onclick="filterStudents('Conditional')">
+                                Conditional <span class="er-filter-tab__badge er-filter-tab__badge--warning" id="filterBadgeConditional">0</span>
+                            </button>
+                            <button type="button" class="er-filter-tab" data-filter="Failed" onclick="filterStudents('Failed')">
+                                Failed <span class="er-filter-tab__badge er-filter-tab__badge--danger" id="filterBadgeFailed">0</span>
+                            </button>
+                        </div>
+
+                        <div class="adm-table-wrapper">
+                            <table class="dash-table" id="previewTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Roll</th>
+                                        <th>GPA</th>
+                                        <th>Attendance</th>
+                                        <th>Status</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="previewTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Roll Generation Preview -->
+                        <div class="er-card ws-mt-4" id="rollPreviewCard">
+                            <div class="er-card__header">
+                                <div class="er-card__header-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+                                    Roll Generation Preview
+                                </div>
+                                <span class="er-badge er-badge--info" id="rollStrategyBadge">MeritBased</span>
+                            </div>
+                            <div class="er-card__body">
+                                <div class="adm-table-wrapper">
+                                    <table class="dash-table" id="rollPreviewTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Student</th>
+                                                <th>GPA</th>
+                                                <th>Proposed Roll</th>
+                                                <th>Strategy</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="rollPreviewBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject Assignment Preview -->
+                        <div class="er-card ws-mt-4" id="subjectPreviewCard">
+                            <div class="er-card__header">
+                                <div class="er-card__header-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                                    Subject Assignment Preview
+                                </div>
+                                <span class="er-badge er-badge--info" id="subjectCountBadge">0 subjects</span>
+                            </div>
+                            <div class="er-card__body">
+                                <div class="adm-table-wrapper">
+                                    <table class="dash-table" id="subjectPreviewTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Subject</th>
+                                                <th>Class</th>
+                                                <th>Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="subjectPreviewBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2 ws-mt-4">
+                            <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(2)">&larr; Back</button>
+                            <button type="button" class="er-btn er-btn--primary" onclick="goToStep(4)">Continue to Execute &rarr;</button>
+                        </div>
+                    </div>
+
+                    <div id="step4" class="ws-wizard__panel">
+                        <h2 class="dash-section__title ws-mb-3">Execute Promotion</h2>
+                        <p class="ws-text-muted ws-mb-4">Configure options and execute the promotion.</p>
+
+                        <!-- Confirmation Summary -->
+                        <div class="er-card ws-mb-4" id="confirmationSummary">
+                            <div class="er-card__header">
+                                <div class="er-card__header-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                    Promotion Summary
+                                </div>
+                            </div>
+                            <div class="er-card__body">
+                                <div class="er-stats">
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--info">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Total</span>
+                                            <span class="er-stat__value" id="summaryTotal">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--success">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Eligible</span>
+                                            <span class="er-stat__value" id="summaryEligible">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--warning">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Conditional</span>
+                                            <span class="er-stat__value" id="summaryConditional">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--danger">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Failed</span>
+                                            <span class="er-stat__value" id="summaryFailed">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--info">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Rolls</span>
+                                            <span class="er-stat__value" id="summaryRolls">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="er-stat">
+                                        <div class="er-stat__icon er-stat__icon--info">
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                                        </div>
+                                        <div class="er-stat__body">
+                                            <span class="er-stat__label">Subjects</span>
+                                            <span class="er-stat__value" id="summarySubjects">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="adm-form-grid adm-form-grid--1 ws-mb-4">
+                            <div class="adm-form-group">
+                                <label class="er-checkbox">
+                                    <input type="checkbox" id="autoGenerateRoll" checked />
+                                    <span>Auto-generate roll numbers after promotion</span>
+                                </label>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="er-checkbox">
+                                    <input type="checkbox" id="autoAssignSubjects" checked />
+                                    <span>Auto-assign subjects based on class mappings</span>
+                                </label>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="er-checkbox">
+                                    <input type="checkbox" id="autoCreateAttendance" checked />
+                                    <span>Auto-create attendance records for new academic year</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="er-alert er-alert--warning ws-mb-4">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                            <span>This action will permanently promote students. Review the preview carefully before proceeding.</span>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2 ws-mt-4">
+                            <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(3)">&larr; Back</button>
+                            <button type="button" class="er-btn er-btn--primary er-btn--lg" onclick="executePromotion()" id="executeBtn">
+                                <span id="executeBtnText">Execute Promotion</span>
+                                <span id="executeBtnSpinner" class="ws-d-none">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ws-spin"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                                    Processing...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-skeleton-overlay ws-d-none" id="loadingOverlay">
+        <div class="er-skeleton-spinner">
+            <div class="er-skeleton-spinner__ring"></div>
+            <span class="er-skeleton-spinner__text">Processing...</span>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .ws-wizard {
+            max-width: 960px;
+        }
+        .ws-wizard__progress {
+            display: flex;
+            gap: 0;
+            background: var(--ws-bg-subtle, #f8f9fa);
+            border-radius: var(--ws-radius-lg, 12px);
+            overflow: hidden;
+            border: 1px solid var(--ws-border, #e2e8f0);
+        }
+        .ws-wizard__step {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            background: transparent;
+            transition: all 0.25s ease;
+            border-right: 1px solid var(--ws-border, #e2e8f0);
+            cursor: default;
+        }
+        .ws-wizard__step:last-child {
+            border-right: none;
+        }
+        .ws-wizard__step--active {
+            background: var(--ws-primary, #2563eb);
+            color: #fff;
+        }
+        .ws-wizard__step--completed {
+            background: var(--ws-success-bg, #d1fae5);
+        }
+        .ws-wizard__step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            background: var(--ws-bg, #e2e8f0);
+            color: var(--ws-text, #475569);
+            flex-shrink: 0;
+        }
+        .ws-wizard__step--active .ws-wizard__step-number {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .ws-wizard__step-label {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .ws-wizard__panel {
+            display: none;
+            animation: wsFadeIn 0.3s ease;
+        }
+        .ws-wizard__panel--active {
+            display: block;
+        }
+        @@keyframes wsFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .er-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--ws-text, #1e293b);
+        }
+        .er-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--ws-primary, #2563eb);
+            cursor: pointer;
+        }
+        .ws-spin {
+            animation: wsSpin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @@keyframes wsSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .ws-flex {
+            display: flex;
+            align-items: center;
+        }
+        .ws-gap-2 { gap: 8px; }
+        .ws-mt-4 { margin-top: 24px; }
+        .ws-mb-3 { margin-bottom: 16px; }
+        .ws-mb-4 { margin-bottom: 24px; }
+        .ws-text-muted { color: var(--ws-text-muted, #64748b); font-size: 14px; }
+        .ws-d-none { display: none !important; }
+
+        .status-eligible { color: var(--ws-success, #16a34a); font-weight: 600; }
+        .status-conditional { color: var(--ws-warning, #d97706); font-weight: 600; }
+        .status-failed { color: var(--ws-danger, #dc2626); font-weight: 600; }
+        .status-pending { color: var(--ws-text-muted, #64748b); font-weight: 600; }
+
+        .er-filter-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .er-filter-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--ws-radius-md, 8px);
+            border: 1px solid var(--ws-border, #e2e8f0);
+            background: var(--ws-bg, #fff);
+            color: var(--ws-text-muted, #64748b);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .er-filter-tab:hover {
+            background: var(--ws-bg-subtle, #f1f5f9);
+            color: var(--ws-text, #1e293b);
+        }
+        .er-filter-tab--active {
+            background: var(--ws-primary, #2563eb);
+            color: #fff;
+            border-color: var(--ws-primary, #2563eb);
+        }
+        .er-filter-tab--active:hover {
+            background: var(--ws-primary-hover, #1d4ed8);
+            color: #fff;
+        }
+        .er-filter-tab__badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--ws-bg-subtle, #e2e8f0);
+            color: var(--ws-text-muted, #64748b);
+        }
+        .er-filter-tab--active .er-filter-tab__badge {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .er-filter-tab__badge--success {
+            background: var(--ws-success-bg, #d1fae5);
+            color: var(--ws-success, #16a34a);
+        }
+        .er-filter-tab--active .er-filter-tab__badge--success {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .er-filter-tab__badge--warning {
+            background: var(--ws-warning-bg, #fef3c7);
+            color: var(--ws-warning, #d97706);
+        }
+        .er-filter-tab--active .er-filter-tab__badge--warning {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .er-filter-tab__badge--danger {
+            background: var(--ws-danger-bg, #fee2e2);
+            color: var(--ws-danger, #dc2626);
+        }
+        .er-filter-tab--active .er-filter-tab__badge--danger {
+            background: rgba(255,255,255,0.25);
+            color: #fff;
+        }
+        .er-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: var(--ws-radius-sm, 6px);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .er-badge--info {
+            background: var(--ws-info-bg, #e0f2fe);
+            color: var(--ws-info, #0284c7);
+        }
+        .er-card__header-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ws-text, #1e293b);
+        }
+
+        @@media (max-width: 768px) {
+            .ws-wizard__step {
+                flex-direction: column;
+                gap: 4px;
+                padding: 12px 8px;
+            }
+            .ws-wizard__step-label {
+                font-size: 11px;
+                white-space: normal;
+                text-align: center;
+            }
+            .er-filter-tabs {
+                gap: 4px;
+            }
+            .er-filter-tab {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        var currentStep = 1;
+        var previewData = null;
+        var currentFilter = 'All';
+
+        function getToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]').value;
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.ws-wizard__panel').forEach(function(p) { p.classList.remove('ws-wizard__panel--active'); });
+            document.getElementById('step' + step).classList.add('ws-wizard__panel--active');
+
+            document.querySelectorAll('.ws-wizard__step').forEach(function(s) {
+                var num = parseInt(s.getAttribute('data-step'));
+                s.classList.remove('ws-wizard__step--active', 'ws-wizard__step--completed');
+                if (num === step) s.classList.add('ws-wizard__step--active');
+                else if (num < step) s.classList.add('ws-wizard__step--completed');
+            });
+
+            currentStep = step;
+
+            if (step === 4) {
+                updateConfirmationSummary();
+            }
+        }
+
+        function getWizardData() {
+            return {
+                FromAcademicYearId: parseInt(document.getElementById('fromAcademicYearId').value) || 0,
+                ToAcademicYearId: parseInt(document.getElementById('toAcademicYearId').value) || 0,
+                FromClassId: parseInt(document.getElementById('fromClassId').value) || 0,
+                ToClassId: parseInt(document.getElementById('toClassId').value) || 0,
+                ExamId: parseInt(document.getElementById('examId').value) || null,
+                AutoGenerateRoll: document.getElementById('autoGenerateRoll').checked,
+                AutoAssignSubjects: document.getElementById('autoAssignSubjects').checked,
+                AutoCreateAttendance: document.getElementById('autoCreateAttendance').checked
+            };
+        }
+
+        function loadPreview() {
+            var data = getWizardData();
+            if (!data.FromAcademicYearId || !data.ToAcademicYearId || !data.FromClassId || !data.ToClassId) {
+                showErAlert('Please select all required fields before previewing.', 'error');
+                return;
+            }
+
+            showLoading(true);
+
+            fetch('@Url.Action("GetPreview", "PromotionWizard")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(resp) {
+                showLoading(false);
+                if (resp.success) {
+                    previewData = resp.data;
+                    renderPreview(previewData);
+                    goToStep(3);
+                } else {
+                    showErAlert(resp.message || 'Failed to load preview.', 'error');
+                }
+            })
+            .catch(function(err) {
+                showLoading(false);
+                showErAlert('Network error: ' + err.message, 'error');
+            });
+        }
+
+        function renderPreview(data) {
+            document.getElementById('eligibleCount').textContent = data.eligibleCount || 0;
+            document.getElementById('conditionalCount').textContent = data.conditionalCount || 0;
+            document.getElementById('failedCount').textContent = data.failedCount || 0;
+            document.getElementById('totalCount').textContent = data.totalStudents || 0;
+
+            document.getElementById('filterBadgeAll').textContent = data.totalStudents || 0;
+            document.getElementById('filterBadgeEligible').textContent = data.eligibleCount || 0;
+            document.getElementById('filterBadgeConditional').textContent = data.conditionalCount || 0;
+            document.getElementById('filterBadgeFailed').textContent = data.failedCount || 0;
+
+            currentFilter = 'All';
+            document.querySelectorAll('.er-filter-tab').forEach(function(t) {
+                t.classList.toggle('er-filter-tab--active', t.getAttribute('data-filter') === 'All');
+            });
+
+            renderStudentTable(data.students, 'All');
+            renderRollPreview(data.rollPreview, data.rollStrategy);
+            renderSubjectPreview(data.subjectPreview);
+        }
+
+        function filterStudents(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.er-filter-tab').forEach(function(t) {
+                t.classList.toggle('er-filter-tab--active', t.getAttribute('data-filter') === filter);
+            });
+            if (previewData) {
+                renderStudentTable(previewData.students, filter);
+            }
+        }
+
+        function renderStudentTable(students, filter) {
+            var tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = '';
+
+            var filtered = students;
+            if (filter && filter !== 'All') {
+                filtered = students.filter(function(s) { return s.status === filter; });
+            }
+
+            if (!filtered || filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="ws-text-center ws-text-muted">No students found for this filter.</td></tr>';
+                return;
+            }
+
+            filtered.forEach(function(s) {
+                var statusClass = 'status-' + s.status.toLowerCase();
+                var attendance = s.attendancePercent !== null && s.attendancePercent !== undefined
+                    ? s.attendancePercent.toFixed(1) + '%'
+                    : '-';
+                var gpaDisplay = s.gpa !== null && s.gpa !== undefined ? s.gpa.toFixed(2) : '-';
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><span class="adm-cell-name">' + escapeHtml(s.studentName) + '</span></td>'
+                    + '<td>' + s.rollNumber + '</td>'
+                    + '<td>' + gpaDisplay + '</td>'
+                    + '<td>' + attendance + '</td>'
+                    + '<td><span class="' + statusClass + '">' + escapeHtml(s.status) + '</span></td>'
+                    + '<td class="ws-text-muted">' + (s.reason ? escapeHtml(s.reason) : '-') + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRollPreview(rollPreview, strategy) {
+            var badge = document.getElementById('rollStrategyBadge');
+            badge.textContent = strategy || 'MeritBased';
+
+            var tbody = document.getElementById('rollPreviewBody');
+            tbody.innerHTML = '';
+
+            if (!rollPreview || rollPreview.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="ws-text-center ws-text-muted">No roll preview available.</td></tr>';
+                return;
+            }
+
+            rollPreview.forEach(function(r) {
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + r.rank + '</td>'
+                    + '<td><span class="adm-cell-name">' + escapeHtml(r.studentName) + '</span></td>'
+                    + '<td>' + (r.gpa !== null && r.gpa !== undefined ? r.gpa.toFixed(2) : '-') + '</td>'
+                    + '<td><strong>' + r.proposedRoll + '</strong></td>'
+                    + '<td>' + escapeHtml(r.strategy) + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderSubjectPreview(subjectPreview) {
+            var badge = document.getElementById('subjectCountBadge');
+            badge.textContent = (subjectPreview ? subjectPreview.length : 0) + ' subjects';
+
+            var tbody = document.getElementById('subjectPreviewBody');
+            tbody.innerHTML = '';
+
+            if (!subjectPreview || subjectPreview.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="ws-text-center ws-text-muted">No subjects configured for target class.</td></tr>';
+                return;
+            }
+
+            subjectPreview.forEach(function(s) {
+                var typeLabel = s.isMandatory ? '<span class="er-badge er-badge--success">Mandatory</span>' : '<span class="er-badge er-badge--info">Optional</span>';
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td>' + escapeHtml(s.subjectCode) + '</td>'
+                    + '<td><span class="adm-cell-name">' + escapeHtml(s.subjectName) + '</span></td>'
+                    + '<td>' + escapeHtml(s.className) + '</td>'
+                    + '<td>' + typeLabel + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateConfirmationSummary() {
+            if (!previewData) return;
+            document.getElementById('summaryTotal').textContent = previewData.totalStudents || 0;
+            document.getElementById('summaryEligible').textContent = previewData.eligibleCount || 0;
+            document.getElementById('summaryConditional').textContent = previewData.conditionalCount || 0;
+            document.getElementById('summaryFailed').textContent = previewData.failedCount || 0;
+            document.getElementById('summaryRolls').textContent = (previewData.rollPreview ? previewData.rollPreview.length : 0);
+            document.getElementById('summarySubjects').textContent = (previewData.subjectPreview ? previewData.subjectPreview.length : 0);
+        }
+
+        function executePromotion() {
+            var data = getWizardData();
+            if (!data.FromAcademicYearId || !data.ToAcademicYearId || !data.FromClassId || !data.ToClassId) {
+                showErAlert('Missing required selection. Please go back to Step 1.', 'error');
+                return;
+            }
+
+            document.getElementById('executeBtn').disabled = true;
+            document.getElementById('executeBtnText').classList.add('ws-d-none');
+            document.getElementById('executeBtnSpinner').classList.remove('ws-d-none');
+            showLoading(true);
+
+            fetch('@Url.Action("Execute", "PromotionWizard")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getToken()
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(resp) {
+                showLoading(false);
+                document.getElementById('executeBtn').disabled = false;
+                document.getElementById('executeBtnText').classList.remove('ws-d-none');
+                document.getElementById('executeBtnSpinner').classList.add('ws-d-none');
+
+                if (resp.success && resp.data) {
+                    var msg = resp.data.message || 'Promotion completed successfully.';
+                    showErAlert(msg, 'success');
+
+                    if (resp.data.warnings && resp.data.warnings.length > 0) {
+                        resp.data.warnings.forEach(function(w) {
+                            showErAlert('Warning: ' + w, 'info');
+                        });
+                    }
+
+                    setTimeout(function() {
+                        window.location.href = '@Url.Action("Index", "Promotion")';
+                    }, 2500);
+                } else {
+                    showErAlert(resp.message || 'Promotion execution failed.', 'error');
+                }
+            })
+            .catch(function(err) {
+                showLoading(false);
+                document.getElementById('executeBtn').disabled = false;
+                document.getElementById('executeBtnText').classList.remove('ws-d-none');
+                document.getElementById('executeBtnSpinner').classList.add('ws-d-none');
+                showErAlert('Network error: ' + err.message, 'error');
+            });
+        }
+
+        function showLoading(show) {
+            var overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.toggle('ws-d-none', !show);
+            }
+        }
+
+        function showErAlert(message, type) {
+            var container = document.getElementById('alertContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'alertContainer';
+                container.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px';
+                document.body.appendChild(container);
+            }
+            var el = document.createElement('div');
+            el.className = 'er-alert er-alert--' + type;
+            el.innerHTML = '<span>' + message + '</span><button class="er-alert__close" onclick="this.parentElement.remove()">&times;</button>';
+            container.appendChild(el);
+            setTimeout(function () { if (el.parentElement) el.remove(); }, 6000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        @@if (TempData["Success"] != null)
+        {
+            <text>showErAlert('@TempData["Success"]', 'success');</text>
+        }
+        @@if (TempData["Error"] != null)
+        {
+            <text>showErAlert('@TempData["Error"]', 'error');</text>
+        }
+    </script>
+}

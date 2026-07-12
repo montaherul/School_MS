@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -20,6 +21,7 @@ public class ReportCardService : IReportCardService
     private readonly IMarkEntryRepository _markEntryRepository;
     private readonly ISchoolSettingRepository _schoolSettingRepository;
     private readonly IStudentSubjectFilterService _subjectFilter;
+    private readonly IViewRendererService _viewRenderer;
 
 
     public ReportCardService(
@@ -28,7 +30,8 @@ public class ReportCardService : IReportCardService
         IStudentExamResultRepository examResultRepository,
         IMarkEntryRepository markEntryRepository,
         ISchoolSettingRepository schoolSettingRepository,
-        IStudentSubjectFilterService subjectFilter
+        IStudentSubjectFilterService subjectFilter,
+        IViewRendererService viewRenderer
         )
     {
         _uow = uow;
@@ -37,6 +40,7 @@ public class ReportCardService : IReportCardService
         _markEntryRepository = markEntryRepository;
         _schoolSettingRepository = schoolSettingRepository;
         _subjectFilter = subjectFilter;
+        _viewRenderer = viewRenderer;
     }
 
     public async Task<bool> IsResultBlockedForStudentAsync(int studentId, CancellationToken cancellationToken = default)
@@ -86,7 +90,7 @@ public class ReportCardService : IReportCardService
         if (validSubjectIds.Count > 0)
             marks = marks.Where(m => validSubjectIds.Contains(m.SubjectId)).ToList();
 
-        var school = await _schoolSettingRepository.Query().FirstOrDefaultAsync(ct);
+        var school = await _schoolSettingRepository.Query().AsNoTracking().FirstOrDefaultAsync(ct);
  
         return _pdfGenerator.GenerateSchoolReportCard(result, marks, school);
     }
@@ -100,9 +104,125 @@ public class ReportCardService : IReportCardService
 
     private async Task<bool> IsResultBlockedAsync(CancellationToken cancellationToken)
     {
-        var setting = await _schoolSettingRepository.Query().FirstOrDefaultAsync(cancellationToken);
+        var setting = await _schoolSettingRepository.Query().AsNoTracking().FirstOrDefaultAsync(cancellationToken);
         if (setting == null) return false;
         return !setting.AllowResultWithDue;
+    }
+
+    public async Task<int> GetReportCardCountAsync(int examId, int? classId, int? sectionId, CancellationToken ct = default)
+    {
+        var query = _examResultRepository.QueryNoTracking()
+            .Where(r => r.ExamId == examId && !r.IsDeleted);
+
+        if (classId.HasValue)
+            query = query.Where(r => r.Student.ClassId == classId.Value);
+
+        if (sectionId.HasValue && sectionId > 0)
+            query = query.Where(r => r.Student.SectionId == sectionId.Value);
+
+        return await query.Select(r => r.StudentId).Distinct().CountAsync(ct);
+    }
+
+    public async Task<byte[]> GenerateBulkReportCardsAsync(int examId, int? classId, int? sectionId, string format, CancellationToken ct = default)
+    {
+        var studentIds = await GetStudentIdsAsync(examId, classId, sectionId, ct);
+        if (studentIds.Count == 0) return [];
+
+        if (string.Equals(format, "zip", StringComparison.OrdinalIgnoreCase))
+            return await GenerateZipAsync(examId, studentIds, ct);
+
+        return await GenerateCombinedPdfAsync(examId, studentIds, ct);
+    }
+
+    public async Task<int> AddToPrintQueueAsync(int examId, int? classId, int? sectionId, int totalItems, string requestedBy, CancellationToken ct = default)
+    {
+        var item = new ReportCardPrintQueueItem
+        {
+            ExamId = examId,
+            ClassId = classId,
+            SectionId = sectionId,
+            RequestedBy = requestedBy,
+            RequestedAt = DateTime.UtcNow,
+            Status = ReportCardPrintStatus.Pending,
+            TotalItems = totalItems
+        };
+
+        await _uow.Repository<ReportCardPrintQueueItem>().AddAsync(item, ct);
+        await _uow.SaveChangesAsync(ct);
+        return item.Id;
+    }
+
+    private async Task<List<int>> GetStudentIdsAsync(int examId, int? classId, int? sectionId, CancellationToken ct)
+    {
+        var baseQuery = _examResultRepository.QueryNoTracking()
+            .Where(r => r.ExamId == examId && !r.IsDeleted);
+
+        if (classId.HasValue)
+            baseQuery = baseQuery.Where(r => r.Student.ClassId == classId.Value);
+
+        if (sectionId.HasValue && sectionId > 0)
+            baseQuery = baseQuery.Where(r => r.Student.SectionId == sectionId.Value);
+
+        return await baseQuery
+            .Select(r => r.StudentId)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
+    private async Task<byte[]> GenerateCombinedPdfAsync(int examId, List<int> studentIds, CancellationToken ct)
+    {
+        var htmlParts = new List<string>(studentIds.Count);
+
+        foreach (var studentId in studentIds)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            if (await IsResultBlockedForStudentAsync(studentId, ct))
+                continue;
+
+            var dto = await _examResultRepository.GetReportCardAsync(examId, studentId, ct);
+            if (dto == null) continue;
+
+            var html = await _viewRenderer.RenderToStringAsync(
+                "~/Views/ReportCard/BangladeshFormat.cshtml", dto);
+
+            htmlParts.Add(html);
+        }
+
+        if (htmlParts.Count == 0)
+            return [];
+
+        var combinedHtml = string.Join(
+            "<div style=\"page-break-after: always;\"></div>",
+            htmlParts);
+
+        return _pdfGenerator.GenerateFromHtml(combinedHtml);
+    }
+
+    private async Task<byte[]> GenerateZipAsync(int examId, List<int> studentIds, CancellationToken ct)
+    {
+        using var ms = new MemoryStream();
+
+        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            foreach (var studentId in studentIds)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                if (await IsResultBlockedForStudentAsync(studentId, ct))
+                    continue;
+
+                var pdfBytes = await GenerateReportCardPdfAsync(examId, studentId, true, ct);
+                if (pdfBytes == null) continue;
+
+                var entryName = $"ReportCard_Student_{studentId}_Exam_{examId}.pdf";
+                var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+                await using var entryStream = entry.Open();
+                await entryStream.WriteAsync(pdfBytes, ct);
+            }
+        }
+
+        return ms.ToArray();
     }
 
     private string GenerateReportCardHash(int examId, int studentId, decimal totalMarks, string grade, decimal gpa)

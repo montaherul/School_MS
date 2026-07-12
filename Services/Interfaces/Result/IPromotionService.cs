@@ -1,5 +1,5 @@
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Services.Interfaces.Result;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
 
@@ -50,67 +50,14 @@ public interface IPromotionService
     /// and handles StudentGroupAssignment upsert.
     /// </summary>
     Task RebuildStudentCascadeAsync(int studentId, int newClassId, int? newSectionId, int? newGroupId, int academicYearId, CancellationToken ct = default);
-}
 
-public class PromotionEligibility
-{
-    public int StudentId { get; set; }
-    public bool IsEligible { get; set; }
-    public string Reason { get; set; } = string.Empty;
-    public decimal GPA { get; set; }
-    public int FailedSubjects { get; set; }
-    public int TotalSubjects { get; set; }
-    public string RecommendedAction { get; set; } = string.Empty; // Promote, Repeat, Conditional
-}
+    /// <summary>
+    /// Gets promotion history with includes for filtering
+    /// </summary>
+    Task<List<SchoolManagementSystem.Models.Entities.Result.PromotionHistory>> GetPromotionHistoryAsync(int? studentId, int? classId, int? academicYearId, CancellationToken ct = default);
 
-public class PromotionResult
-{
-    public int ClassId { get; set; }
-    public int AcademicYearId { get; set; }
-    public int TotalStudents { get; set; }
-    public int PromotedCount { get; set; }
-    public int RepeatCount { get; set; }
-    public int ConditionalCount { get; set; }
-    public List<PromotionRecord> Records { get; set; } = [];
-}
-
-public class BulkPromotionResult
-{
-    public int SuccessCount { get; set; }
-    public int FailureCount { get; set; }
-    public List<string> Errors { get; set; } = [];
-    public List<PromotionRecord> SuccessfulPromotions { get; set; } = [];
-}
-
-public class BulkPromotionRequest
-{
-    public int FromClassId { get; set; }
-    public int ToClassId { get; set; }
-    public int AcademicYearId { get; set; }
-    public int ProcessedByUserId { get; set; }
-    public string Comments { get; set; } = string.Empty;
-    public bool OverrideEligibility { get; set; } = false;
-}
-
-public class PromotionRules
-{
-    public int ClassId { get; set; }
-    public decimal MinimumGPA { get; set; } = 1.0m; // D grade minimum
-    public int MaximumFailedSubjects { get; set; } = 2;
-    public bool AllowConditionalPromotion { get; set; } = true;
-    public decimal ConditionalPromotionGPA { get; set; } = 0.8m;
-    public bool RequireAllSubjectsPass { get; set; } = false; // For critical classes
-    public List<string> CriticalSubjects { get; set; } = []; // Subjects that must be passed
-}
-
-public class PromotionRecord
-{
-    public int StudentId { get; set; }
-    public string StudentName { get; set; } = string.Empty;
-    public int FromClassId { get; set; }
-    public int ToClassId { get; set; }
-    public PromotionStatus Status { get; set; }
-    public string Reason { get; set; } = string.Empty;
-    public DateTime ProcessedAt { get; set; }
-    public int ProcessedByUserId { get; set; }
+    /// <summary>
+    /// Gets simple student list by class for JSON dropdown
+    /// </summary>
+    Task<List<object>> GetClassStudentsJsonAsync(int classId, CancellationToken ct = default);
 }

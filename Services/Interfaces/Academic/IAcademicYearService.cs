@@ -10,6 +10,7 @@ public interface IAcademicYearService
     Task<AcademicYearUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default);
     Task<AcademicYear?> GetActiveYearAsync(CancellationToken ct = default);
     Task<IReadOnlyList<AcademicYear>> GetAllYearsAsync(CancellationToken ct = default);
+    Task<AcademicYear?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<int> CreateAsync(AcademicYearUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task UpdateAsync(AcademicYearUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);

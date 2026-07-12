@@ -1,0 +1,428 @@
+@model SchoolManagementSystem.Models.DTOs.Result.TeacherResultDashboardDto
+@{
+    ViewData["Title"] = "Teacher Result Dashboard";
+    Layout = "_AdminLayout";
+    var completionPercent = Model.CompletionPercentage;
+}
+
+<div class="adm-page er-page">
+
+    <!-- ── Page Header ── -->
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Teacher Result Dashboard</h1>
+                <p class="er-page-header__sub">
+                    <span>@Model.TeacherName</span>
+                    <span class="er-page-header__sep">|</span>
+                    <span>@Model.TotalAssignedSubjects Subject(s) · @Model.TotalAssignedExams Exam(s)</span>
+                </p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "Marks")" class="er-btn er-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Mark Entry
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Stats Cards ── -->
+    <div class="er-stats">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Assigned Exams</span>
+                <span class="er-stat__value">@Model.TotalAssignedExams</span>
+            </div>
+        </div>
+
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Pending Marks</span>
+                <span class="er-stat__value">@Model.PendingMarkEntries</span>
+            </div>
+        </div>
+
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Submitted</span>
+                <span class="er-stat__value">@Model.SubmittedMarkEntries</span>
+            </div>
+        </div>
+
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Completion</span>
+                <span class="er-stat__value">@completionPercent<span class="er-stat__unit">%</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Today's Classes ── -->
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Today's Classes</h2>
+            @if (Model.TodaySchedule.Any())
+            {
+                <span class="dash-count-badge">@Model.TodaySchedule.Count Classes</span>
+            }
+        </div>
+        <div class="er-card">
+            <div class="er-card__body">
+                @if (Model.TodaySchedule.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Time</th>
+                                    <th>Subject</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.TodaySchedule)
+                                {
+                                    <tr>
+                                        <td><span class="adm-cell-name">@item.PeriodName</span></td>
+                                        <td><span class="adm-cell-dob">@item.StartTime - @item.EndTime</span></td>
+                                        <td><span class="adm-cell-name">@item.SubjectName</span></td>
+                                        <td><span class="er-badge er-badge--neutral">@item.ClassName</span></td>
+                                        <td><span class="adm-cell-dob">@item.SectionName</span></td>
+                                        <td><span class="adm-cell-dob">@item.RoomNo</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="er-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                        <h3 class="er-empty__title">No Classes Today</h3>
+                        <p class="er-empty__desc">You have no scheduled classes for today. Enjoy your day!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Quick Actions ── -->
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Quick Actions</h2>
+        </div>
+        <div class="er-card">
+            <div class="er-card__body">
+                <div class="quick-actions-grid">
+                    @foreach (var action in Model.QuickActions)
+                    {
+                        <a href="@action.Url" class="quick-action-card quick-action-card--@action.Color">
+                            <div class="quick-action-card__icon">
+                                @if (action.IconName == "edit")
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                }
+                                else if (action.IconName == "calendar")
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                                }
+                                else if (action.IconName == "book")
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                                }
+                                else if (action.IconName == "chart")
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                                }
+                                else if (action.IconName == "alert")
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                                }
+                                else
+                                {
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                }
+                            </div>
+                            <div class="quick-action-card__body">
+                                <span class="quick-action-card__label">@action.Label</span>
+                            </div>
+                            <div class="quick-action-card__arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Notifications ── -->
+    @if (Model.Notifications.Any())
+    {
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h2 class="dash-section__title">Notifications</h2>
+                <span class="dash-count-badge">@Model.Notifications.Count Unread</span>
+            </div>
+            <div class="er-card">
+                <div class="er-card__body">
+                    <div class="activity-list">
+                        @foreach (var n in Model.Notifications)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item__dot @(n.IsRead ? "activity-item__dot--info" : "activity-item__dot--success")"></div>
+                                <div class="activity-item__body">
+                                    <span class="activity-item__action">@n.Title</span>
+                                    <span class="activity-item__detail">@n.Body</span>
+                                </div>
+                                <span class="activity-item__time" title="@(n.SentAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                    @(n.SentAt?.ToString("MMM dd, HH:mm") ?? "")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h2 class="dash-section__title">Notifications</h2>
+            </div>
+            <div class="er-card">
+                <div class="er-card__body">
+                    <div class="er-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                        <h3 class="er-empty__title">No Notifications</h3>
+                        <p class="er-empty__desc">You're all caught up!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ── Progress Bar ── -->
+    <div class="dash-trend-row">
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Mark Entry Progress</span>
+            <span class="dash-trend-value">@Model.SubmittedMarkEntries / @Model.TotalMarkEntries</span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar" style="width:@completionPercent%;"></div>
+            </div>
+        </div>
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Assigned Subjects</span>
+            <span class="dash-trend-value">@Model.TotalAssignedSubjects</span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar dash-trend-bar--subjects" style="width:100%;"></div>
+            </div>
+        </div>
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Assigned Exams</span>
+            <span class="dash-trend-value">@Model.TotalAssignedExams</span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar dash-trend-bar--exams" style="width:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Pending Exams Table ── -->
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Pending Exams</h2>
+            @if (Model.PendingExams.Any())
+            {
+                <span class="dash-count-badge">@Model.PendingExams.Count Entries</span>
+            }
+        </div>
+
+        <div class="er-card">
+            <div class="er-card__body">
+                @if (Model.PendingExams.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Exam</th>
+                                    <th>Subject</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Students</th>
+                                    <th>Completed</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.PendingExams.OrderBy(p => p.Status).ThenBy(p => p.ExamName))
+                                {
+                                    <tr>
+                                        <td><span class="adm-cell-name">@item.ExamName</span></td>
+                                        <td><span class="adm-cell-name">@item.SubjectName</span></td>
+                                        <td><span class="er-badge er-badge--neutral">@item.ClassName</span></td>
+                                        <td><span class="adm-cell-dob">@item.SectionName</span></td>
+                                        <td>@item.StudentCount</td>
+                                        <td>@item.CompletedCount</td>
+                                        <td>
+                                            @if (item.Status == "Published")
+                                            {
+                                                <span class="er-badge er-badge--converted">Published</span>
+                                            }
+                                            else if (item.Status == "Locked")
+                                            {
+                                                <span class="er-badge er-badge--neutral">Locked</span>
+                                            }
+                                            else if (item.Status == "Approved")
+                                            {
+                                                <span class="er-badge er-badge--approved">Approved</span>
+                                            }
+                                            else if (item.Status == "Submitted")
+                                            {
+                                                <span class="er-badge er-badge--pending">Submitted</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--neutral">Draft</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="actions-cell" style="justify-content:flex-end;">
+                                                @if (!item.IsReadOnly)
+                                                {
+                                                    <a href="@Url.Action("Entry", "Marks", new { examId = item.ExamId, classId = item.ClassId, sectionId = item.SectionId, subjectId = item.SubjectId })"
+                                                       class="er-btn er-btn--primary er-btn--sm" title="Enter Marks">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                                        Open
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="er-badge er-badge--neutral" style="font-size:11px;">Read Only</span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="er-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                        <h3 class="er-empty__title">All Marks Submitted</h3>
+                        <p class="er-empty__desc">You have completed all mark entries for the active academic year.</p>
+                        <a href="@Url.Action("Index", "Marks")" class="er-btn er-btn--primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                            View All Exams
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Recent Activity ── -->
+    @if (Model.RecentActivity.Any())
+    {
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h2 class="dash-section__title">Recent Activity</h2>
+                <span class="dash-count-badge">@Model.RecentActivity.Count Actions</span>
+            </div>
+            <div class="er-card">
+                <div class="er-card__body">
+                    <div class="activity-list">
+                        @foreach (var act in Model.RecentActivity)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item__dot @(act.Action == "Submitted" ? "activity-item__dot--success" : "activity-item__dot--info")"></div>
+                                <div class="activity-item__body">
+                                    <span class="activity-item__action">@act.Action</span>
+                                    <span class="activity-item__detail">@act.Detail</span>
+                                </div>
+                                <span class="activity-item__time" title="@act.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")">
+                                    @act.Timestamp.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+@section Styles {
+    <style>
+        .dash-trend-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+        .dash-trend-card { background:var(--adm-surface); border:1px solid var(--adm-border); border-radius:var(--adm-radius-lg); padding:18px 20px; box-shadow:var(--adm-shadow-sm); }
+        .dash-trend-label { display:block; font-size:12px; font-weight:600; color:var(--adm-text-3); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+        .dash-trend-value { display:block; font-size:22px; font-weight:700; color:var(--adm-text); margin-bottom:10px; }
+        .dash-trend-bar-wrap { height:6px; background:var(--adm-surface-2); border-radius:99px; overflow:hidden; }
+        .dash-trend-bar { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--adm-primary),var(--adm-primary-l)); transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+        .dash-trend-bar--subjects { background:linear-gradient(90deg,var(--adm-converted),#38BDF8); }
+        .dash-trend-bar--exams { background:linear-gradient(90deg,var(--adm-pending),#FBBF24); }
+        .activity-list { display:flex; flex-direction:column; gap:2px; }
+        .activity-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--adm-border); }
+        .activity-item:last-child { border-bottom:none; }
+        .activity-item__dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .activity-item__dot--success { background:var(--adm-success); }
+        .activity-item__dot--info { background:var(--adm-info); }
+        .activity-item__body { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .activity-item__action { font-size:13px; font-weight:600; color:var(--adm-text); }
+        .activity-item__detail { font-size:12px; color:var(--adm-text-2); }
+        .activity-item__time { font-size:11px; color:var(--adm-text-3); white-space:nowrap; }
+        .dash-section { margin-bottom:24px; }
+        .dash-section__header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .dash-section__title { font-size:16px; font-weight:700; color:var(--adm-text); margin:0; }
+        .dash-count-badge { font-size:12px; font-weight:600; color:var(--adm-text-3); background:var(--adm-surface-2); padding:3px 12px; border-radius:99px; }
+        .dash-table { width:100%; border-collapse:collapse; }
+        .dash-table th { text-align:left; font-size:11px; font-weight:600; color:var(--adm-text-3); text-transform:uppercase; letter-spacing:0.04em; padding:10px 12px; border-bottom:2px solid var(--adm-border); }
+        .dash-table td { padding:10px 12px; font-size:13px; color:var(--adm-text); border-bottom:1px solid var(--adm-border); }
+        .adm-cell-name { font-weight:500; }
+        .adm-cell-dob { font-size:12px; color:var(--adm-text-2); }
+        .quick-actions-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+        .quick-action-card { display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:var(--adm-radius-lg); border:1px solid var(--adm-border); background:var(--adm-surface); text-decoration:none; transition:all 0.2s ease; }
+        .quick-action-card:hover { transform:translateY(-2px); box-shadow:var(--adm-shadow-md); }
+        .quick-action-card__icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .quick-action-card__body { flex:1; }
+        .quick-action-card__label { font-size:13px; font-weight:600; color:var(--adm-text); }
+        .quick-action-card__arrow { color:var(--adm-text-3); transition:transform 0.2s ease; }
+        .quick-action-card:hover .quick-action-card__arrow { transform:translateX(3px); }
+        .quick-action-card--primary .quick-action-card__icon { background:var(--adm-primary-l); color:var(--adm-primary); }
+        .quick-action-card--info .quick-action-card__icon { background:rgba(56,189,248,0.15); color:#38BDF8; }
+        .quick-action-card--success .quick-action-card__icon { background:rgba(34,197,94,0.15); color:#22C55E; }
+        .quick-action-card--warning .quick-action-card__icon { background:rgba(251,191,36,0.15); color:#FBBF24; }
+        .quick-action-card--danger .quick-action-card__icon { background:rgba(239,68,68,0.15); color:#EF4444; }
+        @@media (max-width:900px) { .dash-trend-row { grid-template-columns:1fr; } .quick-actions-grid { grid-template-columns:1fr 1fr; } }
+        @@media (max-width:600px) { .quick-actions-grid { grid-template-columns:1fr; } }
+    </style>
+}

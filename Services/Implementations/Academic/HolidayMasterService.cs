@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -11,10 +12,13 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class HolidayMasterService : IHolidayMasterService
 {
     private readonly IUnitOfWork _uow;
+    private readonly IMemoryCache _cache;
+    private const string CacheKey = "HolidayMaster_All";
 
-    public HolidayMasterService(IUnitOfWork uow)
+    public HolidayMasterService(IUnitOfWork uow, IMemoryCache cache)
     {
         _uow = uow;
+        _cache = cache;
     }
 
     public async Task<PagedResult<HolidayMasterDto>> GetPagedAsync(int page, int pageSize, string? search, string? type, string? religion, CancellationToken ct = default)
@@ -92,6 +96,7 @@ public class HolidayMasterService : IHolidayMasterService
 
         await _uow.Repository<HolidayMaster>().AddAsync(entity, ct);
         await _uow.SaveChangesAsync(ct);
+        _cache.Remove(CacheKey);
         return entity.Id;
     }
 
@@ -114,6 +119,7 @@ public class HolidayMasterService : IHolidayMasterService
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _uow.SaveChangesAsync(ct);
+        _cache.Remove(CacheKey);
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -125,6 +131,7 @@ public class HolidayMasterService : IHolidayMasterService
         entity.UpdatedBy = updatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
         await _uow.SaveChangesAsync(ct);
+        _cache.Remove(CacheKey);
     }
 
     public async Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
@@ -136,6 +143,7 @@ public class HolidayMasterService : IHolidayMasterService
                 .SetProperty(x => x.IsActive, true)
                 .SetProperty(x => x.UpdatedBy, updatedBy)
                 .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+        _cache.Remove(CacheKey);
     }
 
     public async Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
@@ -147,6 +155,7 @@ public class HolidayMasterService : IHolidayMasterService
                 .SetProperty(x => x.IsActive, false)
                 .SetProperty(x => x.UpdatedBy, updatedBy)
                 .SetProperty(x => x.UpdatedAt, DateTime.UtcNow), ct);
+        _cache.Remove(CacheKey);
     }
 
     public async Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -157,6 +166,7 @@ public class HolidayMasterService : IHolidayMasterService
         entity.UpdatedBy = updatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
         await _uow.SaveChangesAsync(ct);
+        _cache.Remove(CacheKey);
     }
 
     public async Task DeactivateAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -204,6 +214,7 @@ public class HolidayMasterService : IHolidayMasterService
         {
             await _uow.Repository<HolidayMaster>().AddRangeAsync(toAdd, ct);
             await _uow.SaveChangesAsync(ct);
+            _cache.Remove(CacheKey);
         }
 
         return toAdd.Count;
@@ -249,7 +260,10 @@ public class HolidayMasterService : IHolidayMasterService
 
     public async Task<List<HolidayMasterDto>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _uow.Repository<HolidayMaster>().QueryNoTracking()
+        if (_cache.TryGetValue(CacheKey, out List<HolidayMasterDto>? cached))
+            return cached!;
+
+        var result = await _uow.Repository<HolidayMaster>().QueryNoTracking()
             .Where(x => !x.IsDeleted && x.IsActive)
             .OrderBy(x => x.HolidayDate).ThenBy(x => x.DisplayOrder)
             .Select(x => new HolidayMasterDto
@@ -266,5 +280,8 @@ public class HolidayMasterService : IHolidayMasterService
                 DisplayOrder = x.DisplayOrder,
                 IsActive = x.IsActive
             }).ToListAsync(ct);
+
+        _cache.Set(CacheKey, result, TimeSpan.FromHours(1));
+        return result;
     }
 }

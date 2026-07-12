@@ -1,8 +1,8 @@
-using iText.Commons.Actions.Contexts;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
@@ -159,6 +159,96 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
                     Remarks = a.Remarks
                 })
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<(List<StudentAttendanceDto> Students, int Total)> GetStudentsForAttendanceBySpAsync(
+            int classId, int sectionId, int? studentGroupId, DateTime attendanceDate,
+            int page = 1, int pageSize = 50, CancellationToken cancellationToken = default)
+        {
+            var items = new List<StudentAttendanceDto>();
+            var connection = _db.Database.GetDbConnection();
+            await using var _ = await OpenConnectionAsync(connection, cancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "sp_GetStudentsForAttendance";
+            command.CommandType = CommandType.StoredProcedure;
+            AddParameter(command, "@ClassId", classId);
+            AddParameter(command, "@SectionId", sectionId);
+            AddParameter(command, "@StudentGroupId", studentGroupId);
+            AddParameter(command, "@AttendanceDate", attendanceDate.Date);
+            AddParameter(command, "@PageNumber", page);
+            AddParameter(command, "@PageSize", pageSize);
+
+            var total = 0;
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                total = GetInt32(reader, "TotalRecords");
+            }
+
+            if (await reader.NextResultAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new StudentAttendanceDto
+                    {
+                        Id = GetInt32(reader, "Id"),
+                        StudentId = GetInt32(reader, "StudentId"),
+                        StudentNo = GetString(reader, "StudentNo"),
+                        StudentName = GetString(reader, "StudentName"),
+                        RollNumber = GetString(reader, "RollNumber"),
+                        ClassId = GetInt32(reader, "ClassId"),
+                        ClassName = GetString(reader, "ClassName"),
+                        SectionId = GetInt32(reader, "SectionId"),
+                        SectionName = GetString(reader, "SectionName"),
+                        StudentGroupId = GetNullableInt32(reader, "StudentGroupId"),
+                        StudentGroupName = GetString(reader, "StudentGroupName"),
+                        AttendanceDate = GetDateTime(reader, "AttendanceDate"),
+                        Status = (SchoolManagementSystem.Models.Enums.AttendanceStatus)GetInt32(reader, "Status"),
+                        StatusName = GetString(reader, "StatusName"),
+                        Remarks = GetString(reader, "Remarks")
+                    });
+                }
+            }
+
+            return (items, total);
+        }
+
+        public async Task<List<AttendanceForPromotionDto>> GetAttendanceForPromotionAsync(
+            int academicYearId, int? classId = null, int? sectionId = null,
+            decimal? minPercentage = null, CancellationToken cancellationToken = default)
+        {
+            var results = new List<AttendanceForPromotionDto>();
+            var connection = _db.Database.GetDbConnection();
+            await using var _ = await OpenConnectionAsync(connection, cancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "sp_GetAttendanceForPromotion";
+            command.CommandType = CommandType.StoredProcedure;
+            AddParameter(command, "@AcademicYearId", academicYearId);
+            AddParameter(command, "@ClassId", classId);
+            AddParameter(command, "@SectionId", sectionId);
+            AddParameter(command, "@MinPercentage", minPercentage);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                results.Add(new AttendanceForPromotionDto
+                {
+                    StudentId = GetInt32(reader, "StudentId"),
+                    StudentNo = GetString(reader, "StudentNo"),
+                    FullName = GetString(reader, "FullName"),
+                    RollNumber = GetInt32(reader, "RollNumber"),
+                    ClassName = GetString(reader, "ClassName"),
+                    SectionName = GetString(reader, "SectionName"),
+                    TotalSchoolDays = GetInt32(reader, "TotalSchoolDays"),
+                    PresentDays = GetInt32(reader, "PresentDays"),
+                    AbsentDays = GetInt32(reader, "AbsentDays"),
+                    LateDays = GetInt32(reader, "LateDays"),
+                    LeaveDays = GetInt32(reader, "LeaveDays"),
+                    AttendancePercentage = GetDecimal(reader, "AttendancePercentage"),
+                    EligibilityStatus = GetString(reader, "EligibilityStatus")
+                });
+            }
+            return results;
         }
 
         private IQueryable<SchoolManagementSystem.Models.Entities.Student.Student> BuildFilteredStudents(StudentAttendanceFilterDto filter)

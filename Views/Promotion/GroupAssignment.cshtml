@@ -5,7 +5,7 @@
     var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
     var selectedFromClassId = ViewBag.SelectedFromClassId as int?;
     var selectedToClassId = ViewBag.SelectedToClassId as int?;
-    var results = ViewBag.Results as List<SchoolManagementSystem.Services.Interfaces.Result.GroupAssignmentResult> ?? new();
+    var results = ViewBag.Results as List<SchoolManagementSystem.Models.DTOs.Result.GroupAssignmentResult> ?? new();
 }
 
 <div class="adm-page er-page">

@@ -1,0 +1,26 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.BuildingUpsertDto
+@{
+    ViewData["Title"] = "Building Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Building Details</h1>
+                <p class="adm-header__sub">View building information</p>
+            </div>
+        </div>
+        <a asp-action="Index" asp-controller="Building" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+    <div class="adm-card ws-shadow-sm">
+        <div class="adm-card__body ws-p-4">
+            <partial name="_ObjectDetails" model="Model" />
+        </div>
+    </div>
+</div>

@@ -12,10 +12,8 @@ using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 using System.Text.Json;
-using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -33,7 +31,6 @@ public class ResultManagementController : Controller
     private readonly ISectionService _sectionService;
     private readonly ITeacherAssignmentService _assignmentService;
     private readonly ITranscriptService _transcriptService;
-    private readonly IUnitOfWork _uow;
     private readonly IResultAuthorizationService _resultAuthService;
     private readonly ISubjectMarkStructureService _markStructureService;
 
@@ -49,7 +46,6 @@ public class ResultManagementController : Controller
         ISectionService sectionService,
         ITeacherAssignmentService assignmentService,
         ITranscriptService transcriptService,
-        IUnitOfWork uow,
         IResultAuthorizationService resultAuthService,
         ISubjectMarkStructureService markStructureService)
     {
@@ -64,7 +60,6 @@ public class ResultManagementController : Controller
         _sectionService = sectionService;
         _assignmentService = assignmentService;
         _transcriptService = transcriptService;
-        _uow = uow;
         _resultAuthService = resultAuthService;
         _markStructureService = markStructureService;
     }
@@ -99,6 +94,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Result.TeacherEntry")]
     public async Task<IActionResult> GetSectionsForClass(int classId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -157,14 +153,14 @@ public class ResultManagementController : Controller
 
             if (academicYearId.HasValue && academicYearId > 0)
             {
-                ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct);
-                var yearExamIds = (await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct))
-                    .Select(e => e.Id).ToHashSet();
+                var yearExams = (await _examService.GetExamsAsync(academicYearId.Value, ct)).ToList();
+                ViewBag.Exams = yearExams;
+                var yearExamIds = yearExams.Select(e => e.Id).ToHashSet();
                 dto.ExamResults = dto.ExamResults.Where(e => yearExamIds.Contains(e.ExamId)).ToList();
             }
             else
             {
-                ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => !e.IsDeleted, ct);
+                ViewBag.Exams = (await _examService.GetExamsAsync(0, ct)).ToList();
             }
 
             if (examId.HasValue && examId > 0)
@@ -204,6 +200,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> GetExams(CancellationToken ct)
     {
         var exams = await _examService.GetExamsAsync(0);
@@ -211,7 +208,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> GetSubjectsForClass(int classId, int? groupId, int? sectionId, CancellationToken ct)
     {
         var subjects = await _examService.GetSubjectsByClassIdAsync(classId, groupId, sectionId, ct);
@@ -302,7 +299,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [RequirePermission("Result.View")]
     public IActionResult DownloadReportCard(int examId, int studentId)
         => RedirectToAction("Download", "ReportCard", new { examId, studentId });
 

@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Routine;
 using SchoolManagementSystem.Models.Entities.Student;
 using EmployeeEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
+using SchoolManagementSystem.Repositories.Interfaces.Routine;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -12,10 +13,12 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class AcademicDashboardService : IAcademicDashboardService
 {
     private readonly IUnitOfWork _uow;
+    private readonly ITeacherLoadRepository _teacherLoadRepo;
 
-    public AcademicDashboardService(IUnitOfWork uow)
+    public AcademicDashboardService(IUnitOfWork uow, ITeacherLoadRepository teacherLoadRepo)
     {
         _uow = uow;
+        _teacherLoadRepo = teacherLoadRepo;
     }
 
     public async Task<AcademicDashboardDto> GetDashboardAsync(CancellationToken ct = default)
@@ -53,15 +56,13 @@ public class AcademicDashboardService : IAcademicDashboardService
         var totalClassrooms = await _uow.Repository<Room>().Query().AsNoTracking()
             .CountAsync(r => !r.IsDeleted, ct);
 
-        var teacherLoad = await _uow.Repository<ClassSubjectTeacher>().Query().AsNoTracking()
-            .GroupBy(t => t.TeacherId)
-            .Select(g => new { TeacherId = g.Key, Count = g.Count() })
-            .ToListAsync(ct);
+        var activeAcademicYear = await _uow.Repository<AcademicYear>().Query().AsNoTracking()
+            .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+        var academicYearId = activeAcademicYear?.Id ?? 0;
 
-        var teacherNames = await _uow.Repository<EmployeeEntity>().Query().AsNoTracking()
-            .Where(e => !e.IsDeleted && e.IsTeachingStaff)
-            .Select(e => new { e.Id, e.FullName })
-            .ToListAsync(ct);
+        var teacherLoad = academicYearId > 0
+            ? await _teacherLoadRepo.GetTeacherLoadSummaryAsync(academicYearId)
+            : new List<Models.DTOs.Routine.TeacherLoadDto>();
 
         var upcomingExams = await _uow.Repository<AcademicCalendar>().Query().AsNoTracking()
             .Where(c => c.Date >= today && c.IsExamDay)
@@ -158,8 +159,7 @@ public class AcademicDashboardService : IAcademicDashboardService
 
         var ratio = totalTeachers > 0 ? totalStudents / totalTeachers : 0;
         var utilPercent = totalCapacity > 0 ? Math.Round((double)totalStudents / totalCapacity * 100, 1) : 0;
-        var avgLoad = teacherLoad.Count > 0 ? Math.Round(teacherLoad.Average(t => t.Count), 1) : 0;
-        var teacherNameLookup = teacherNames.ToDictionary(x => x.Id, x => x.FullName);
+        var avgLoad = teacherLoad.Count > 0 ? Math.Round(teacherLoad.Average(t => t.TotalPeriodsPerWeek), 1) : 0;
 
         return new AcademicDashboardDto
         {
@@ -193,10 +193,10 @@ public class AcademicDashboardService : IAcademicDashboardService
             }).ToList(),
             TeacherWorkload = teacherLoad.Select(t => new TeacherWorkloadItem
             {
-                TeacherName = teacherNameLookup.GetValueOrDefault(t.TeacherId, $"Teacher #{t.TeacherId}"),
-                SubjectCount = t.Count,
-                ClassCount = t.Count,
-                TotalPeriods = t.Count
+                TeacherName = t.TeacherName,
+                SubjectCount = t.TotalSubjects,
+                ClassCount = t.TotalClasses,
+                TotalPeriods = t.TotalPeriodsPerWeek
             }).ToList(),
             SubjectCategories = subjectCategories,
             SectionCapacity = sectionCapacity,

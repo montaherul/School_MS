@@ -1,0 +1,71 @@
+@model PromotioSessionUpsertDto
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "Edit Session" : "Create Session";
+    var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">@(Model.Id.HasValue ? "Edit" : "Create") Promotion Session</h1>
+            <p class="adm-page-header__sub">@(Model.Id.HasValue ? "Update session details" : "Define a new promotion session")</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Index", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body">
+            <form asp-action="@(Model.Id.HasValue ? "Edit" : "Create")" method="post" class="adm-form">
+                @Html.AntiForgeryToken()
+                @if (Model.Id.HasValue)
+                {
+                    <input type="hidden" asp-for="Id" />
+                }
+
+                <div class="adm-form-grid adm-form-grid--2">
+                    <div class="adm-form-group">
+                        <label asp-for="SessionName" class="adm-label">Session Name <span class="ws-text-danger">*</span></label>
+                        <input asp-for="SessionName" class="adm-input" placeholder="e.g. Annual Promotion 2026" required />
+                        <span asp-validation-for="SessionName" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="AcademicYearId" class="adm-label">Academic Year <span class="ws-text-danger">*</span></label>
+                        <select asp-for="AcademicYearId" class="adm-input" required>
+                            <option value="">Select Year</option>
+                            @foreach (var y in years)
+                            {
+                                <option value="@y.Id" selected="@(y.Id == Model.AcademicYearId)">@y.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcademicYearId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="PromotionDate" class="adm-label">Promotion Date <span class="ws-text-danger">*</span></label>
+                        <input asp-for="PromotionDate" class="adm-input" type="date" required />
+                        <span asp-validation-for="PromotionDate" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label asp-for="Remarks" class="adm-label">Remarks</label>
+                        <textarea asp-for="Remarks" class="adm-input" rows="3" placeholder="Optional remarks"></textarea>
+                    </div>
+                </div>
+
+                <div class="ws-mt-4 ws-text-right">
+                    <button type="submit" class="adm-btn adm-btn--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        @(Model.Id.HasValue ? "Update Session" : "Create Session")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

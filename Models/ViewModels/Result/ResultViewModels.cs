@@ -1,7 +1,8 @@
 using SchoolManagementSystem.Models.Entities.Academic;
-using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Teacher;
@@ -115,7 +116,7 @@ public class ResultDashboardViewModel
     public ResultSummaryDto ResultStats { get; set; } = new();
     public List<AcademicYear> AcademicYears { get; set; } = new();
     public List<ExamListDto> FilterExams { get; set; } = new();
-    public List<StudentGroup> Groups { get; set; } = new();
+    public List<StudentGroupListItemDto> Groups { get; set; } = new();
     public int SelectedAcademicYearId { get; set; }
     public int? SelectedExamId { get; set; }
     public int? SelectedGroupId { get; set; }
@@ -201,4 +202,13 @@ public class TeacherMarksDashboardViewModel
     public int TotalEntries { get; set; }
     public List<string> ExamNames { get; set; } = new();
     public List<int> CompletionPercentages { get; set; } = new();
+}
+
+public class PublishingWizardViewModel
+{
+    public int Step { get; set; } = 1;
+    public int? SelectedExamId { get; set; }
+    public List<int> SelectedClassIds { get; set; } = new();
+    public bool LockResults { get; set; } = true;
+    public string? PublicationNotes { get; set; }
 }

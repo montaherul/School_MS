@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
-/// <summary>
-/// Redirects to MarksController - the sole mark entry controller.
-/// Generic CRUD on MarkEntry bypasses validation; use MarksController instead.
-/// </summary>
 [Authorize]
+[RequirePermission("Result.View")]
 public class ResultController : Controller
 {
     [HttpGet]
@@ -23,6 +21,7 @@ public class ResultController : Controller
         => RedirectToAction("Index", "Marks");
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Save()
         => RedirectToAction("Index", "Marks");
 
@@ -31,6 +30,7 @@ public class ResultController : Controller
         => RedirectToAction("Index", "Marks");
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult DeleteConfirmed(int id)
         => RedirectToAction("Index", "Marks");
 }

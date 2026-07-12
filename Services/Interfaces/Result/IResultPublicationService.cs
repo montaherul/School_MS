@@ -15,5 +15,11 @@ public interface IResultPublicationService
     Task<IEnumerable<ResultPublicationDto>> GetResultPublicationsAsync();
     Task<StudentPortalResultDto> GetStudentResultsAsync(int studentId);
     Task<IEnumerable<StudentExamResultDto>> GetAllResultsAsync(int? examId, int? classId, string? status);
+    Task<int> RejectResultsAsync(int examId, string updatedBy);
+    Task<List<PublicationHistoryEntryDto>> GetPublicationHistoryAsync(int yearId, CancellationToken ct = default);
+    Task<(List<PublicationDashboardExamDto> Exams, PublicationDashboardSummaryDto? Summary)> GetPublicationDashboardAsync(int academicYearId, CancellationToken ct = default);
+
+    // DIP compliance: replaces direct IResultAuditLogRepository access from controllers
+    Task<List<SchoolManagementSystem.Models.Entities.Result.ResultAuditLog>> GetAuditLogsAsync(int? examId, int? studentId, CancellationToken ct = default);
 }
 

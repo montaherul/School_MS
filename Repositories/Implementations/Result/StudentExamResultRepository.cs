@@ -406,6 +406,159 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
         return reportCard;
     }
 
+    public async Task<List<StudentExamResult>> GetFilteredResultsAsync(int yearId, int? examId, int? classId, int? sectionId, int? groupId, CancellationToken ct = default)
+    {
+        var query = _db.StudentExamResults
+            .Include(r => r.Student).ThenInclude(s => s.Class)
+            .Include(r => r.Student).ThenInclude(s => s.Section)
+            .Include(r => r.Student).ThenInclude(s => s.StudentGroup)
+            .Include(r => r.Exam)
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted && r.Exam.AcademicYearId == yearId);
+
+        if (examId.HasValue) query = query.Where(r => r.ExamId == examId.Value);
+        if (classId.HasValue) query = query.Where(r => r.Student.ClassId == classId.Value);
+        if (sectionId.HasValue) query = query.Where(r => r.Student.SectionId == sectionId.Value);
+        if (groupId.HasValue) query = query.Where(r => r.Student.StudentGroupId == groupId.Value);
+
+        return await query.ToListAsync(ct);
+    }
+
+    public async Task RecalculateResultsBySpAsync(int examId, int academicYearId, int userId, string reason, CancellationToken ct = default)
+    {
+        var connection = _db.Database.GetDbConnection();
+        await using var _ = await OpenConnectionAsync(connection, ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "[dbo].[sp_RecalculateResults]";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@ExamId", examId);
+        AddParameter(command, "@AcademicYearId", academicYearId);
+        AddParameter(command, "@RecalculatedByUserId", userId);
+        AddParameter(command, "@Reason", reason);
+        await command.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<int> CalculateMeritBySpAsync(string? examGroupKey = null, CancellationToken ct = default)
+    {
+        var connection = _db.Database.GetDbConnection();
+        await using var _ = await OpenConnectionAsync(connection, ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "[dbo].[sp_CalculateMerit]";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@ExamGroupKey", examGroupKey);
+        var result = await command.ExecuteScalarAsync(ct);
+        return Convert.ToInt32(result ?? 0);
+    }
+
+    public async Task<StudentTranscriptDto?> GetTranscriptBySpAsync(int studentId, int academicYearId, CancellationToken ct = default)
+    {
+        StudentTranscriptDto? transcript = null;
+        var connection = _db.Database.GetDbConnection();
+        await using var _ = await OpenConnectionAsync(connection, ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "[dbo].[sp_GetTranscript]";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@StudentId", studentId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        // Result Set 1: Student Info
+        if (await reader.ReadAsync(ct))
+        {
+            transcript = new StudentTranscriptDto
+            {
+                StudentId = GetInt32(reader, "StudentId"),
+                StudentName = GetString(reader, "StudentName"),
+                StudentNameBn = GetString(reader, "StudentName"),
+                RollNumber = GetInt32(reader, "RollNumber"),
+                FatherName = GetString(reader, "FatherName"),
+                MotherName = GetString(reader, "MotherName"),
+                DateOfBirth = GetDateTime(reader, "DateOfBirth"),
+                AcademicYear = GetString(reader, "CurrentAcademicYear")
+            };
+        }
+
+        if (transcript == null) return null;
+
+        // Result Set 2: Exam Results
+        if (await reader.NextResultAsync(ct))
+        {
+            var examResults = new List<StudentExamResultDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                examResults.Add(new StudentExamResultDto
+                {
+                    ExamId = GetInt32(reader, "ExamId"),
+                    ExamName = GetString(reader, "ExamName"),
+                    Term = GetString(reader, "Term") switch
+                    {
+                        "First Terminal" => ExamTerm.FirstTerminal,
+                        "Half Yearly" => ExamTerm.HalfYearly,
+                        "Second Terminal" => ExamTerm.SecondTerminal,
+                        "Annual" => ExamTerm.Annual,
+                        "Final" => ExamTerm.Final,
+                        "Pre Test" => ExamTerm.PreTest,
+                        "Test" => ExamTerm.Test,
+                        _ => ExamTerm.Other
+                    },
+                    TotalMarks = GetDecimal(reader, "TotalMarks"),
+                    TotalFullMarks = GetDecimal(reader, "TotalFullMarks"),
+                    Gpa = GetDecimal(reader, "Gpa"),
+                    Grade = GetString(reader, "Grade"),
+                    Position = GetInt32(reader, "Position"),
+                    ClassPosition = GetInt32(reader, "ClassPosition"),
+                    IsPassed = GetBoolean(reader, "IsPassed"),
+                    FailedSubjectCount = GetInt32(reader, "FailedSubjectCount"),
+                    PassedSubjectCount = GetInt32(reader, "PassedSubjectCount")
+                });
+            }
+            transcript.ExamResults = examResults;
+        }
+
+        // Result Set 3: Subject Results
+        if (await reader.NextResultAsync(ct))
+        {
+            var subjectResults = new List<StudentSubjectResultDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                subjectResults.Add(new StudentSubjectResultDto
+                {
+                    SubjectId = GetInt32(reader, "SubjectId"),
+                    SubjectName = GetString(reader, "SubjectName"),
+                    SubjectCode = GetString(reader, "SubjectCode"),
+                    MarksObtained = GetDecimal(reader, "MarksObtained"),
+                    FullMarks = GetDecimal(reader, "FullMarks"),
+                    PassMarks = GetDecimal(reader, "PassMarks"),
+                    Grade = GetString(reader, "Grade"),
+                    GradePoint = GetDecimal(reader, "GradePoint"),
+                    IsPassed = GetBoolean(reader, "IsPassed")
+                });
+            }
+            // Group subject results by exam and attach
+            if (transcript.ExamResults != null)
+            {
+                foreach (var examResult in transcript.ExamResults)
+                {
+                    examResult.Subjects = subjectResults
+                        .Where(s => s.ExamId == examResult.ExamId)
+                        .ToList();
+                }
+            }
+        }
+
+        // Result Set 4: Overall Stats
+        if (await reader.NextResultAsync(ct) && await reader.ReadAsync(ct))
+        {
+            transcript.TotalExamsTaken = GetInt32(reader, "TotalExamsTaken");
+            transcript.TotalAcademicYears = GetInt32(reader, "TotalAcademicYears");
+            transcript.FinalGPA = GetDecimal(reader, "AverageGPA");
+            transcript.TotalPassedSubjects = GetInt32(reader, "PassedExams");
+            transcript.TotalFailedSubjects = GetInt32(reader, "FailedExams");
+        }
+
+        return transcript;
+    }
+
     private static void BuildReportCardMarksFromReader(DbDataReader reader, ComponentMarksDto marks, string? componentValuesJson)
     {
         var reportCardColumnMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

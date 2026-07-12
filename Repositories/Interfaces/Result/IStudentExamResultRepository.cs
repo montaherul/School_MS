@@ -13,4 +13,10 @@ public interface IStudentExamResultRepository : IBaseRepository<StudentExamResul
     Task<List<TopStudentDto>> GetTopStudentsAsync(int examId, CancellationToken ct);
     Task<(List<StudentResultExamDto> Exams, List<StudentResultSubjectDto> Subjects)> GetStudentResultsAsync(int studentId, int? academicYearId, CancellationToken ct);
     Task<ReportCardDto?> GetReportCardAsync(int examId, int studentId, CancellationToken ct);
+    Task<List<StudentExamResult>> GetFilteredResultsAsync(int yearId, int? examId, int? classId, int? sectionId, int? groupId, CancellationToken ct = default);
+    
+    // Stored Procedure Integration Phase 2
+    Task RecalculateResultsBySpAsync(int examId, int academicYearId, int userId, string reason, CancellationToken ct = default);
+    Task<int> CalculateMeritBySpAsync(string? examGroupKey = null, CancellationToken ct = default);
+    Task<StudentTranscriptDto?> GetTranscriptBySpAsync(int studentId, int academicYearId, CancellationToken ct = default);
 }

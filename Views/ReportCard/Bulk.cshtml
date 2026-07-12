@@ -1,0 +1,285 @@
+@{
+    ViewData["Title"] = "Bulk Report Card Generation";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="adm-alert adm-alert--danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <svg class="adm-header__icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <div>
+                <h1 class="adm-header__title">Bulk Report Card Generation</h1>
+                <p class="adm-header__sub">Generate PDF report cards for all students in an exam</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body" style="max-width:720px">
+            <form id="bulkForm" method="post" action="@Url.Action("GenerateBulk", "ReportCard")">
+                @Html.AntiForgeryToken()
+                <div class="adm-form-grid">
+                    <div class="adm-field">
+                        <label class="adm-field__label" for="examId">Exam <span class="adm-field__required">*</span></label>
+                        <select id="examId" name="examId" class="adm-input" required>
+                            <option value="">— Select Exam —</option>
+                            @if (ViewBag.Exams != null)
+                            {
+                                foreach (var exam in ViewBag.Exams)
+                                {
+                                    <option value="@exam.Id">@exam.Name (@exam.AcademicYearName)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-field">
+                        <label class="adm-field__label" for="classId">Class</label>
+                        <select id="classId" name="classId" class="adm-input">
+                            <option value="">— All Classes —</option>
+                            @if (ViewBag.Classes != null)
+                            {
+                                var selectedClassId = ViewBag.SelectedClassId as int?;
+                                foreach (var cls in ViewBag.Classes)
+                                {
+                                    var isSelected = selectedClassId.HasValue && cls.Id == selectedClassId.Value;
+                                    <option value="@cls.Id" selected="@(isSelected ? "selected" : null)">@cls.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-field">
+                        <label class="adm-field__label" for="sectionId">Section</label>
+                        <select id="sectionId" name="sectionId" class="adm-input">
+                            <option value="">— All Sections —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="adm-form-grid" style="margin-top:16px">
+                    <div class="adm-field">
+                        <label class="adm-field__label">Download Format</label>
+                        <div style="display:flex;gap:24px;padding-top:8px">
+                            <label class="adm-field__label" style="font-weight:400;cursor:pointer;display:flex;align-items:center;gap:6px">
+                                <input type="radio" name="format" value="pdf" checked class="adm-input" style="width:auto"> PDF (Combined)
+                            </label>
+                            <label class="adm-field__label" style="font-weight:400;cursor:pointer;display:flex;align-items:center;gap:6px">
+                                <input type="radio" name="format" value="zip" class="adm-input" style="width:auto"> ZIP (Individual)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid var(--adm-border);margin-top:20px">
+                    <button type="submit" class="er-btn er-btn--primary" id="generateBtn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                        Generate &amp; Download
+                    </button>
+                    <button type="button" class="er-btn er-btn--secondary" id="printQueueBtn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                            <line x1="7" y1="13" x2="17" y2="13" />
+                        </svg>
+                        Send to Print Queue
+                    </button>
+                    <a href="@Url.Action("Index", "ReportCard")" class="er-btn er-btn--ghost">Cancel</a>
+                </div>
+            </form>
+
+            <div id="bulkStatus" style="display:none;margin-top:24px">
+                <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--adm-text-2)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:dash-spin .7s linear infinite;flex-shrink:0;color:var(--adm-primary)">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" fill="none" />
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-linecap="round" fill="none" />
+                    </svg>
+                    <span id="bulkStatusText">Preparing generation...</span>
+                </div>
+                <div style="width:100%;height:8px;background:var(--adm-surface-2);border-radius:100px;overflow:hidden;margin-top:12px">
+                    <div style="height:100%;background:var(--adm-primary);border-radius:100px;transition:width 0.4s ease;width:0%" id="bulkProgressFill"></div>
+                </div>
+            </div>
+
+            <div id="bulkResult" style="display:none;margin-top:24px;padding:20px;border-radius:var(--adm-radius)">
+                <span id="bulkResultText"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var $form = $('#bulkForm');
+            var $btn = $('#generateBtn');
+            var $pqBtn = $('#printQueueBtn');
+            var $status = $('#bulkStatus');
+            var $progress = $('#bulkProgressFill');
+            var $statusText = $('#bulkStatusText');
+            var $result = $('#bulkResult');
+            var $resultText = $('#bulkResultText');
+            var $examId = $('#examId');
+            var $classId = $('#classId');
+            var $sectionId = $('#sectionId');
+
+            function loadSections(classId, selectedSectionId) {
+                if (!classId) {
+                    $sectionId.html('<option value="">— All Sections —</option>');
+                    return;
+                }
+                $sectionId.prop('disabled', true);
+                $sectionId.html('<option value="">Loading...</option>');
+                $.getJSON('@Url.Action("GetSectionsByClass", "ReportCard")', { classId: classId })
+                    .done(function (data) {
+                        var html = '<option value="">— All Sections —</option>';
+                        $.each(data, function (i, s) {
+                            var sel = selectedSectionId && s.id == selectedSectionId ? ' selected' : '';
+                            html += '<option value="' + s.id + '"' + sel + '>' + s.name + '</option>';
+                        });
+                        $sectionId.html(html);
+                    })
+                    .fail(function () {
+                        $sectionId.html('<option value="">— All Sections —</option>');
+                        toastr.error('Failed to load sections.');
+                    })
+                    .always(function () {
+                        $sectionId.prop('disabled', false);
+                    });
+            }
+
+            $classId.on('change', function () {
+                loadSections($(this).val(), null);
+            });
+
+            @if (ViewBag.SelectedClassId != null)
+            {
+                <text>
+                loadSections(@ViewBag.SelectedClassId, @ViewBag.SelectedClassId);
+                </text>
+            }
+
+            function showResult(type, message) {
+                $result
+                    .removeClass('er-alert--success er-alert--danger')
+                    .addClass('er-alert er-alert--' + type)
+                    .css('display', 'block');
+                $resultText.text(message);
+            }
+
+            function hideResult() {
+                $result.css('display', 'none');
+            }
+
+            function setProgress(pct, text) {
+                $progress.css('width', pct + '%');
+                if (text) $statusText.text(text);
+            }
+
+            $form.on('submit', function (e) {
+                var examId = $examId.val();
+                if (!examId) {
+                    e.preventDefault();
+                    toastr.error('Please select an exam.');
+                    return;
+                }
+
+                $btn.prop('disabled', true).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:dash-spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" fill="none" /><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-linecap="round" fill="none" /></svg> Generating...');
+                $pqBtn.prop('disabled', true);
+                $status.css('display', 'block');
+                hideResult();
+                setProgress(10, 'Counting report cards...');
+
+                $.ajax({
+                    type: 'POST',
+                    url: $form.attr('action'),
+                    data: $form.serialize(),
+                    xhrFields: { responseType: 'blob' },
+                    beforeSend: function () {
+                        setProgress(30, 'Generating report cards, please wait...');
+                    },
+                    success: function (blob, status, xhr) {
+                        setProgress(90, 'Download starting...');
+
+                        var disposition = xhr.getResponseHeader('content-disposition');
+                        var filename = 'ReportCards.pdf';
+                        if (disposition && disposition.indexOf('filename=') !== -1) {
+                            var match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match && match[1]) filename = match[1].replace(/['"]/g, '');
+                        }
+
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+
+                        $status.css('display', 'none');
+                        $btn.prop('disabled', false).html('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg> Generate &amp; Download');
+                        $pqBtn.prop('disabled', false);
+                        showResult('success', 'Report cards generated successfully. Download should start automatically.');
+                    },
+                    error: function () {
+                        $status.css('display', 'none');
+                        $btn.prop('disabled', false).html('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg> Generate &amp; Download');
+                        $pqBtn.prop('disabled', false);
+                        showResult('danger', 'An error occurred while generating report cards. Please try again.');
+                    }
+                });
+
+                return false;
+            });
+
+            $pqBtn.on('click', function () {
+                var examId = $examId.val();
+                if (!examId) {
+                    toastr.error('Please select an exam.');
+                    return;
+                }
+
+                $pqBtn.prop('disabled', true).html('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:dash-spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" fill="none" /><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-linecap="round" fill="none" /></svg> Adding to queue...');
+                hideResult();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SendToPrintQueue", "ReportCard")',
+                    data: {
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
+                        examId: examId,
+                        classId: $classId.val() || '',
+                        sectionId: $sectionId.val() || ''
+                    },
+                    success: function (resp) {
+                        $pqBtn.prop('disabled', false).html('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><line x1="7" y1="13" x2="17" y2="13" /></svg> Send to Print Queue');
+                        if (resp.success) {
+                            showResult('success', resp.message);
+                            toastr.success(resp.message);
+                        } else {
+                            showResult('danger', resp.message);
+                            toastr.error(resp.message);
+                        }
+                    },
+                    error: function () {
+                        $pqBtn.prop('disabled', false).html('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><line x1="7" y1="13" x2="17" y2="13" /></svg> Send to Print Queue');
+                        showResult('danger', 'Failed to add to print queue. Please try again.');
+                        toastr.error('Failed to add to print queue.');
+                    }
+                });
+            });
+        });
+    </script>
+}

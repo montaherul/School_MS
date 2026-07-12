@@ -1,0 +1,125 @@
+@{
+    ViewData["Title"] = "Promotion Sessions";
+    var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Promotion Sessions</h1>
+            <p class="adm-page-header__sub">Manage bulk promotion sessions</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Dashboard", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                Dashboard
+            </a>
+            <a href="@Url.Action("ProgressionRules", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Progression Rules
+            </a>
+            <a href="@Url.Action("Create", "PromotioSession")" class="adm-btn adm-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Create Session
+            </a>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">All Sessions</h2>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body">
+                <div class="adm-table-wrapper">
+                    <table class="dash-table" id="sessionTable">
+                        <thead>
+                            <tr>
+                                <th>Session Name</th>
+                                <th>Academic Year</th>
+                                <th>Promotion Date</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th class="ws-text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionTableBody">
+                            <tr id="emptyRow">
+                                <td colspan="6">
+                                    <div class="er-empty">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                        <h3 class="er-empty__title">No Sessions</h3>
+                                        <p class="er-empty__desc">Create a promotion session to get started.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="adm-pagination" id="pagination"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+        const pageSize = 20;
+
+        async function loadSessions(page) {
+            currentPage = page;
+            try {
+                const r = await fetch('@Url.Action("GetList", "PromotioSession")?page=' + page + '&size=' + pageSize);
+                const data = await r.json();
+                const tbody = document.getElementById('sessionTableBody');
+                const emptyRow = document.getElementById('emptyRow');
+                if (!data.items || data.items.length === 0) {
+                    emptyRow.style.display = '';
+                    return;
+                }
+                emptyRow.style.display = 'none';
+                tbody.innerHTML = data.items.map(s => {
+                    const statusBadge = s.Status === 'Draft' ? 'er-badge--pending' : s.Status === 'Approved' ? 'er-badge--approved' : 'er-badge--converted';
+                    const d = new Date(s.promotionDate);
+                    const cd = new Date(s.createdAt);
+                    return '<tr>' +
+                        '<td><span class="adm-cell-name">' + escapeHtml(s.sessionName) + '</span></td>' +
+                        '<td>' + escapeHtml(s.academicYearName) + '</td>' +
+                        '<td>' + d.toLocaleDateString() + '</td>' +
+                        '<td><span class="er-badge ' + statusBadge + '">' + escapeHtml(s.status) + '</span></td>' +
+                        '<td>' + cd.toLocaleDateString() + '</td>' +
+                        '<td class="ws-text-right"><div class="actions-cell">' +
+                        '<a href="/PromotioSession/Details/' + s.id + '" class="er-action er-action--edit" title="Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg></a>' +
+                        '<form action="/PromotioSession/Delete/' + s.id + '" method="post" class="ws-d-inline" onsubmit="return confirm(\'Delete this session?\')">' +
+                        '@Html.AntiForgeryToken()' +
+                        '<button type="submit" class="er-action er-action--delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>' +
+                        '</form></div></td></tr>';
+                }).join('');
+                renderPagination(data.total, page);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderPagination(total, page) {
+            const totalPages = Math.ceil(total / pageSize) || 1;
+            const el = document.getElementById('pagination');
+            if (totalPages <= 1) { el.innerHTML = ''; return; }
+            let html = '<div class="adm-pagination__info">Page ' + page + ' of ' + totalPages + ' (' + total + ' items)</div><div class="adm-pagination__controls">';
+            if (page > 1) html += '<button class="adm-pagination__btn" onclick="loadSessions(' + (page - 1) + ')">Previous</button>';
+            html += '<span class="adm-pagination__current">' + page + '</span>';
+            if (page < totalPages) html += '<button class="adm-pagination__btn" onclick="loadSessions(' + (page + 1) + ')">Next</button>';
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        loadSessions(1);
+    </script>
+}

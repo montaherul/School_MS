@@ -64,6 +64,11 @@ public class SubjectService : ISubjectService
                     IsPractical = x.IsPractical,
                     DefaultFullMarks = x.DefaultFullMarks,
                     DefaultPassMarks = x.DefaultPassMarks,
+                    TheoryMarks = x.TheoryMarks,
+                    PracticalMarks = x.PracticalMarks,
+                    PassMarks = x.PassMarks,
+                    Credit = x.Credit,
+                    NctbCode = x.NctbCode,
                     DisplayOrder = x.DisplayOrder,
                     IsActive = x.IsActive
                 }).ToListAsync(ct);
@@ -96,6 +101,11 @@ public class SubjectService : ISubjectService
                 IsPractical = s.IsPractical,
                 DefaultFullMarks = s.DefaultFullMarks,
                 DefaultPassMarks = s.DefaultPassMarks,
+                TheoryMarks = s.TheoryMarks,
+                PracticalMarks = s.PracticalMarks,
+                PassMarks = s.PassMarks,
+                Credit = s.Credit,
+                NctbCode = s.NctbCode,
                 DisplayOrder = s.DisplayOrder,
                 IsActive = s.IsActive
             })
@@ -130,6 +140,11 @@ public class SubjectService : ISubjectService
             IsPractical = entity.IsPractical,
             DefaultFullMarks = entity.DefaultFullMarks,
             DefaultPassMarks = entity.DefaultPassMarks,
+            TheoryMarks = entity.TheoryMarks,
+            PracticalMarks = entity.PracticalMarks,
+            PassMarks = entity.PassMarks,
+            Credit = entity.Credit,
+            NctbCode = entity.NctbCode,
             DisplayOrder = entity.DisplayOrder,
             IsActive = entity.IsActive
         };
@@ -156,6 +171,11 @@ public class SubjectService : ISubjectService
             IsPractical = dto.IsPractical,
             DefaultFullMarks = dto.DefaultFullMarks,
             DefaultPassMarks = dto.DefaultPassMarks,
+            TheoryMarks = dto.TheoryMarks,
+            PracticalMarks = dto.PracticalMarks,
+            PassMarks = dto.PassMarks,
+            Credit = dto.Credit,
+            NctbCode = dto.NctbCode,
             DisplayOrder = dto.DisplayOrder,
             IsActive = dto.IsActive,
             CreatedBy = createdBy
@@ -187,6 +207,11 @@ public class SubjectService : ISubjectService
         entity.IsPractical = dto.IsPractical;
         entity.DefaultFullMarks = dto.DefaultFullMarks;
         entity.DefaultPassMarks = dto.DefaultPassMarks;
+        entity.TheoryMarks = dto.TheoryMarks;
+        entity.PracticalMarks = dto.PracticalMarks;
+        entity.PassMarks = dto.PassMarks;
+        entity.Credit = dto.Credit;
+        entity.NctbCode = dto.NctbCode;
         entity.DisplayOrder = dto.DisplayOrder;
         entity.IsActive = dto.IsActive;
         entity.UpdatedBy = updatedBy;
@@ -225,6 +250,11 @@ public class SubjectService : ISubjectService
                 IsPractical = s.IsPractical,
                 DefaultFullMarks = s.DefaultFullMarks,
                 DefaultPassMarks = s.DefaultPassMarks,
+                TheoryMarks = s.TheoryMarks,
+                PracticalMarks = s.PracticalMarks,
+                PassMarks = s.PassMarks,
+                Credit = s.Credit,
+                NctbCode = s.NctbCode,
                 DisplayOrder = s.DisplayOrder,
                 IsActive = s.IsActive
             })
@@ -294,6 +324,11 @@ public class SubjectService : ISubjectService
                 IsPractical = d.IsPractical,
                 DefaultFullMarks = d.DefaultFullMarks,
                 DefaultPassMarks = d.DefaultPassMarks,
+                TheoryMarks = d.TheoryMarks,
+                PracticalMarks = d.PracticalMarks,
+                PassMarks = d.PassMarks,
+                Credit = d.Credit,
+                NctbCode = d.NctbCode,
                 DisplayOrder = d.DisplayOrder,
                 IsActive = d.IsActive,
                 CreatedBy = createdBy
@@ -327,6 +362,11 @@ public class SubjectService : ISubjectService
                 IsPractical = x.IsPractical,
                 DefaultFullMarks = x.DefaultFullMarks,
                 DefaultPassMarks = x.DefaultPassMarks,
+                TheoryMarks = x.TheoryMarks,
+                PracticalMarks = x.PracticalMarks,
+                PassMarks = x.PassMarks,
+                Credit = x.Credit,
+                NctbCode = x.NctbCode,
                 DisplayOrder = x.DisplayOrder,
                 IsActive = x.IsActive
             })

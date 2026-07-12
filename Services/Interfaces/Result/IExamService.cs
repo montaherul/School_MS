@@ -41,5 +41,23 @@ public interface IExamService
     Task<int> GenerateExamSubjectsFromCurriculumAsync(int examId, int classId, int? groupId = null, CancellationToken ct = default);
     Task<int> GenerateReligionExamSubjectsAsync(int examId, int classId, CancellationToken ct = default);
     Task<int> GenerateOptionalExamSubjectsAsync(int examId, int classId, CancellationToken ct = default);
+
+    // Entity-returning methods for MarksController (DIP compliance)
+    Task<SchoolManagementSystem.Models.Entities.Exam.Exam?> GetExamEntityByIdAsync(int examId, CancellationToken ct = default);
+    Task<IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>> GetExamsByYearAsync(int academicYearId, CancellationToken ct = default);
+    Task<IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>> GetAllExamsAsync(CancellationToken ct = default);
+
+    // Promotion integration
+    Task<int> CloneExamConfigForNewYearAsync(int fromAcademicYearId, int toAcademicYearId, string userId, CancellationToken ct = default);
+    Task<ExamReadinessReportDto> GetExamReadinessReportAsync(int academicYearId, CancellationToken ct = default);
+
+    // Multi-class Exam hierarchy (merged from ExamGroup)
+    Task<ExamWizardLoadResult> LoadExamClassesAsync(int academicYearId, List<int> classIds, CancellationToken ct = default);
+    Task<ExamValidationResult> ValidateExamHierarchyAsync(ExamCreateRequest request, CancellationToken ct = default);
+    Task<ExamCreateResult> CreateExamHierarchyAsync(ExamCreateRequest request, string userId, CancellationToken ct = default);
+    Task<ExamReadinessDto> GetExamReadinessAsync(int examId, CancellationToken ct = default);
+    Task<ExamCreateResult> CopyExamHierarchyAsync(int sourceExamId, int targetAcademicYearId, string userId, CancellationToken ct = default);
+    Task ArchiveExamAsync(int examId, string reason, int userId, CancellationToken ct = default);
+    Task RestoreExamAsync(int examId, CancellationToken ct = default);
 }
 

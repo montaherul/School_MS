@@ -28,10 +28,10 @@
 
     <!-- ── Filter Selector Panel ── -->
     <div class="er-card">
-        <form method="get" action="@Url.Action("Index")" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Select Examination</label>
-                <select name="examId" class="form-select er-filters__select" required>
+        <form method="get" action="@Url.Action("Index")" class="adm-form-grid adm-form-grid--gap">
+            <div class="adm-form-group">
+                <label class="adm-label">Select Examination</label>
+                <select name="examId" class="adm-select er-filters__select" required>
                     <option value="">-- Choose Exam --</option>
                     @if (exams != null)
                     {
@@ -42,9 +42,9 @@
                     }
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Select Class</label>
-                <select name="classId" id="classSelect" class="form-select er-filters__select" required>
+            <div class="adm-form-group">
+                <label class="adm-label">Select Class</label>
+                <select name="classId" id="classSelect" class="adm-select er-filters__select" required>
                     <option value="">-- Choose Class --</option>
                     @if (classes != null)
                     {
@@ -55,9 +55,9 @@
                     }
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Select Section (Optional)</label>
-                <select name="sectionId" id="sectionSelect" class="form-select er-filters__select">
+            <div class="adm-form-group">
+                <label class="adm-label">Select Section (Optional)</label>
+                <select name="sectionId" id="sectionSelect" class="adm-select er-filters__select">
                     <option value="">-- Choose Section --</option>
                     @if (sections != null)
                     {
@@ -68,8 +68,8 @@
                     }
                 </select>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="er-btn er-btn--primary w-100">
+            <div class="adm-form-group er-flex er-align-end">
+                <button type="submit" class="er-btn er-btn--primary er-w-full">
                     Search Results
                 </button>
             </div>
@@ -80,7 +80,7 @@
     <div class="er-card">
             @if (Model != null && Model.Any())
             {
-                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                <div class="er-table-scroll" style="border-radius: var(--adm-radius-lg);">
                     <table class="dash-table">
                         <thead>
                             <tr>
@@ -92,20 +92,20 @@
                                 <th>Letter Grade</th>
                                 <th>Class Position</th>
                                 <th>Status</th>
-                                <th style="text-align:right;">Actions</th>
+                                <th class="er-text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var r in Model)
                             {
                                 <tr>
-                                    <td class="text-center font-weight-bold">@r.Student.RollNumber</td>
+                                    <td class="er-text-center er-font-bold">@r.Student.RollNumber</td>
                                     <td><span>@r.Student.StudentNo</span></td>
                                     <td><span class="adm-cell-name">@r.Student.FullName</span></td>
-                                    <td class="text-center font-weight-bold">@r.TotalMarks.ToString("F2")</td>
-                                    <td class="text-center text-primary font-weight-bold">@r.Gpa.ToString("F2")</td>
-                                    <td class="text-center"><span class="er-badge er-badge--neutral">@r.Grade</span></td>
-                                    <td class="text-center font-weight-bold">@r.Position</td>
+                                    <td class="er-text-center er-font-bold">@r.TotalMarks.ToString("F2")</td>
+                                    <td class="er-text-center er-text-primary er-font-bold">@r.Gpa.ToString("F2")</td>
+                                    <td class="er-text-center"><span class="er-badge er-badge--neutral">@r.Grade</span></td>
+                                    <td class="er-text-center er-font-bold">@r.Position</td>
                                     <td>
                                         @if (r.IsPassed)
                                         {
@@ -119,8 +119,8 @@
                                     <td>
                                         <div class="actions-cell">
                                             <a href="@Url.Action("Download", new { examId = r.ExamId, studentId = r.StudentId })"
-                                               class="er-btn er-btn--secondary py-1 px-3 d-flex align-items-center" title="Download PDF">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                               class="er-btn er-btn--secondary er-py-1 er-px-3 er-flex er-align-center" title="Download PDF">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="er-mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                                                 Download PDF
                                             </a>
                                         </div>

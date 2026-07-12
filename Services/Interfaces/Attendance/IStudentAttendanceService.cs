@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Exam;
 
 namespace SchoolManagementSystem.Services.Interfaces.Attendance
 {
@@ -50,6 +51,11 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance
             int page = 1,
             int pageSize = 50,
             CancellationToken ct = default);
+
+        // Promotion integration
+        Task<List<AttendanceForPromotionDto>> GetAttendanceForPromotionAsync(
+            int academicYearId, int? classId = null, int? sectionId = null,
+            decimal? minPercentage = null, CancellationToken ct = default);
 
         // Session workflow operations
         Task SubmitAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string submittedBy, string? notes, CancellationToken ct = default);

@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Attendance;
 
 namespace SchoolManagementSystem.Repositories.Interfaces.Attendance
@@ -22,6 +23,12 @@ namespace SchoolManagementSystem.Repositories.Interfaces.Attendance
             int year,
             int month,
             CancellationToken cancellationToken = default);
+        Task<List<AttendanceForPromotionDto>> GetAttendanceForPromotionAsync(
+            int academicYearId, int? classId = null, int? sectionId = null,
+            decimal? minPercentage = null, CancellationToken cancellationToken = default);
+        Task<(List<StudentAttendanceDto> Students, int Total)> GetStudentsForAttendanceBySpAsync(
+            int classId, int sectionId, int? studentGroupId, DateTime attendanceDate,
+            int page = 1, int pageSize = 50, CancellationToken cancellationToken = default);
     }
 
     public interface IEmployeeAttendanceRepository : IBaseRepository<EmployeeAttendance>

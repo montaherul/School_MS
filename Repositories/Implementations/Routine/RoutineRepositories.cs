@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Common;
@@ -1282,11 +1283,40 @@ public class TeacherLoadRepository : ITeacherLoadRepository
                 TotalPeriodsPerWeek = GetInt32(reader, "TotalPeriodsPerWeek"),
                 TotalClasses = GetInt32(reader, "ClassesCount"),
                 TotalSubjects = GetInt32(reader, "SubjectsCount"),
-                UtilizationPercent = (double)GetDecimal(reader, "UtilizationPercent")
+                UtilizationPercent = (double)GetDecimal(reader, "UtilizationPercent"),
+                MaxPeriodsPerDay = GetInt32(reader, "MaxPeriodsPerDay"),
+                WorkingDays = GetInt32(reader, "WorkingDays"),
+                AveragePerDay = (double)GetDecimal(reader, "AveragePerDay"),
+                WeeklyPeriodsByDay = ParsePeriodsByDayJson(GetString(reader, "PeriodsByDay"))
             });
         }
 
         return items;
+    }
+
+    private static Dictionary<int, int> ParsePeriodsByDayJson(string json)
+    {
+        if (string.IsNullOrEmpty(json) || json == "[]")
+            return new Dictionary<int, int>();
+
+        try
+        {
+            var entries = JsonSerializer.Deserialize<List<DayPeriodEntry>>(json);
+            if (entries == null || entries.Count == 0)
+                return new Dictionary<int, int>();
+
+            return entries.ToDictionary(e => e.Key, e => e.Value);
+        }
+        catch
+        {
+            return new Dictionary<int, int>();
+        }
+    }
+
+    private sealed class DayPeriodEntry
+    {
+        public int Key { get; set; }
+        public int Value { get; set; }
     }
 
     private static async Task<IAsyncDisposable> OpenConnectionAsync(System.Data.Common.DbConnection connection, CancellationToken ct)

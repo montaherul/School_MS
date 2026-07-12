@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Subject Categories";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-3">
+            <i class="bi bi-check-circle-fill ws-me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Categories</h1>
+                <p class="adm-header__sub">Manage subject categories like Core, Optional, Practical</p>
+            </div>
+        </div>
+        <a href="/Academic/SubjectCategory/CreateEdit" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Category</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        SchoolMS.Grid.create('subjectCategory', {
+            container: '#data-table',
+            ajaxUrl: '@Url.Action("GetList", "SubjectCategory")',
+            editUrl: '/Academic/SubjectCategory/CreateEdit',
+            deleteUrl: '/Academic/SubjectCategory/DeleteConfirmed',
+            rowNum: true,
+            pageSize: 10,
+            pageSizeSelector: [10,25,50,100],
+            columns: [
+                { title: "Name", field: "name", minWidth: 180, cssClass: "entity-cell__name" },
+                { title: "Code", field: "code", hozAlign: "center", width: 80 },
+                { title: "Description", field: "description", minWidth: 250 },
+                { title: "Order", field: "displayOrder", hozAlign: "center", width: 80 },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center", width: 110,
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span class="adm-status adm-status--approved">Active</span>'
+                            : '<span class="adm-status adm-status--rejected">Inactive</span>';
+                    }
+                }
+            ],
+            placeholder: '<div class="dash-empty"><i class="bi bi-tags ws-fs-48"></i><div class="dash-empty__title">No Categories Found</div><div class="dash-empty__sub">Create a new subject category to get started.</div></div>'
+        });
+    </script>
+}

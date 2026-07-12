@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.SubjectCategoryViewModel
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Subject Category" : "Add Subject Category";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Subject Category" : "Add Subject Category")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify category details" : "Create a new subject category")</p>
+            </div>
+        </div>
+        <a href="/Academic/SubjectCategory/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Name" class="adm-label">Name <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Name" class="adm-input" placeholder="e.g. Core" />
+                                <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="Code" class="adm-label">Code <span class="ws-text-danger">*</span></label>
+                                <input asp-for="Code" class="adm-input" placeholder="e.g. CORE" />
+                                <span asp-validation-for="Code" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <div class="ws-mb-3">
+                            <label asp-for="Description" class="adm-label">Description</label>
+                            <textarea asp-for="Description" class="adm-input" rows="3" placeholder="Optional description"></textarea>
+                            <span asp-validation-for="Description" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-mb-3">
+                            <label asp-for="DisplayOrder" class="adm-label">Display Order</label>
+                            <input asp-for="DisplayOrder" type="number" class="adm-input" />
+                            <span asp-validation-for="DisplayOrder" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Active</label>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Academic/SubjectCategory/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

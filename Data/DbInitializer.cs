@@ -154,6 +154,10 @@ public static class DbInitializer
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
             new() { Id = 617, Module = "Calendar", ModuleName = "Calendar", Action = "Repair", Code = "Calendar.Repair",
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
+            new() { Id = 618, Module = "ExamSubjectComponent", ModuleName = "ExamSubjectComponent", Action = "Manage", Code = "ExamSubjectComponent.Manage",
+                CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = true, CreatedAt = createdAt },
+            new() { Id = 619, Module = "ExamSubjectComponent", ModuleName = "ExamSubjectComponent", Action = "View", Code = "ExamSubjectComponent.View",
+                CanCreate = false, CanRead = true, CanUpdate = false, CanDelete = false, CreatedAt = createdAt },
         };
         var allPermissions = permissions.Concat(customPermissions).ToArray();
         modelBuilder.Entity<Permission>().HasData(allPermissions);
@@ -189,12 +193,13 @@ public static class DbInitializer
                 "Results.View" or "Result.View" or
                 "Assignments.View" or "Assignments.Create" or
                 "Reports.View" or
-                "Exams.View" or "Exam.View")
+                "Exams.View" or "Exam.View" or
+                "ExamSubjectComponent.Manage" or "ExamSubjectComponent.View")
             .Select(p => new RolePermission { RoleId = 4, PermissionId = p.Id });
         var teacherRolePermissions = allPermissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
-                p.Code is "Reports.View" or "Exam.View" or "Exams.View")
+                p.Code is "Reports.View" or "Exam.View" or "Exams.View" or "ExamSubjectComponent.Manage" or "ExamSubjectComponent.View")
             .Select(p => new RolePermission { RoleId = 5, PermissionId = p.Id });
         var officeRolePermissions = allPermissions
             .Where(p =>
@@ -250,7 +255,8 @@ public static class DbInitializer
                 "Marks.View" or "Marks.Read" or "Marks.Create" or "Marks.Edit" or "Marks.Approve" or "Marks.Publish" or
                 "Results.View" or "Results.Read" or "Results.Approve" or "Results.Publish" or
                 "Result.View" or "Result.Read" or
-                "Reports.View" or "Reports.Read")
+                "Reports.View" or "Reports.Read" or
+                "ExamSubjectComponent.Manage" or "ExamSubjectComponent.View")
             .Select(p => new RolePermission { RoleId = 27, PermissionId = p.Id });
         modelBuilder.Entity<RolePermission>().HasData(
             adminRolePermissions

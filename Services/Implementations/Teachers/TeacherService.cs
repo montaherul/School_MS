@@ -148,6 +148,23 @@ public class TeacherService : ITeacherService
         if (File.Exists(fullPath)) File.Delete(fullPath);
     }
 
+    public async Task<List<TeacherClassAssignment>> GetTeacherClassAssignmentsAsync(int teacherId, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<TeacherClassAssignment>().Query()
+            .Include(a => a.Class)
+            .Include(a => a.Section)
+            .Include(a => a.Group)
+            .Where(a => a.TeacherId == teacherId && !a.IsDeleted)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<TeacherSubjectAssignment>> GetTeacherSubjectAssignmentsAsync(int teacherId, int academicYearId, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
+            .Where(a => a.TeacherId == teacherId && a.IsActive && !a.IsDeleted && a.AcademicYearId == academicYearId)
+            .ToListAsync(ct);
+    }
+
     private async Task<string> GenerateTeacherNoAsync(CancellationToken ct)
     {
         var lastTeacherNo = await _unitOfWork.Repository<Teacher>().Query()

@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -17,15 +18,40 @@ public class TranscriptService : ITranscriptService
     private readonly IUnitOfWork _uow;
     private readonly IPdfGenerator _pdfGenerator;
     private readonly IStudentSubjectFilterService _subjectFilter;
+    private readonly IStudentExamResultRepository _examResultRepository;
 
-    public TranscriptService(IUnitOfWork uow, IPdfGenerator pdfGenerator, IStudentSubjectFilterService subjectFilter)
+    public TranscriptService(IUnitOfWork uow, IPdfGenerator pdfGenerator, IStudentSubjectFilterService subjectFilter, IStudentExamResultRepository examResultRepository)
     {
         _uow = uow;
         _pdfGenerator = pdfGenerator;
         _subjectFilter = subjectFilter;
+        _examResultRepository = examResultRepository;
     }
 
     public async Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId)
+    {
+        var transcript = await _examResultRepository.GetTranscriptBySpAsync(studentId, academicYearId);
+        if (transcript != null)
+        {
+            var schoolProfile = await _uow.Repository<SchoolProfile>().Query().FirstOrDefaultAsync();
+            transcript.SchoolName = schoolProfile?.Name ?? transcript.SchoolName;
+            transcript.SchoolAddress = schoolProfile?.Address ?? transcript.SchoolAddress;
+            transcript.AcademicYearId = academicYearId;
+            var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                .QueryNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted);
+            if (student != null)
+            {
+                transcript.RegistrationNumber = student.StudentNo;
+                transcript.StudentNameBn = student.FullName;
+            }
+            return transcript;
+        }
+
+        return await BuildTranscriptFromLinqAsync(studentId, academicYearId);
+    }
+
+    private async Task<StudentTranscriptDto?> BuildTranscriptFromLinqAsync(int studentId, int academicYearId)
     {
         var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
             .QueryNoTracking()
@@ -54,7 +80,6 @@ public class TranscriptService : ITranscriptService
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId)
             .ToListAsync();
 
-        // Filter subject results based on student's curriculum
         var validSubjectIds = await _subjectFilter.GetValidSubjectIdsForStudentAsync(student);
         if (validSubjectIds.Count > 0)
         {
@@ -173,5 +198,11 @@ public class TranscriptService : ITranscriptService
         var setting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(cancellationToken);
         if (setting == null) return false;
         return !setting.AllowResultWithDue;
+    }
+
+    public async Task<bool> HasGuardianAccessAsync(int userId, int studentId, CancellationToken ct = default)
+    {
+        return await _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>()
+            .AnyAsync(sg => sg.Guardian!.UserId == userId && sg.StudentId == studentId, ct);
     }
 }

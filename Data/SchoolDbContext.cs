@@ -83,7 +83,10 @@ public class SchoolDbContext : DbContext
     public DbSet<AttendanceRevision> AttendanceRevisions => Set<AttendanceRevision>();
     public DbSet<AutoAbsentExecutionLog> AutoAbsentExecutionLogs => Set<AutoAbsentExecutionLog>();
     public DbSet<Exam> Exams => Set<Exam>();
+    public DbSet<ExamClass> ExamClasses => Set<ExamClass>();
+    public DbSet<ExamSection> ExamSections => Set<ExamSection>();
     public DbSet<ExamSubject> ExamSubjects => Set<ExamSubject>();
+    public DbSet<ExamSubjectComponent> ExamSubjectComponents => Set<ExamSubjectComponent>();
     public DbSet<ExamSchedule> ExamSchedules => Set<ExamSchedule>();
     public DbSet<AdmitCard> AdmitCards => Set<AdmitCard>();
     public DbSet<MarkEntry> Marks => Set<MarkEntry>();
@@ -91,6 +94,7 @@ public class SchoolDbContext : DbContext
     public DbSet<ResultPublication> ResultPublications => Set<ResultPublication>();
     public DbSet<StudentSubjectResult> StudentSubjectResults => Set<StudentSubjectResult>();
     public DbSet<StudentExamResult> StudentExamResults => Set<StudentExamResult>();
+    public DbSet<StudentComponentMark> StudentComponentMarks => Set<StudentComponentMark>();
     public DbSet<FinalResult> FinalResults => Set<FinalResult>();
     public DbSet<ResultAuditLog> ResultAuditLogs => Set<ResultAuditLog>();
     public DbSet<ReEvaluationRequest> ReEvaluationRequests => Set<ReEvaluationRequest>();
@@ -186,6 +190,7 @@ public class SchoolDbContext : DbContext
     public DbSet<ExamConfiguration> ExamConfigurations => Set<ExamConfiguration>();
     public DbSet<ExamComponent> ExamComponents => Set<ExamComponent>();
     public DbSet<SubjectMarkStructure> SubjectMarkStructures => Set<SubjectMarkStructure>();
+    public DbSet<ExamTemplate> ExamTemplates => Set<ExamTemplate>();
 
     // Result DbSets
     public DbSet<ResultSetting> ResultSettings => Set<ResultSetting>();
@@ -202,12 +207,21 @@ public class SchoolDbContext : DbContext
     public DbSet<PromotionExecution> PromotionExecutions => Set<PromotionExecution>();
     public DbSet<RollGenerationConfig> RollGenerationConfigs => Set<RollGenerationConfig>();
     public DbSet<GroupPromotionConfig> GroupPromotionConfigs => Set<GroupPromotionConfig>();
+    public DbSet<PromotioSession> PromotioSessions => Set<PromotioSession>();
+    public DbSet<ClassProgressionRule> ClassProgressionRules => Set<ClassProgressionRule>();
+    public DbSet<ReportCardPrintQueueItem> ReportCardPrintQueueItems => Set<ReportCardPrintQueueItem>();
     public DbSet<AcademicCalendar> AcademicCalendars { get; set; }
     public DbSet<AcademicCalendarEvent> AcademicCalendarEvents { get; set; }
     public DbSet<HolidayMaster> HolidayMasters { get; set; }
 
     // Student Group DbSet
     public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
+
+    // Academic Foundation DbSets
+    public DbSet<SchoolSession> SchoolSessions => Set<SchoolSession>();
+    public DbSet<SchoolShift> SchoolShifts => Set<SchoolShift>();
+    public DbSet<Building> Buildings => Set<Building>();
+    public DbSet<SubjectCategory> SubjectCategories => Set<SubjectCategory>();
 
     // Routine Module DbSets
     public DbSet<Models.Entities.Routine.RoutinePeriod> RoutinePeriods => Set<Models.Entities.Routine.RoutinePeriod>();
@@ -352,7 +366,44 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<ExamComponent>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<SubjectMarkStructure>().HasIndex(x => new { x.ComponentId, x.SubjectId, x.StudentGroupId }).IsUnique();
 
-        // ClassSubject unique constraint (no more GroupName — junction table handles multi-group)
+        // ExamClass
+        modelBuilder.Entity<ExamClass>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Exam).WithMany(g => g.Classes).HasForeignKey(e => e.ExamId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Class).WithMany().HasForeignKey(e => e.ClassId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.ExamId, e.ClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+        // ExamSection
+        modelBuilder.Entity<ExamSection>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.ExamClass).WithMany(c => c.Sections).HasForeignKey(e => e.ExamClassId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Section).WithMany().HasForeignKey(e => e.SectionId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.ExamClassId, e.SectionId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+        // ExamSubject
+        modelBuilder.Entity<ExamSubject>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Exam).WithMany(c => c.ExamSubjects).HasForeignKey(e => e.ExamId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Subject).WithMany().HasForeignKey(e => e.SubjectId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Teacher).WithMany().HasForeignKey(e => e.TeacherId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => new { e.ExamId, e.ClassId, e.SubjectId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+// ExamSubjectComponent
+        modelBuilder.Entity<ExamSubjectComponent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.ExamSubject).WithMany(s => s.Components).HasForeignKey(e => e.ExamSubjectId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Component).WithMany().HasForeignKey(e => e.ComponentId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.ExamSubjectId, e.ComponentId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+// ClassSubject unique constraint (no more GroupName — junction table handles multi-group)
         modelBuilder.Entity<ClassSubject>()
             .HasIndex(x => new { x.SchoolClassId, x.SubjectId })
             .IsUnique()
@@ -454,6 +505,21 @@ public class SchoolDbContext : DbContext
             .HasOne(c => c.ToClass).WithMany()
             .HasForeignKey(c => c.ToClassId).OnDelete(DeleteBehavior.Restrict);
 
+        // PromotioSession configuration
+        modelBuilder.Entity<PromotioSession>(entity =>
+        {
+            entity.HasIndex(e => new { e.AcademicYearId, e.Status });
+            entity.HasOne(e => e.AcademicYear).WithMany().HasForeignKey(e => e.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ClassProgressionRule configuration
+        modelBuilder.Entity<ClassProgressionRule>(entity =>
+        {
+            entity.HasIndex(e => new { e.FromClassId, e.ToClassId }).IsUnique().HasFilter("IsDeleted = 0");
+            entity.HasOne(e => e.FromClass).WithMany().HasForeignKey(e => e.FromClassId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.ToClass).WithMany().HasForeignKey(e => e.ToClassId).OnDelete(DeleteBehavior.Restrict);
+        });
+
         // Student Group Indexes
         modelBuilder.Entity<StudentGroupAssignment>().HasIndex(x => new { x.StudentId, x.SchoolClassId, x.AcademicYearId }).IsUnique();
         modelBuilder.Entity<StudentGroup>().HasIndex(x => x.Code).IsUnique();
@@ -544,6 +610,37 @@ public class SchoolDbContext : DbContext
 
         modelBuilder.Entity<HolidayMaster>()
             .HasIndex(x => x.HolidayDate);
+
+        modelBuilder.Entity<Building>()
+            .HasIndex(x => x.Code)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<SchoolSession>()
+            .HasIndex(x => new { x.AcademicYearId, x.Name })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<SchoolSession>()
+            .HasOne(x => x.AcademicYear)
+            .WithMany()
+            .HasForeignKey(x => x.AcademicYearId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<SchoolShift>()
+            .HasIndex(x => x.Code)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<SubjectCategory>()
+            .HasIndex(x => x.Code)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<SubjectCategory>()
+            .HasIndex(x => new { x.Name, x.Code })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         modelBuilder.Entity<StudentLeaveApplication>(entity =>
 {

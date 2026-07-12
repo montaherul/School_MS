@@ -1316,6 +1316,162 @@ public class RoutineEngineService : IRoutineEngineService
         };
     }
 
+    public async Task<List<TeacherWorkloadListItemDto>> GetWorkloadSummaryAsync(int academicYearId, CancellationToken ct = default)
+    {
+        var loadData = await _teacherLoadRepo.GetTeacherLoadSummaryAsync(academicYearId);
+        if (loadData == null || loadData.Count == 0)
+        {
+            loadData = await GetFallbackWorkloadAsync(academicYearId, ct);
+        }
+
+        var employees = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+            .Where(e => !e.IsDeleted && e.IsTeachingStaff)
+            .Select(e => new { e.Id, e.EmployeeCode, e.DepartmentId })
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        var departments = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Department>().Query()
+            .Where(d => !d.IsDeleted)
+            .Select(d => new { d.Id, d.Name })
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        var deptLookup = departments.ToDictionary(d => d.Id, d => d.Name);
+        var empLookup = employees.ToDictionary(e => e.Id, e => new { e.EmployeeCode, e.DepartmentId });
+
+        return loadData.Select(t => {
+            empLookup.TryGetValue(t.TeacherId, out var emp);
+            var overloadStatus = CalculateOverloadStatus(t.TotalPeriodsPerWeek, t.MaxPeriodsPerDay);
+            var deptName = emp != null && deptLookup.TryGetValue(emp.DepartmentId, out var dn) ? dn : null;
+            return new TeacherWorkloadListItemDto
+            {
+                TeacherId = t.TeacherId,
+                TeacherName = t.TeacherName,
+                EmployeeCode = emp?.EmployeeCode ?? "",
+                Department = deptName,
+                TotalPeriodsPerWeek = t.TotalPeriodsPerWeek,
+                TotalClasses = t.TotalClasses,
+                TotalSubjects = t.TotalSubjects,
+                MaxPeriodsPerDay = t.MaxPeriodsPerDay,
+                WorkingDays = t.WorkingDays,
+                AveragePerDay = t.AveragePerDay,
+                UtilizationPercent = t.UtilizationPercent,
+                OverloadStatus = overloadStatus,
+                RoutineEntryCount = t.TotalPeriodsPerWeek
+            };
+        }).OrderByDescending(x => x.TotalPeriodsPerWeek).ToList();
+    }
+
+    public async Task<TeacherWorkloadDetailDto?> GetTeacherWorkloadDetailAsync(int teacherId, int academicYearId, CancellationToken ct = default)
+    {
+        var loadData = await _teacherLoadRepo.GetTeacherLoadSummaryAsync(academicYearId);
+        var teacherLoad = loadData?.FirstOrDefault(t => t.TeacherId == teacherId);
+
+        if (teacherLoad == null) return null;
+
+        var teacher = await _unitOfWork.Repository<Teacher>().Query()
+            .Include(t => t.Employee)
+            .ThenInclude(e => e.Department)
+            .Include(t => t.Employee.Designation)
+            .FirstOrDefaultAsync(t => t.Id == teacherId && !t.IsDeleted, ct);
+
+        if (teacher?.Employee == null) return null;
+
+        var entries = await _unitOfWork.Repository<RoutineEntry>().Query()
+            .Include(re => re.RoutinePeriod)
+            .Include(re => re.Subject)
+            .Include(re => re.Class)
+            .Include(re => re.Section)
+            .Include(re => re.Room)
+            .Where(re => re.TeacherId == teacherId && re.AcademicYearId == academicYearId && !re.IsDeleted)
+            .OrderBy(re => re.DayNumber).ThenBy(re => re.RoutinePeriod.PeriodNumber)
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        var dayNames = new[] { "", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        var daySchedules = entries.GroupBy(e => e.DayNumber)
+            .Select(g => new TeacherDayScheduleDto
+            {
+                DayNumber = g.Key,
+                DayName = g.Key >= 1 && g.Key <= 7 ? dayNames[g.Key] : $"Day {g.Key}",
+                PeriodCount = g.Count(),
+                Periods = g.Select(e => new TeacherPeriodDto
+                {
+                    RoutineEntryId = e.Id,
+                    PeriodName = e.RoutinePeriod?.Name ?? "",
+                    StartTime = e.RoutinePeriod?.StartTime.ToString(@"hh\:mm") ?? "",
+                    EndTime = e.RoutinePeriod?.EndTime.ToString(@"hh\:mm") ?? "",
+                    SubjectName = e.Subject?.Name ?? "",
+                    ClassName = e.Class?.Name ?? "",
+                    SectionName = e.Section?.Name ?? "",
+                    RoomNo = e.Room?.RoomNo ?? "",
+                    IsBreak = e.RoutinePeriod?.IsBreak ?? false
+                }).ToList()
+            })
+            .OrderBy(d => d.DayNumber)
+            .ToList();
+
+        return new TeacherWorkloadDetailDto
+        {
+            TeacherId = teacherLoad.TeacherId,
+            TeacherName = teacherLoad.TeacherName,
+            EmployeeCode = teacher.Employee.EmployeeCode,
+            Department = teacher.Employee.Department?.Name,
+            Designation = teacher.Employee.Designation?.Name,
+            TotalPeriodsPerWeek = teacherLoad.TotalPeriodsPerWeek,
+            TotalClasses = teacherLoad.TotalClasses,
+            TotalSubjects = teacherLoad.TotalSubjects,
+            MaxPeriodsPerDay = teacherLoad.MaxPeriodsPerDay,
+            WorkingDays = teacherLoad.WorkingDays,
+            AveragePerDay = teacherLoad.AveragePerDay,
+            UtilizationPercent = teacherLoad.UtilizationPercent,
+            WeeklyPeriodsByDay = teacherLoad.WeeklyPeriodsByDay,
+            DaySchedules = daySchedules
+        };
+    }
+
+    public async Task<int> GetOverloadedTeacherCountAsync(int academicYearId, int maxPeriodsPerDay = 8, CancellationToken ct = default)
+    {
+        var loadData = await _teacherLoadRepo.GetTeacherLoadSummaryAsync(academicYearId);
+        return loadData?.Count(t => t.MaxPeriodsPerDay > maxPeriodsPerDay || t.TotalPeriodsPerWeek > maxPeriodsPerDay * 5) ?? 0;
+    }
+
+    private string CalculateOverloadStatus(int totalPeriods, int maxPerDay)
+    {
+        if (maxPerDay > 8 || totalPeriods > 40) return "Critical";
+        if (maxPerDay > 6 || totalPeriods > 35) return "Warning";
+        return "Normal";
+    }
+
+    private async Task<List<TeacherLoadDto>> GetFallbackWorkloadAsync(int academicYearId, CancellationToken ct)
+    {
+        var requirements = await _unitOfWork.Repository<SubjectRequirement>().Query()
+            .Include(sr => sr.Teacher)
+            .ThenInclude(t => t.Employee)
+            .Where(sr => sr.AcademicYearId == academicYearId && !sr.IsDeleted)
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        return requirements.GroupBy(sr => sr.TeacherId)
+            .Select(g => {
+                var teacher = g.First().Teacher;
+                var totalPeriods = g.Sum(sr => sr.PeriodsPerWeek);
+                return new TeacherLoadDto
+                {
+                    TeacherId = g.Key,
+                    TeacherName = teacher?.Employee?.FullName ?? "Unknown",
+                    TotalPeriodsPerWeek = totalPeriods,
+                    TotalClasses = g.Select(sr => sr.ClassId).Distinct().Count(),
+                    TotalSubjects = g.Select(sr => sr.SubjectId).Distinct().Count(),
+                    MaxPeriodsPerDay = (int)Math.Ceiling(totalPeriods / 5.0),
+                    WorkingDays = 5,
+                    AveragePerDay = Math.Round(totalPeriods / 5.0, 1),
+                    UtilizationPercent = Math.Round(totalPeriods * 100.0 / 40.0, 1),
+                    WeeklyPeriodsByDay = new Dictionary<int, int>()
+                };
+            }).OrderByDescending(t => t.TotalPeriodsPerWeek).ToList();
+    }
+
     public async Task<RoutineDashboardDto> GetDashboardAsync(int academicYearId, CancellationToken cancellationToken = default)
     {
         var dashData = await _dashboardRepo.GetDashboardAsync(academicYearId);

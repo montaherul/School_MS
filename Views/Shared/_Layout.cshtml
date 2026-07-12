@@ -311,6 +311,7 @@
                             @if (Can("Promotion.View"))
                             {
                                 <a asp-controller="Promotion" asp-action="Index" data-title="Promotion Dashboard"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="PromotioSession" asp-action="Index" data-title="Promotion Sessions"><i class="bi bi-collection"></i><span class="nav-text">Sessions</span></a>
                                 <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
                                 <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
                             }
@@ -464,6 +465,7 @@
                             {
                                 <a href="/Routine/Dashboard" data-title="Routine"><i class="bi bi-calendar-range"></i><span class="nav-text">Routine</span></a>
                                 <a href="/Routine/ClassView" data-title="Class Routine"><i class="bi bi-calendar-week"></i><span class="nav-text">Class Routine</span></a>
+                                <a href="/Academic/TeacherWorkload" data-title="Teacher Workload"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Teacher Workload</span></a>
                             }
                             @if (Can("Calendar.View"))
                             {
@@ -489,6 +491,7 @@
                             @if (Can("Promotion.View"))
                             {
                                 <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="PromotioSession" asp-action="Index" data-title="Promotion Sessions"><i class="bi bi-collection"></i><span class="nav-text">Sessions</span></a>
                                 <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promo Policies</span></a>
                                 <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
                             }

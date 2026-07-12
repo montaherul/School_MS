@@ -1,0 +1,158 @@
+@model List<SchoolManagementSystem.Models.DTOs.Exam.TeacherExamSubjectDto>
+@{
+    ViewData["Title"] = "My Exam Subjects";
+    Layout = "_AdminLayout";
+}
+
+<div class="adm-page">
+    <header class="adm-page-header">
+        <h1 class="adm-page-title">My Exam Subjects</h1>
+        <p class="adm-page-subtitle">View and manage component marks for your assigned exam subjects</p>
+    </header>
+
+    @if (ViewBag.IsCustomizationEnabled == false)
+    {
+        <div class="adm-alert adm-alert--warning adm-card">
+            <div class="adm-alert__icon"><i class="fas fa-info-circle"></i></div>
+            <div class="adm-alert__content">
+                <h4 class="adm-alert__title">Component Customization Disabled</h4>
+                <p class="adm-alert__message">Teacher component customization is currently disabled by the administrator. Contact your system administrator to enable this feature.</p>
+            </div>
+        </div>
+    }
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="adm-empty adm-card">
+            <i class="adm-empty__icon fas fa-clipboard-list"></i>
+            <h3 class="adm-empty__title">No Assigned Exam Subjects</h3>
+            <p class="adm-empty__text">You are not assigned as a subject teacher for any exam subjects in the current academic year.</p>
+        </div>
+    }
+    else
+    {
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <h2 class="adm-card__title">Assigned Exam Subjects</h2>
+            </div>
+            <div class="adm-card__body adm-p-0">
+                <div id="examSubjectsGrid" class="adm-tabulator"></div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var isCustomizationEnabled = @(ViewBag.IsCustomizationEnabled ? "true" : "false");
+            var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+            var table = new Tabulator("#examSubjectsGrid", {
+                height: "600px",
+                layout: "fitColumns",
+                data: data,
+                columns: [
+                    {
+                        title: "Exam",
+                        field: "examName",
+                        headerFilter: "input",
+                        sorter: "string",
+                        width: 180
+                    },
+                    {
+                        title: "Class",
+                        field: "className",
+                        headerFilter: "input",
+                        sorter: "string",
+                        width: 100
+                    },
+                    {
+                        title: "Section",
+                        field: "sectionName",
+                        headerFilter: "input",
+                        sorter: "string",
+                        width: 100
+                    },
+                    {
+                        title: "Group",
+                        field: "studentGroupName",
+                        headerFilter: "input",
+                        sorter: "string",
+                        width: 120
+                    },
+                    {
+                        title: "Subject",
+                        field: "subjectName",
+                        headerFilter: "input",
+                        sorter: "string",
+                        width: 150
+                    },
+                    {
+                        title: "Full Marks",
+                        field: "fullMarks",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 100,
+                        formatter: function (cell) {
+                            return cell.getValue() + " &nbsp;";
+                        }
+                    },
+                    {
+                        title: "Status",
+                        field: "examStatus",
+                        sorter: "string",
+                        width: 110,
+                        formatter: function (cell) {
+                            var status = cell.getValue();
+                            var badgeClass = "ws-badge ws-badge--secondary";
+                            if (status === "Draft") badgeClass = "ws-badge ws-badge--info";
+                            else if (status === "Published") badgeClass = "ws-badge ws-badge--success";
+                            else if (status === "Locked") badgeClass = "ws-badge ws-badge--warning";
+                            else if (status === "Archived") badgeClass = "ws-badge ws-badge--danger";
+                            return '<span class="' + badgeClass + '">' + status + '</span>';
+                        }
+                    },
+                    {
+                        title: "Components",
+                        field: "componentCount",
+                        hozAlign: "center",
+                        width: 100
+                    },
+                    {
+                        title: "Customize",
+                        field: "canCustomize",
+                        hozAlign: "center",
+                        width: 120,
+                        formatter: function (cell) {
+                            var canCustomize = cell.getValue();
+                            var isLocked = cell.getRow().getData().isLocked;
+
+                            if (!isCustomizationEnabled) {
+                                return '<span class="ws-badge ws-badge--disabled">Disabled</span>';
+                            }
+                            if (isLocked) {
+                                return '<span class="ws-badge ws-badge--locked"><i class="fas fa-lock"></i> Locked</span>';
+                            }
+                            if (canCustomize) {
+                                return '<button class="adm-btn adm-btn--sm adm-btn--primary" onclick="openComponents(' + cell.getRow().getData().examSubjectId + ')">' +
+                                    '<i class="fas fa-cogs"></i> Manage</button>';
+                            }
+                            return '<span class="ws-badge ws-badge--disabled">Not Assigned</span>';
+                        }
+                    }
+                ],
+                rowFormatter: function (row) {
+                    var data = row.getData();
+                    if (data.isLocked) {
+                        row.getElement().style.opacity = "0.7";
+                    }
+                }
+            });
+
+            window.openComponents = function (examSubjectId) {
+                window.location.href = '/ExamSubjectComponentTeacher/Components?examSubjectId=' + examSubjectId;
+            };
+        });
+    </script>
+}

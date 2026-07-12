@@ -1,0 +1,86 @@
+@model List<FailedStudentDto>
+@{
+    ViewData["Title"] = "Failed Students";
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+    var academicYearId = (int)ViewBag.AcademicYearId;
+    var selectedClassId = ViewBag.SelectedClassId as int?;
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Failed Students</h1>
+            <p class="adm-page-header__sub">Students who did not meet promotion criteria</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Reports", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters ws-mb-4">
+        <form method="get" action="@Url.Action("FailedStudents")" class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Class</label>
+                <select name="classId" class="adm-input">
+                    <option value="">All Classes</option>
+                    @foreach (var c in classes)
+                    {
+                        <!option value="@c.Id" selected="@(c.Id == selectedClassId)">@c.Name</!option>
+                    }
+                </select>
+            </div>
+            <input type="hidden" name="academicYearId" value="@academicYearId" />
+            <div class="adm-filters__field ws-d-flex ws-ai-end">
+                <button type="submit" class="adm-btn adm-btn--primary">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body">
+            @if (Model.Any())
+            {
+                <div class="adm-table-wrapper">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Student No</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>GPA</th>
+                                <th>Failed Subjects</th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model)
+                            {
+                                <tr>
+                                    <td><span class="adm-cell-name">@s.StudentName</span></td>
+                                    <td>@s.StudentNo</td>
+                                    <td>@s.ClassName</td>
+                                    <td>@s.SectionName</td>
+                                    <td class="ws-text-danger"><strong>@s.GPA.ToString("F2")</strong></td>
+                                    <td><span class="er-badge er-badge--rejected">@s.TotalFailedSubjects</span></td>
+                                    <td>@s.AttendancePercentage.ToString("F1")%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                    <h3 class="er-empty__title">No Failed Students</h3>
+                    <p class="er-empty__desc">All students have passed for the selected criteria.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

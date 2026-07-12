@@ -15,5 +15,9 @@ public interface ITeacherService
     Task DeactivateAsync(int id, string updatedBy, CancellationToken ct = default);
     Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default);
     Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct = default);
+
+    // Entity-returning methods for MarksController (DIP compliance)
+    Task<List<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>> GetTeacherClassAssignmentsAsync(int teacherId, CancellationToken ct = default);
+    Task<List<SchoolManagementSystem.Models.Entities.Teachers.TeacherSubjectAssignment>> GetTeacherSubjectAssignmentsAsync(int teacherId, int academicYearId, CancellationToken ct = default);
 }
 

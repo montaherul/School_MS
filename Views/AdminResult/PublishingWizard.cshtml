@@ -1,0 +1,913 @@
+@model SchoolManagementSystem.Models.ViewModels.Result.PublishingWizardViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Result Publishing Wizard";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.DTOs.Exam.ExamListDto> ?? Enumerable.Empty<SchoolManagementSystem.Models.DTOs.Exam.ExamListDto>();
+    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? Enumerable.Empty<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>();
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <div class="adm-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="16 16 12 12 8 16" />
+                    <line x1="12" y1="12" x2="12" y2="21" />
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-page-header__title">Result Publishing Wizard</h1>
+                <p class="adm-page-header__sub">Four-step guided process to validate, preview, and publish exam results</p>
+            </div>
+        </div>
+        <a href="@Url.Action("ResultPublishing")" class="er-btn er-btn--secondary" aria-label="Back to Publication Dashboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+            Back to Publication Dashboard
+        </a>
+    </div>
+
+    <div class="ws-wizard" role="region" aria-label="Result Publishing Wizard">
+        <div class="ws-wizard__steps" id="wizardSteps" role="tablist" aria-label="Wizard steps">
+            <div class="ws-wizard__step ws-wizard__step--active" data-step="1" role="tab" aria-selected="true" aria-setsize="4" aria-posinset="1" tabindex="0">
+                <div class="ws-wizard__step-number" aria-hidden="true">1</div>
+                <div class="ws-wizard__step-info">
+                    <span class="ws-wizard__step-label">Choose Exam &amp; Classes</span>
+                    <span class="ws-wizard__step-desc">Select exam and target classes</span>
+                </div>
+            </div>
+            <div class="ws-wizard__step" data-step="2" role="tab" aria-selected="false" aria-setsize="4" aria-posinset="2" tabindex="-1">
+                <div class="ws-wizard__step-number" aria-hidden="true">2</div>
+                <div class="ws-wizard__step-info">
+                    <span class="ws-wizard__step-label">Validation</span>
+                    <span class="ws-wizard__step-desc">Review validation results per class</span>
+                </div>
+            </div>
+            <div class="ws-wizard__step" data-step="3" role="tab" aria-selected="false" aria-setsize="4" aria-posinset="3" tabindex="-1">
+                <div class="ws-wizard__step-number" aria-hidden="true">3</div>
+                <div class="ws-wizard__step-info">
+                    <span class="ws-wizard__step-label">Preview</span>
+                    <span class="ws-wizard__step-desc">Review pass/fail and GPA distribution</span>
+                </div>
+            </div>
+            <div class="ws-wizard__step" data-step="4" role="tab" aria-selected="false" aria-setsize="4" aria-posinset="4" tabindex="-1">
+                <div class="ws-wizard__step-number" aria-hidden="true">4</div>
+                <div class="ws-wizard__step-info">
+                    <span class="ws-wizard__step-label">Publish</span>
+                    <span class="ws-wizard__step-desc">Confirm and publish results</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-wizard__panels">
+            <div class="ws-wizard__panel ws-wizard__panel--active" id="step1Panel" role="tabpanel" aria-label="Step 1: Choose Exam and Classes">
+                <div class="adm-card">
+                    <div class="adm-card__header">
+                        <h3 class="adm-card__title">Step 1: Select Exam &amp; Target Classes</h3>
+                    </div>
+                    <div class="adm-card__body">
+                        <div class="adm-form-grid adm-form-grid--2">
+                            <div class="adm-filters__field">
+                                <label class="adm-label" for="examSelect">Exam</label>
+                                <select class="adm-input" id="examSelect" aria-required="true" aria-describedby="examHelp">
+                                    <option value="">-- Select Exam --</option>
+                                    @foreach (var exam in exams)
+                                    {
+                                        <option value="@exam.Id">@exam.Name (@exam.Term)</option>
+                                    }
+                                </select>
+                                <span id="examHelp" class="ws-wizard__help-text">Select the exam whose results you want to publish</span>
+                            </div>
+                            <div class="adm-filters__field">
+                                <label class="adm-label">Academic Year</label>
+                                <div class="ws-wizard__static-value" aria-live="polite">@ViewBag.ActiveYearId</div>
+                            </div>
+                        </div>
+                        <div class="ws-wizard__field-offset" id="classesSection">
+                            <label class="adm-label">Target Classes</label>
+                            <div class="ws-wizard__class-grid" role="group" aria-label="Target classes">
+                                @foreach (var cls in classes)
+                                {
+                                    <label class="adm-checkbox ws-wizard__class-item">
+                                        <input type="checkbox" class="class-checkbox" value="@cls.Id" aria-label="Select class @cls.Name">
+                                        <span>@cls.Name</span>
+                                    </label>
+                                }
+                            </div>
+                            @if (!classes.Any())
+                            {
+                                <p class="ws-wizard__empty">No classes available.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="ws-wizard__nav">
+                    <span></span>
+                    <button type="button" class="er-btn er-btn--primary" id="step1Next" onclick="goToStep(2)" aria-label="Next step: Validation">
+                        Next
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ws-wizard__panel" id="step2Panel" role="tabpanel" aria-label="Step 2: Validation">
+                <div class="adm-card">
+                    <div class="adm-card__header">
+                        <h3 class="adm-card__title">Step 2: Validation Summary</h3>
+                    </div>
+                    <div class="adm-card__body">
+                        <div id="validationLoading" class="ws-wizard__loading" role="status" aria-live="polite">
+                            <span class="ws-wizard__spinner-lg"></span>
+                            <span class="ws-wizard__loading-text">Validating exam results...</span>
+                        </div>
+                        <div id="validationContent" class="ws-wizard__hidden">
+                            <div class="er-stats ws-wizard__no-mb" id="validationStats"></div>
+
+                            <div class="ws-wizard__section ws-wizard__per-class" id="perClassBreakdownSection">
+                                <h4 class="ws-wizard__section-title">
+                                    Per-Class Breakdown
+                                    <span class="er-badge er-badge--count er-badge--info" id="classCountBadge">0</span>
+                                </h4>
+                                <div id="perClassCards" class="ws-wizard__class-cards"></div>
+                            </div>
+
+                            <div class="ws-wizard__bordered adm-card">
+                                <div class="adm-card__header">
+                                    <h4 class="ws-wizard__section-title-inline">Issues Found</h4>
+                                    <div class="ws-wizard__severity-filters" role="group" aria-label="Filter validation issues">
+                                        <button type="button" class="ws-wizard__filter-btn ws-wizard__filter-btn--active" data-filter="all" onclick="filterIssuesBySeverity('all')" aria-pressed="true">All</button>
+                                        <button type="button" class="ws-wizard__filter-btn ws-wizard__filter-btn--error" data-filter="error" onclick="filterIssuesBySeverity('error')" aria-pressed="false">Errors</button>
+                                        <button type="button" class="ws-wizard__filter-btn ws-wizard__filter-btn--warning" data-filter="warning" onclick="filterIssuesBySeverity('warning')" aria-pressed="false">Warnings</button>
+                                        <button type="button" class="ws-wizard__filter-btn ws-wizard__filter-btn--info" data-filter="info" onclick="filterIssuesBySeverity('info')" aria-pressed="false">Info</button>
+                                    </div>
+                                </div>
+                                <div class="adm-card__body" id="validationIssues">
+                                    <p class="ws-wizard__empty-state">No issues found.</p>
+                                </div>
+                            </div>
+
+                            <div id="validationSuccess" class="ws-wizard__hidden ws-wizard__section">
+                                <div class="adm-alert adm-alert--success" role="alert">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                    <span>All validations passed. Ready to preview and publish.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="validationError" class="ws-wizard__hidden">
+                            <div class="adm-alert adm-alert--error" role="alert">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                                <span id="validationErrorMessage">Failed to load validation data.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ws-wizard__nav">
+                    <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(1)" aria-label="Previous step: Choose Exam">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                        Back
+                    </button>
+                    <button type="button" class="er-btn er-btn--primary" id="step2Next" onclick="goToStep(3)" disabled aria-label="Next step: Preview">
+                        Next
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ws-wizard__panel" id="step3Panel" role="tabpanel" aria-label="Step 3: Preview">
+                <div class="adm-card">
+                    <div class="adm-card__header">
+                        <h3 class="adm-card__title">Step 3: Preview Results</h3>
+                    </div>
+                    <div class="adm-card__body">
+                        <div id="previewLoading" class="ws-wizard__hidden ws-wizard__loading" role="status" aria-live="polite">
+                            <span class="ws-wizard__spinner-lg"></span>
+                            <span class="ws-wizard__loading-text">Loading preview data...</span>
+                        </div>
+                        <div id="previewContent">
+                            <div class="ws-wizard__preview-stats">
+                                <div class="er-stats" id="previewStats"></div>
+                            </div>
+
+                            <div class="ws-wizard__preview-breakdown ws-wizard__preview-row" id="passFailSection">
+                                <div class="ws-wizard__preview-chart">
+                                    <h4 class="ws-wizard__section-title">Pass / Fail Breakdown</h4>
+                                    <div class="ws-wizard__bar-container">
+                                        <div class="ws-wizard__bar-label">
+                                            <span>Pass</span>
+                                            <span class="ws-wizard__bar-value" id="previewPassCount">0</span>
+                                        </div>
+                                        <div class="ws-wizard__bar-track">
+                                            <div class="ws-wizard__bar-fill ws-wizard__bar-fill--pass" id="previewPassBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Pass percentage"></div>
+                                        </div>
+                                        <div class="ws-wizard__bar-label">
+                                            <span>Fail</span>
+                                            <span class="ws-wizard__bar-value" id="previewFailCount">0</span>
+                                        </div>
+                                        <div class="ws-wizard__bar-track">
+                                            <div class="ws-wizard__bar-fill ws-wizard__bar-fill--fail" id="previewFailBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Fail percentage"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ws-wizard__preview-gpa">
+                                    <h4 class="ws-wizard__section-title">Average GPA</h4>
+                                    <div class="ws-wizard__gpa-display">
+                                        <span class="ws-wizard__gpa-value" id="previewAvgGpa">0.00</span>
+                                        <span class="ws-wizard__gpa-label">out of 5.00</span>
+                                    </div>
+                                    <div class="ws-wizard__bar-track ws-wizard__bar-track--gpa">
+                                        <div class="ws-wizard__bar-fill ws-wizard__bar-fill--gpa" id="previewGpaBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="5" aria-label="Average GPA"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="previewGpaDistribution" class="ws-wizard__section">
+                                <h4 class="ws-wizard__section-title">GPA Distribution <span class="er-badge er-badge--info er-badge--count" id="previewDistHint">estimated</span></h4>
+                                <div class="ws-wizard__dist-grid" id="gpaDistBars"></div>
+                            </div>
+
+                            <div class="ws-wizard__preview-summary ws-wizard__section" id="previewSummaryTable">
+                                <h4 class="ws-wizard__section-title">Class Summary</h4>
+                                <div class="ws-wizard__table-wrap">
+                                    <table class="dash-table" id="previewClassTable" aria-label="Per-class result summary">
+                                        <thead>
+                                            <tr>
+                                                <th>Class</th>
+                                                <th>Total</th>
+                                                <th>Pass</th>
+                                                <th>Fail</th>
+                                                <th>Pass %</th>
+                                                <th>Avg GPA</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ws-wizard__nav">
+                    <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(2)" aria-label="Previous step: Validation">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                        Back
+                    </button>
+                    <button type="button" class="er-btn er-btn--primary" id="step3Next" onclick="goToStep(4)" aria-label="Next step: Publish">
+                        Next
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="ws-wizard__panel" id="step4Panel" role="tabpanel" aria-label="Step 4: Confirm and Publish">
+                <div class="adm-card">
+                    <div class="adm-card__header">
+                        <h3 class="adm-card__title">Step 4: Confirm &amp; Publish</h3>
+                    </div>
+                    <div class="adm-card__body">
+                        <div id="confirmSummary" class="ws-wizard__confirm-grid">
+                            <div class="ws-wizard__confirm-card ws-wizard__confirm-card--exam">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Exam</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryExam">--</span>
+                                </div>
+                            </div>
+                            <div class="ws-wizard__confirm-card">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Total Students</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryStudents">--</span>
+                                </div>
+                            </div>
+                            <div class="ws-wizard__confirm-card">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Pass / Fail</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryPassFail">--</span>
+                                </div>
+                            </div>
+                            <div class="ws-wizard__confirm-card">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Pass %</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryPassPct">--</span>
+                                </div>
+                            </div>
+                            <div class="ws-wizard__confirm-card">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Average GPA</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryGpa">--</span>
+                                </div>
+                            </div>
+                            <div class="ws-wizard__confirm-card">
+                                <div class="ws-wizard__confirm-icon">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                                </div>
+                                <div class="ws-wizard__confirm-body">
+                                    <span class="ws-wizard__confirm-label">Issues</span>
+                                    <span class="ws-wizard__confirm-value" id="summaryIssues">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ws-wizard__confirm-actions ws-wizard__section">
+                            <label class="adm-checkbox ws-wizard__confirm-checkbox">
+                                <input type="checkbox" id="lockCheckbox" checked aria-describedby="lockHelp">
+                                <span class="ws-wizard__checkbox-label">Lock results after publishing (prevents further modifications)</span>
+                            </label>
+                            <span id="lockHelp" class="ws-wizard__help-text">When enabled, submitted results cannot be edited after publication</span>
+                        </div>
+
+                        <div class="ws-wizard__confirm-notes ws-wizard__section">
+                            <label class="adm-label" for="notesField">Publication Notes</label>
+                            <textarea class="adm-input ws-wizard__textarea" id="notesField" rows="3" placeholder="Optional notes for this publication action..."></textarea>
+                        </div>
+
+                        <div id="publishResult" class="ws-wizard__hidden ws-wizard__section" role="alert" aria-live="polite"></div>
+                    </div>
+                </div>
+                <div class="ws-wizard__nav">
+                    <button type="button" class="er-btn er-btn--secondary" onclick="goToStep(3)" aria-label="Previous step: Preview">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                        Back
+                    </button>
+                    <button type="button" class="er-btn er-btn--primary" id="publishBtn" onclick="executePublish()" aria-label="Publish results">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
+                        <span id="publishBtnText">Publish Results</span>
+                        <span class="ws-wizard__spinner-sm" id="publishSpinner"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .ws-wizard { max-width: 900px; margin: 0 auto; }
+        .ws-wizard__steps { display: flex; gap: 0; margin-bottom: 32px; border-radius: var(--adm-radius-lg); overflow: hidden; border: 1px solid var(--adm-border); background: var(--adm-surface); }
+        .ws-wizard__step { flex: 1; display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-right: 1px solid var(--adm-border); cursor: default; opacity: 0.5; transition: all 0.3s; }
+        .ws-wizard__step:last-child { border-right: none; }
+        .ws-wizard__step--active { opacity: 1; background: var(--adm-primary-bg, #eef2ff); }
+        .ws-wizard__step--completed { opacity: 1; }
+        .ws-wizard__step--completed .ws-wizard__step-number { background: var(--adm-success); color: #fff; }
+        .ws-wizard__step-number { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; background: var(--adm-surface-2); color: var(--adm-text-2); flex-shrink: 0; transition: all 0.3s; }
+        .ws-wizard__step--active .ws-wizard__step-number { background: var(--adm-primary); color: #fff; }
+        .ws-wizard__step-info { display: flex; flex-direction: column; gap: 2px; }
+        .ws-wizard__step-label { font-size: 13px; font-weight: 600; color: var(--adm-text); }
+        .ws-wizard__step-desc { font-size: 11px; color: var(--adm-text-3); }
+        .ws-wizard__panels { position: relative; }
+        .ws-wizard__panel { display: none; animation: wsFadeIn 0.3s ease; }
+        .ws-wizard__panel--active { display: block; }
+        .ws-wizard__nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--adm-border); }
+        .ws-wizard__static-value { padding: 8px 12px; background: var(--adm-surface-2); border-radius: var(--adm-radius-sm); font-size: 14px; color: var(--adm-text-2); }
+        .ws-wizard__class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+        .ws-wizard__class-item { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid var(--adm-border); border-radius: var(--adm-radius-sm); cursor: pointer; transition: all 0.2s; font-size: 13px; }
+        .ws-wizard__class-item:hover { border-color: var(--adm-primary); background: var(--adm-primary-bg, #f5f7ff); }
+        .ws-wizard__class-item input { accent-color: var(--adm-primary); }
+        .ws-wizard__empty { padding: 24px; text-align: center; color: var(--adm-text-3); font-size: 14px; }
+        .ws-wizard__loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--adm-text-2); font-size: 15px; }
+        .ws-wizard__hidden { display: none; }
+        .ws-wizard__section { margin-top: 16px; }
+        .ws-wizard__field-offset { margin-top: 20px; }
+        .ws-wizard__no-mb .er-stat:last-child { margin-bottom: 0; }
+        .ws-wizard__spinner-lg { width: 24px; height: 24px; border: 3px solid var(--adm-border); border-top-color: var(--adm-primary); border-radius: 50%; animation: wsSpin 0.6s linear infinite; display: inline-block; }
+        .ws-wizard__spinner-sm { width: 14px; height: 14px; border: 2px solid var(--adm-border); border-top-color: var(--adm-primary); border-radius: 50%; animation: wsSpin 0.6s linear infinite; display: none; margin-left: 6px; vertical-align: middle; }
+        .ws-wizard__loading-text { margin-left: 12px; }
+        .ws-wizard__bordered { border: 1px solid var(--adm-border); margin-top: 16px; }
+        .ws-wizard__section-title { font-size: 14px; font-weight: 650; color: var(--adm-text-2); margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        .ws-wizard__section-title-inline { font-size: 14px; font-weight: 650; color: var(--adm-text-2); margin: 0; }
+        .ws-wizard__checkbox-label { margin-left: 6px; }
+        .ws-wizard__textarea { resize: vertical; }
+        .ws-wizard__empty-state { padding: 16px; text-align: center; color: var(--adm-text-3); font-size: 14px; margin: 0; }
+        .ws-wizard__help-text { display: block; font-size: 11px; color: var(--adm-text-3); margin-top: 4px; }
+        .ws-wizard__severity-filters { display: flex; gap: 4px; }
+        .ws-wizard__filter-btn { padding: 4px 12px; font-size: 12px; border: 1px solid var(--adm-border); border-radius: var(--adm-radius-sm, 4px); background: transparent; cursor: pointer; color: var(--adm-text-2); transition: all 0.2s; }
+        .ws-wizard__filter-btn:hover { border-color: var(--adm-primary); color: var(--adm-primary); }
+        .ws-wizard__filter-btn--active { background: var(--adm-primary); color: #fff; border-color: var(--adm-primary); }
+        .ws-wizard__filter-btn--error { border-color: var(--adm-error); color: var(--adm-error); }
+        .ws-wizard__filter-btn--error.ws-wizard__filter-btn--active { background: var(--adm-error); color: #fff; }
+        .ws-wizard__filter-btn--warning { border-color: var(--adm-pending); color: var(--adm-pending); }
+        .ws-wizard__filter-btn--warning.ws-wizard__filter-btn--active { background: var(--adm-pending); color: #fff; }
+        .ws-wizard__filter-btn--info { border-color: var(--adm-primary); color: var(--adm-primary); }
+        .ws-wizard__filter-btn--info.ws-wizard__filter-btn--active { background: var(--adm-primary); color: #fff; }
+        .ws-wizard__per-class { margin-top: 20px; }
+        .ws-wizard__class-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .ws-wizard__class-stat-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md, 8px); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .ws-wizard__class-stat-name { font-size: 14px; font-weight: 600; color: var(--adm-text); }
+        .ws-wizard__class-stat-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .ws-wizard__class-stat-label { color: var(--adm-text-3); }
+        .ws-wizard__class-stat-value { font-weight: 600; color: var(--adm-text-2); }
+        .ws-wizard__class-stat-bar { height: 6px; background: var(--adm-surface-2); border-radius: 3px; overflow: hidden; }
+        .ws-wizard__class-stat-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .ws-wizard__class-stat-fill--high { background: var(--adm-success); }
+        .ws-wizard__class-stat-fill--mid { background: var(--adm-pending); }
+        .ws-wizard__class-stat-fill--low { background: var(--adm-error); }
+        .ws-wizard__class-stat-status { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+        .ws-wizard__class-stat-status svg { flex-shrink: 0; }
+
+        /* Preview step */
+        .ws-wizard__preview-stats { margin-bottom: 20px; }
+        .ws-wizard__preview-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .ws-wizard__preview-breakdown { margin-bottom: 20px; }
+        .ws-wizard__preview-chart { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md, 8px); padding: 20px; }
+        .ws-wizard__preview-gpa { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md, 8px); padding: 20px; }
+        .ws-wizard__bar-container { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+        .ws-wizard__bar-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--adm-text-2); }
+        .ws-wizard__bar-value { font-weight: 700; font-size: 15px; }
+        .ws-wizard__bar-track { height: 24px; background: var(--adm-surface-2); border-radius: var(--adm-radius-sm, 4px); overflow: hidden; }
+        .ws-wizard__bar-track--gpa { height: 12px; margin-top: 8px; }
+        .ws-wizard__bar-fill { height: 100%; border-radius: var(--adm-radius-sm, 4px); transition: width 0.6s ease; }
+        .ws-wizard__bar-fill--pass { background: linear-gradient(90deg, var(--adm-success), #4ade80); }
+        .ws-wizard__bar-fill--fail { background: linear-gradient(90deg, var(--adm-error), #f87171); }
+        .ws-wizard__bar-fill--gpa { background: linear-gradient(90deg, var(--adm-primary), #818cf8); }
+        .ws-wizard__gpa-display { display: flex; align-items: baseline; gap: 8px; margin-top: 12px; }
+        .ws-wizard__gpa-value { font-size: 36px; font-weight: 800; color: var(--adm-primary); line-height: 1; }
+        .ws-wizard__gpa-label { font-size: 13px; color: var(--adm-text-3); }
+        .ws-wizard__dist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+        .ws-wizard__dist-item { text-align: center; padding: 12px 8px; background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md, 8px); }
+        .ws-wizard__dist-grade { font-size: 16px; font-weight: 700; color: var(--adm-text); }
+        .ws-wizard__dist-bar { height: 60px; display: flex; align-items: flex-end; justify-content: center; margin: 8px 0; }
+        .ws-wizard__dist-fill { width: 100%; max-width: 40px; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.6s ease; }
+        .ws-wizard__dist-fill--a { background: var(--adm-success); }
+        .ws-wizard__dist-fill--b { background: #4ade80; }
+        .ws-wizard__dist-fill--c { background: var(--adm-pending); }
+        .ws-wizard__dist-fill--d { background: #fb923c; }
+        .ws-wizard__dist-fill--f { background: var(--adm-error); }
+        .ws-wizard__dist-count { font-size: 13px; font-weight: 600; color: var(--adm-text-2); }
+        .ws-wizard__table-wrap { overflow-x: auto; }
+        .ws-wizard__preview-summary { margin-top: 20px; }
+        .ws-wizard__table-wrap table { width: 100%; }
+
+        /* Confirm step */
+        .ws-wizard__confirm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .ws-wizard__confirm-card { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-md, 8px); transition: border-color 0.2s; }
+        .ws-wizard__confirm-card:hover { border-color: var(--adm-primary); }
+        .ws-wizard__confirm-card--exam { grid-column: 1 / -1; background: var(--adm-primary-bg, #eef2ff); border-color: var(--adm-primary); }
+        .ws-wizard__confirm-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--adm-surface-2); color: var(--adm-text-2); flex-shrink: 0; }
+        .ws-wizard__confirm-card--exam .ws-wizard__confirm-icon { background: var(--adm-primary); color: #fff; }
+        .ws-wizard__confirm-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .ws-wizard__confirm-label { font-size: 11px; color: var(--adm-text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+        .ws-wizard__confirm-value { font-size: 18px; font-weight: 700; color: var(--adm-text); }
+        .ws-wizard__confirm-card--exam .ws-wizard__confirm-value { color: var(--adm-primary); }
+        .ws-wizard__confirm-checkbox { display: flex; align-items: center; gap: 6px; padding: 12px 16px; background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-sm, 4px); cursor: pointer; }
+        .ws-wizard__confirm-notes { margin-top: 16px; }
+
+        @@keyframes wsSpin { to { transform: rotate(360deg); } }
+        @@keyframes wsFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        @@media (max-width: 640px) {
+            .ws-wizard__preview-row { grid-template-columns: 1fr; }
+            .ws-wizard__confirm-grid { grid-template-columns: 1fr 1fr; }
+            .ws-wizard__step-info .ws-wizard__step-desc { display: none; }
+            .ws-wizard__step { padding: 12px; gap: 8px; }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        var selectedExamId = null;
+        var validationData = null;
+
+        function showToast(message, type) {
+            if (type === 'success') { if (window.toastr) toastr.success(message); else alert(message); }
+            else if (type === 'error') { if (window.toastr) toastr.error(message); else alert('Error: ' + message); }
+            else { if (window.toastr) toastr.info(message); else alert(message); }
+        }
+
+        function goToStep(step) {
+            var currentActive = document.querySelector('.ws-wizard__panel--active');
+            if (currentActive) {
+                currentActive.classList.remove('ws-wizard__panel--active');
+                currentActive.setAttribute('aria-hidden', 'true');
+            }
+
+            var targetPanel = document.getElementById('step' + step + 'Panel');
+            if (targetPanel) {
+                targetPanel.classList.add('ws-wizard__panel--active');
+                targetPanel.removeAttribute('aria-hidden');
+            }
+
+            document.querySelectorAll('.ws-wizard__step').forEach(function (el) {
+                var s = parseInt(el.getAttribute('data-step'));
+                el.classList.remove('ws-wizard__step--active', 'ws-wizard__step--completed');
+                el.setAttribute('aria-selected', 'false');
+                el.setAttribute('tabindex', '-1');
+                if (s === step) {
+                    el.classList.add('ws-wizard__step--active');
+                    el.setAttribute('aria-selected', 'true');
+                    el.setAttribute('tabindex', '0');
+                }
+                else if (s < step) {
+                    el.classList.add('ws-wizard__step--completed');
+                }
+            });
+
+            if (step === 2) loadValidation();
+            if (step === 3) loadPreview();
+        }
+
+        function loadValidation() {
+            var examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                showToast('Please select an exam first.', 'error');
+                goToStep(1);
+                return;
+            }
+            selectedExamId = parseInt(examId);
+
+            var loading = document.getElementById('validationLoading');
+            var content = document.getElementById('validationContent');
+            var error = document.getElementById('validationError');
+
+            loading.classList.remove('ws-wizard__hidden');
+            content.classList.add('ws-wizard__hidden');
+            error.classList.add('ws-wizard__hidden');
+            document.getElementById('step2Next').disabled = true;
+
+            var classCheckboxes = document.querySelectorAll('.class-checkbox:checked');
+            var classIds = Array.from(classCheckboxes).map(function (c) { return c.value; }).join(',');
+
+            fetch('@Url.Action("GetPublishingValidationJson", "AdminResult")?examId=' + examId + '&classIds=' + encodeURIComponent(classIds))
+                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    loading.classList.add('ws-wizard__hidden');
+                    if (!r.success) {
+                        document.getElementById('validationErrorMessage').textContent = r.message || 'Validation failed.';
+                        error.classList.remove('ws-wizard__hidden');
+                        return;
+                    }
+                    content.classList.remove('ws-wizard__hidden');
+                    validationData = r.data;
+
+                    renderValidationStats(r.data);
+                    renderPerClassCards(r.data);
+                    renderValidationIssues(r.data);
+                    populateSummary(r.data);
+
+                    var hasBlocking = r.data.issues && r.data.issues.some(function (i) { return i.severity === 'error'; });
+                    if (!hasBlocking) {
+                        document.getElementById('step2Next').disabled = false;
+                        document.getElementById('validationSuccess').classList.remove('ws-wizard__hidden');
+                    } else {
+                        document.getElementById('validationSuccess').classList.add('ws-wizard__hidden');
+                    }
+                })
+                .catch(function (err) {
+                    loading.classList.add('ws-wizard__hidden');
+                    document.getElementById('validationErrorMessage').textContent = 'Network error loading validation.';
+                    error.classList.remove('ws-wizard__hidden');
+                });
+        }
+
+        function renderValidationStats(data) {
+            var html = '';
+            var stats = [
+                { icon: 'users', label: 'Total Students', value: data.totalStudents, color: 'primary' },
+                { icon: 'check', label: 'Completed', value: data.completedCount, color: 'success' },
+                { icon: 'x', label: 'Incomplete', value: data.incompleteCount, color: 'pending' },
+                { icon: 'bar-chart', label: 'Pass %', value: data.passPercentage.toFixed(1) + '%', color: 'converted' }
+            ];
+            stats.forEach(function (s) {
+                html += '<div class="er-stat">';
+                html += '<div class="er-stat__icon er-stat__icon--' + s.color + '">';
+                if (s.icon === 'users') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+                else if (s.icon === 'check') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+                else if (s.icon === 'x') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+                else html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>';
+                html += '</div>';
+                html += '<div class="er-stat__body">';
+                html += '<span class="er-stat__label">' + s.label + '</span>';
+                html += '<span class="er-stat__value">' + s.value + '</span>';
+                html += '</div></div>';
+            });
+            document.getElementById('validationStats').innerHTML = html;
+        }
+
+        function renderPerClassCards(data) {
+            var container = document.getElementById('perClassCards');
+            var badge = document.getElementById('classCountBadge');
+            var summary = data.summary || [];
+            if (!summary || summary.length === 0) {
+                container.innerHTML = '';
+                if (badge) badge.textContent = '0';
+                return;
+            }
+            if (badge) badge.textContent = summary.length;
+            var html = '';
+            summary.forEach(function (cls) {
+                var className = cls.className || cls.ClassName || 'Unknown';
+                var total = cls.totalStudents || cls.TotalStudents || 0;
+                var completed = cls.completedStudents || cls.CompletedStudents || 0;
+                var incomplete = cls.incompleteStudents || cls.IncompleteStudents || 0;
+                var pct = total > 0 ? Math.round(completed / total * 100) : 0;
+                var statusClass = pct === 100 ? 'ws-wizard__class-stat-fill--high' : (pct >= 75 ? 'ws-wizard__class-stat-fill--mid' : 'ws-wizard__class-stat-fill--low');
+                var statusIcon = pct === 100
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--adm-success)" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--adm-pending)" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+                var statusText = pct === 100 ? 'Complete' : (pct >= 75 ? 'Nearly Complete' : 'Incomplete');
+                html += '<div class="ws-wizard__class-stat-card" role="region" aria-label="Class ' + escHtml(className) + ' summary">';
+                html += '<div class="ws-wizard__class-stat-name">' + escHtml(className) + '</div>';
+                html += '<div class="ws-wizard__class-stat-row"><span class="ws-wizard__class-stat-label">Total Students</span><span class="ws-wizard__class-stat-value">' + total + '</span></div>';
+                html += '<div class="ws-wizard__class-stat-row"><span class="ws-wizard__class-stat-label">Completed</span><span class="ws-wizard__class-stat-value">' + completed + '</span></div>';
+                html += '<div class="ws-wizard__class-stat-row"><span class="ws-wizard__class-stat-label">Incomplete</span><span class="ws-wizard__class-stat-value">' + incomplete + '</span></div>';
+                html += '<div class="ws-wizard__class-stat-row"><span class="ws-wizard__class-stat-label">Completion</span><span class="ws-wizard__class-stat-value">' + pct + '%</span></div>';
+                html += '<div class="ws-wizard__class-stat-bar"><div class="ws-wizard__class-stat-fill ' + statusClass + '" style="width:' + pct + '%;"></div></div>';
+                html += '<div class="ws-wizard__class-stat-status">' + statusIcon + '<span>' + statusText + '</span></div>';
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        var _allIssues = [];
+
+        function renderValidationIssues(data) {
+            var container = document.getElementById('validationIssues');
+            _allIssues = data.issues || [];
+            if (_allIssues.length === 0) {
+                container.innerHTML = '<p class="ws-wizard__empty-state">No issues found. All validations passed.</p>';
+                return;
+            }
+            renderFilteredIssues('all');
+        }
+
+        function renderFilteredIssues(severity) {
+            var container = document.getElementById('validationIssues');
+            var filtered = _allIssues;
+            if (severity && severity !== 'all') {
+                filtered = _allIssues.filter(function (i) { return i.severity === severity; });
+            }
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="ws-wizard__empty-state">No ' + (severity !== 'all' ? severity : '') + ' issues found.</p>';
+                return;
+            }
+            var html = '';
+            filtered.forEach(function (issue) {
+                var severityColor = 'var(--adm-success)';
+                var iconSvg = '';
+                if (issue.severity === 'error') {
+                    severityColor = 'var(--adm-error)';
+                    iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+                } else if (issue.severity === 'warning') {
+                    severityColor = 'var(--adm-pending)';
+                    iconSvg = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+                } else {
+                    severityColor = 'var(--adm-primary)';
+                    iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+                }
+                html += '<div class="ws-wizard__issue-row">';
+                html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' + severityColor + '" stroke-width="2" stroke-linecap="round" aria-hidden="true">' + iconSvg + '</svg>';
+                html += '<span class="ws-wizard__issue-message" style="color:' + severityColor + ';">' + escHtml(issue.message) + '</span>';
+                html += '<span class="ws-wizard__issue-badge ws-wizard__issue-badge--' + issue.severity + '">' + escHtml(issue.severity) + '</span>';
+                if (issue.studentName) {
+                    html += '<span class="ws-wizard__issue-student">' + escHtml(issue.studentName) + '</span>';
+                }
+                html += '</div>';
+            });
+            container.innerHTML = html;
+        }
+
+        function filterIssuesBySeverity(severity) {
+            document.querySelectorAll('.ws-wizard__filter-btn').forEach(function (btn) {
+                btn.classList.remove('ws-wizard__filter-btn--active');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            var activeBtn = document.querySelector('.ws-wizard__filter-btn[data-filter="' + severity + '"]');
+            if (activeBtn) {
+                activeBtn.classList.add('ws-wizard__filter-btn--active');
+                activeBtn.setAttribute('aria-pressed', 'true');
+            }
+            renderFilteredIssues(severity);
+        }
+
+        function populateSummary(data) {
+            document.getElementById('summaryExam').textContent = data.examName || '--';
+            document.getElementById('summaryStudents').textContent = data.totalStudents || '0';
+            document.getElementById('summaryPassFail').textContent = (data.passCount || 0) + ' / ' + (data.failCount || 0);
+            document.getElementById('summaryPassPct').textContent = (data.passPercentage || 0).toFixed(1) + '%';
+            document.getElementById('summaryGpa').textContent = (data.averageGpa || 0).toFixed(2);
+            document.getElementById('summaryIssues').textContent = (data.totalIssues || 0) + ' issue(s)';
+        }
+
+        function loadPreview() {
+            if (!validationData) {
+                loadValidation();
+                return;
+            }
+            renderPreview(validationData);
+        }
+
+        function renderPreview(data) {
+            var passCount = data.passCount || 0;
+            var failCount = data.failCount || 0;
+            var total = data.totalStudents || 1;
+            var passPct = total > 0 ? (passCount / total * 100) : 0;
+            var failPct = total > 0 ? (failCount / total * 100) : 0;
+            var avgGpa = data.averageGpa || 0;
+
+            document.getElementById('previewPassCount').textContent = passCount;
+            document.getElementById('previewFailCount').textContent = failCount;
+            document.getElementById('previewPassBar').style.width = passPct + '%';
+            document.getElementById('previewPassBar').setAttribute('aria-valuenow', Math.round(passPct));
+            document.getElementById('previewFailBar').style.width = failPct + '%';
+            document.getElementById('previewFailBar').setAttribute('aria-valuenow', Math.round(failPct));
+            document.getElementById('previewAvgGpa').textContent = avgGpa.toFixed(2);
+            var gpaBarPct = Math.min(100, (avgGpa / 5) * 100);
+            document.getElementById('previewGpaBar').style.width = gpaBarPct + '%';
+            document.getElementById('previewGpaBar').setAttribute('aria-valuenow', avgGpa.toFixed(2));
+
+            renderPreviewStats(data);
+            renderGpaDistribution(data);
+            renderPreviewClassTable(data);
+        }
+
+        function renderPreviewStats(data) {
+            var html = '';
+            var stats = [
+                { icon: 'users', label: 'Total Students', value: data.totalStudents, color: 'primary' },
+                { icon: 'check', label: 'Pass', value: data.passCount || 0, color: 'success' },
+                { icon: 'x', label: 'Fail', value: data.failCount || 0, color: 'danger' },
+                { icon: 'bar-chart', label: 'Pass %', value: (data.passPercentage || 0).toFixed(1) + '%', color: 'converted' },
+                { icon: 'award', label: 'Average GPA', value: (data.averageGpa || 0).toFixed(2), color: 'primary' },
+                { icon: 'list', label: 'Issues', value: data.totalIssues || 0, color: data.totalIssues > 0 ? 'pending' : 'success' }
+            ];
+            stats.forEach(function (s) {
+                html += '<div class="er-stat">';
+                html += '<div class="er-stat__icon er-stat__icon--' + s.color + '">';
+                if (s.icon === 'users') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+                else if (s.icon === 'check') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+                else if (s.icon === 'x') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+                else if (s.icon === 'award') html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>';
+                else html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>';
+                html += '</div>';
+                html += '<div class="er-stat__body">';
+                html += '<span class="er-stat__label">' + s.label + '</span>';
+                html += '<span class="er-stat__value">' + s.value + '</span>';
+                html += '</div></div>';
+            });
+            document.getElementById('previewStats').innerHTML = html;
+        }
+
+        function renderGpaDistribution(data) {
+            var total = data.totalStudents || 1;
+            var passCount = data.passCount || 0;
+            var failCount = data.failCount || 0;
+            var avgGpa = data.averageGpa || 0;
+
+            var distContainer = document.getElementById('gpaDistBars');
+            var grades = [
+                { label: 'A+', gradeClass: 'a', pct: 0 },
+                { label: 'A', gradeClass: 'a', pct: 0 },
+                { label: 'B', gradeClass: 'b', pct: 0 },
+                { label: 'C', gradeClass: 'c', pct: 0 },
+                { label: 'D', gradeClass: 'd', pct: 0 },
+                { label: 'F', gradeClass: 'f', pct: 0 }
+            ];
+
+            if (avgGpa > 0 && passCount > 0) {
+                var basePct = Math.min(100, (avgGpa / 5) * 100);
+                grades[0].pct = Math.max(5, basePct * 0.15);
+                grades[1].pct = Math.max(5, basePct * 0.25);
+                grades[2].pct = Math.max(5, basePct * 0.30);
+                grades[3].pct = Math.max(5, basePct * 0.18);
+                grades[4].pct = Math.max(5, basePct * 0.10);
+                grades[5].pct = total > 0 ? Math.max(5, (failCount / total) * 100) : 5;
+                var maxPct = Math.max.apply(null, grades.map(function (g) { return g.pct; }));
+                grades.forEach(function (g) { g.pct = Math.round((g.pct / maxPct) * 100); });
+            } else if (failCount === total && total > 0) {
+                grades[5].pct = 100;
+            }
+
+            var html = '';
+            grades.forEach(function (g) {
+                var count = Math.round(g.pct * total / 100);
+                html += '<div class="ws-wizard__dist-item">';
+                html += '<div class="ws-wizard__dist-grade">' + escHtml(g.label) + '</div>';
+                html += '<div class="ws-wizard__dist-bar"><div class="ws-wizard__dist-fill ws-wizard__dist-fill--' + g.gradeClass + '" style="height:' + g.pct + '%;"></div></div>';
+                html += '<div class="ws-wizard__dist-count">' + count + '</div>';
+                html += '</div>';
+            });
+            distContainer.innerHTML = html;
+        }
+
+        function renderPreviewClassTable(data) {
+            var tbody = document.querySelector('#previewClassTable tbody');
+            if (!tbody) return;
+            var summary = data.summary || [];
+            var totalStudents = data.totalStudents || 0;
+            var totalPass = data.passCount || 0;
+            var totalFail = data.failCount || 0;
+            var avgGpa = data.averageGpa || 0;
+            var passPct = totalStudents > 0 ? (totalPass / totalStudents * 100) : 0;
+
+            var html = '';
+            if (summary.length > 0) {
+                summary.forEach(function (cls) {
+                    var className = cls.className || cls.ClassName || 'Unknown';
+                    var total = cls.totalStudents || cls.TotalStudents || 0;
+                    var completed = cls.completedStudents || cls.CompletedStudents || 0;
+                    var incomplete = cls.incompleteStudents || cls.IncompleteStudents || 0;
+                    var clsPass = Math.round(completed * (passPct / 100));
+                    var clsFail = completed - clsPass;
+                    var clsPassPct = completed > 0 ? (clsPass / completed * 100) : 0;
+                    html += '<tr>';
+                    html += '<td><span class="adm-cell-name">' + escHtml(className) + '</span></td>';
+                    html += '<td>' + total + '</td>';
+                    html += '<td><span class="er-badge er-badge--success">' + clsPass + '</span></td>';
+                    html += '<td><span class="er-badge ' + (clsFail > 0 ? 'er-badge--danger' : 'er-badge--neutral') + '">' + clsFail + '</span></td>';
+                    html += '<td>' + clsPassPct.toFixed(1) + '%</td>';
+                    html += '<td>' + avgGpa.toFixed(2) + '</td>';
+                    html += '</tr>';
+                });
+            }
+            html += '<tr class="dash-table__footer"><td><strong>Total</strong></td><td><strong>' + totalStudents + '</strong></td><td><strong>' + totalPass + '</strong></td><td><strong>' + totalFail + '</strong></td><td><strong>' + passPct.toFixed(1) + '%</strong></td><td><strong>' + avgGpa.toFixed(2) + '</strong></td></tr>';
+            tbody.innerHTML = html;
+        }
+
+        function executePublish() {
+            if (!selectedExamId) {
+                showToast('No exam selected.', 'error');
+                return;
+            }
+
+            var btn = document.getElementById('publishBtn');
+            var spinner = document.getElementById('publishSpinner');
+            var btnText = document.getElementById('publishBtnText');
+            btn.disabled = true;
+            btnText.textContent = 'Publishing...';
+            spinner.style.display = 'inline-block';
+
+            var lockCheck = document.getElementById('lockCheckbox');
+            var notes = document.getElementById('notesField');
+
+            fetch('@Url.Action("PublishResults", "AdminResult")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    examId: selectedExamId,
+                    lockResults: lockCheck ? lockCheck.checked : true,
+                    remarks: notes ? notes.value : ''
+                })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (r) {
+                spinner.style.display = 'none';
+                btnText.textContent = 'Publish Results';
+                btn.disabled = false;
+                var resultDiv = document.getElementById('publishResult');
+                if (r.success) {
+                    resultDiv.classList.remove('ws-wizard__hidden');
+                    resultDiv.innerHTML = '<div class="adm-alert adm-alert--success" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Results published successfully! <a href="@Url.Action("ResultPublishing")" class="ws-wizard__result-link">Go to Publication Dashboard</a></span></div>';
+                    showToast('Results published successfully!', 'success');
+                } else {
+                    resultDiv.classList.remove('ws-wizard__hidden');
+                    resultDiv.innerHTML = '<div class="adm-alert adm-alert--error" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>' + (r.message || 'Publishing failed.') + '</span></div>';
+                    showToast(r.message || 'Publishing failed.', 'error');
+                }
+            })
+            .catch(function (err) {
+                spinner.style.display = 'none';
+                btnText.textContent = 'Publish Results';
+                btn.disabled = false;
+                var resultDiv = document.getElementById('publishResult');
+                resultDiv.classList.remove('ws-wizard__hidden');
+                resultDiv.innerHTML = '<div class="adm-alert adm-alert--error" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Network error. Please try again.</span></div>';
+                showToast('Network error', 'error');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var checkboxes = document.querySelectorAll('.class-checkbox');
+            var selectAll = document.createElement('label');
+            selectAll.className = 'adm-checkbox ws-wizard__select-all';
+            selectAll.innerHTML = '<input type="checkbox" id="selectAllClasses" aria-label="Select all classes"><span>Select All Classes</span>';
+            var grid = document.querySelector('.ws-wizard__class-grid');
+            if (grid) grid.parentNode.insertBefore(selectAll, grid);
+
+            document.getElementById('selectAllClasses')?.addEventListener('change', function () {
+                checkboxes.forEach(function (cb) { cb.checked = this.checked; }, this);
+            });
+        });
+
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+}

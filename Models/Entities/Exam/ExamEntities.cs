@@ -7,6 +7,186 @@ using SchoolManagementSystem.Models.Enums;
 namespace SchoolManagementSystem.Models.Entities.Exam;
 
 /// <summary>
+    /// Main Exam Entity - Root container for an exam series (e.g., "Half Yearly 2026")
+    /// Supports multiple classes, sections, subjects, and components
+    /// </summary>
+    public class Exam : BaseEntity
+    {
+        [MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        public ExamTerm Term { get; set; } = ExamTerm.Other;
+        public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
+
+        public int AcademicYearId { get; set; }
+
+        public DateOnly StartsOn { get; set; }
+        public DateOnly EndsOn { get; set; }
+
+        public bool IsLocked { get; set; } = false;
+        public DateTime? LockedAt { get; set; }
+        public int? LockedByUserId { get; set; }
+
+        public bool IsPublished { get; set; }
+        public bool IsArchived { get; set; }
+        public DateTime? ArchivedAt { get; set; }
+        public int? ArchivedByUserId { get; set; }
+        public string? ArchiveReason { get; set; }
+
+        /// <summary>
+        /// Legacy property for backward compatibility — maps to first ExamClass
+        /// </summary>
+        public int ClassId { get; set; }
+
+        /// <summary>
+        /// Legacy property for backward compatibility
+        /// </summary>
+        public int? SectionId { get; set; }
+
+        /// <summary>
+        /// Legacy property for backward compatibility
+        /// </summary>
+        public int? StudentGroupId { get; set; }
+
+        /// <summary>
+        /// Computed group key for UI grouping of same-named exams across classes.
+        /// Format: "{AcademicYearId}_{NormalizedName}"
+        /// Not stored in DB — computed at runtime.
+        /// </summary>
+        [NotMapped]
+        public string ExamGroupKey => GenerateGroupKey(AcademicYearId, Name);
+
+        public static string GenerateGroupKey(int academicYearId, string examName)
+        {
+            var normalized = (examName ?? "").Trim().ToUpperInvariant();
+            var clean = global::System.Text.RegularExpressions.Regex.Replace(normalized, @"[\s\-]+", "_");
+            return $"{academicYearId}_{clean}";
+        }
+
+        // Navigation
+        public virtual Academic.SchoolClass Class { get; set; } = null!;
+        public virtual Academic.Section? Section { get; set; }
+        public virtual Academic.StudentGroup? StudentGroup { get; set; }
+        public virtual ICollection<ExamClass> Classes { get; set; } = [];
+        public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
+        public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];
+        public virtual ICollection<ExamTemplate> Templates { get; set; } = [];
+    }
+
+/// <summary>
+/// Links Exam to Classes. One Exam can contain multiple classes.
+/// </summary>
+public class ExamClass : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int ClassId { get; set; }
+
+    // Historical snapshot
+    [MaxLength(100)]
+    public string ClassName { get; set; } = "";
+    public int SortOrder { get; set; }
+
+    // Navigation
+    public virtual Exam Exam { get; set; } = null!;
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
+    public virtual ICollection<ExamSection> Sections { get; set; } = new List<ExamSection>();
+    public virtual ICollection<ExamSubject> Subjects { get; set; } = new List<ExamSubject>();
+}
+
+/// <summary>
+/// Sections within a class for the exam. Class 6 has sections A, B, C.
+/// </summary>
+public class ExamSection : BaseEntity
+{
+    public int ExamClassId { get; set; }
+    public int SectionId { get; set; }
+
+    // Historical snapshot
+    [MaxLength(50)]
+    public string SectionName { get; set; } = "";
+
+    // Navigation
+    public virtual ExamClass ExamClass { get; set; } = null!;
+    public virtual Academic.Section Section { get; set; } = null!;
+}
+
+/// <summary>
+/// Subjects within a class for the exam. Loaded from ClassSubject.
+/// </summary>
+public class ExamSubject : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int SubjectId { get; set; }
+    public int ClassId { get; set; }
+    public int? SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
+
+    public decimal FullMarks { get; set; } = 100;
+    public decimal PassMarks { get; set; } = 33;
+    public bool IsOptional { get; set; } = false;
+    public bool IsReligionSubject { get; set; } = false;
+
+    public int? TeacherId { get; set; }
+    public DateOnly? ExamDate { get; set; }
+    public TimeOnly? ExamStartTime { get; set; }
+    public int? ExamDuration { get; set; }
+    [MaxLength(50)]
+    public string? RoomNumber { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Historical snapshot — preserves data at exam creation time
+    [MaxLength(100)]
+    public string SubjectName { get; set; } = "";
+    [MaxLength(50)]
+    public string SubjectCode { get; set; } = "";
+    [MaxLength(50)]
+    public string SubjectType { get; set; } = ""; // Core, Elective, Vocational, Religion
+    [MaxLength(50)]
+    public string SubjectGroup { get; set; } = ""; // Science, BusinessStudies, Humanities, General
+    public decimal TheoryMarks { get; set; } = 100;
+    public decimal PracticalMarks { get; set; } = 0;
+    [MaxLength(100)]
+    public string? TeacherName { get; set; }
+    [MaxLength(50)]
+    public string? TeacherEmployeeCode { get; set; }
+    public decimal Credit { get; set; }
+    [MaxLength(20)]
+    public string? NCTBCode { get; set; }
+
+    // Navigation
+    public virtual Exam Exam { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+    public virtual Teachers.Teacher? Teacher { get; set; }
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
+    public virtual Academic.StudentGroup? StudentGroup { get; set; }
+    public virtual ICollection<ExamSubjectComponent> Components { get; set; } = new List<ExamSubjectComponent>();
+}
+
+/// <summary>
+/// Components per subject. Loaded from SubjectMarkStructure.
+/// Each subject gets MCQ, CQ, Practical, etc. with their marks.
+/// </summary>
+public class ExamSubjectComponent : BaseEntity
+{
+    public int ExamSubjectId { get; set; }
+    public int ComponentId { get; set; }
+    public decimal MaxMarks { get; set; }
+    public decimal PassMarks { get; set; }
+    public int DisplayOrder { get; set; }
+
+    // Historical snapshot
+    [MaxLength(100)]
+    public string ComponentName { get; set; } = "";
+    [MaxLength(50)]
+    public string ComponentCode { get; set; } = "";
+    public decimal Weight { get; set; }
+
+    // Navigation
+    public virtual ExamSubject ExamSubject { get; set; } = null!;
+    public virtual ExamComponent Component { get; set; } = null!;
+}
+
+/// <summary>
 /// Exam Types: Half Yearly, Annual, Final, Pre-Test, Test, First Terminal, Second Terminal
 /// </summary>
 public class ExamType : BaseEntity
@@ -110,87 +290,7 @@ public class SubjectMarkStructure : BaseEntity
 }
 
 /// <summary>
-/// Main Exam Entity
-/// </summary>
-public class Exam : BaseEntity
-{
-    [MaxLength(100)]
-    public string Name { get; set; } = string.Empty;
-
-    public ExamTerm Term { get; set; } = ExamTerm.Other;
-    public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
-
-    public int AcademicYearId { get; set; }
-
-    /// <summary>Required: the primary class this exam belongs to.</summary>
-    public int ClassId { get; set; }
-
-    /// <summary>Nullable: section filter for this exam.</summary>
-    public int? SectionId { get; set; }
-
-    public int? StudentGroupId { get; set; }
-    public DateOnly StartsOn { get; set; }
-    public DateOnly EndsOn { get; set; }
-
-    public bool IsLocked { get; set; } = false;
-    public DateTime? LockedAt { get; set; }
-    public int? LockedByUserId { get; set; }
-
-    /// <summary>
-    /// Computed group key for UI grouping of same-named exams across classes.
-    /// Format: "{AcademicYearId}_{NormalizedName}"
-    /// Not stored in DB — computed at runtime.
-    /// </summary>
-    [NotMapped]
-    public string ExamGroupKey => GenerateGroupKey(AcademicYearId, Name);
-
-    public static string GenerateGroupKey(int academicYearId, string examName)
-    {
-        var normalized = (examName ?? "").Trim().ToUpperInvariant();
-        var clean = global::System.Text.RegularExpressions.Regex.Replace(normalized, @"[\s\-]+", "_");
-        return $"{academicYearId}_{clean}";
-    }
-
-    // Navigation
-    public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
-    public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];
-    public virtual Academic.SchoolClass Class { get; set; } = null!;
-    public virtual Academic.Section? Section { get; set; }
-    public virtual Academic.StudentGroup? StudentGroup { get; set; }
-}
-
-/// <summary>
-/// Exam Subject: Maps subjects to exams with marks configuration
-/// </summary>
-public class ExamSubject : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int SubjectId { get; set; }
-    public int ClassId { get; set; }
-    public int? StudentGroupId { get; set; }
-
-    public decimal FullMarks { get; set; } = 100;
-    public decimal PassMarks { get; set; } = 33;
-    public bool IsOptional { get; set; } = false;
-
-    public int? TeacherId { get; set; }
-    public DateOnly? ExamDate { get; set; }
-    public TimeOnly? ExamStartTime { get; set; }
-    public int? ExamDuration { get; set; }
-    [MaxLength(50)]
-    public string? RoomNumber { get; set; }
-    public bool IsActive { get; set; } = true;
-
-    // Navigation
-    public virtual Exam Exam { get; set; } = null!;
-    public virtual Subject Subject { get; set; } = null!;
-    public virtual Teachers.Teacher? Teacher { get; set; }
-    public virtual Academic.SchoolClass Class { get; set; } = null!;
-    public virtual Academic.StudentGroup? StudentGroup { get; set; }
-}
-
-/// <summary>
-/// Exam Schedule: Date, time, and room assignment for each subject's exam
+    /// Exam Schedule: Date, time, and room assignment for each subject's exam
 /// Supports class/group/section context for independent group scheduling (SSC routine).
 /// </summary>
 public class ExamSchedule : BaseEntity
@@ -214,20 +314,53 @@ public class ExamSchedule : BaseEntity
     [MaxLength(80)]
     public string RoomNo { get; set; } = string.Empty;
 
+    // Historical snapshot — preserves room info at scheduling time
+    [MaxLength(100)]
+    public string RoomName { get; set; } = "";
+    [MaxLength(100)]
+    public string BuildingName { get; set; } = "";
+    [MaxLength(50)]
+    public string ShiftName { get; set; } = "";
+
     [MaxLength(500)]
     public string Instructions { get; set; } = string.Empty;
 
     // Navigation
     public virtual Exam Exam { get; set; } = null!;
-    public virtual Subject Subject { get; set; } = null!;
-    public virtual SchoolClass Class { get; set; } = null!;
-    public virtual StudentGroup? StudentGroup { get; set; }
-    public virtual Section? Section { get; set; }
+    public virtual Academic.Subject Subject { get; set; } = null!;
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
+    public virtual Academic.StudentGroup? StudentGroup { get; set; }
+    public virtual Academic.Section? Section { get; set; }
 }
 
 /// <summary>
-/// Admit Card: Generated for each student for each exam
+/// Saved exam wizard template for reusing subject/component/mark configurations.
+/// TemplateData stores the full ExamWizardStateDto as JSON.
 /// </summary>
+public class ExamTemplate : BaseEntity
+{
+    [MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    public int AcademicYearId { get; set; }
+
+    public ExamTerm Term { get; set; }
+
+    [MaxLength(50)]
+    public string ExamType { get; set; } = string.Empty;
+
+    /// <summary>JSON-serialized list of class IDs.</summary>
+    public string ClassIdsJson { get; set; } = "[]";
+
+    /// <summary>JSON-serialized list of ExamWizardSubjectDto.</summary>
+    public string TemplateDataJson { get; set; } = "[]";
+
+    public bool IsActive { get; set; } = true;
+}
+
 public class AdmitCard : BaseEntity
 {
     public int ExamId { get; set; }
@@ -253,5 +386,3 @@ public class AdmitCard : BaseEntity
     public virtual Exam Exam { get; set; } = null!;
     public virtual Student.Student Student { get; set; } = null!;
 }
-
-

@@ -14,5 +14,7 @@ public interface IStudentService
     Task<StudentUpsertDto?> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<int?> GetStudentIdByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>> GetOptionalSubjectsAsync(int classId, CancellationToken cancellationToken = default);
+    Task<int?> GetStudentGroupIdByClassSectionAsync(int classId, int sectionId, CancellationToken ct = default);
+    Task<List<SchoolManagementSystem.Models.DTOs.Student.StudentClassSectionDto>> GetStudentClassSectionsAsync(List<int> studentIds, CancellationToken ct = default);
 }
 

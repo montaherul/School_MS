@@ -22,17 +22,20 @@ public class MeritCalculationService : IMeritCalculationService
     private readonly IStudentExamResultRepository _examResultRepository;
     private readonly IExamRepository _examRepository;
     private readonly IResultPolicyService _resultPolicyService;
+    private readonly IFinalResultRepository _finalResultRepository;
 
     public MeritCalculationService(
         IUnitOfWork uow,
         IStudentExamResultRepository examResultRepository,
         IExamRepository examRepository,
-        IResultPolicyService resultPolicyService)
+        IResultPolicyService resultPolicyService,
+        IFinalResultRepository finalResultRepository)
     {
         _uow = uow;
         _examResultRepository = examResultRepository;
         _examRepository = examRepository;
         _resultPolicyService = resultPolicyService;
+        _finalResultRepository = finalResultRepository;
     }
 
     public async Task CalculateClassMeritPositionsAsync(int examId, int classId)
@@ -94,22 +97,7 @@ public class MeritCalculationService : IMeritCalculationService
 
         if (exam == null) return;
 
-        var classIds = await _examResultRepository.Query()
-            .AsNoTracking()
-            .Include(r => r.Student)
-            .Where(r => r.ExamId == examId)
-            .Select(r => r.Student.ClassId)
-            .Distinct()
-            .ToListAsync();
-
-        foreach (var classId in classIds)
-        {
-            if (classId == 0) continue;
-            await CalculateClassMeritPositionsAsync(examId, classId);
-            await CalculateSectionMeritPositionsAsync(examId, classId);
-        }
-
-        await CalculateGroupMeritPositionsAsync(examId);
+        await _examResultRepository.CalculateMeritBySpAsync(exam.Name);
     }
 
     /// <summary>
@@ -119,62 +107,7 @@ public class MeritCalculationService : IMeritCalculationService
     /// </summary>
     public async Task CalculateFinalResultPositionsAsync(int academicYearId, CancellationToken ct = default)
     {
-        var finalResults = await _uow.Repository<FinalResult>().Query()
-            .Include(fr => fr.Student)
-            .Where(fr => fr.AcademicYearId == academicYearId && !fr.IsDeleted)
-            .ToListAsync(ct);
-
-        if (finalResults.Count == 0) return;
-
-        // School-wide position
-        var schoolRanked = ApplyConfiguredFinalSorting(finalResults.AsQueryable()).ToList();
-        int schoolPos = 1;
-        foreach (var fr in schoolRanked)
-        {
-            fr.FinalPosition = schoolPos++;
-            _uow.Repository<FinalResult>().Update(fr);
-        }
-
-        // Class position
-        var classGroups = finalResults.GroupBy(fr => fr.SchoolClassId);
-        foreach (var classGroup in classGroups)
-        {
-            var classRanked = ApplyConfiguredFinalSorting(classGroup.AsQueryable()).ToList();
-            int classPos = 1;
-            foreach (var fr in classRanked)
-            {
-                fr.FinalClassPosition = classPos++;
-                _uow.Repository<FinalResult>().Update(fr);
-            }
-        }
-
-        // Section position
-        var sectionGroups = finalResults.GroupBy(fr => new { fr.SchoolClassId, fr.SectionId });
-        foreach (var sectionGroup in sectionGroups)
-        {
-            var sectionRanked = ApplyConfiguredFinalSorting(sectionGroup.AsQueryable()).ToList();
-            int sectionPos = 1;
-            foreach (var fr in sectionRanked)
-            {
-                fr.FinalSectionPosition = sectionPos++;
-                _uow.Repository<FinalResult>().Update(fr);
-            }
-        }
-
-        // Group position
-        var groupGroups = finalResults.Where(fr => fr.StudentGroupId.HasValue).GroupBy(fr => fr.StudentGroupId!.Value);
-        foreach (var groupGroup in groupGroups)
-        {
-            var groupRanked = ApplyConfiguredFinalSorting(groupGroup.AsQueryable()).ToList();
-            int groupPos = 1;
-            foreach (var fr in groupRanked)
-            {
-                fr.FinalGroupPosition = groupPos++;
-                _uow.Repository<FinalResult>().Update(fr);
-            }
-        }
-
-        await _uow.SaveChangesAsync(ct);
+        await _finalResultRepository.CalculateFinalPositionsBySpAsync(academicYearId, ct);
     }
 
     public async Task<IEnumerable<MeritListItem>> GetMeritListAsync(int examId, MeritCategory category)

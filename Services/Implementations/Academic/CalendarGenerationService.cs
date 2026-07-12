@@ -28,7 +28,7 @@ public class CalendarGenerationService : ICalendarGenerationService
         await _uow.ExecuteInTransactionAsync(async () =>
         {
             var daysCount = DateTime.IsLeapYear(year) ? 366 : 365;
-            var existing = await _uow.Repository<AcademicCalendar>().Query()
+            var existing = await _uow.Repository<AcademicCalendar>().QueryNoTracking()
                 .Where(x => x.AcademicYearId == academicYearId && !x.IsDeleted)
                 .ToListAsync(ct);
 
@@ -151,7 +151,7 @@ public class CalendarGenerationService : ICalendarGenerationService
         await _uow.ExecuteInTransactionAsync(async () =>
         {
             var daysCount = DateTime.IsLeapYear(year) ? 366 : 365;
-            var existing = await _uow.Repository<AcademicCalendar>().Query()
+            var existing = await _uow.Repository<AcademicCalendar>().QueryNoTracking()
                 .Where(x => x.AcademicYearId == academicYearId && !x.IsDeleted)
                 .Select(x => x.Date)
                 .ToListAsync(ct);
@@ -192,7 +192,7 @@ public class CalendarGenerationService : ICalendarGenerationService
         var sw = Stopwatch.StartNew();
         _logger.LogInformation("Holiday sync started for AcademicYearId={AcademicYearId}, Year={Year}", academicYearId, year);
 
-        var holidays = await _uow.Repository<HolidayMaster>().Query()
+        var holidays = await _uow.Repository<HolidayMaster>().QueryNoTracking()
             .Where(h => h.IsActive && !h.IsDeleted)
             .ToListAsync(ct);
 

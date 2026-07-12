@@ -1,24 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Filters;
-using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.ViewModels.Result;
-using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Exam;
-using SchoolManagementSystem.Models.Entities.Result;
-using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
-using System.Data;
 using System.Security.Claims;
 using System.Text.Json;
-using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -31,9 +23,12 @@ public class AdminResultController : Controller
     private readonly IExamService _examService;
     private readonly IMeritCalculationService _meritCalculationService;
     private readonly ISubjectService _subjectService;
-    private readonly IResultPublicationRepository _publicationRepository;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
-    private readonly IUnitOfWork _uow;
+    private readonly IAcademicYearService _academicYearService;
+    private readonly IStudentGroupService _studentGroupService;
+    private readonly ISchoolClassService _schoolClassService;
+    private readonly IResultValidationService _validationService;
+    private readonly ILogger<AdminResultController> _logger;
 
     public AdminResultController(
         IResultAnalyticsService analyticsService,
@@ -42,9 +37,12 @@ public class AdminResultController : Controller
         IExamService examService,
         IMeritCalculationService meritCalculationService,
         ISubjectService subjectService,
-        IResultPublicationRepository publicationRepository,
         IStudentExamResultRepository studentExamResultRepository,
-        IUnitOfWork uow)
+        IAcademicYearService academicYearService,
+        IStudentGroupService studentGroupService,
+        ISchoolClassService schoolClassService,
+        IResultValidationService validationService,
+        ILogger<AdminResultController> logger)
     {
         _analyticsService = analyticsService;
         _publicationService = publicationService;
@@ -52,9 +50,12 @@ public class AdminResultController : Controller
         _examService = examService;
         _meritCalculationService = meritCalculationService;
         _subjectService = subjectService;
-        _publicationRepository = publicationRepository;
         _studentExamResultRepository = studentExamResultRepository;
-        _uow = uow;
+        _academicYearService = academicYearService;
+        _studentGroupService = studentGroupService;
+        _schoolClassService = schoolClassService;
+        _validationService = validationService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -67,22 +68,21 @@ public class AdminResultController : Controller
         int? groupId,
         CancellationToken ct = default)
     {
-        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var academicYears = await _academicYearService.GetAllYearsAsync(ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
         var yearId = academicYearId ?? activeYear?.Id ?? 0;
 
         var dashboardDto = await _analyticsService.GetAdminDashboardAsync();
         if (yearId > 0 && activeYear?.Id != yearId)
         {
-            var year = academicYears.FirstOrDefault(y => y.Id == yearId);
+            var year = await _academicYearService.GetByIdAsync(yearId, ct);
             if (year != null)
             {
                 dashboardDto.ActiveYear = year;
-                dashboardDto.Exams = await _uow.Repository<ExamEntity>().Query()
-                    .Where(e => e.AcademicYearId == yearId && !e.IsDeleted)
-                    .ToListAsync(ct);
             }
         }
+
+        var yearExams = (await _examService.GetExamsAsync(yearId, ct)).ToList();
 
         // Use repository (which calls sp_GetResultSummary) for server-side aggregations
         List<dynamic> classPerf = new();
@@ -112,20 +112,7 @@ public class AdminResultController : Controller
         }
 
         // Section + group level aggregations via EF (SP has group data but section-level is per-exam/filter)
-        var resultsQuery = _uow.Repository<StudentExamResult>().Query()
-            .Include(r => r.Student).ThenInclude(s => s.Class)
-            .Include(r => r.Student).ThenInclude(s => s.Section)
-            .Include(r => r.Student).ThenInclude(s => s.StudentGroup)
-            .Include(r => r.Exam)
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted && r.Exam.AcademicYearId == yearId);
-
-        if (examId.HasValue) resultsQuery = resultsQuery.Where(r => r.ExamId == examId.Value);
-        if (classId.HasValue) resultsQuery = resultsQuery.Where(r => r.Student.ClassId == classId.Value);
-        if (sectionId.HasValue) resultsQuery = resultsQuery.Where(r => r.Student.SectionId == sectionId.Value);
-        if (groupId.HasValue) resultsQuery = resultsQuery.Where(r => r.Student.StudentGroupId == groupId.Value);
-
-        var results = await resultsQuery.ToListAsync(ct);
+        var results = await _studentExamResultRepository.GetFilteredResultsAsync(yearId, examId, classId, sectionId, groupId, ct);
 
         if (!classPerf.Any())
         {
@@ -168,7 +155,7 @@ public class AdminResultController : Controller
 
         var subjectPerf = new List<dynamic>();
 
-        var groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
+        var groups = await _studentGroupService.GetAllAsync(ct);
         var chartDataJson = JsonSerializer.Serialize(new
         {
             classPerf,
@@ -188,8 +175,8 @@ public class AdminResultController : Controller
             Exams = dashboardDto.Exams,
             ResultStats = dashboardDto.ResultStats,
             AcademicYears = academicYears.ToList(),
-            FilterExams = (await _examService.GetExamsAsync(yearId)).ToList(),
-            Groups = groups.ToList(),
+            FilterExams = yearExams,
+            Groups = groups,
             SelectedAcademicYearId = yearId,
             SelectedExamId = examId,
             SelectedGroupId = groupId,
@@ -302,7 +289,7 @@ public class AdminResultController : Controller
     [RequirePermission("Result.Publish")]
     public async Task<IActionResult> ResultPublishing(int? academicYearId, CancellationToken ct)
     {
-        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var academicYears = await _academicYearService.GetAllYearsAsync(ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
         var yearId = academicYearId ?? activeYear?.Id ?? 0;
 
@@ -312,24 +299,9 @@ public class AdminResultController : Controller
 
         if (yearId > 0)
         {
-            var (examsData, summaryData) = await _publicationRepository.GetPublicationDashboardAsync(yearId, ct);
-            exams = examsData.ToList();
-            summary = summaryData;
+            (exams, summary) = await _publicationService.GetPublicationDashboardAsync(yearId, ct);
 
-            var rawHistory = await _publicationRepository.Query()
-                .Include(p => p.Exam)
-                .Where(p => !p.IsDeleted && p.Exam.AcademicYearId == yearId)
-                .OrderByDescending(p => p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt)
-                .Take(50)
-                .Select(p => new PublicationHistoryEntryDto
-                {
-                    Timestamp = (p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt).ToString("dd MMM yyyy HH:mm"),
-                    Action = p.Status.ToString(),
-                    PerformedBy = p.UpdatedBy ?? p.CreatedBy ?? "System",
-                    Notes = p.IsLocked ? "Results locked" : ""
-                })
-                .ToListAsync(ct);
-            history = rawHistory;
+            history = await _publicationService.GetPublicationHistoryAsync(yearId, ct);
         }
         else
         {
@@ -351,14 +323,75 @@ public class AdminResultController : Controller
 
     [HttpGet]
     [RequirePermission("Result.Publish")]
+    public async Task<IActionResult> PublishingWizard(CancellationToken ct)
+    {
+        var academicYears = await _academicYearService.GetAllYearsAsync(ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = activeYear?.Id ?? 0;
+
+        ViewBag.Exams = await _examService.GetExamsAsync(yearId, ct);
+        ViewBag.Classes = await _schoolClassService.GetAllSchoolClassesAsync(ct);
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.ActiveYearId = yearId;
+
+        return View(new PublishingWizardViewModel());
+    }
+
+    [HttpGet]
+    [RequirePermission("Result.Publish")]
+    public async Task<IActionResult> GetPublishingValidationJson(int examId, string? classIds, CancellationToken ct)
+    {
+        try
+        {
+            var validation = await _validationService.ValidatePrePublicationAsync(examId, ct);
+            if (validation == null)
+                return Json(new { success = false, message = "Validation returned no data." });
+
+            var issues = validation.Issues.Select(i => new
+            {
+                severity = i.Severity.ToLower(),
+                category = i.Category,
+                message = i.Message,
+                studentName = i.StudentName,
+                subjectName = i.SubjectName
+            }).ToList();
+
+            return Json(new
+            {
+                success = true,
+                data = new
+                {
+                    examName = validation.ExamName,
+                    totalStudents = validation.TotalStudents,
+                    completedCount = validation.PassedCount + validation.FailedCount,
+                    incompleteCount = validation.IncompleteCount,
+                    passCount = validation.PassedCount,
+                    failCount = validation.FailedCount,
+                    averageGpa = 0m,
+                    passPercentage = validation.TotalStudents > 0
+                        ? Math.Round(100m * validation.PassedCount / validation.TotalStudents, 1)
+                        : 0m,
+                    issues,
+                    isValid = validation.IsValid,
+                    totalIssues = validation.TotalIssues
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> ReviewResults(int examId, int? classId, int? sectionId, int? groupId, CancellationToken ct)
     {
-        var exam = await _uow.Repository<ExamEntity>().Query()
-            .FirstOrDefaultAsync(e => e.Id == examId && !e.IsDeleted, ct);
+        var exam = await _examService.GetExamByIdAsync(examId, ct) as ExamEntity;
 
         if (exam == null) return NotFound();
 
-        var academicYear = await _uow.Repository<AcademicYear>().GetByIdAsync(exam.AcademicYearId, ct);
+        var academicYear = await _academicYearService.GetByIdAsync(exam.AcademicYearId, ct);
 
         var (results, _) = await _studentExamResultRepository.GetResultListAsync(
             examId, classId, sectionId, groupId, (int)ResultWorkflowStatus.Submitted, null, 1, 2000, ct);
@@ -384,16 +417,14 @@ public class AdminResultController : Controller
     {
         try
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-
-            var rows = await _uow.ExecuteSqlRawAsync(
-                "EXEC sp_PublishResults @ExamId, @AcademicYearId, @PublishedByUserId, @LockResults, @Remarks",
-                new SqlParameter("@ExamId", request.ExamId),
-                new SqlParameter("@AcademicYearId", await GetAcademicYearIdForExam(request.ExamId)),
-                new SqlParameter("@PublishedByUserId", userId),
-                new SqlParameter("@LockResults", request.LockResults ? 1 : 0),
-                new SqlParameter("@Remarks", (object?)request.Remarks ?? DBNull.Value));
-
+            var dto = new ResultPublishDto
+            {
+                ExamId = request.ExamId,
+                LockResults = request.LockResults,
+                PublicationNotes = request.Remarks ?? "",
+                ApprovedByUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0")
+            };
+            await _publicationService.PublishResultsAsync(dto);
             return Json(new { success = true });
         }
         catch (Exception ex)
@@ -409,26 +440,13 @@ public class AdminResultController : Controller
     {
         try
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-
-            var rows = await _uow.ExecuteSqlRawAsync(
-                "EXEC sp_UnpublishResults @ExamId, @UnpublishedByUserId, @Reason",
-                new SqlParameter("@ExamId", request.ExamId),
-                new SqlParameter("@UnpublishedByUserId", userId),
-                new SqlParameter("@Reason", (object?)request.Remarks ?? "Unpublish requested"));
-
+            await _publicationService.UnpublishResultsAsync(request.ExamId);
             return Json(new { success = true });
         }
         catch (Exception ex)
         {
             return Json(new { success = false, message = ex.Message });
         }
-    }
-
-    private async Task<int> GetAcademicYearIdForExam(int examId)
-    {
-        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId);
-        return exam?.AcademicYearId ?? 0;
     }
 
     [HttpPost]
@@ -471,11 +489,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            var rows = await _uow.ExecuteSqlRawAsync(
-                "UPDATE StudentExamResults SET Status = @Status, UpdatedAt = GETUTCDATE(), UpdatedBy = @UpdatedBy WHERE ExamId = @ExamId AND IsDeleted = 0",
-                new SqlParameter("@Status", (int)ResultWorkflowStatus.Draft),
-                new SqlParameter("@UpdatedBy", User.Identity?.Name ?? "admin"),
-                new SqlParameter("@ExamId", request.ExamId));
+            var rows = await _publicationService.RejectResultsAsync(request.ExamId, User.Identity?.Name ?? "admin");
             return Json(new { success = true, affected = rows });
         }
         catch (Exception ex)
@@ -500,19 +514,32 @@ public class AdminResultController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Result.View")]
+    public async Task<IActionResult> ValidateResults([FromBody] ResultValidationRequest request, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _validationService.ValidateAsync(request, ct);
+            return Json(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Result validation failed for exam {ExamId}", request.ExamId);
+            return Json(new { IsValid = false, TotalIssues = 0, Issues = new List<ResultValidationIssueDto>(), Error = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Result.Recalculate")]
-    public async Task<IActionResult> RecalculateResults(int examId)
+    public async Task<IActionResult> RecalculateResults(int examId, CancellationToken ct = default)
     {
         try
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            var academicYearId = await GetAcademicYearIdForExam(examId);
-            await _uow.ExecuteSqlRawAsync(
-                "EXEC sp_RecalculateResults @ExamId, @AcademicYearId, @RecalculatedByUserId, @Reason",
-                new SqlParameter("@ExamId", examId),
-                new SqlParameter("@AcademicYearId", academicYearId),
-                new SqlParameter("@RecalculatedByUserId", userId),
-                new SqlParameter("@Reason", "Recalculation triggered from admin dashboard"));
+            var exam = await _examService.GetExamByIdAsync(examId, ct) as ExamEntity;
+            var academicYearId = exam?.AcademicYearId ?? 0;
+            await _resultCalculationService.RecalculateAllResultsAsync(examId, academicYearId, userId, "Recalculation triggered from admin dashboard");
             return Json(new { success = true, message = "Results recalculated successfully." });
         }
         catch (Exception ex)
@@ -528,9 +555,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _uow.ExecuteSqlRawAsync(
-                "EXEC sp_CalculateMerit @ExamGroupKey",
-                new SqlParameter("@ExamGroupKey", await GetExamName(examId)));
+            await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
             TempData["Success"] = "Merit positions recalculated successfully.";
         }
         catch (Exception ex)
@@ -538,11 +563,5 @@ public class AdminResultController : Controller
             TempData["Error"] = $"Error recalculating merit positions: {ex.Message}";
         }
         return RedirectToAction("Dashboard");
-    }
-
-    private async Task<string> GetExamName(int examId)
-    {
-        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId);
-        return exam?.Name ?? "";
     }
 }

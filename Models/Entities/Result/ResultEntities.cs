@@ -6,7 +6,33 @@ using SchoolManagementSystem.Models.Enums;
 namespace SchoolManagementSystem.Models.Entities.Result;
 
 /// <summary>
-/// Mark Entry: Teacher enters component-wise marks for students in an exam
+    /// Student Component Mark: Component-wise marks for a student in an exam subject
+    /// References ExamSubjectComponent (snapshot) for historical integrity
+    /// </summary>
+    public class StudentComponentMark : BaseEntity
+    {
+        public int ExamId { get; set; }
+        public int StudentId { get; set; }
+        public int ExamSubjectId { get; set; }
+        public int ExamSubjectComponentId { get; set; }
+
+        // Denormalized for query performance
+        public int AcademicYearId { get; set; }
+        public int ClassId { get; set; }
+        public int SectionId { get; set; }
+        public int? StudentGroupId { get; set; }
+
+        public decimal? ObtainedMarks { get; set; }
+
+        // Navigation
+        public virtual Exam.Exam Exam { get; set; } = null!;
+        public virtual Student.Student Student { get; set; } = null!;
+        public virtual Exam.ExamSubject ExamSubject { get; set; } = null!;
+        public virtual Exam.ExamSubjectComponent ExamSubjectComponent { get; set; } = null!;
+    }
+
+    /// <summary>
+    /// Mark Entry: Teacher enters component-wise marks for students in an exam
 /// Supports draft/submit workflow with proper state management
 /// </summary>
 public class MarkEntry : BaseEntity
@@ -65,7 +91,7 @@ public class MarkEntry : BaseEntity
     public int? CreatedByUserId { get; set; }
     public int? UpdatedByUserId { get; set; }
 
-    /// <summary>
+/// <summary>
     /// JSON column for dynamic component values beyond the 12 standard fields.
     /// Format: {"COMPONENT_CODE": marks}
     /// Used with SubjectMarkStructure for unlimited dynamic component support.
@@ -75,7 +101,23 @@ public class MarkEntry : BaseEntity
 }
 
 /// <summary>
-/// GPA Configuration / Grading Rule: Bangladesh grading system
+/// Result Lock: Prevents further modifications to published results
+/// Tracks who locked the results and when
+/// </summary>
+public class ResultLock : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int LockedByUserId { get; set; }
+    public DateTime LockedAt { get; set; } = DateTime.Now;
+    [MaxLength(260)]
+    public string? Reason { get; set; }
+    public bool CanUnlock { get; set; } = false;
+
+    public virtual Exam.Exam Exam { get; set; } = null!;
+}
+
+/// <summary>
+    /// GPA Configuration / Grading Rule: Bangladesh grading system
 /// 80-100 = A+ = 5.00, 70-79 = A = 4.00, 60-69 = A- = 3.50, 50-59 = B = 3.00,
 /// 40-49 = C = 2.00, 33-39 = D = 1.00, 0-32 = F = 0.00
 /// </summary>
@@ -115,72 +157,58 @@ public class ResultPublication : BaseEntity
     [MaxLength(500)]
     public string? PublicationNotes { get; set; }
 
-    // Navigation Properties
+// Navigation Properties
     public virtual Exam.Exam Exam { get; set; } = null!;
 }
 
 /// <summary>
-/// Result Lock: Prevents further modifications to published results
-/// Tracks who locked the results and when
-/// </summary>
-public class ResultLock : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int LockedByUserId { get; set; }
-    public DateTime LockedAt { get; set; } = DateTime.Now;
-    [MaxLength(260)]
-    public string? Reason { get; set; }
-    public bool CanUnlock { get; set; } = false;
-
-    public virtual Exam.Exam Exam { get; set; } = null!;
-}
-
-/// <summary>
-/// Student Subject Result: Result for a single subject in an exam
-/// Calculated from MarkEntry after final marks are submitted
-/// </summary>
-public class StudentSubjectResult : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int StudentId { get; set; }
-    public int SubjectId { get; set; }
-
-    // Denormalized fields for query performance
-    public int AcademicYearId { get; set; }
-    public int ClassId { get; set; }
-    public int SectionId { get; set; }
-    public int? StudentGroupId { get; set; }
-
-    /// <summary>
-    /// Whether this subject is optional per ClassSubject mapping
-    /// (used instead of Subject.IsMandatory which is always true)
+    /// Student Subject Result: Result for a single subject in an exam
+    /// Calculated from MarkEntry after final marks are submitted
     /// </summary>
-    public bool IsOptionalSubject { get; set; } = false;
+    public class StudentSubjectResult : BaseEntity
+    {
+        public int ExamId { get; set; }
+        public int StudentId { get; set; }
+        public int SubjectId { get; set; }
+        public int ExamSubjectId { get; set; } // NEW: Reference to exam-specific subject snapshot
 
-    /// <summary>
-    /// Whether this is a religion subject
-    /// </summary>
-    public bool IsReligionSubject { get; set; } = false;
+        // Denormalized fields for query performance
+        public int AcademicYearId { get; set; }
+        public int ClassId { get; set; }
+        public int SectionId { get; set; }
+        public int? StudentGroupId { get; set; }
 
-    public decimal MarksObtained { get; set; } = 0;
-    public decimal FullMarks { get; set; } = 100;
-    public decimal PassMarks { get; set; } = 33;
+        /// <summary>
+        /// Whether this subject is optional per ClassSubject mapping
+        /// (used instead of Subject.IsMandatory which is always true)
+        /// </summary>
+        public bool IsOptionalSubject { get; set; } = false;
 
-    [MaxLength(10)]
-    public string Grade { get; set; } = string.Empty;
-    public decimal GradePoint { get; set; } = 0;
-    public bool IsPassed { get; set; } = false;
+        /// <summary>
+        /// Whether this is a religion subject
+        /// </summary>
+        public bool IsReligionSubject { get; set; } = false;
 
-    [MaxLength(500)]
-    public string? Remarks { get; set; }
+        public decimal MarksObtained { get; set; } = 0;
+        public decimal FullMarks { get; set; } = 100;
+        public decimal PassMarks { get; set; } = 33;
 
-    public DateTime CalculatedAt { get; set; } = DateTime.Now;
+        [MaxLength(10)]
+        public string Grade { get; set; } = string.Empty;
+        public decimal GradePoint { get; set; } = 0;
+        public bool IsPassed { get; set; } = false;
 
-    // Navigation Properties
-    public virtual Exam.Exam Exam { get; set; } = null!;
-    public virtual Student.Student Student { get; set; } = null!;
-    public virtual Academic.Subject Subject { get; set; } = null!;
-}
+        [MaxLength(500)]
+        public string? Remarks { get; set; }
+
+        public DateTime CalculatedAt { get; set; } = DateTime.Now;
+
+        // Navigation Properties
+        public virtual Exam.Exam Exam { get; set; } = null!;
+        public virtual Student.Student Student { get; set; } = null!;
+        public virtual Academic.Subject Subject { get; set; } = null!;
+        public virtual Exam.ExamSubject ExamSubject { get; set; } = null!;
+    }
 
 /// <summary>
 /// Student Exam Result: Overall result for an exam (aggregate of all subjects)
@@ -283,12 +311,15 @@ public class FinalResult : BaseEntity
     /// <summary>Roll number assigned by roll generation engine.</summary>
     public int? GeneratedRollNumber { get; set; }
 
+    public int? PromotioSessionId { get; set; }
+
     [MaxLength(500)]
     public string? PromotionRemarks { get; set; }
 
     public DateTime CalculatedAt { get; set; } = DateTime.Now;
 
     // Navigation Properties
+    public virtual PromotioSession? PromotioSession { get; set; }
     public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
     public virtual Student.Student Student { get; set; } = null!;
     public virtual Academic.SchoolClass Class { get; set; } = null!;
@@ -305,18 +336,65 @@ public class PromotionHistory : BaseEntity
     public int ToClassId { get; set; }
     public int AcademicYearId { get; set; }
 
+    public int? PromotioSessionId { get; set; }
+
     public PromotionStatus Status { get; set; } = PromotionStatus.Promoted;
     public DateTime PromotedAt { get; set; } = DateTime.Now;
     public int? PromotedByUserId { get; set; }
+
+    public int? NewSectionId { get; set; }
+    public int? NewGroupId { get; set; }
+    public int? NewRollNumber { get; set; }
+
+    [MaxLength(20)]
+    public string? RollGenerationMethod { get; set; }
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
 
     // Navigation Properties
+    public virtual PromotioSession? PromotioSession { get; set; }
     public virtual Student.Student Student { get; set; } = null!;
     public virtual Academic.SchoolClass FromClass { get; set; } = null!;
     public virtual Academic.SchoolClass ToClass { get; set; } = null!;
     public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+}
+
+/// <summary>
+/// Report Card Print Queue: Tracks bulk report card print requests.
+/// Items added via "Send to Print Queue" in Bulk Report Card view.
+/// </summary>
+public class ReportCardPrintQueueItem : BaseEntity
+{
+    public int ExamId { get; set; }
+
+    public int? ClassId { get; set; }
+
+    public int? SectionId { get; set; }
+
+    [MaxLength(128)]
+    public string RequestedBy { get; set; } = string.Empty;
+
+    public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+
+    public ReportCardPrintStatus Status { get; set; } = ReportCardPrintStatus.Pending;
+
+    public int TotalItems { get; set; }
+
+    public int CompletedItems { get; set; }
+
+    public DateTime? CompletedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? ErrorMessage { get; set; }
+}
+
+public enum ReportCardPrintStatus
+{
+    Pending = 0,
+    Processing = 1,
+    Completed = 2,
+    Failed = 3
 }
 
 /// <summary>

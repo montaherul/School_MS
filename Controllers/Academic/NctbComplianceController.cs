@@ -14,11 +14,13 @@ public class NctbComplianceController : Controller
 {
     private readonly INctbComplianceService _service;
     private readonly IAcademicYearService _academicYearService;
+    private readonly ISubjectService _subjectService;
 
-    public NctbComplianceController(INctbComplianceService service, IAcademicYearService academicYearService)
+    public NctbComplianceController(INctbComplianceService service, IAcademicYearService academicYearService, ISubjectService subjectService)
     {
         _service = service;
         _academicYearService = academicYearService;
+        _subjectService = subjectService;
     }
 
     [RequirePermission("Curriculum.View")]
@@ -31,6 +33,64 @@ public class NctbComplianceController : Controller
         ViewBag.CurriculumVersions = versions;
         var report = await _service.GetComplianceReportAsync(firstYearId, ct);
         return View(report);
+    }
+
+    [RequirePermission("Curriculum.View")]
+    public async Task<IActionResult> Subjects(int curriculumVersionId, CancellationToken ct = default)
+    {
+        var version = await _service.GetCurriculumVersionByIdAsync(curriculumVersionId, ct);
+        if (version is null) return NotFound();
+
+        var subjects = await _service.GetCurriculumSubjectsAsync(curriculumVersionId, ct);
+        var allSubjects = await _subjectService.BulkExportAsync(ct);
+        var assignedIds = subjects.Select(s => s.SubjectId).ToHashSet();
+        var available = allSubjects.Where(s => !assignedIds.Contains(s.Id) && s.IsActive).ToList();
+
+        ViewBag.CurriculumVersionId = curriculumVersionId;
+        ViewBag.CurriculumVersionName = version.VersionName;
+        ViewBag.AvailableSubjects = new SelectList(available, "Id", "Name");
+
+        return View(subjects);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("Curriculum.Edit")]
+    public async Task<IActionResult> AddSubject(CurriculumSubjectUpsertDto dto, CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Invalid subject data";
+            return RedirectToAction(nameof(Subjects), new { curriculumVersionId = dto.CurriculumVersionId });
+        }
+
+        try
+        {
+            await _service.AddSubjectToCurriculumAsync(dto, ct);
+            TempData["Success"] = "Subject added to curriculum";
+        }
+        catch (KeyNotFoundException ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Subjects), new { curriculumVersionId = dto.CurriculumVersionId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("Curriculum.Delete")]
+    public async Task<IActionResult> RemoveSubject(int id, int curriculumVersionId, CancellationToken ct = default)
+    {
+        var removed = await _service.RemoveSubjectFromCurriculumAsync(id, ct);
+        if (!removed)
+        {
+            TempData["Error"] = "Subject not found";
+            return NotFound();
+        }
+
+        TempData["Success"] = "Subject removed from curriculum";
+        return RedirectToAction(nameof(Subjects), new { curriculumVersionId });
     }
 
     [RequirePermission("Curriculum.Create")]

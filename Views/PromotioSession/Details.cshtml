@@ -1,0 +1,228 @@
+@{
+    ViewData["Title"] = "Session Details";
+    var session = ViewBag.Session as SchoolManagementSystem.Models.Entities.Result.PromotioSession;
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+    var dashboard = ViewBag.Dashboard as PromotioDashboardDto ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">@session?.SessionName</h1>
+            <p class="adm-page-header__sub">Academic Year: @session?.AcademicYear?.Name | Status: @session?.Status</p>
+        </div>
+        <div class="adm-page-header__right">
+            @if (session?.Status == "Draft")
+            {
+                <a href="@Url.Action("Edit", "PromotioSession", new { id = session.Id })" class="adm-btn adm-btn--secondary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    Edit
+                </a>
+            }
+            <a href="@Url.Action("Index", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="er-stats ws-mb-4">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Students</span>
+                <span class="er-stat__value">@dashboard.TotalStudents</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Eligible</span>
+                <span class="er-stat__value">@dashboard.EligibleForPromotion</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Failed</span>
+                <span class="er-stat__value">@dashboard.FailedStudents</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Already Promoted</span>
+                <span class="er-stat__value">@dashboard.AlreadyPromoted</span>
+            </div>
+        </div>
+    </div>
+
+    @if (session?.Status == "Draft")
+    {
+        <div class="adm-card ws-mb-4">
+            <div class="adm-card__header">
+                <h3>Bulk Promote</h3>
+            </div>
+            <div class="adm-card__body">
+                <form asp-action="BulkPromote" method="post" class="adm-form" id="bulkForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="sessionId" value="@session?.Id" />
+                    <input type="hidden" name="academicYearId" value="@session?.AcademicYearId" />
+                    <div class="adm-form-grid adm-form-grid--3">
+                        <div class="adm-form-group">
+                            <label class="adm-label">From Class <span class="ws-text-danger">*</span></label>
+                            <select name="fromClassId" class="adm-input" required>
+                                <option value="">Select Class</option>
+                                @foreach (var c in classes)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-label">To Class <span class="ws-text-danger">*</span></label>
+                            <select name="toClassId" class="adm-input" required>
+                                <option value="">Select Class</option>
+                                @foreach (var c in classes)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="adm-form-group ws-d-flex ws-ai-end">
+                            <button type="submit" class="adm-btn adm-btn--primary" onclick="return confirm('Promote all eligible students?')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                Execute Bulk Promote
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (session?.Status == "Draft")
+    {
+        <div class="ws-mb-4 ws-text-right">
+            <form asp-action="Approve" method="post" class="ws-d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="sessionId" value="@session?.Id" />
+                <button type="submit" class="adm-btn adm-btn--success" onclick="return confirm('Approve this session?')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    Approve Session
+                </button>
+            </form>
+            <form asp-action="Rollback" method="post" class="ws-d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="sessionId" value="@session?.Id" />
+                <button type="submit" class="adm-btn adm-btn--danger" onclick="return confirm('Rollback all promotions in this session?')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                    Rollback
+                </button>
+            </form>
+        </div>
+    }
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h3>Promotion Candidates</h3>
+        </div>
+        <div class="adm-card__body">
+            <div class="adm-filters ws-mb-3">
+                <div class="adm-filters__row">
+                    <div class="adm-filters__field">
+                        <label class="adm-label">Class</label>
+                        <select id="filterClass" class="adm-input">
+                            <option value="">All Classes</option>
+                            @foreach (var c in classes)
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-filters__field ws-d-flex ws-ai-end">
+                        <button class="adm-btn adm-btn--primary" onclick="loadCandidates()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                            Load Candidates
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="adm-table-wrapper">
+                <table class="dash-table" id="candidatesTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Roll</th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>GPA</th>
+                            <th>Attendance</th>
+                            <th>Failed Subjects</th>
+                            <th>Eligibility</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidatesBody">
+                        <tr id="candidatesEmpty">
+                            <td colspan="8">
+                                <div class="er-empty">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                    <h3 class="er-empty__title">Select a class</h3>
+                                    <p class="er-empty__desc">Choose a class and click Load Candidates.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadCandidates() {
+            const classId = document.getElementById('filterClass').value;
+            if (!classId) return;
+            try {
+                const r = await fetch('@Url.Action("GetCandidates", "PromotioSession")?classId=' + classId + '&academicYearId=' + @(session?.AcademicYearId ?? 0));
+                const data = await r.json();
+                const tbody = document.getElementById('candidatesBody');
+                const emptyRow = document.getElementById('candidatesEmpty');
+                if (!data.items || data.items.length === 0) {
+                    emptyRow.style.display = '';
+                    tbody.innerHTML = '';
+                    tbody.appendChild(emptyRow);
+                    return;
+                }
+                emptyRow.style.display = 'none';
+                tbody.innerHTML = data.items.map(c => {
+                    const badge = c.eligibilityStatus === 'Eligible' ? 'er-badge--converted' : c.eligibilityStatus === 'Failed' ? 'er-badge--rejected' : 'er-badge--pending';
+                    return '<tr>' +
+                        '<td><span class="adm-cell-name">' + escapeHtml(c.fullName) + '</span></td>' +
+                        '<td>' + c.rollNumber + '</td>' +
+                        '<td>' + escapeHtml(c.className) + '</td>' +
+                        '<td>' + escapeHtml(c.sectionName) + '</td>' +
+                        '<td>' + c.gpa.toFixed(2) + '</td>' +
+                        '<td>' + c.attendancePercentage.toFixed(1) + '%</td>' +
+                        '<td>' + c.totalFailedSubjects + '</td>' +
+                        '<td><span class="er-badge ' + badge + '">' + escapeHtml(c.eligibilityStatus) + '</span></td>' +
+                        '</tr>';
+                }).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+}

@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Teacher Workload";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@Html.AntiForgeryToken()
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-bar-chart-steps"></i></div>
+            <div>
+                <h1 class="adm-header__title">Teacher Workload</h1>
+                <p class="adm-header__sub">Monitor teaching load, detect overloads, and balance schedules</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <select id="yearFilter" class="adm-input ws-d-inline-block" style="width:200px"></select>
+        </div>
+    </div>
+
+    <div class="dash-stat-row ws-mb-4" id="statsRow">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-people"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__value" id="totalTeachers">0</div>
+                <div class="dash-stat-card__label">Total Teachers</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-check-circle"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__value" id="normalCount">0</div>
+                <div class="dash-stat-card__label">Normal Load</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__value" id="warningCount">0</div>
+                <div class="dash-stat-card__label">Warning</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger"><i class="bi bi-x-octagon"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__value" id="criticalCount">0</div>
+                <div class="dash-stat-card__label">Critical</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-clock"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__value" id="avgLoad">0</div>
+                <div class="dash-stat-card__label">Avg Periods/Week</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__body">
+            <div id="workload-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentYearId = 0;
+
+        function loadYears() {
+            fetch('/Academic/AcademicYear/GetList?page=1&size=100')
+                .then(r => r.json())
+                .then(res => {
+                    const sel = document.getElementById('yearFilter');
+                    const years = res.data || [];
+                    years.forEach(y => {
+                        const opt = document.createElement('option');
+                        opt.value = y.id;
+                        opt.textContent = y.name;
+                        if (y.isCurrent) opt.selected = true;
+                        sel.appendChild(opt);
+                    });
+                    currentYearId = sel.value;
+                    loadData();
+                });
+        }
+
+        document.getElementById('yearFilter').addEventListener('change', function() {
+            currentYearId = this.value;
+            loadData();
+        });
+
+        function loadData() {
+            if (!currentYearId) return;
+            SchoolMS.Grid.create('teacherWorkload', {
+                container: '#workload-table',
+                ajaxUrl: '@Url.Action("GetList")?academicYearId=' + currentYearId,
+                editUrl: '/Academic/TeacherWorkload/Details',
+                rowNum: true,
+                pageSize: 25,
+                pageSizeSelector: [10,25,50,100],
+                columns: [
+                    { title: "Teacher", field: "teacherName", minWidth: 200, cssClass: "entity-cell__name" },
+                    { title: "Code", field: "employeeCode", width: 100, hozAlign: "center" },
+                    { title: "Department", field: "department", width: 150 },
+                    { title: "Periods/Week", field: "totalPeriodsPerWeek", hozAlign: "center", width: 130 },
+                    { title: "Classes", field: "totalClasses", hozAlign: "center", width: 90 },
+                    { title: "Subjects", field: "totalSubjects", hozAlign: "center", width: 90 },
+                    { title: "Max/Day", field: "maxPeriodsPerDay", hozAlign: "center", width: 90 },
+                    { title: "Avg/Day", field: "averagePerDay", hozAlign: "center", width: 90, formatter: function(c) { return c.getValue().toFixed(1); } },
+                    { title: "Utilization", field: "utilizationPercent", hozAlign: "center", width: 110, formatter: function(c) { return c.getValue() + '%'; } },
+                    { title: "Status", field: "overloadStatus", hozAlign: "center", width: 110, formatter: function(c) {
+                        var v = c.getValue();
+                        if (v === 'Critical') return '<span class="adm-status adm-status--rejected">Critical</span>';
+                        if (v === 'Warning') return '<span class="adm-status adm-status--pending">Warning</span>';
+                        return '<span class="adm-status adm-status--approved">Normal</span>';
+                    }}
+                ],
+                placeholder: '<div class="dash-empty"><i class="bi bi-bar-chart-steps ws-fs-48"></i><div class="dash-empty__title">No Workload Data</div><div class="dash-empty__sub">Generate a routine first or assign subjects to teachers.</div></div>'
+            });
+        }
+
+        loadYears();
+    </script>
+}

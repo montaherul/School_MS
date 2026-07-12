@@ -10,7 +10,6 @@ using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Result;
@@ -20,25 +19,42 @@ public class ReportCardController : Controller
 {
     private readonly IReportCardService _reportCardService;
     private readonly IStudentService _studentService;
-    private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
     private readonly ITeacherScopeService _teacherScopeService;
+    private readonly ITranscriptService _transcriptService;
+    private readonly IExamService _examService;
+    private readonly ISchoolClassService _schoolClassService;
+    private readonly ISectionService _sectionService;
+    private readonly IAcademicYearService _academicYearService;
 
-    public ReportCardController(IReportCardService reportCardService, IStudentService studentService, IUnitOfWork uow, IStudentExamResultRepository studentExamResultRepository, ITeacherScopeService teacherScopeService)
+    public ReportCardController(
+        IReportCardService reportCardService,
+        IStudentService studentService,
+        IStudentExamResultRepository studentExamResultRepository,
+        ITeacherScopeService teacherScopeService,
+        ITranscriptService transcriptService,
+        IExamService examService,
+        ISchoolClassService schoolClassService,
+        ISectionService sectionService,
+        IAcademicYearService academicYearService)
     {
         _reportCardService = reportCardService;
         _studentService = studentService;
-        _uow = uow;
         _studentExamResultRepository = studentExamResultRepository;
         _teacherScopeService = teacherScopeService;
+        _transcriptService = transcriptService;
+        _examService = examService;
+        _schoolClassService = schoolClassService;
+        _sectionService = sectionService;
+        _academicYearService = academicYearService;
     }
 
     [HttpGet]
     [RequirePermission("ReportCard.View")]
     public async Task<IActionResult> Index(int? examId, int? classId, int? sectionId, CancellationToken ct)
     {
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted);
+        var exams = await _examService.GetAllExamsAsync(ct);
+        var classes = await _schoolClassService.GetAllSchoolClassesAsync(ct);
 
         ViewBag.Exams = exams;
         ViewBag.Classes = classes;
@@ -62,7 +78,7 @@ public class ReportCardController : Controller
                 allowedSectionIds = Enumerable.Empty<int>(); // admins see all
             }
 
-            var sections = await _uow.Repository<Section>().ListAsync(x => x.SchoolClassId == classId.Value && !x.IsDeleted);
+            var sections = (await _sectionService.GetByClassIdAsync(classId.Value, null, ct)).ToList();
             if (isTeacher && !isAdmin)
                 sections = sections.Where(s => allowedSectionIds.Contains(s.Id)).ToList();
             ViewBag.Sections = sections;
@@ -72,7 +88,7 @@ public class ReportCardController : Controller
 
         if (examId.HasValue && classId.HasValue)
         {
-            var query = _uow.Repository<StudentExamResult>().Query().AsNoTracking()
+            var query = _studentExamResultRepository.Query().AsNoTracking()
                 .Include(r => r.Student)
                 .Include(r => r.Exam)
                 .Where(r => r.ExamId == examId.Value && r.Student.ClassId == classId.Value && !r.IsDeleted);
@@ -86,6 +102,85 @@ public class ReportCardController : Controller
         }
 
         return View(studentResults);
+    }
+
+    [HttpGet]
+    [RequirePermission("ReportCard.View")]
+    public async Task<IActionResult> Bulk(int? classId, CancellationToken ct)
+    {
+        var activeYear = await _academicYearService.GetActiveYearAsync(ct);
+        if (activeYear != null)
+            ViewBag.Exams = await _examService.GetExamsAsync(activeYear.Id, ct);
+        else
+            ViewBag.Exams = Array.Empty<object>();
+
+        ViewBag.Classes = await _schoolClassService.GetAllSchoolClassesAsync(ct);
+        ViewBag.SelectedClassId = classId;
+
+        if (classId.HasValue)
+        {
+            var sections = await _sectionService.GetByClassIdAsync(classId.Value, null, ct);
+            ViewBag.Sections = sections;
+        }
+
+        return View();
+    }
+
+    [HttpGet]
+    [RequirePermission("ReportCard.View")]
+    public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
+    {
+        var sections = await _sectionService.GetByClassIdAsync(classId, null, ct);
+        return Json(sections.Select(s => new { id = s.Id, name = s.Name }));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("ReportCard.View")]
+    public async Task<IActionResult> GenerateBulk(int examId, int? classId, int? sectionId, string format = "pdf", CancellationToken ct = default)
+    {
+        var count = await _reportCardService.GetReportCardCountAsync(examId, classId, sectionId, ct);
+        if (count == 0)
+        {
+            TempData["ErrorMessage"] = "No report cards found for the selected criteria.";
+            return RedirectToAction(nameof(Bulk));
+        }
+
+        var pdf = await _reportCardService.GenerateBulkReportCardsAsync(examId, classId, sectionId, format, ct);
+        if (pdf.Length == 0)
+        {
+            TempData["ErrorMessage"] = "No report cards could be generated for the selected criteria.";
+            return RedirectToAction(nameof(Bulk));
+        }
+
+        var contentType = string.Equals(format, "zip", StringComparison.OrdinalIgnoreCase)
+            ? "application/zip"
+            : "application/pdf";
+
+        var extension = string.Equals(format, "zip", StringComparison.OrdinalIgnoreCase) ? "zip" : "pdf";
+        var fileName = $"ReportCards_Exam{examId}";
+        if (classId.HasValue) fileName += $"_Class{classId}";
+        if (sectionId.HasValue && sectionId > 0) fileName += $"_Section{sectionId}";
+        fileName += $".{extension}";
+
+        return File(pdf, contentType, fileName);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("ReportCard.View")]
+    public async Task<IActionResult> SendToPrintQueue(int examId, int? classId, int? sectionId, CancellationToken ct)
+    {
+        var count = await _reportCardService.GetReportCardCountAsync(examId, classId, sectionId, ct);
+        if (count == 0)
+        {
+            return Json(new { success = false, message = "No report cards found for the selected criteria." });
+        }
+
+        var requestedBy = User.Identity?.Name ?? "System";
+        var queueId = await _reportCardService.AddToPrintQueueAsync(examId, classId, sectionId, count, requestedBy, ct);
+
+        return Json(new { success = true, message = $"{count} report card(s) added to print queue (Queue #{queueId})." });
     }
 
     [HttpGet]
@@ -106,8 +201,7 @@ public class ReportCardController : Controller
             }
             else if (User.IsInRole("Guardian"))
             {
-                var guardianRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>();
-                var hasAccess = await guardianRepo.AnyAsync(sg => sg.Guardian!.UserId == currentUserId && sg.StudentId == studentId);
+                var hasAccess = await _transcriptService.HasGuardianAccessAsync(currentUserId, studentId, ct);
                 if (!hasAccess) return Forbid();
             }
             else if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
@@ -121,7 +215,7 @@ public class ReportCardController : Controller
             }
         }
 
-        var examResultQuery = _uow.Repository<StudentExamResult>().Query()
+        var examResultQuery = _studentExamResultRepository.Query()
             .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
 
         if (!isAdmin)
@@ -162,8 +256,7 @@ public class ReportCardController : Controller
             }
             else if (User.IsInRole("Guardian"))
             {
-                var guardianRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>();
-                var hasAccess = await guardianRepo.AnyAsync(sg => sg.Guardian!.UserId == currentUserId && sg.StudentId == studentId);
+                var hasAccess = await _transcriptService.HasGuardianAccessAsync(currentUserId, studentId, ct);
                 if (!hasAccess) return Forbid();
             }
             else if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
@@ -184,7 +277,7 @@ public class ReportCardController : Controller
             return RedirectToAction("Index", "Dashboard");
         }
 
-        var examResultQuery = _uow.Repository<StudentExamResult>().Query()
+        var examResultQuery = _studentExamResultRepository.Query()
             .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
 
         if (!isAdmin)
@@ -206,7 +299,7 @@ public class ReportCardController : Controller
     [HttpGet("/verify/report-card/{id:int}")]
     public async Task<IActionResult> VerifyReportCard(int id, CancellationToken ct)
     {
-        var result = await _uow.Repository<StudentExamResult>().FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted, ct);
+        var result = await _studentExamResultRepository.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted, ct);
         if (result == null)
             return NotFound("Report card not found.");
 

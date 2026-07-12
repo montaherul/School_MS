@@ -11,6 +11,7 @@ public class SchoolClassListItemDto
     public int SortOrder { get; set; }
     public int Capacity { get; set; }
     public bool IsGroupBased { get; set; }
+    public bool IsHigherSecondary { get; set; }
     public bool IsActive { get; set; }
     public int SectionCount { get; set; }
     public int StudentCount { get; set; }
@@ -41,5 +42,6 @@ public class SchoolClassUpsertDto
     public string? Description { get; set; }
 
     public bool IsGroupBased { get; set; }
+    public bool IsHigherSecondary { get; set; }
     public bool IsActive { get; set; } = true;
 }

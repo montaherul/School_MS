@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Exam;
@@ -33,6 +34,7 @@ public class ResultCalculationService : IResultCalculationService
     private readonly IPassFailPolicy _passFailPolicy;
     private readonly IMeritCalculationService _meritCalculationService;
     private readonly IResultPolicyService _resultPolicyService;
+    private readonly IStudentComponentMarkService _studentComponentMarkService;
 
     public ResultCalculationService(
         IUnitOfWork uow,
@@ -46,7 +48,8 @@ public class ResultCalculationService : IResultCalculationService
         IComponentAggregator componentAggregator,
         IPassFailPolicy passFailPolicy,
         IMeritCalculationService meritCalculationService,
-        IResultPolicyService resultPolicyService)
+        IResultPolicyService resultPolicyService,
+        IStudentComponentMarkService studentComponentMarkService)
     {
         _uow = uow;
         _examRepository = examRepository;
@@ -60,11 +63,13 @@ public class ResultCalculationService : IResultCalculationService
         _passFailPolicy = passFailPolicy;
         _meritCalculationService = meritCalculationService;
         _resultPolicyService = resultPolicyService;
+        _studentComponentMarkService = studentComponentMarkService;
     }
 
     private async Task<ResultSetting> GetResultSettingAsync(int academicYearId, CancellationToken ct = default)
     {
         var setting = await _uow.Repository<ResultSetting>().Query()
+            .AsNoTracking()
             .Where(rs => rs.AcademicYearId == academicYearId && rs.IsActive && !rs.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
@@ -147,6 +152,15 @@ public class ResultCalculationService : IResultCalculationService
 
     public async Task CalculateSubjectResultsAsync(int examId)
     {
+        var hasComponentMarks = await _uow.Repository<StudentComponentMark>().Query()
+            .AsNoTracking()
+            .AnyAsync(cm => cm.ExamId == examId && !cm.IsDeleted);
+        if (hasComponentMarks)
+        {
+            await CalculateSubjectResultsFromComponentMarksAsync(examId);
+            return;
+        }
+
         var markEntries = await _markEntryRepository.Query()
             .AsNoTracking()
             .Include(m => m.Student)
@@ -156,6 +170,7 @@ public class ResultCalculationService : IResultCalculationService
 
         var gradingRules = await _gradingRuleRepository.ListAsync();
         var examSubjects = await _uow.Repository<ExamSubject>().Query()
+            .AsNoTracking()
             .Where(es => es.ExamId == examId)
             .ToDictionaryAsync(es => es.SubjectId);
 
@@ -163,6 +178,7 @@ public class ResultCalculationService : IResultCalculationService
 
         // Get all distinct class IDs from the students in mark entries
         var classIds = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
             .Where(s => studentIds.Contains(s.Id))
             .Select(s => s.ClassId)
             .Distinct()
@@ -224,6 +240,134 @@ public class ResultCalculationService : IResultCalculationService
             var result = CalculateSubjectResultInternal(markEntry, gradingRules, examSubject,
                 classSubject);
             newSubjectResults.Add(result);
+        }
+
+        if (newSubjectResults.Any())
+        {
+            await _subjectResultRepository.AddRangeAsync(newSubjectResults);
+            await _uow.SaveChangesAsync();
+        }
+    }
+
+    public async Task CalculateSubjectResultsFromComponentMarksAsync(int examId)
+    {
+        var componentMarks = await _studentComponentMarkService.GetByExamAsync(examId);
+        if (componentMarks.Count == 0) return;
+
+        var examSubjectComponents = await _uow.Repository<ExamSubjectComponent>().Query()
+            .AsNoTracking()
+            .Include(esc => esc.ExamSubject)
+            .Where(esc => esc.ExamSubject.ExamId == examId && !esc.IsDeleted)
+            .ToListAsync();
+
+        var componentLookup = examSubjectComponents.ToDictionary(esc => esc.Id);
+
+        var examSubjects = await _uow.Repository<ExamSubject>().Query()
+            .AsNoTracking()
+            .Where(es => es.ExamId == examId)
+            .ToDictionaryAsync(es => es.Id);
+
+        var gradingRules = await _gradingRuleRepository.ListAsync();
+
+        var grouped = componentMarks
+            .Where(cm => componentLookup.ContainsKey(cm.ExamSubjectComponentId) && cm.ObtainedMarks.HasValue)
+            .GroupBy(cm => new { cm.ExamSubjectId, cm.StudentId });
+
+        var studentIds = grouped.Select(g => g.Key.StudentId).Distinct().ToList();
+        var studentGroups = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
+            .Where(s => studentIds.Contains(s.Id))
+            .Select(s => new { s.Id, s.ClassId, s.SectionId, s.StudentGroupId, s.AssignedReligionSubjectId })
+            .ToListAsync();
+        var studentLookup = studentGroups.ToDictionary(s => s.Id, s => s);
+
+        var examSubjectIds = grouped.Select(g => g.Key.ExamSubjectId).Distinct().ToList();
+        var subjectIdMap = examSubjects
+            .Where(kv => examSubjectIds.Contains(kv.Key))
+            .ToDictionary(kv => kv.Key, kv => kv.Value.SubjectId);
+
+        var classIds = studentGroups.Select(s => s.ClassId).Distinct().ToList();
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
+            .Include(cs => cs.Subject)
+            .Include(cs => cs.ClassSubjectGroups)
+            .Where(cs => classIds.Contains(cs.SchoolClassId) && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync();
+        var classSubjectLookup = classSubjects
+            .GroupBy(cs => new { cs.SchoolClassId, cs.SubjectId })
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var existingResults = await _subjectResultRepository.Query()
+            .Where(r => r.ExamId == examId)
+            .ToListAsync();
+        _subjectResultRepository.RemoveRange(existingResults);
+
+        var newSubjectResults = new List<StudentSubjectResult>();
+        foreach (var grp in grouped)
+        {
+            var examSubjectId = grp.Key.ExamSubjectId;
+            var studentId = grp.Key.StudentId;
+
+            if (!examSubjects.TryGetValue(examSubjectId, out var examSubject)) continue;
+            if (!subjectIdMap.TryGetValue(examSubjectId, out var subjectId)) continue;
+
+            var totalMarks = grp.Sum(cm => cm.ObtainedMarks!.Value);
+
+            var (grade, gradePoint) = _gradeCalculator.CalculateGrade(totalMarks, gradingRules);
+            var resolvedGradePoint = gradePoint ?? 0;
+
+            var studentInfo = studentLookup.GetValueOrDefault(studentId);
+            var classId = studentInfo?.ClassId ?? 0;
+            var sectionId = studentInfo?.SectionId ?? 0;
+            var studentGroupId = studentInfo?.StudentGroupId;
+
+            var csLookupKey = new { SchoolClassId = classId, SubjectId = subjectId };
+            var classSubjectsForSubject = classSubjectLookup.GetValueOrDefault(csLookupKey);
+
+            bool isOptional = false;
+            bool isReligion = false;
+            if (classSubjectsForSubject != null && classSubjectsForSubject.Count > 0)
+            {
+                var classSubject = classSubjectsForSubject.FirstOrDefault(cs => cs.SchoolClassId == classId);
+                if (classSubject != null)
+                {
+                    isOptional = classSubject.IsOptional;
+                    isReligion = classSubject.IsReligionSubject;
+
+                    if (isReligion && studentInfo?.AssignedReligionSubjectId.HasValue == true && subjectId != studentInfo.AssignedReligionSubjectId.Value)
+                        continue;
+
+                    var csgLink = classSubject.ClassSubjectGroups?.FirstOrDefault(csg => !csg.IsDeleted);
+                    if (csgLink != null && studentGroupId.HasValue && csgLink.StudentGroupId != studentGroupId.Value)
+                        continue;
+                    else if (csgLink != null && !studentGroupId.HasValue)
+                        continue;
+                }
+            }
+
+            bool isPassed = totalMarks >= (examSubject.PassMarks);
+            var academicYearId = grp.First().AcademicYearId;
+
+            newSubjectResults.Add(new StudentSubjectResult
+            {
+                ExamId = examId,
+                StudentId = studentId,
+                SubjectId = subjectId,
+                ExamSubjectId = examSubjectId,
+                AcademicYearId = academicYearId,
+                ClassId = classId,
+                SectionId = sectionId,
+                StudentGroupId = studentGroupId,
+                IsOptionalSubject = isOptional,
+                IsReligionSubject = isReligion,
+                MarksObtained = totalMarks,
+                FullMarks = examSubject.FullMarks,
+                PassMarks = examSubject.PassMarks,
+                Grade = grade ?? "F",
+                GradePoint = resolvedGradePoint,
+                IsPassed = isPassed,
+                CalculatedAt = DateTime.Now
+            });
         }
 
         if (newSubjectResults.Any())
@@ -317,6 +461,7 @@ public class ResultCalculationService : IResultCalculationService
     public async Task<decimal> CalculateFinalGpaAsync(int studentId, int academicYearId)
     {
         var examResults = await _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Exam)
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId)
             .ToListAsync();
@@ -332,6 +477,7 @@ public class ResultCalculationService : IResultCalculationService
         var result = new FinalResultGenerationResult { AcademicYearId = academicYearId };
 
         var examIds = await _uow.Repository<Models.Entities.Exam.Exam>().Query()
+            .AsNoTracking()
             .Where(e => e.AcademicYearId == academicYearId && !e.IsDeleted)
             .Select(e => e.Id)
             .ToListAsync();
@@ -344,10 +490,12 @@ public class ResultCalculationService : IResultCalculationService
 
         // Load exam type IDs for weight lookup
         var exams = await _uow.Repository<Models.Entities.Exam.Exam>().Query()
+            .AsNoTracking()
             .Where(e => examIds.Contains(e.Id))
             .ToDictionaryAsync(e => e.Id);
 
         var examResults = await _examResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Student)
             .Where(r => examIds.Contains(r.ExamId) && r.Student != null && !r.Student.IsDeleted)
             .ToListAsync();
@@ -502,6 +650,7 @@ public class ResultCalculationService : IResultCalculationService
     public async Task<(bool IsPassed, int FailedSubjectCount)> DeterminePassFailStatusAsync(int studentId, int examId)
     {
         var subjectResults = await _subjectResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Subject)
             .Where(r => r.StudentId == studentId && r.ExamId == examId)
             .ToListAsync();
@@ -527,20 +676,24 @@ public class ResultCalculationService : IResultCalculationService
         _subjectResultRepository.RemoveRange(subjectResults);
 
         var markEntries = await _markEntryRepository.Query()
+            .AsNoTracking()
             .Where(m => m.ExamId == examId && m.StudentId == studentId)
             .ToListAsync();
 
         var gradingRules = await _gradingRuleRepository.ListAsync();
         var examSubjects = await _uow.Repository<ExamSubject>().Query()
+            .AsNoTracking()
             .Where(es => es.ExamId == examId)
             .ToDictionaryAsync(es => es.SubjectId);
 
         int? classId = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
             .Where(s => s.Id == studentId)
             .Select(s => s.ClassId)
             .FirstOrDefaultAsync();
 
         var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
             .Include(cs => cs.Subject)
             .Include(cs => cs.ClassSubjectGroups)
             .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted && cs.IsActive)
@@ -615,9 +768,15 @@ public class ResultCalculationService : IResultCalculationService
         return exam.Status != ResultWorkflowStatus.Published && (publication == null || !publication.IsLocked);
     }
 
+    public async Task RecalculateAllResultsAsync(int examId, int academicYearId, int userId, string reason)
+    {
+        await _examResultRepository.RecalculateResultsBySpAsync(examId, academicYearId, userId, reason);
+    }
+
     public async Task<IDictionary<int, (int Passed, int Failed)>> GetSubjectPassFailStatsAsync(int examId)
     {
         var stats = await _subjectResultRepository.Query()
+            .AsNoTracking()
             .Where(r => r.ExamId == examId)
             .GroupBy(r => r.SubjectId)
             .Select(g => new
@@ -684,6 +843,7 @@ public class ResultCalculationService : IResultCalculationService
         else
         {
             var student = await _uow.Repository<Student>().Query()
+                .AsNoTracking()
                 .Where(s => s.Id == studentId)
                 .Select(s => new { s.ClassId, s.SectionId, s.StudentGroupId })
                 .FirstOrDefaultAsync();
@@ -723,11 +883,13 @@ public class ResultCalculationService : IResultCalculationService
         var examSubject = await _uow.Repository<ExamSubject>().FirstOrDefaultAsync(es => es.ExamId == markEntry.ExamId && es.SubjectId == markEntry.SubjectId);
 
         int? classId = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
             .Where(s => s.Id == markEntry.StudentId)
             .Select(s => s.ClassId)
             .FirstOrDefaultAsync();
 
         var classSubject = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
             .Where(cs => cs.SchoolClassId == classId && cs.SubjectId == markEntry.SubjectId && !cs.IsDeleted && cs.IsActive)
             .FirstOrDefaultAsync();
 
@@ -739,6 +901,7 @@ public class ResultCalculationService : IResultCalculationService
     public async Task CalculateStudentExamResultAsync(int examId, int studentId)
     {
         var subjectResults = await _subjectResultRepository.Query()
+            .AsNoTracking()
             .Include(r => r.Subject)
             .Where(r => r.ExamId == examId && r.StudentId == studentId)
             .ToListAsync();

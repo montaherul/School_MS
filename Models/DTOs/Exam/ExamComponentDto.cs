@@ -114,3 +114,79 @@ public class MarksEntryGridConfigDto
     public int? StudentGroupId { get; set; }
     public List<ComponentColumnDto> Columns { get; set; } = [];
 }
+
+/// <summary>
+/// Teacher's assigned exam subject summary.
+/// </summary>
+public class TeacherExamSubjectDto
+{
+    public int ExamSubjectId { get; set; }
+    public int ExamId { get; set; }
+    public string ExamName { get; set; } = string.Empty;
+    public int SubjectId { get; set; }
+    public string SubjectName { get; set; } = string.Empty;
+    public int ClassId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public int? SectionId { get; set; }
+    public string SectionName { get; set; } = string.Empty;
+    public int? StudentGroupId { get; set; }
+    public string StudentGroupName { get; set; } = string.Empty;
+    public decimal FullMarks { get; set; }
+    public string ExamStatus { get; set; } = string.Empty;
+    public bool IsLocked { get; set; }
+    public bool CanCustomize { get; set; }
+    public int ComponentCount { get; set; }
+}
+
+/// <summary>
+/// Read model for teacher-viewable exam subject component.
+/// </summary>
+public class TeacherExamSubjectComponentDto
+{
+    public int Id { get; set; }
+    public int ExamSubjectId { get; set; }
+    public int ComponentId { get; set; }
+    public string ComponentName { get; set; } = string.Empty;
+    public string ComponentCode { get; set; } = string.Empty;
+    public decimal MaxMarks { get; set; }
+    public decimal PassMarks { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsCustomized { get; set; }
+    public decimal OriginalMaxMarks { get; set; }
+    public decimal OriginalPassMarks { get; set; }
+}
+
+/// <summary>
+/// Create/update model for teacher component customization.
+/// </summary>
+public class TeacherExamSubjectComponentUpsertDto
+{
+    public int Id { get; set; }
+    public int ExamSubjectId { get; set; }
+    public int ComponentId { get; set; }
+
+    [Required]
+    [Range(1, 9999, ErrorMessage = "Max marks must be between 1 and 9999.")]
+    public decimal MaxMarks { get; set; }
+
+    [Required]
+    [Range(0, 9999, ErrorMessage = "Pass marks must be between 0 and 9999.")]
+    public decimal PassMarks { get; set; }
+
+    public int DisplayOrder { get; set; }
+}
+
+/// <summary>
+/// Grid configuration for teacher marks entry — includes dynamic columns from components.
+/// </summary>
+public class TeacherMarksEntryGridConfigDto
+{
+    public int ExamId { get; set; }
+    public int ExamSubjectId { get; set; }
+    public int SubjectId { get; set; }
+    public string SubjectName { get; set; } = string.Empty;
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
+    public List<TeacherExamSubjectComponentDto> Components { get; set; } = [];
+}

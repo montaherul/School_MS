@@ -23,6 +23,8 @@ public class Room : BaseEntity
     [MaxLength(100)] public string? Name { get; set; }
     public int Capacity { get; set; }
     [MaxLength(50)] public string? Building { get; set; }
+    public int? BuildingId { get; set; }
+    public Building? BuildingNavigation { get; set; }
     public int Floor { get; set; }
     [MaxLength(50)] public string RoomType { get; set; } = "Classroom";
     public bool IsLab { get; set; }

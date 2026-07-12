@@ -1,0 +1,58 @@
+@using SchoolManagementSystem.Models.DTOs.Routine
+@model TeacherWorkloadDetailDto
+@{
+    ViewData["Title"] = $"Workload - {Model.TeacherName}";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <h1 class="adm-header__title">@Model.TeacherName</h1>
+                <p class="adm-header__sub">@Model.Department · @Model.Designation · Code: @Model.EmployeeCode</p>
+            </div>
+        </div>
+        <a href="@Url.Action("Index")" class="adm-btn adm-btn--outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+
+    <div class="dash-stat-row ws-mb-4">
+        <div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-clock"></i></div><div class="dash-stat-card__body"><div class="dash-stat-card__value">@Model.TotalPeriodsPerWeek</div><div class="dash-stat-card__label">Periods/Week</div></div></div>
+        <div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-building"></i></div><div class="dash-stat-card__body"><div class="dash-stat-card__value">@Model.TotalClasses</div><div class="dash-stat-card__label">Classes</div></div></div>
+        <div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-book"></i></div><div class="dash-stat-card__body"><div class="dash-stat-card__value">@Model.TotalSubjects</div><div class="dash-stat-card__label">Subjects</div></div></div>
+        <div class="dash-stat-card"><div class="dash-stat-card__icon" style="background:var(--adm-warning)"><i class="bi bi-calendar-day"></i></div><div class="dash-stat-card__body"><div class="dash-stat-card__value">@Model.MaxPeriodsPerDay</div><div class="dash-stat-card__label">Max/Day</div></div></div>
+        <div class="dash-stat-card"><div class="dash-stat-card__icon dash-stat-card__icon--danger"><i class="bi bi-speedometer2"></i></div><div class="dash-stat-card__body"><div class="dash-stat-card__value">@Model.UtilizationPercent%</div><div class="dash-stat-card__label">Utilization</div></div></div>
+    </div>
+
+    <div class="adm-table-card adm-grid">
+        <div class="adm-table-card__header"><h3>Weekly Schedule</h3></div>
+        <div class="adm-table-card__body">
+            @foreach (var day in Model.DaySchedules)
+            {
+                <div class="ws-mb-3">
+                    <h4 class="ws-fs-16 ws-fw-600 ws-mb-2" style="color:var(--adm-primary)">@day.DayName (@day.PeriodCount periods)</h4>
+                    <table class="adm-table">
+                        <thead><tr><th>Period</th><th>Time</th><th>Subject</th><th>Class</th><th>Section</th><th>Room</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in day.Periods)
+                            {
+                                <tr>
+                                    <td>@p.PeriodName</td>
+                                    <td>@p.StartTime - @p.EndTime</td>
+                                    <td>@p.SubjectName</td>
+                                    <td>@p.ClassName</td>
+                                    <td>@p.SectionName</td>
+                                    <td>@p.RoomNo</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (!Model.DaySchedules.Any())
+            {
+                <div class="dash-empty"><i class="bi bi-calendar2-week ws-fs-48"></i><div class="dash-empty__title">No Schedule</div><div class="dash-empty__sub">No routine entries found for this teacher.</div></div>
+            }
+        </div>
+    </div>
+</div>

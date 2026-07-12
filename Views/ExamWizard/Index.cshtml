@@ -1,0 +1,1001 @@
+@{
+    ViewData["Title"] = "Exam Creation Wizard";
+    Layout = "_AdminLayout";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-title-section">
+            <h1 class="adm-page-title">Exam Creation Wizard</h1>
+            <p class="adm-page-subtitle">Create exams with automated subject loading, NCTB templates, and reusable saved templates</p>
+        </div>
+        <div class="er-header-actions">
+            <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" id="listTemplatesBtn">
+                <i class="fas fa-folder-open"></i> Saved Templates
+            </button>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body">
+            <div class="ws-wizard-progress" id="wizardProgress">
+                <div class="ws-wizard-step active" data-step="1">
+                    <div class="ws-wizard-step-number">1</div>
+                    <div class="ws-wizard-step-label">Academic Year & Classes</div>
+                </div>
+                <div class="ws-wizard-connector"></div>
+                <div class="ws-wizard-step" data-step="2">
+                    <div class="ws-wizard-step-number">2</div>
+                    <div class="ws-wizard-step-label">Subjects & Teachers</div>
+                </div>
+                <div class="ws-wizard-connector"></div>
+                <div class="ws-wizard-step" data-step="3">
+                    <div class="ws-wizard-step-number">3</div>
+                    <div class="ws-wizard-step-label">Review & Create</div>
+                </div>
+            </div>
+
+            <form id="examWizardForm" method="post">
+                @Html.AntiForgeryToken()
+
+                <div id="step1" class="ws-wizard-panel active">
+                    <h3 class="adm-form-section-title">Step 1: Select Academic Year & Classes</h3>
+                    <div class="adm-form-grid adm-form-grid--3">
+                        <div class="adm-form-group">
+                            <label class="adm-label" for="academicYearId">Academic Year</label>
+                            <select id="academicYearId" class="adm-select" required>
+                                <option value="">Select Academic Year...</option>
+                                @foreach (var year in ViewBag.AcademicYears as IEnumerable<dynamic> ?? [])
+                                {
+                                    <option value="@year.Id">@year.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-label" for="term">Term</label>
+                            <select id="term" class="adm-select" required>
+                                <option value="">Select Term...</option>
+                                <option value="1">First Terminal</option>
+                                <option value="2">Half Yearly</option>
+                                <option value="3">Second Terminal</option>
+                                <option value="4">Annual</option>
+                                <option value="5">Final</option>
+                                <option value="6">Pre Test</option>
+                                <option value="7">Test</option>
+                                <option value="8">Other</option>
+                            </select>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-label" for="examType">Exam Type</label>
+                            <select id="examType" class="adm-select">
+                                <option value="">Same as Term</option>
+                                <option value="Class Test">Class Test</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Midterm">Midterm</option>
+                                <option value="Half-Yearly">Half-Yearly</option>
+                                <option value="Annual">Annual</option>
+                                <option value="Test Exam">Test Exam</option>
+                                <option value="Model Test">Model Test</option>
+                                <option value="Pre-Test">Pre-Test</option>
+                            </select>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-label" for="startDate">Start Date</label>
+                            <input type="date" id="startDate" class="adm-input" />
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-label" for="endDate">End Date</label>
+                            <input type="date" id="endDate" class="adm-input" />
+                        </div>
+                    </div>
+
+                    <div class="adm-form-group" style="margin-top: 16px;">
+                        <label class="adm-label">Applicable Classes</label>
+                        <div class="ws-class-grid">
+                            @foreach (var cls in ViewBag.Classes as IEnumerable<dynamic> ?? [])
+                            {
+                                <label class="ws-class-checkbox">
+                                    <input type="checkbox" class="class-selector" value="@cls.Id" />
+                                    <span class="ws-checkbox-label">@cls.Name</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="adm-form-actions" style="margin-top: 24px;">
+                        <button type="button" class="adm-btn adm-btn--secondary" id="loadPreviousBtn">
+                            <i class="fas fa-copy"></i> Load Previous Exam
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--secondary" id="loadNctbBtn">
+                            <i class="fas fa-book"></i> Load NCTB Template
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--primary" id="step1NextBtn" disabled>
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="step2" class="ws-wizard-panel">
+                    <div class="ws-wizard-step-header">
+                        <h3 class="adm-form-section-title">Step 2: Review Subjects & Teachers</h3>
+                        <div class="ws-wizard-actions">
+                            <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" id="loadPreviousBtn2">
+                                <i class="fas fa-copy"></i> Use Previous Exam
+                            </button>
+                            <button type="button" class="adm-btn adm-btn--secondary adm-btn--sm" id="loadNctbBtn2">
+                                <i class="fas fa-book"></i> Use NCTB Template
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="subjectsLoading" class="ws-loading" style="display:none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading subjects...
+                    </div>
+
+                    <div id="subjectsContainer" style="display:none;">
+                        <div class="adm-form-grid adm-form-grid--4" style="margin-bottom: 16px;">
+                            <div class="adm-form-group">
+                                <label class="adm-label">Total Subjects</label>
+                                <div class="ws-stat-value" id="totalSubjectCount">0</div>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="adm-label">Auto-Assigned Teachers</label>
+                                <div class="ws-stat-value" id="assignedTeacherCount">0</div>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="adm-label">Total Classes</label>
+                                <div class="ws-stat-value" id="totalClassCount">0</div>
+                            </div>
+                            <div class="adm-form-group">
+                                <label class="adm-label">NCTB Template</label>
+                                <div class="ws-stat-value" id="nctbIndicator" style="font-size:14px;font-weight:400;">-</div>
+                            </div>
+                        </div>
+
+                        <div id="subjectsTableContainer">
+                            <table class="adm-table ws-wizard-subjects-table" id="subjectsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:160px;">Subject</th>
+                                        <th>Class</th>
+                                        <th style="min-width:120px;">Components (FM/PM)</th>
+                                        <th>Full Marks</th>
+                                        <th>Pass Marks</th>
+                                        <th>Optional</th>
+                                        <th>Teacher</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="adm-form-actions" style="margin-top: 24px;">
+                        <button type="button" class="adm-btn adm-btn--secondary" id="step2BackBtn">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--primary" id="step2NextBtn">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="step3" class="ws-wizard-panel">
+                    <h3 class="adm-form-section-title">Step 3: Review & Create Exam</h3>
+
+                    <div class="adm-card adm-card--summary" id="summaryCard">
+                        <div class="adm-card__body">
+                            <div class="adm-form-grid adm-form-grid--4">
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Academic Year</span>
+                                    <span class="ws-summary-value" id="summaryYear">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Term</span>
+                                    <span class="ws-summary-value" id="summaryTerm">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Exam Type</span>
+                                    <span class="ws-summary-value" id="summaryType">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Classes</span>
+                                    <span class="ws-summary-value" id="summaryClasses">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Subjects</span>
+                                    <span class="ws-summary-value" id="summarySubjects">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Teachers Assigned</span>
+                                    <span class="ws-summary-value" id="summaryTeachers">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">Start Date</span>
+                                    <span class="ws-summary-value" id="summaryStartDate">-</span>
+                                </div>
+                                <div class="ws-summary-item">
+                                    <span class="ws-summary-label">End Date</span>
+                                    <span class="ws-summary-value" id="summaryEndDate">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="adm-card" style="margin-top:16px;">
+                        <div class="adm-card__header">
+                            <h4 class="adm-card__title">Subject Component Breakouts</h4>
+                        </div>
+                        <div class="adm-card__body" style="max-height:400px;overflow-y:auto;">
+                            <div id="componentBreakoutContainer"></div>
+                        </div>
+                    </div>
+
+                    <div id="creationResult" style="display:none;" class="adm-alert adm-alert--success"></div>
+                    <div id="creationError" style="display:none;" class="adm-alert adm-alert--danger"></div>
+
+                    <div class="adm-form-actions" style="margin-top: 24px;">
+                        <button type="button" class="adm-btn adm-btn--secondary" id="step3BackBtn">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--secondary" id="saveTemplateBtn">
+                            <i class="fas fa-save"></i> Save as Template
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--primary adm-btn--lg" id="createExamBtn">
+                            <i class="fas fa-check-circle"></i> Create Exam(s)
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Save Template Modal -->
+<div class="adm-modal" id="saveTemplateModal" style="display:none;">
+    <div class="adm-modal__overlay"></div>
+    <div class="adm-modal__container">
+        <div class="adm-modal__header">
+            <h3 class="adm-modal__title">Save Exam Configuration as Template</h3>
+            <button type="button" class="adm-modal__close" id="saveTemplateModalClose">&times;</button>
+        </div>
+        <div class="adm-modal__body">
+            <div class="adm-form-group">
+                <label class="adm-label" for="templateName">Template Name <span class="ws-color-danger">*</span></label>
+                <input type="text" id="templateName" class="adm-input" placeholder="e.g. Half Yearly 2026 - Science Group" maxlength="200" />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label" for="templateDescription">Description</label>
+                <textarea id="templateDescription" class="adm-textarea" rows="3" placeholder="Optional description..." maxlength="500"></textarea>
+            </div>
+            <div class="ws-template-preview">
+                <div class="ws-summary-label">Template Preview</div>
+                <div style="font-size:13px;color:var(--ws-color-text-muted);margin-top:4px;">
+                    <span id="templatePreviewInfo">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--secondary" id="saveTemplateCancel">Cancel</button>
+            <button type="button" class="adm-btn adm-btn--primary" id="saveTemplateConfirm">
+                <i class="fas fa-save"></i> Save Template
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Saved Templates Modal -->
+<div class="adm-modal" id="templatesListModal" style="display:none;">
+    <div class="adm-modal__overlay"></div>
+    <div class="adm-modal__container adm-modal__container--lg">
+        <div class="adm-modal__header">
+            <h3 class="adm-modal__title">Saved Templates</h3>
+            <button type="button" class="adm-modal__close" id="templatesListModalClose">&times;</button>
+        </div>
+        <div class="adm-modal__body">
+            <div id="templatesLoading" class="ws-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading templates...
+            </div>
+            <div id="templatesEmpty" class="ws-loading" style="display:none;">
+                <i class="fas fa-inbox"></i> No saved templates found.
+            </div>
+            <div id="templatesListContainer" style="display:none;">
+                <table class="adm-table" id="templatesTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Term</th>
+                            <th>Type</th>
+                            <th>Classes</th>
+                            <th>Subjects</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="templatesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--secondary" id="templatesListClose">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- NCTB Class/Group Selector Modal -->
+<div class="adm-modal" id="nctbSelectorModal" style="display:none;">
+    <div class="adm-modal__overlay"></div>
+    <div class="adm-modal__container">
+        <div class="adm-modal__header">
+            <h3 class="adm-modal__title">Select NCTB Template</h3>
+            <button type="button" class="adm-modal__close" id="nctbSelectorClose">&times;</button>
+        </div>
+        <div class="adm-modal__body">
+            <p style="margin-bottom:16px;font-size:14px;color:var(--ws-color-text-muted);">
+                Load standard Bangladesh NCTB subject/component/mark configurations for the selected class and group.
+                For classes 9-10, select a group (Science, Business Studies, or Humanities).
+                For classes 1-8, a general template will be loaded.
+            </p>
+            <div class="adm-form-grid adm-form-grid--2">
+                <div class="adm-form-group">
+                    <label class="adm-label" for="nctbClassId">Class</label>
+                    <select id="nctbClassId" class="adm-select">
+                        <option value="">Select Class...</option>
+                    </select>
+                </div>
+                <div class="adm-form-group" id="nctbGroupContainer" style="display:none;">
+                    <label class="adm-label" for="nctbGroupName">Group</label>
+                    <select id="nctbGroupName" class="adm-select">
+                        <option value="">All Groups</option>
+                        <option value="Science">Science</option>
+                        <option value="Business Studies">Business Studies</option>
+                        <option value="Humanities">Humanities</option>
+                    </select>
+                </div>
+            </div>
+            <div id="nctbPreview" style="margin-top:16px;max-height:300px;overflow-y:auto;display:none;">
+                <div class="ws-summary-label">Subjects to load:</div>
+                <div id="nctbSubjectPreview" style="margin-top:8px;font-size:13px;"></div>
+            </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--secondary" id="nctbSelectorCancel">Cancel</button>
+            <button type="button" class="adm-btn adm-btn--primary" id="nctbSelectorConfirm" disabled>
+                <i class="fas fa-book"></i> Load Template
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .ws-wizard-progress { display: flex; align-items: center; margin-bottom: 32px; padding: 16px 0; }
+        .ws-wizard-step { display: flex; align-items: center; gap: 8px; }
+        .ws-wizard-step-number { width: 36px; height: 36px; border-radius: 50%; background: var(--ws-color-border); color: var(--ws-color-text-muted); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; transition: all .3s; }
+        .ws-wizard-step.active .ws-wizard-step-number { background: var(--adm-primary); color: #fff; }
+        .ws-wizard-step.completed .ws-wizard-step-number { background: var(--adm-success); color: #fff; }
+        .ws-wizard-step-label { font-size: 13px; color: var(--ws-color-text-muted); white-space: nowrap; }
+        .ws-wizard-step.active .ws-wizard-step-label { color: var(--adm-primary); font-weight: 600; }
+        .ws-wizard-step.completed .ws-wizard-step-label { color: var(--adm-success); }
+        .ws-wizard-connector { flex: 1; height: 2px; background: var(--ws-color-border); margin: 0 12px; min-width: 40px; }
+        .ws-wizard-panel { display: none; }
+        .ws-wizard-panel.active { display: block; }
+        .ws-class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 240px; overflow-y: auto; padding: 8px; border: 1px solid var(--ws-color-border); border-radius: 6px; }
+        .ws-class-checkbox { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; border-radius: 4px; transition: background .2s; }
+        .ws-class-checkbox:hover { background: var(--ws-color-bg-hover); }
+        .ws-checkbox-label { font-size: 14px; }
+        .ws-wizard-step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .ws-loading { text-align: center; padding: 48px; font-size: 16px; color: var(--ws-color-text-muted); }
+        .ws-stat-value { font-size: 24px; font-weight: 700; color: var(--adm-primary); }
+        .ws-wizard-subjects-table { font-size: 13px; }
+        .ws-wizard-subjects-table td { vertical-align: middle; }
+        .ws-summary-item { text-align: center; padding: 16px; background: var(--ws-color-bg); border-radius: 8px; }
+        .ws-summary-label { display: block; font-size: 12px; color: var(--ws-color-text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+        .ws-summary-value { display: block; font-size: 18px; font-weight: 600; color: var(--ws-color-text); }
+        .adm-form-grid--4 { grid-template-columns: repeat(4, 1fr); }
+        .adm-alert--success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 12px 16px; border-radius: 6px; }
+        .adm-alert--danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px 16px; border-radius: 6px; }
+        .component-badge { display: inline-block; padding: 2px 6px; margin: 1px; background: var(--ws-color-bg); border-radius: 3px; font-size: 11px; border: 1px solid var(--ws-color-border); }
+        .ws-component-breakout { border: 1px solid var(--ws-color-border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+        .ws-component-breakout-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--ws-color-bg); cursor: pointer; }
+        .ws-component-breakout-header:hover { background: var(--ws-color-bg-hover); }
+        .ws-component-breakout-body { padding: 8px 12px; display: none; }
+        .ws-component-breakout-body.open { display: block; }
+        .ws-component-row { display: flex; align-items: center; gap: 12px; padding: 4px 0; font-size: 13px; }
+        .ws-component-row .ws-cmp-name { min-width: 100px; font-weight: 500; }
+        .ws-component-row .ws-cmp-marks { display: flex; gap: 16px; }
+        .ws-component-row .ws-cmp-marks span { background: var(--ws-color-bg); padding: 2px 8px; border-radius: 3px; }
+        .ws-component-row .ws-cmp-total { font-weight: 600; min-width: 80px; text-align: right; }
+        .adm-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .adm-modal__overlay { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+        .adm-modal__container { position: relative; background: #fff; border-radius: 8px; width: 90%; max-width: 540px; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,.15); }
+        .adm-modal__container--lg { max-width: 720px; }
+        .adm-modal__header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--ws-color-border); }
+        .adm-modal__title { font-size: 16px; font-weight: 600; margin: 0; }
+        .adm-modal__close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--ws-color-text-muted); padding: 0; line-height: 1; }
+        .adm-modal__body { padding: 20px; }
+        .adm-modal__footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--ws-color-border); }
+        .ws-color-danger { color: #dc3545; }
+        .ws-template-preview { margin-top: 16px; padding: 12px; background: var(--ws-color-bg); border-radius: 6px; border: 1px solid var(--ws-color-border); }
+        .adm-btn--sm { font-size: 13px; padding: 6px 12px; }
+        .er-header-actions { display: flex; align-items: center; gap: 8px; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let wizardData = {
+            academicYearId: 0,
+            term: 0,
+            examType: '',
+            selectedClassIds: [],
+            startDate: null,
+            endDate: null,
+            subjects: [],
+            sourceExamId: null,
+            isNctbLoaded: false
+        };
+
+        let templatesList = [];
+
+        function goToStep(step) {
+            document.querySelectorAll('.ws-wizard-panel').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            document.querySelectorAll('.ws-wizard-step').forEach(el => el.classList.remove('active'));
+            document.querySelector('.ws-wizard-step[data-step="' + step + '"]').classList.add('active');
+        }
+
+        document.getElementById('step1NextBtn').addEventListener('click', function () {
+            const yearId = parseInt(document.getElementById('academicYearId').value);
+            const term = parseInt(document.getElementById('term').value);
+            const examType = document.getElementById('examType').value;
+            const checkboxes = document.querySelectorAll('.class-selector:checked');
+            const selectedClassIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            if (!yearId) { alert('Please select an academic year.'); return; }
+            if (!term) { alert('Please select a term.'); return; }
+            if (selectedClassIds.length === 0) { alert('Please select at least one class.'); return; }
+
+            const startDate = document.getElementById('startDate').value || null;
+            const endDate = document.getElementById('endDate').value || null;
+
+            wizardData.academicYearId = yearId;
+            wizardData.term = term;
+            wizardData.examType = examType;
+            wizardData.selectedClassIds = selectedClassIds;
+            wizardData.startDate = startDate;
+            wizardData.endDate = endDate;
+
+            document.getElementById('subjectsLoading').style.display = 'block';
+            document.getElementById('subjectsContainer').style.display = 'none';
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch('@Url.Action("LoadSubjects", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ academicYearId: yearId, term: term, selectedClassIds: selectedClassIds })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('subjectsLoading').style.display = 'none';
+                if (data.success) {
+                    wizardData.subjects = data.subjects;
+                    wizardData.isNctbLoaded = false;
+                    renderSubjectsTable(data.subjects);
+                    document.getElementById('subjectsContainer').style.display = 'block';
+                    document.getElementById('nctbIndicator').textContent = 'Standard Config';
+                    goToStep(2);
+                } else {
+                    alert(data.message || 'Failed to load subjects.');
+                }
+            })
+            .catch(err => {
+                document.getElementById('subjectsLoading').style.display = 'none';
+                alert('Error loading subjects: ' + err.message);
+            });
+        });
+
+        function renderSubjectsTable(subjects) {
+            const tbody = document.getElementById('subjectsTableBody');
+            const classSet = new Set(subjects.map(s => s.classId));
+            const teacherSet = new Set(subjects.filter(s => s.teacherId).map(s => s.teacherId));
+
+            document.getElementById('totalSubjectCount').textContent = subjects.length;
+            document.getElementById('assignedTeacherCount').textContent = teacherSet.size;
+            document.getElementById('totalClassCount').textContent = classSet.size;
+
+            tbody.innerHTML = subjects.map(s => {
+                const comps = Array.isArray(s.components) && s.components.length > 0
+                    ? s.components.map(c => '<span class="component-badge" title="' + c.componentName + ': FM=' + c.fullMarks + ' PM=' + c.passMarks + '">' +
+                        c.componentName + ': ' + c.fullMarks + '/' + c.passMarks + '</span>').join(' ')
+                    : '<span class="component-badge">FM: ' + s.fullMarks + ' PM: ' + s.passMarks + '</span>';
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(s.subjectName) + '</strong>' + (s.subjectCode ? '<br><small>' + escapeHtml(s.subjectCode) + '</small>' : '') + '</td>' +
+                    '<td>' + escapeHtml(s.className) + '</td>' +
+                    '<td>' + comps + '</td>' +
+                    '<td><input type="number" class="adm-input" style="width:80px" value="' + s.fullMarks + '" data-subject-id="' + s.subjectId + '" data-class-id="' + s.classId + '" data-field="fullMarks" /></td>' +
+                    '<td><input type="number" class="adm-input" style="width:80px" value="' + s.passMarks + '" data-subject-id="' + s.subjectId + '" data-class-id="' + s.classId + '" data-field="passMarks" /></td>' +
+                    '<td><input type="checkbox" ' + (s.isOptional ? 'checked' : '') + ' data-subject-id="' + s.subjectId + '" data-class-id="' + s.classId + '" data-field="isOptional" /></td>' +
+                    '<td>' + (s.teacherName ? escapeHtml(s.teacherName) : '<span class="ws-color-muted">Auto-assigned</span>') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        document.getElementById('academicYearId').addEventListener('change', validateStep1);
+        document.getElementById('term').addEventListener('change', validateStep1);
+        document.querySelectorAll('.class-selector').forEach(cb => cb.addEventListener('change', validateStep1));
+
+        function validateStep1() {
+            const yearOk = parseInt(document.getElementById('academicYearId').value) > 0;
+            const termOk = parseInt(document.getElementById('term').value) > 0;
+            const classesOk = document.querySelectorAll('.class-selector:checked').length > 0;
+            document.getElementById('step1NextBtn').disabled = !(yearOk && termOk && classesOk);
+        }
+
+        document.getElementById('step2BackBtn').addEventListener('click', () => goToStep(1));
+        document.getElementById('step3BackBtn').addEventListener('click', () => goToStep(2));
+
+        document.getElementById('step2NextBtn').addEventListener('click', function () {
+            document.getElementById('summaryYear').textContent = document.getElementById('academicYearId').options[document.getElementById('academicYearId').selectedIndex].text;
+            document.getElementById('summaryTerm').textContent = document.getElementById('term').options[document.getElementById('term').selectedIndex].text;
+            document.getElementById('summaryType').textContent = document.getElementById('examType').value || document.getElementById('term').options[document.getElementById('term').selectedIndex].text;
+            document.getElementById('summaryClasses').textContent = wizardData.selectedClassIds.length + ' class(es)';
+            document.getElementById('summarySubjects').textContent = wizardData.subjects.length;
+            document.getElementById('summaryTeachers').textContent = document.getElementById('assignedTeacherCount').textContent;
+            document.getElementById('summaryStartDate').textContent = wizardData.startDate || 'Not set';
+            document.getElementById('summaryEndDate').textContent = wizardData.endDate || 'Not set';
+
+            renderComponentBreakouts(wizardData.subjects);
+
+            goToStep(3);
+        });
+
+        function renderComponentBreakouts(subjects) {
+            const container = document.getElementById('componentBreakoutContainer');
+            if (!subjects || subjects.length === 0) {
+                container.innerHTML = '<div class="ws-loading">No subjects configured.</div>';
+                return;
+            }
+
+            let html = '<div class="adm-table-wrap">';
+            html += '<table class="adm-table">';
+            html += '<thead><tr><th>Subject</th><th>Class</th><th>Component</th><th>Full Marks</th><th>Pass Marks</th><th>Type</th></tr></thead>';
+            html += '<tbody>';
+
+            subjects.forEach(s => {
+                const comps = Array.isArray(s.components) && s.components.length > 0 ? s.components : [];
+                if (comps.length > 0) {
+                    comps.forEach((c, idx) => {
+                        html += '<tr>' +
+                            (idx === 0 ? '<td rowspan="' + comps.length + '"><strong>' + escapeHtml(s.subjectName) + '</strong></td>' : '') +
+                            (idx === 0 ? '<td rowspan="' + comps.length + '">' + escapeHtml(s.className) + '</td>' : '') +
+                            '<td>' + escapeHtml(c.componentName) + '</td>' +
+                            '<td><strong>' + c.fullMarks + '</strong></td>' +
+                            '<td>' + c.passMarks + '</td>' +
+                            '<td>' + (c.isPractical ? '<span class="component-badge" style="background:#e8f5e9;">Practical</span>' : '<span class="component-badge">Theory</span>') + '</td>' +
+                            '</tr>';
+                    });
+                } else {
+                    html += '<tr>' +
+                        '<td><strong>' + escapeHtml(s.subjectName) + '</strong></td>' +
+                        '<td>' + escapeHtml(s.className) + '</td>' +
+                        '<td colspan="3"><span class="component-badge">No component breakdown</span></td>' +
+                        '<td>-</td>' +
+                        '</tr>';
+                }
+            });
+
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        // ────────────────────────────────────────────
+        // Load Previous Exam Template
+        // ────────────────────────────────────────────
+
+        document.getElementById('loadPreviousBtn').addEventListener('click', loadPreviousTemplate);
+        document.getElementById('loadPreviousBtn2').addEventListener('click', loadPreviousTemplate);
+
+        function loadPreviousTemplate() {
+            const yearId = parseInt(document.getElementById('academicYearId').value);
+            const term = parseInt(document.getElementById('term').value);
+            if (!yearId || !term) { alert('Please select academic year and term first.'); return; }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch('@Url.Action("LoadPreviousTemplate", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ academicYearId: yearId, term: term })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.template) {
+                    wizardData.subjects = data.template.subjects || [];
+                    wizardData.sourceExamId = data.template.sourceExamId;
+                    wizardData.isNctbLoaded = false;
+                    renderSubjectsTable(wizardData.subjects);
+                    document.getElementById('subjectsContainer').style.display = 'block';
+                    document.getElementById('nctbIndicator').textContent = 'Previous Exam';
+                    goToStep(2);
+                } else {
+                    alert(data.message || 'No previous exam template found.');
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        // ────────────────────────────────────────────
+        // NCTB Template Loading
+        // ────────────────────────────────────────────
+
+        document.getElementById('loadNctbBtn').addEventListener('click', openNctbSelector);
+        document.getElementById('loadNctbBtn2').addEventListener('click', openNctbSelector);
+        document.getElementById('nctbSelectorClose').addEventListener('click', closeNctbSelector);
+        document.getElementById('nctbSelectorCancel').addEventListener('click', closeNctbSelector);
+
+        function openNctbSelector() {
+            const checkboxes = document.querySelectorAll('.class-selector:checked');
+            const selClass = document.getElementById('nctbClassId');
+            selClass.innerHTML = '<option value="">Select Class...</option>';
+            Array.from(checkboxes).forEach(cb => {
+                const label = cb.closest('.ws-class-checkbox').querySelector('.ws-checkbox-label').textContent;
+                const opt = document.createElement('option');
+                opt.value = cb.value;
+                opt.textContent = label;
+                selClass.appendChild(opt);
+            });
+
+            document.getElementById('nctbPreview').style.display = 'none';
+            document.getElementById('nctbGroupContainer').style.display = 'none';
+            document.getElementById('nctbSelectorConfirm').disabled = true;
+            document.getElementById('nctbSelectorModal').style.display = 'flex';
+        }
+
+        function closeNctbSelector() {
+            document.getElementById('nctbSelectorModal').style.display = 'none';
+        }
+
+        document.getElementById('nctbClassId').addEventListener('change', function () {
+            const val = parseInt(this.value);
+            const groupContainer = document.getElementById('nctbGroupContainer');
+            groupContainer.style.display = (val >= 9 && val <= 10) ? 'block' : 'none';
+            document.getElementById('nctbSelectorConfirm').disabled = !val;
+            document.getElementById('nctbPreview').style.display = 'none';
+        });
+
+        document.getElementById('nctbSelectorConfirm').addEventListener('click', function () {
+            const classId = parseInt(document.getElementById('nctbClassId').value);
+            const yearId = parseInt(document.getElementById('academicYearId').value);
+            const term = parseInt(document.getElementById('term').value);
+
+            if (!classId) { alert('Please select a class.'); return; }
+            if (!yearId) { alert('Academic year must be selected in Step 1.'); return; }
+            if (!term) { alert('Term must be selected in Step 1.'); return; }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            document.getElementById('subjectsLoading').style.display = 'block';
+            document.getElementById('subjectsContainer').style.display = 'none';
+
+            fetch('@Url.Action("LoadNctbTemplate", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({
+                    academicYearId: yearId,
+                    classId: classId,
+                    term: term
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('subjectsLoading').style.display = 'none';
+                if (data.success && data.template) {
+                    wizardData.subjects = data.template.subjects || [];
+                    wizardData.isNctbLoaded = true;
+                    wizardData.sourceExamId = null;
+                    if (!wizardData.selectedClassIds.includes(classId)) {
+                        wizardData.selectedClassIds.push(classId);
+                    }
+                    renderSubjectsTable(wizardData.subjects);
+                    document.getElementById('subjectsContainer').style.display = 'block';
+                    document.getElementById('nctbIndicator').textContent = 'NCTB Template';
+                    closeNctbSelector();
+                    goToStep(2);
+                } else {
+                    alert(data.message || 'Failed to load NCTB template.');
+                }
+            })
+            .catch(err => {
+                document.getElementById('subjectsLoading').style.display = 'none';
+                alert('Error: ' + err.message);
+            });
+        });
+
+        // ────────────────────────────────────────────
+        // Save as Template
+        // ────────────────────────────────────────────
+
+        document.getElementById('saveTemplateBtn').addEventListener('click', function () {
+            const yearText = document.getElementById('summaryYear').textContent;
+            const termText = document.getElementById('summaryTerm').textContent;
+            document.getElementById('templatePreviewInfo').textContent =
+                yearText + ' | ' + termText + ' | ' + wizardData.subjects.length + ' subjects across ' + wizardData.selectedClassIds.length + ' class(es)';
+            document.getElementById('saveTemplateModal').style.display = 'flex';
+        });
+
+        document.getElementById('saveTemplateModalClose').addEventListener('click', () => {
+            document.getElementById('saveTemplateModal').style.display = 'none';
+        });
+        document.getElementById('saveTemplateCancel').addEventListener('click', () => {
+            document.getElementById('saveTemplateModal').style.display = 'none';
+        });
+
+        document.getElementById('saveTemplateConfirm').addEventListener('click', function () {
+            const name = document.getElementById('templateName').value.trim();
+            if (!name) { alert('Please enter a template name.'); return; }
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const subjects = wizardData.subjects.map(s => ({
+                subjectId: s.subjectId,
+                subjectName: s.subjectName,
+                subjectNameBn: s.subjectNameBn || '',
+                subjectCode: s.subjectCode || '',
+                fullMarks: s.fullMarks,
+                passMarks: s.passMarks,
+                isOptional: s.isOptional,
+                teacherId: s.teacherId,
+                teacherName: s.teacherName || null,
+                classId: s.classId,
+                className: s.className || '',
+                components: (s.components || []).map(c => ({
+                    componentId: c.componentId,
+                    componentName: c.componentName,
+                    fullMarks: c.fullMarks,
+                    passMarks: c.passMarks,
+                    displayOrder: c.displayOrder
+                }))
+            }));
+
+            const request = {
+                name: name,
+                description: document.getElementById('templateDescription').value.trim() || null,
+                academicYearId: wizardData.academicYearId,
+                term: wizardData.term,
+                examType: wizardData.examType,
+                selectedClassIds: wizardData.selectedClassIds,
+                subjects: subjects
+            };
+
+            fetch('@Url.Action("SaveTemplate", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify(request)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('saveTemplateModal').style.display = 'none';
+                    document.getElementById('templateName').value = '';
+                    document.getElementById('templateDescription').value = '';
+                    alert('Template "' + name + '" saved successfully.');
+                } else {
+                    alert(data.message || 'Failed to save template.');
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        });
+
+        // ────────────────────────────────────────────
+        // List / Load Saved Templates
+        // ────────────────────────────────────────────
+
+        document.getElementById('listTemplatesBtn').addEventListener('click', openTemplatesList);
+        document.getElementById('templatesListModalClose').addEventListener('click', closeTemplatesList);
+        document.getElementById('templatesListClose').addEventListener('click', closeTemplatesList);
+
+        function openTemplatesList() {
+            document.getElementById('templatesListModal').style.display = 'flex';
+            document.getElementById('templatesLoading').style.display = 'block';
+            document.getElementById('templatesEmpty').style.display = 'none';
+            document.getElementById('templatesListContainer').style.display = 'none';
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const yearId = parseInt(document.getElementById('academicYearId').value) || null;
+            const term = parseInt(document.getElementById('term').value) || null;
+
+            fetch('@Url.Action("ListTemplates", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({
+                    academicYearId: yearId,
+                    term: term
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('templatesLoading').style.display = 'none';
+                if (data.success && data.templates && data.templates.length > 0) {
+                    templatesList = data.templates;
+                    renderTemplatesTable(data.templates);
+                    document.getElementById('templatesListContainer').style.display = 'block';
+                } else {
+                    document.getElementById('templatesEmpty').style.display = 'block';
+                }
+            })
+            .catch(err => {
+                document.getElementById('templatesLoading').style.display = 'none';
+                document.getElementById('templatesEmpty').style.display = 'block';
+                document.getElementById('templatesEmpty').innerHTML = '<i class="fas fa-exclamation-circle"></i> Error: ' + err.message;
+            });
+        }
+
+        function closeTemplatesList() {
+            document.getElementById('templatesListModal').style.display = 'none';
+        }
+
+        function renderTemplatesTable(templates) {
+            const tbody = document.getElementById('templatesTableBody');
+            tbody.innerHTML = templates.map(t => {
+                const date = new Date(t.createdAt);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(t.name) + '</strong>' + (t.description ? '<br><small>' + escapeHtml(t.description) + '</small>' : '') + '</td>' +
+                    '<td>' + escapeHtml(t.termName) + '</td>' +
+                    '<td>' + escapeHtml(t.examType || '-') + '</td>' +
+                    '<td>' + escapeHtml(t.classCount) + '</td>' +
+                    '<td>' + t.subjectCount + '</td>' +
+                    '<td><small>' + dateStr + '<br>by ' + escapeHtml(t.createdBy) + '</small></td>' +
+                    '<td>' +
+                        '<button class="adm-btn adm-btn--sm adm-btn--primary load-template-btn" data-id="' + t.id + '" style="margin-right:4px;"><i class="fas fa-download"></i> Load</button>' +
+                        '<button class="adm-btn adm-btn--sm adm-btn--danger delete-template-btn" data-id="' + t.id + '"><i class="fas fa-trash"></i></button>' +
+                    '</td>' +
+                    '</tr>';
+            }).join('');
+
+            tbody.querySelectorAll('.load-template-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = parseInt(this.dataset.id);
+                    loadSavedTemplate(id);
+                });
+            });
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            tbody.querySelectorAll('.delete-template-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = parseInt(this.dataset.id);
+                    if (!confirm('Delete this template?')) return;
+                    fetch('@Url.Action("DeleteTemplate", "ExamWizard")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify({ templateId: id })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            openTemplatesList();
+                        } else {
+                            alert(data.message || 'Failed to delete.');
+                        }
+                    });
+                });
+            });
+        }
+
+        function loadSavedTemplate(templateId) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch('@Url.Action("LoadTemplate", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ templateId: templateId })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.template) {
+                    wizardData.subjects = data.template.subjects || [];
+                    wizardData.isNctbLoaded = false;
+                    wizardData.sourceExamId = null;
+                    renderSubjectsTable(wizardData.subjects);
+                    document.getElementById('subjectsContainer').style.display = 'block';
+                    document.getElementById('nctbIndicator').textContent = 'Saved Template';
+                    closeTemplatesList();
+                    goToStep(2);
+                } else {
+                    alert(data.message || 'Failed to load template.');
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+
+        // ────────────────────────────────────────────
+        // Create Exam(s)
+        // ────────────────────────────────────────────
+
+        document.getElementById('createExamBtn').addEventListener('click', function () {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+            document.getElementById('creationResult').style.display = 'none';
+            document.getElementById('creationError').style.display = 'none';
+
+            const subjects = wizardData.subjects.map(s => ({
+                subjectId: s.subjectId,
+                subjectName: s.subjectName,
+                subjectNameBn: s.subjectNameBn || '',
+                subjectCode: s.subjectCode || '',
+                fullMarks: s.fullMarks,
+                passMarks: s.passMarks,
+                isOptional: s.isOptional,
+                teacherId: s.teacherId,
+                teacherName: s.teacherName || null,
+                classId: s.classId,
+                className: s.className || '',
+                components: (s.components || []).map(c => ({
+                    componentId: c.componentId,
+                    componentName: c.componentName,
+                    fullMarks: c.fullMarks,
+                    passMarks: c.passMarks,
+                    displayOrder: c.displayOrder
+                }))
+            }));
+
+            const request = {
+                academicYearId: wizardData.academicYearId,
+                term: wizardData.term,
+                examType: wizardData.examType,
+                selectedClassIds: wizardData.selectedClassIds,
+                startDate: wizardData.startDate,
+                endDate: wizardData.endDate,
+                sourceExamId: wizardData.sourceExamId,
+                subjects: subjects
+            };
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            fetch('@Url.Action("Create", "ExamWizard")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify(request)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('creationResult').innerHTML =
+                        '<i class="fas fa-check-circle"></i> ' + data.message +
+                        (data.createdExamNames && data.createdExamNames.length > 0
+                            ? '<br><small>Created: ' + data.createdExamNames.join(', ') + '</small>'
+                            : '');
+                    document.getElementById('creationResult').style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Create Exam(s)';
+                    document.getElementById('createExamBtn').style.display = 'none';
+                    document.querySelector('.ws-wizard-step[data-step="3"]').classList.add('completed');
+                } else {
+                    document.getElementById('creationError').innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + data.message;
+                    document.getElementById('creationError').style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Create Exam(s)';
+                }
+            })
+            .catch(err => {
+                document.getElementById('creationError').innerHTML = '<i class="fas fa-exclamation-circle"></i> Error: ' + err.message;
+                document.getElementById('creationError').style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Create Exam(s)';
+            });
+        });
+    </script>
+}

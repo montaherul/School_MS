@@ -23,6 +23,7 @@ public class AdmitCardController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("AdmitCard.Generate")]
     public async Task<IActionResult> Generate(int examId)
     {

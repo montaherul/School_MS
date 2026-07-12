@@ -1,0 +1,66 @@
+@model List<PromotioRegisterDto>
+@{
+    ViewData["Title"] = "Promotion Register";
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Promotion Register</h1>
+            <p class="adm-page-header__sub">Complete promotion record</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Reports", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body">
+            @if (Model.Any())
+            {
+                <div class="adm-table-wrapper">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Student No</th>
+                                <th>From Class</th>
+                                <th>To Class</th>
+                                <th>New Roll</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model)
+                            {
+                                <tr>
+                                    <td><span class="adm-cell-name">@r.StudentName</span></td>
+                                    <td>@r.StudentNo</td>
+                                    <td>@r.FromClassName</td>
+                                    <td>@r.ToClassName</td>
+                                    <td>@(r.NewRollNumber?.ToString() ?? "-")</td>
+                                    <td><span class="er-badge er-badge--converted">@r.Status</span></td>
+                                    <td>@r.PromotedAt.ToString("dd MMM yyyy")</td>
+                                    <td>@r.Remarks</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <h3 class="er-empty__title">No Records</h3>
+                    <p class="er-empty__desc">No promotion records found for this session.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

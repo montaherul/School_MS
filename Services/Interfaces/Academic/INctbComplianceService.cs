@@ -10,4 +10,8 @@ public interface INctbComplianceService
     Task<CurriculumVersionDto> CreateCurriculumVersionAsync(CurriculumVersionUpsertDto dto, CancellationToken ct = default);
     Task<CurriculumVersionDto> UpdateCurriculumVersionAsync(int id, CurriculumVersionUpsertDto dto, CancellationToken ct = default);
     Task<bool> DeleteCurriculumVersionAsync(int id, CancellationToken ct = default);
+
+    Task<List<CurriculumSubjectDto>> GetCurriculumSubjectsAsync(int curriculumVersionId, CancellationToken ct = default);
+    Task<CurriculumSubjectDto> AddSubjectToCurriculumAsync(CurriculumSubjectUpsertDto dto, CancellationToken ct = default);
+    Task<bool> RemoveSubjectFromCurriculumAsync(int id, CancellationToken ct = default);
 }

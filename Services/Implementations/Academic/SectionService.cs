@@ -112,7 +112,7 @@ public class SectionService : ISectionService
 
     public async Task<IEnumerable<SectionOptionDto>> GetByClassIdAsync(int classId, int? studentGroupId = null, CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<Section>().Query()
+        var query = _unitOfWork.Repository<Section>().QueryNoTracking()
             .Where(s => s.SchoolClassId == classId && !s.IsDeleted);
 
         if (studentGroupId.HasValue)
@@ -130,7 +130,7 @@ public class SectionService : ISectionService
 
         var sectionIds = leafSections.Select(s => s.Id).ToList();
         var counts = sectionIds.Count > 0
-            ? await studentRepo.Query()
+            ? await studentRepo.QueryNoTracking()
                 .Where(st => sectionIds.Contains(st.SectionId) && !st.IsDeleted)
                 .GroupBy(st => st.SectionId)
                 .Select(g => new { SectionId = g.Key, Count = g.Count() })

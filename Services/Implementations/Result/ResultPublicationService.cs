@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -23,6 +24,7 @@ public class ResultPublicationService : IResultPublicationService
     private readonly IGradeCalculator _gradeCalculator;
     private readonly IComponentAggregator _componentAggregator;
     private readonly IPassFailPolicy _passFailPolicy;
+    private readonly IResultAuditLogRepository _auditLogRepository;
 
     public ResultPublicationService(
         IUnitOfWork uow,
@@ -35,7 +37,8 @@ public class ResultPublicationService : IResultPublicationService
         IGradingRuleRepository gradingRuleRepository,
         IGradeCalculator gradeCalculator,
         IComponentAggregator componentAggregator,
-        IPassFailPolicy passFailPolicy)
+        IPassFailPolicy passFailPolicy,
+        IResultAuditLogRepository auditLogRepository)
     {
         _uow = uow;
         _meritCalculationService = meritCalculationService;
@@ -48,6 +51,7 @@ public class ResultPublicationService : IResultPublicationService
         _gradeCalculator = gradeCalculator;
         _componentAggregator = componentAggregator;
         _passFailPolicy = passFailPolicy;
+        _auditLogRepository = auditLogRepository;
     }
 
     public async Task SubmitExamResultsAsync(int examId, int classId)
@@ -65,6 +69,18 @@ public class ResultPublicationService : IResultPublicationService
         }
 
         await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = 0,
+            ChangeType = "ResultsSubmitted",
+            Reason = $"Submitted {marks.Count} mark entries for exam {examId}, class {classId}",
+            ChangedAt = DateTime.UtcNow
+        });
+        await _uow.SaveChangesAsync();
     }
 
     public async Task ApproveExamResultsAsync(int examId)
@@ -79,6 +95,18 @@ public class ResultPublicationService : IResultPublicationService
             _markEntryRepository.Update(mark);
         }
 
+        await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = 0,
+            ChangeType = "ResultsApproved",
+            Reason = $"Approved {marks.Count} mark entries for exam {examId}",
+            ChangedAt = DateTime.UtcNow
+        });
         await _uow.SaveChangesAsync();
     }
 
@@ -232,6 +260,18 @@ public class ResultPublicationService : IResultPublicationService
         }
 
         await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = dto.ExamId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = dto.ApprovedByUserId,
+            ChangeType = "ResultsPublished",
+            Reason = $"Published {marks.Count} results. Locked={dto.LockResults}. {dto.PublicationNotes}",
+            ChangedAt = DateTime.UtcNow
+        });
+        await _uow.SaveChangesAsync();
     }
 
     public async Task ReviewExamResultsAsync(int examId, int reviewerUserId)
@@ -245,6 +285,18 @@ public class ResultPublicationService : IResultPublicationService
             _markEntryRepository.Update(mark);
         }
         await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = reviewerUserId,
+            ChangeType = "ResultsReviewed",
+            Reason = $"Reviewed {marks.Count} mark entries for exam {examId}",
+            ChangedAt = DateTime.UtcNow
+        });
+        await _uow.SaveChangesAsync();
     }
 
     public async Task ApproveReviewedResultsAsync(int examId, int approverUserId)
@@ -257,6 +309,18 @@ public class ResultPublicationService : IResultPublicationService
             mark.Status = ResultWorkflowStatus.Approved;
             _markEntryRepository.Update(mark);
         }
+        await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = approverUserId,
+            ChangeType = "ResultsApproved",
+            Reason = $"Approved {marks.Count} reviewed mark entries for exam {examId}",
+            ChangedAt = DateTime.UtcNow
+        });
         await _uow.SaveChangesAsync();
     }
 
@@ -278,6 +342,18 @@ public class ResultPublicationService : IResultPublicationService
             _resultPublicationRepository.Update(publication);
         }
         
+        await _uow.SaveChangesAsync();
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = 0,
+            ChangeType = "ResultsUnpublished",
+            Reason = $"Unpublished results for exam {examId}",
+            ChangedAt = DateTime.UtcNow
+        });
         await _uow.SaveChangesAsync();
     }
 
@@ -448,5 +524,66 @@ public class ResultPublicationService : IResultPublicationService
             PassedSubjectCount = r.PassedSubjectCount,
             PublishedAt = r.PublishedAt
         });
+    }
+
+    public async Task<int> RejectResultsAsync(int examId, string updatedBy)
+    {
+        var affectedRows = await _uow.ExecuteSqlRawAsync(
+            "UPDATE StudentExamResults SET Status = @Status, UpdatedAt = GETUTCDATE(), UpdatedBy = @UpdatedBy WHERE ExamId = @ExamId AND IsDeleted = 0",
+            new SqlParameter("@Status", (int)ResultWorkflowStatus.Draft),
+            new SqlParameter("@UpdatedBy", updatedBy),
+            new SqlParameter("@ExamId", examId));
+
+        await _auditLogRepository.AddAsync(new ResultAuditLog
+        {
+            ExamId = examId,
+            StudentId = 0,
+            SubjectId = 0,
+            ChangedByUserId = 0,
+            ChangeType = "ResultsRejected",
+            Reason = $"Rejected results for exam {examId}. {affectedRows} records reverted to Draft. UpdatedBy={updatedBy}",
+            ChangedAt = DateTime.UtcNow
+        });
+        await _uow.SaveChangesAsync();
+
+        return affectedRows;
+    }
+
+    public async Task<(List<PublicationDashboardExamDto> Exams, PublicationDashboardSummaryDto? Summary)> GetPublicationDashboardAsync(int academicYearId, CancellationToken ct = default)
+    {
+        var (exams, summary) = await _resultPublicationRepository.GetPublicationDashboardAsync(academicYearId, ct);
+        return (exams, summary);
+    }
+
+    public async Task<List<ResultAuditLog>> GetAuditLogsAsync(int? examId, int? studentId, CancellationToken ct = default)
+    {
+        var query = _auditLogRepository.Query()
+            .Include(l => l.Exam).Include(l => l.Student).Include(l => l.Subject)
+            .Where(l => !l.IsDeleted);
+
+        if (examId.HasValue && examId > 0)
+            query = query.Where(l => l.ExamId == examId.Value);
+
+        if (studentId.HasValue && studentId > 0)
+            query = query.Where(l => l.StudentId == studentId.Value);
+
+        return await query.OrderByDescending(l => l.CreatedAt).Take(200).ToListAsync(ct);
+    }
+
+    public async Task<List<PublicationHistoryEntryDto>> GetPublicationHistoryAsync(int yearId, CancellationToken ct = default)
+    {
+        return await _resultPublicationRepository.Query()
+            .Include(p => p.Exam)
+            .Where(p => !p.IsDeleted && p.Exam.AcademicYearId == yearId)
+            .OrderByDescending(p => p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt)
+            .Take(50)
+            .Select(p => new PublicationHistoryEntryDto
+            {
+                Timestamp = (p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt).ToString("dd MMM yyyy HH:mm"),
+                Action = p.Status.ToString(),
+                PerformedBy = p.UpdatedBy ?? p.CreatedBy ?? "System",
+                Notes = p.IsLocked ? "Results locked" : ""
+            })
+            .ToListAsync(ct);
     }
 }

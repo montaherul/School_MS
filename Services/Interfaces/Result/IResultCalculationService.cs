@@ -72,4 +72,15 @@ public interface IResultCalculationService
     /// Calculates a single subject result with ClassSubject mapping for optional/religion flags
     /// </summary>
     Task<StudentSubjectResult> CalculateSubjectResultWithMappingAsync(MarkEntry markEntry, IEnumerable<GradingRule> gradingRules, ExamSubject? examSubject, ClassSubject? classSubject);
+
+    /// <summary>
+    /// Recalculates all results for an exam via stored procedure
+    /// </summary>
+    Task RecalculateAllResultsAsync(int examId, int academicYearId, int userId, string reason);
+
+    /// <summary>
+    /// Calculates subject results from StudentComponentMark (new normalized storage).
+    /// Falls back to MarkEntry if no StudentComponentMark data exists.
+    /// </summary>
+    Task CalculateSubjectResultsFromComponentMarksAsync(int examId);
 }

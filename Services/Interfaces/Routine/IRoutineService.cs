@@ -106,6 +106,9 @@ public interface IRoutineEngineService
     Task<List<RoutineConflictListItemDto>> DetectConflictsAsync(int generationId, CancellationToken cancellationToken = default);
     Task<RoutineDashboardDto> GetDashboardAsync(int academicYearId, CancellationToken cancellationToken = default);
     Task<List<TeacherLoadDto>> GetTeacherLoadSummaryAsync(int academicYearId, CancellationToken cancellationToken = default);
+    Task<List<TeacherWorkloadListItemDto>> GetWorkloadSummaryAsync(int academicYearId, CancellationToken ct = default);
+    Task<TeacherWorkloadDetailDto?> GetTeacherWorkloadDetailAsync(int teacherId, int academicYearId, CancellationToken ct = default);
+    Task<int> GetOverloadedTeacherCountAsync(int academicYearId, int maxPeriodsPerDay = 8, CancellationToken ct = default);
     Task<List<RoomUtilizationDto>> GetRoomUtilizationAsync(int academicYearId, CancellationToken cancellationToken = default);
     Task<List<SubjectDistributionDto>> GetSubjectDistributionAsync(int academicYearId, CancellationToken cancellationToken = default);
     Task<RoutineAnalyticsViewModel> GetAnalyticsAsync(int academicYearId, CancellationToken cancellationToken = default);

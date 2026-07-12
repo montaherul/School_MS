@@ -9,6 +9,7 @@ using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Base;
 using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Models.Enums;
 using System.Text.Json;
@@ -24,16 +25,19 @@ public class ExamController : GenericCrudController<ExamEntity>
     private readonly IExamRepository _examRepository;
     private readonly IExamService _examService;
     private readonly IUnitOfWork _uow;
+    private readonly IAutoTeacherAssignmentService _autoTeacherAssignmentService;
 
     public ExamController(
         IBaseService<ExamEntity> service,
         IExamRepository examRepository,
         IExamService examService,
-        IUnitOfWork uow) : base(service, "Exam")
+        IUnitOfWork uow,
+        IAutoTeacherAssignmentService autoTeacherAssignmentService) : base(service, "Exam")
     {
         _examRepository = examRepository;
         _examService = examService;
         _uow = uow;
+        _autoTeacherAssignmentService = autoTeacherAssignmentService;
     }
 
     public override async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
@@ -239,5 +243,18 @@ public class ExamController : GenericCrudController<ExamEntity>
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AutoAssignTeachers(int examId, CancellationToken ct)
+    {
+        var result = await _autoTeacherAssignmentService.AutoAssignTeachersAsync(examId, ct);
+
+        if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+            return Json(result);
+
+        TempData[result.Success ? "SuccessMessage" : "ErrorMessage"] = result.Message;
+        return RedirectToAction("Details", new { id = examId });
     }
 }

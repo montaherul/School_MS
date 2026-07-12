@@ -86,3 +86,19 @@ public class CurriculumSubjectDto
     public bool IsCompulsory { get; set; }
     public int SortOrder { get; set; }
 }
+
+public class CurriculumSubjectUpsertDto
+{
+    [Required]
+    public int CurriculumVersionId { get; set; }
+
+    [Required]
+    public int SubjectId { get; set; }
+
+    [MaxLength(50)]
+    public string Category { get; set; } = string.Empty;
+
+    public int TotalHours { get; set; }
+    public bool IsCompulsory { get; set; }
+    public int SortOrder { get; set; }
+}

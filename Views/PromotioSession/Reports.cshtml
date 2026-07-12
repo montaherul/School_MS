@@ -1,0 +1,98 @@
+@{
+    ViewData["Title"] = "Promotion Reports";
+    var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Promotion Reports</h1>
+            <p class="adm-page-header__sub">Generate and view promotion reports</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Dashboard", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Report Options</h2>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body">
+                <div class="dash-actions">
+                    <a href="@Url.Action("FailedStudents", "PromotioSession")" class="dash-action-card">
+                        <div class="dash-action-card__icon dash-action-card__icon--danger">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                        </div>
+                        <div class="dash-action-card__body">
+                            <span class="dash-action-card__title">Failed Students</span>
+                            <span class="dash-action-card__sub">Students who failed the academic year</span>
+                        </div>
+                        <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </a>
+                    <a href="@Url.Action("Dashboard", "PromotioSession")" class="dash-action-card">
+                        <div class="dash-action-card__icon dash-action-card__icon--primary">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                        </div>
+                        <div class="dash-action-card__body">
+                            <span class="dash-action-card__title">Dashboard</span>
+                            <span class="dash-action-card__sub">Promotion statistics overview</span>
+                        </div>
+                        <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </a>
+                </div>
+
+                <h3 class="ws-mt-5 ws-mb-3">Promotion Register</h3>
+                <form asp-action="Register" method="get" class="adm-form">
+                    <div class="adm-form-grid adm-form-grid--3">
+                        <div class="adm-form-group">
+                            <label class="adm-label">Promotion Session</label>
+                            <select id="sessionSelect" class="adm-input">
+                                <option value="">Select Session</option>
+                            </select>
+                        </div>
+                        <div class="adm-form-group ws-d-flex ws-ai-end">
+                            <button type="button" class="adm-btn adm-btn--primary" onclick="viewRegister()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                                View Register
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadSessions() {
+            try {
+                const r = await fetch('@Url.Action("GetList", "PromotioSession")?size=100');
+                const data = await r.json();
+                const sel = document.getElementById('sessionSelect');
+                if (data.items) {
+                    data.items.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.sessionName + ' (' + s.academicYearName + ')';
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function viewRegister() {
+            const id = document.getElementById('sessionSelect').value;
+            if (!id) { alert('Please select a session'); return; }
+            window.location.href = '@Url.Action("Register", "PromotioSession")?sessionId=' + id;
+        }
+
+        loadSessions();
+    </script>
+}

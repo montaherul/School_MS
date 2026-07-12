@@ -1,0 +1,357 @@
+@{
+    int? examId = ViewBag.ValidationExamId;
+}
+
+<div class="er-card er-validation-card" role="region" aria-label="Result Validation">
+    <div class="er-card__body">
+        <div class="er-page-header er-validation-header">
+            <div class="er-page-header__left">
+                <div class="er-page-header__icon er-validation-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="er-page-header__title er-validation-title">Result Validation</h3>
+                    <p class="er-page-header__sub" id="validationStatusText">Check result integrity before publishing</p>
+                </div>
+            </div>
+            <div class="er-page-header__right">
+                <button type="button" class="er-btn er-btn--primary" id="runValidationBtn" onclick="runValidation(@examId)" aria-label="Run validation checks">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <polyline points="9 11 12 14 22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                    Validate Before Publish
+                </button>
+            </div>
+        </div>
+
+        <div id="validationResultsArea" class="er-validation-results er-hidden" role="region" aria-live="polite" aria-label="Validation results">
+            <div class="er-stats er-validation-stats" id="validationStats"></div>
+
+            <div id="validationSummaryPerClass" class="er-validation-section er-hidden">
+                <h4 class="er-validation-subtitle">Per-Class Summary</h4>
+                <div class="er-table-wrap">
+                    <table class="dash-table" id="validationSummaryTable" aria-label="Per-class validation summary">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Total Students</th>
+                                <th>Completed</th>
+                                <th>Incomplete</th>
+                                <th>Completion %</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="validationIssuesArea" class="er-validation-section er-hidden">
+                <div class="er-validation-toolbar">
+                    <h4 class="er-validation-subtitle er-validation-subtitle--inline">
+                        Issues Found
+                        <span class="er-badge er-badge--count er-badge--danger" id="issueCountBadge">0</span>
+                    </h4>
+                    <div class="er-validation-filters" role="group" aria-label="Filter validation issues">
+                        <select class="er-filters__select er-validation-select" id="issueSeverityFilter" onchange="filterIssues()" aria-label="Filter by severity">
+                            <option value="">All Severities</option>
+                            <option value="Error">Errors Only</option>
+                            <option value="Warning">Warnings Only</option>
+                        </select>
+                        <select class="er-filters__select er-validation-select" id="issueCategoryFilter" onchange="filterIssues()" aria-label="Filter by category">
+                            <option value="">All Categories</option>
+                            <option value="MissingMarks">Missing Marks</option>
+                            <option value="Duplicate">Duplicates</option>
+                            <option value="GpaMismatch">GPA Mismatch</option>
+                            <option value="IncompleteComponents">Incomplete Components</option>
+                            <option value="MissingSubjects">Missing Subjects</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="er-table-wrap">
+                    <table class="dash-table" id="validationIssuesTable" aria-label="Validation issues list">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Category</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="validationNoIssues" class="er-validation-empty er-hidden" role="status">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--er-success)" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <h3 class="er-validation-success-title">Validation Passed</h3>
+                <p class="er-validation-success-text">No issues found. Results are ready for publishing.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .er-validation-card { border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border); }
+        .er-validation-header { margin-bottom: 16px; }
+        .er-validation-icon { background: var(--er-info-bg); color: var(--er-info); }
+        .er-validation-title { font-size: 15px; }
+        .er-validation-results { margin-top: 16px; }
+        .er-validation-stats { margin-bottom: 16px; }
+        .er-validation-section { margin-top: 16px; }
+        .er-validation-subtitle { font-size: 13px; font-weight: 650; color: var(--adm-text-2); margin: 0 0 8px 0; }
+        .er-validation-subtitle--inline { margin: 0; }
+        .er-validation-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .er-validation-filters { display: flex; gap: 6px; }
+        .er-validation-select { width: auto; padding: 4px 28px 4px 8px; font-size: 12px; }
+        .er-validation-empty { display: none; text-align: center; padding: 32px 16px; }
+        .er-validation-success-title { font-size: 15px; font-weight: 650; color: var(--er-success); margin: 8px 0 4px; }
+        .er-validation-success-text { font-size: 13px; color: var(--adm-text-3); }
+        .er-hidden { display: none; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        var _validationData = null;
+
+        function runValidation(examId) {
+            if (!examId || examId === 0) {
+                toastr.warning('Please select an exam first.');
+                return;
+            }
+
+            var btn = document.getElementById('runValidationBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="er-validation-spinner"></span> Validating...';
+            }
+
+            var resultsArea = document.getElementById('validationResultsArea');
+            resultsArea.classList.add('er-hidden');
+            document.getElementById('validationStatusText').textContent = 'Running validation checks...';
+
+            fetch('@Url.Action("ValidateResults", "AdminResult")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({ examId: examId })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                _validationData = data;
+                renderValidationResults(data);
+            })
+            .catch(function (err) {
+                toastr.error('Validation request failed: ' + (err.message || 'Network error'));
+            })
+            .finally(function () {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg> Validate Before Publish';
+                }
+            });
+        }
+
+        function renderValidationResults(data) {
+            var resultsArea = document.getElementById('validationResultsArea');
+            resultsArea.classList.remove('er-hidden');
+
+            if (data.Error) {
+                document.getElementById('validationStatusText').textContent = 'Validation failed: ' + data.Error;
+                toastr.error('Validation error: ' + data.Error);
+                return;
+            }
+
+            var isValid = data.isValid || data.IsValid;
+            var issues = data.issues || data.Issues || [];
+            var summary = data.summary || data.Summary || [];
+            var totalIssues = data.totalIssues || data.TotalIssues || 0;
+            var totalStudents = data.totalStudents || data.TotalStudents || 0;
+            var passedCount = data.passedCount || data.PassedCount || 0;
+            var failedCount = data.failedCount || data.FailedCount || 0;
+
+            document.getElementById('validationStatusText').textContent = isValid
+                ? 'All validation checks passed. Results are ready to publish.'
+                : totalIssues + ' issue(s) found. Review before publishing.';
+
+            renderStats(totalStudents, passedCount, failedCount, totalIssues);
+            renderSummaryTable(summary);
+            renderIssuesTable(issues, totalIssues);
+        }
+
+        function renderStats(totalStudents, passedCount, failedCount, totalIssues) {
+            var statsHtml = '';
+            statsHtml += '<div class="er-stat">';
+            statsHtml += '  <div class="er-stat__icon er-stat__icon--primary">';
+            statsHtml += '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>';
+            statsHtml += '  </div>';
+            statsHtml += '  <div class="er-stat__body">';
+            statsHtml += '    <span class="er-stat__label">Total Students</span>';
+            statsHtml += '    <span class="er-stat__value">' + totalStudents + '</span>';
+            statsHtml += '  </div>';
+            statsHtml += '</div>';
+
+            statsHtml += '<div class="er-stat">';
+            statsHtml += '  <div class="er-stat__icon er-stat__icon--success">';
+            statsHtml += '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>';
+            statsHtml += '  </div>';
+            statsHtml += '  <div class="er-stat__body">';
+            statsHtml += '    <span class="er-stat__label">Passed</span>';
+            statsHtml += '    <span class="er-stat__value">' + passedCount + '</span>';
+            statsHtml += '  </div>';
+            statsHtml += '</div>';
+
+            statsHtml += '<div class="er-stat">';
+            statsHtml += '  <div class="er-stat__icon er-stat__icon--danger">';
+            statsHtml += '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>';
+            statsHtml += '  </div>';
+            statsHtml += '  <div class="er-stat__body">';
+            statsHtml += '    <span class="er-stat__label">Failed</span>';
+            statsHtml += '    <span class="er-stat__value">' + failedCount + '</span>';
+            statsHtml += '  </div>';
+            statsHtml += '</div>';
+
+            statsHtml += '<div class="er-stat">';
+            var issueIconColor = totalIssues > 0 ? 'var(--er-danger)' : 'var(--er-success)';
+            var issueIconBg = totalIssues > 0 ? 'var(--er-danger-bg)' : 'var(--er-success-bg)';
+            var issueStatClass = totalIssues > 0 ? 'er-stat__icon--danger' : 'er-stat__icon--success';
+            statsHtml += '  <div class="er-stat__icon ' + issueStatClass + '">';
+            statsHtml += '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>';
+            statsHtml += '  </div>';
+            statsHtml += '  <div class="er-stat__body">';
+            statsHtml += '    <span class="er-stat__label">Issues</span>';
+            statsHtml += '    <span class="er-stat__value">' + totalIssues + '</span>';
+            statsHtml += '  </div>';
+            statsHtml += '</div>';
+
+            document.getElementById('validationStats').innerHTML = statsHtml;
+        }
+
+        function renderSummaryTable(summary) {
+            var container = document.getElementById('validationSummaryPerClass');
+            var tbody = document.querySelector('#validationSummaryTable tbody');
+            if (!summary || summary.length === 0) {
+                container.classList.add('er-hidden');
+                return;
+            }
+            container.classList.remove('er-hidden');
+            var html = '';
+            for (var i = 0; i < summary.length; i++) {
+                var item = summary[i];
+                var className = item.className || item.ClassName || '';
+                var total = item.totalStudents || item.TotalStudents || 0;
+                var completed = item.completedStudents || item.CompletedStudents || 0;
+                var incomplete = item.incompleteStudents || item.IncompleteStudents || 0;
+                var pct = total > 0 ? Math.round(completed / total * 100) : 0;
+                html += '<tr>';
+                html += '  <td><span class="adm-cell-name">' + escHtml(className) + '</span></td>';
+                html += '  <td>' + total + '</td>';
+                html += '  <td><span class="er-badge er-badge--success">' + completed + '</span></td>';
+                html += '  <td><span class="er-badge ' + (incomplete > 0 ? 'er-badge--warning' : 'er-badge--neutral') + '">' + incomplete + '</span></td>';
+                html += '  <td>' + pct + '%</td>';
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        function renderIssuesTable(issues, totalIssues) {
+            var badge = document.getElementById('issueCountBadge');
+            if (badge) badge.textContent = totalIssues;
+
+            var area = document.getElementById('validationIssuesArea');
+            var noIssues = document.getElementById('validationNoIssues');
+
+            if (!issues || issues.length === 0) {
+                area.classList.add('er-hidden');
+                noIssues.classList.remove('er-hidden');
+                return;
+            }
+
+            area.classList.remove('er-hidden');
+            noIssues.classList.add('er-hidden');
+            renderFilteredIssues(issues);
+        }
+
+        function renderFilteredIssues(issues) {
+            var severityFilter = document.getElementById('issueSeverityFilter').value;
+            var categoryFilter = document.getElementById('issueCategoryFilter').value;
+
+            var filtered = issues;
+            if (severityFilter) {
+                filtered = filtered.filter(function (i) {
+                    return (i.severity || i.Severity) === severityFilter;
+                });
+            }
+            if (categoryFilter) {
+                filtered = filtered.filter(function (i) {
+                    return (i.category || i.Category) === categoryFilter;
+                });
+            }
+
+            var tbody = document.querySelector('#validationIssuesTable tbody');
+            var html = '';
+            for (var i = 0; i < filtered.length; i++) {
+                var item = filtered[i];
+                var severity = item.severity || item.Severity || '';
+                var category = item.category || item.Category || '';
+                var studentName = item.studentName || item.StudentName || '';
+                var subjectName = item.subjectName || item.SubjectName || '';
+                var message = item.message || item.Message || '';
+
+                var badgeClass = severity === 'Error' ? 'er-badge--danger' : 'er-badge--warning';
+                var severityIcon = severity === 'Error'
+                    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+                    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+
+                var catBadgeClass = 'er-badge--info';
+                if (category === 'MissingMarks' || category === 'MissingSubjects') catBadgeClass = 'er-badge--danger';
+                else if (category === 'Duplicate') catBadgeClass = 'er-badge--warning';
+                else if (category === 'GpaMismatch') catBadgeClass = 'er-badge--primary';
+                else if (category === 'IncompleteComponents') catBadgeClass = 'er-badge--neutral';
+
+                html += '<tr>';
+                html += '  <td><span class="er-badge ' + badgeClass + '">' + severityIcon + escHtml(severity) + '</span></td>';
+                html += '  <td><span class="er-badge ' + catBadgeClass + '">' + escHtml(category) + '</span></td>';
+                html += '  <td><span class="adm-cell-name">' + escHtml(studentName) + '</span></td>';
+                html += '  <td>' + escHtml(subjectName) + '</td>';
+                html += '  <td class="er-validation-message">' + escHtml(message) + '</td>';
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        function filterIssues() {
+            if (_validationData) {
+                var issues = _validationData.issues || _validationData.Issues || [];
+                renderFilteredIssues(issues);
+            }
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+}
+
+@* Spinner styling injected inline for button use *@
+<style>
+    .er-validation-spinner { width: 14px; height: 14px; border: 2px solid var(--adm-border); border-top-color: var(--adm-primary); border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; animation: erValidationSpin 0.6s linear infinite; }
+    @@keyframes erValidationSpin { to { transform: rotate(360deg); } }
+    .er-validation-message { font-size: 13px; color: var(--adm-text-2); }
+    .er-stat__icon--primary { background: var(--er-primary-bg); color: var(--er-primary); }
+    .er-stat__icon--success { background: var(--er-success-bg); color: var(--er-success); }
+    .er-stat__icon--danger { background: var(--er-danger-bg); color: var(--er-danger); }
+    .er-stat__icon--warning { background: var(--er-warning-bg); color: var(--er-warning); }
+</style>

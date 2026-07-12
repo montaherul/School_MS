@@ -35,10 +35,10 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_StudentExamResults_Exa
         INCLUDE ([TotalMarks], [Grade], [GradePoint], [ClassPosition], [GroupPosition], [IsPublished], [PublishedAt]);
 GO
 
--- Used by: sp_CalculateMerit (PARTITION BY ClassId, ExamGroupId ORDER BY GradePoint DESC)
+-- Used by: sp_CalculateMerit (PARTITION BY ClassId, StudentGroupId ORDER BY GradePoint DESC)
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_StudentExamResults_MeritCalc')
     CREATE NONCLUSTERED INDEX [IX_StudentExamResults_MeritCalc]
-        ON [dbo].[StudentExamResults] ([ExamId], [ClassId], [ExamGroupId], [GradePoint] DESC)
+        ON [dbo].[StudentExamResults] ([ExamId], [ClassId], [StudentGroupId], [GradePoint] DESC)
         INCLUDE ([StudentId], [TotalMarks], [GroupPosition]);
 GO
 
@@ -53,7 +53,7 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_StudentExamResults_Dashboard')
     CREATE NONCLUSTERED INDEX [IX_StudentExamResults_Dashboard]
         ON [dbo].[StudentExamResults] ([ExamId], [IsPublished])
-        INCLUDE ([StudentId], [ClassId], [ExamGroupId], [GradePoint], [TotalMarks], [Grade]);
+        INCLUDE ([StudentId], [ClassId], [StudentGroupId], [GradePoint], [TotalMarks], [Grade]);
 GO
 
 -- ═══ STUDENT SUBJECT RESULTS ═══

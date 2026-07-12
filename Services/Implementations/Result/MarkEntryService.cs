@@ -30,6 +30,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     private readonly ISubjectMarkStructureService _markStructureService;
     private readonly IAuditLogger _auditLogger;
     private readonly IGradeCalculator _gradeCalculator;
+    private readonly IStudentComponentMarkService _studentComponentMarkService;
 
     public MarkEntryService(
         IUnitOfWork uow, 
@@ -42,7 +43,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         IStudentRepository studentRepository,
         ISubjectMarkStructureService markStructureService,
         IAuditLogger auditLogger,
-        IGradeCalculator gradeCalculator) : base(uow)
+        IGradeCalculator gradeCalculator,
+        IStudentComponentMarkService studentComponentMarkService) : base(uow)
     {
         _examRepository = examRepository;
         _markRepository = markRepository;
@@ -54,6 +56,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         _markStructureService = markStructureService;
         _auditLogger = auditLogger;
         _gradeCalculator = gradeCalculator;
+        _studentComponentMarkService = studentComponentMarkService;
     }
 
     public async Task<MarkEntryDataDto> GetMarkEntryDataAsync(int examId, int subjectId, int classId, int sectionId)
@@ -121,6 +124,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         // Validate marks against full marks and negative values
         var subject = await _subjectRepository.GetByIdAsync(dto.SubjectId);
         var examSubject = await _unitOfWork.Repository<ExamSubject>().Query()
+            .AsNoTracking()
             .FirstOrDefaultAsync(es => es.ExamId == dto.ExamId && es.SubjectId == dto.SubjectId);
 
         foreach (var markDto in dto.Marks)
@@ -211,7 +215,73 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        // Also save to StudentComponentMark for new dynamic component storage
+        await SyncStudentComponentMarksAsync(dto, exam, configuredComponents);
+
         return result;
+    }
+
+    private async Task SyncStudentComponentMarksAsync(
+        MarkBatchDto dto, Models.Entities.Exam.Exam? exam, List<ComponentColumnDto> configuredComponents)
+    {
+        if (exam == null || configuredComponents.Count == 0) return;
+
+        var examSubject = await _unitOfWork.Repository<ExamSubject>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(es => es.ExamId == dto.ExamId && es.SubjectId == dto.SubjectId);
+        if (examSubject == null) return;
+
+        var examComponents = await _unitOfWork.Repository<ExamSubjectComponent>().Query()
+            .AsNoTracking()
+            .Include(esc => esc.Component)
+            .Where(esc => esc.ExamSubjectId == examSubject.Id && !esc.IsDeleted)
+            .ToListAsync();
+
+        var componentLookup = examComponents
+            .Where(esc => esc.Component != null)
+            .ToDictionary(esc => esc.Component.Code, esc => esc.Id);
+
+        if (componentLookup.Count == 0) return;
+
+        var now = DateTime.UtcNow;
+        var marks = new List<StudentComponentMark>();
+
+        foreach (var markDto in dto.Marks)
+        {
+            var student = await _studentRepository.GetByIdAsync(markDto.StudentId);
+            foreach (var component in configuredComponents)
+            {
+                if (!componentLookup.TryGetValue(component.ComponentCode, out var examSubjectComponentId))
+                    continue;
+
+                var componentValue = GetComponentValue(markDto, component.ComponentCode);
+
+                marks.Add(new StudentComponentMark
+                {
+                    ExamId = dto.ExamId,
+                    StudentId = markDto.StudentId,
+                    ExamSubjectId = examSubject.Id,
+                    ExamSubjectComponentId = examSubjectComponentId,
+                    AcademicYearId = exam.AcademicYearId,
+                    ClassId = student?.ClassId ?? 0,
+                    SectionId = student?.SectionId ?? 0,
+                    StudentGroupId = student?.StudentGroupId,
+                    ObtainedMarks = componentValue,
+                    CreatedBy = "system",
+                    CreatedAt = now
+                });
+            }
+
+            if (marks.Count >= 50)
+            {
+                await _studentComponentMarkService.UpsertBatchAsync(marks, "system");
+                marks.Clear();
+            }
+        }
+
+        if (marks.Count > 0)
+            await _studentComponentMarkService.UpsertBatchAsync(marks, "system");
     }
 
     public async Task<byte[]> GenerateImportTemplateAsync(int examId, int subjectId, int classId, int sectionId)
@@ -517,6 +587,20 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     private static decimal? GetComponentValue(MarkEntryDto dto, string componentCode)
     {
         return ComponentFieldMapper.GetDtoValue(dto, componentCode);
+    }
+
+    public async Task<List<MarkEntryStatusDto>> GetMarkEntryStatusByExamIdsAsync(List<int> examIds, CancellationToken ct = default)
+    {
+        return await _markRepository.QueryNoTracking()
+            .Where(m => examIds.Contains(m.ExamId))
+            .Select(m => new MarkEntryStatusDto
+            {
+                ExamId = m.ExamId,
+                SubjectId = m.SubjectId,
+                ClassId = m.ClassId,
+                Status = m.Status
+            })
+            .ToListAsync(ct);
     }
 
     protected override IQueryable<MarkEntry> ApplySecurityFilters(IQueryable<MarkEntry> query, System.Security.Claims.ClaimsPrincipal user)

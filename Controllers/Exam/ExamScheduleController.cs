@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Services.Interfaces.Exam;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using ExamScheduleEntity = SchoolManagementSystem.Models.Entities.Exam.ExamSchedule;
@@ -15,11 +16,13 @@ public class ExamScheduleController : Controller
 {
     private readonly IUnitOfWork _uow;
     private readonly ICalendarGenerationService _calendarGen;
+    private readonly IAutoScheduleService _autoSchedule;
 
-    public ExamScheduleController(IUnitOfWork uow, ICalendarGenerationService calendarGen)
+    public ExamScheduleController(IUnitOfWork uow, ICalendarGenerationService calendarGen, IAutoScheduleService autoSchedule)
     {
         _uow = uow;
         _calendarGen = calendarGen;
+        _autoSchedule = autoSchedule;
     }
 
     [HttpGet]
@@ -230,6 +233,25 @@ public class ExamScheduleController : Controller
         await SyncCalendarForExamDate(examDate, examId, CancellationToken.None);
 
         return Json(new { success = true });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AutoGenerate(int examId, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _autoSchedule.GenerateScheduleAsync(examId, ct);
+            return Json(new { success = true, result });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "An error occurred while generating the schedule." });
+        }
     }
 
     private async Task LoadFormViewBags(CancellationToken ct)

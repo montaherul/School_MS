@@ -4,7 +4,6 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Result;
@@ -15,14 +14,12 @@ public class TranscriptController : Controller
     private readonly ITranscriptService _transcriptService;
     private readonly IStudentService _studentService;
     private readonly ITeacherScopeService _teacherScopeService;
-    private readonly IUnitOfWork _uow;
 
-    public TranscriptController(ITranscriptService transcriptService, IStudentService studentService, ITeacherScopeService teacherScopeService, IUnitOfWork uow)
+    public TranscriptController(ITranscriptService transcriptService, IStudentService studentService, ITeacherScopeService teacherScopeService)
     {
         _transcriptService = transcriptService;
         _studentService = studentService;
         _teacherScopeService = teacherScopeService;
-        _uow = uow;
     }
 
     [HttpGet]
@@ -75,8 +72,7 @@ public class TranscriptController : Controller
             }
             else if (User.IsInRole("Guardian"))
             {
-                var guardianRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>();
-                var hasAccess = await guardianRepo.AnyAsync(sg => sg.Guardian!.UserId == currentUserId && sg.StudentId == studentId);
+                var hasAccess = await _transcriptService.HasGuardianAccessAsync(currentUserId, studentId);
                 if (!hasAccess) return Forbid();
             }
             else if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
@@ -90,7 +86,7 @@ public class TranscriptController : Controller
             }
         }
 
-        var isBlocked = await _transcriptService.IsResultBlockedForStudentAsync(studentId, default);
+        var isBlocked = await _transcriptService.IsResultBlockedForStudentAsync(studentId);
         if (isBlocked)
         {
             TempData["ErrorMessage"] = "Result access is blocked due to outstanding fees. Please clear your dues to access results.";

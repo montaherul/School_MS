@@ -1,0 +1,279 @@
+@model List<SchoolManagementSystem.Models.DTOs.Exam.TeacherExamSubjectComponentDto>
+@{
+    ViewData["Title"] = "Manage Components";
+    Layout = "_AdminLayout";
+}
+
+@{
+    var examSubjectId = ViewBag.ExamSubjectId as int? ?? 0;
+    var canCustomize = ViewBag.CanCustomize as bool? ?? false;
+    var subjectName = Model.FirstOrDefault()?.ComponentName ?? "";
+}
+
+<div class="adm-page">
+    <header class="adm-page-header">
+        <div class="adm-flex adm-flex--between adm-flex--wrap adm-gap-3">
+            <div>
+                <h1 class="adm-page-title">Manage Components</h1>
+                <p class="adm-page-subtitle">Exam Subject ID: @examSubjectId</p>
+            </div>
+            <div class="adm-flex adm-gap-2">
+                <a asp-action="Index" class="adm-btn adm-btn--secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Subjects
+                </a>
+            </div>
+        </div>
+    </header>
+
+    @if (!canCustomize)
+    {
+        <div class="adm-alert adm-alert--warning adm-card adm-mb-4">
+            <div class="adm-alert__icon"><i class="fas fa-lock"></i></div>
+            <div class="adm-alert__content">
+                <h4 class="adm-alert__title">Customization Not Allowed</h4>
+                <p class="adm-alert__message">
+                    You cannot customize components for this exam subject. This may be because:
+                </p>
+                <ul class="adm-alert__list">
+                    <li>System setting "Allow Teacher Component Customization" is disabled</li>
+                    <li>Exam is not in Draft status</li>
+                    <li>Exam is locked</li>
+                    <li>You are not the assigned subject teacher</li>
+                </ul>
+            </div>
+        </div>
+    }
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h2 class="adm-card__title">Components</h2>
+            @if (canCustomize)
+            {
+                <button type="button" id="btnSaveAll" class="adm-btn adm-btn--primary" onclick="saveAllComponents()">
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+            }
+        </div>
+        <div class="adm-card__body adm-p-0">
+            <div id="componentsGrid" class="adm-tabulator"></div>
+        </div>
+    </div>
+
+    @if (canCustomize)
+    {
+        <div class="adm-card adm-mt-4">
+            <div class="adm-card__header">
+                <h3 class="adm-card__title">Validation Rules</h3>
+            </div>
+            <div class="adm-card__body">
+                <ul class="adm-list adm-list--spaced">
+                    <li>Total of all component Max Marks must equal the Exam Subject's Full Marks</li>
+                    <li>Pass Marks cannot exceed Max Marks for any component</li>
+                    <li>Components cannot be added or removed - only marks can be adjusted</li>
+                    <li>Changes are saved immediately when you click "Save All Changes"</li>
+                </ul>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var canCustomize = @(canCustomize ? "true" : "false");
+            var examSubjectId = @examSubjectId;
+            var data = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+            var table = new Tabulator("#componentsGrid", {
+                height: "500px",
+                layout: "fitColumns",
+                data: data,
+                columns: [
+                    {
+                        title: "Component",
+                        field: "componentName",
+                        sorter: "string",
+                        width: 200,
+                        formatter: function (cell) {
+                            var row = cell.getRow().getData();
+                            var icon = row.isCustomized ? '<i class="fas fa-edit ws-text-warning" title="Customized"></i> ' : '';
+                            return icon + cell.getValue();
+                        }
+                    },
+                    {
+                        title: "Code",
+                        field: "componentCode",
+                        sorter: "string",
+                        width: 100,
+                        hozAlign: "center"
+                    },
+                    {
+                        title: "Original Max",
+                        field: "originalMaxMarks",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 110,
+                        visible: canCustomize
+                    },
+                    {
+                        title: "Original Pass",
+                        field: "originalPassMarks",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 110,
+                        visible: canCustomize
+                    },
+                    {
+                        title: "Max Marks",
+                        field: "maxMarks",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 100,
+                        editor: canCustomize ? "number" : false,
+                        editorParams: {
+                            min: 1,
+                            max: 9999,
+                            step: 1
+                        },
+                        formatter: function (cell) {
+                            return '<span class="ws-font-mono">' + cell.getValue() + '</span>';
+                        }
+                    },
+                    {
+                        title: "Pass Marks",
+                        field: "passMarks",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 110,
+                        editor: canCustomize ? "number" : false,
+                        editorParams: {
+                            min: 0,
+                            max: 9999,
+                            step: 1
+                        },
+                        formatter: function (cell) {
+                            return '<span class="ws-font-mono">' + cell.getValue() + '</span>';
+                        },
+                        cellEdited: function (cell) {
+                            validateComponentRow(cell.getRow());
+                        }
+                    },
+                    {
+                        title: "Display Order",
+                        field: "displayOrder",
+                        sorter: "number",
+                        hozAlign: "center",
+                        width: 120,
+                        editor: canCustomize ? "number" : false,
+                        editorParams: {
+                            min: 0,
+                            max: 999,
+                            step: 1
+                        }
+                    },
+                    {
+                        title: "Status",
+                        field: "isCustomized",
+                        hozAlign: "center",
+                        width: 120,
+                        formatter: function (cell) {
+                            if (cell.getValue()) {
+                                return '<span class="ws-badge ws-badge--warning"><i class="fas fa-edit"></i> Customized</span>';
+                            }
+                            return '<span class="ws-badge ws-badge--default">Default</span>';
+                        }
+                    }
+                ],
+                rowFormatter: function (row) {
+                    var data = row.getData();
+                    if (data.isCustomized) {
+                        row.getElement().classList.add("ws-table-row--modified");
+                    }
+                },
+                cellEdited: function (cell) {
+                    if (canCustomize) {
+                        validateComponentRow(cell.getRow());
+                    }
+                }
+            });
+
+            function validateComponentRow(row) {
+                var data = row.getData();
+                var passMarks = data.passMarks || 0;
+                var maxMarks = data.maxMarks || 0;
+
+                if (passMarks > maxMarks) {
+                    row.getCell("passMarks").getElement().classList.add("ws-input-error");
+                    showToast("Pass marks cannot exceed max marks for " + data.componentName, "warning");
+                } else {
+                    row.getCell("passMarks").getElement().classList.remove("ws-input-error");
+                }
+            }
+
+            window.saveAllComponents = function () {
+                var rows = table.getRows();
+                var components = [];
+
+                rows.forEach(function (row) {
+                    var data = row.getData();
+                    components.push({
+                        id: data.id,
+                        examSubjectId: data.examSubjectId,
+                        componentId: data.componentId,
+                        maxMarks: data.maxMarks,
+                        passMarks: data.passMarks,
+                        displayOrder: data.displayOrder
+                    });
+                });
+
+                // Validate total max marks
+                var totalMaxMarks = components.reduce((sum, c) => sum + (c.maxMarks || 0), 0);
+                var examSubject = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.FirstOrDefault()?.ExamSubjectId ?? 0));
+                // We'll let the server validate total marks
+
+                var btn = document.getElementById('btnSaveAll');
+                var originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                btn.disabled = true;
+
+                fetch('/ExamSubjectComponentTeacher/UpdateComponents?examSubjectId=' + examSubjectId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify(components)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+
+                    if (result.success) {
+                        showToast(result.message, "success");
+                        table.replaceData(components.map(c => {
+                            var rowData = rows.find(r => r.getData().id === c.id)?.getData();
+                            return { ...rowData, ...c };
+                        }));
+                    } else {
+                        showToast(result.message, "error");
+                    }
+                })
+                .catch(error => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    showToast("An error occurred while saving.", "error");
+                    console.error(error);
+                });
+            };
+        });
+
+        function showToast(message, type) {
+            if (window.AdminLTE && window.AdminLTE.toast) {
+                window.AdminLTE.toast(message, type);
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+}

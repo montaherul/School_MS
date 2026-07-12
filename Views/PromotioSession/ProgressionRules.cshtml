@@ -1,0 +1,131 @@
+@model List<ClassProgressionRuleDto>
+@{
+    ViewData["Title"] = "Progression Rules";
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Class Progression Rules</h1>
+            <p class="adm-page-header__sub">Define how students progress from one class to the next</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Index", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body">
+            <form asp-action="ProgressionRules" method="post">
+                @Html.AntiForgeryToken()
+                <div class="adm-table-wrapper">
+                    <table class="dash-table" id="rulesTable">
+                        <thead>
+                            <tr>
+                                <th>From Class</th>
+                                <th>To Class</th>
+                                <th>Type</th>
+                                <th>Active</th>
+                                <th>Order</th>
+                                <th class="ws-text-right">
+                                    <button type="button" class="adm-btn adm-btn--sm adm-btn--primary" onclick="addRule()">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                        Add
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="rulesBody">
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="rules[@i].Id" value="@Model[i].Id" />
+                                        <select name="rules[@i].FromClassId" class="adm-input adm-input--sm" required>
+                                            @foreach (var c in classes)
+                                            {
+                                                <option value="@c.Id" selected="@(c.Id == Model[i].FromClassId)">@c.Name</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="rules[@i].ToClassId" class="adm-input adm-input--sm" required>
+                                            @foreach (var c in classes)
+                                            {
+                                                <option value="@c.Id" selected="@(c.Id == Model[i].ToClassId)">@c.Name</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="rules[@i].ProgressionType" class="adm-input adm-input--sm">
+                                            <option value="Normal" selected="@(Model[i].ProgressionType == "Normal")">Normal</option>
+                                            <option value="Graduation" selected="@(Model[i].ProgressionType == "Graduation")">Graduation</option>
+                                            <option value="Dropout" selected="@(Model[i].ProgressionType == "Dropout")">Dropout</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="rules[@i].IsActive" value="true" checked="@Model[i].IsActive" class="adm-checkbox" />
+                                    </td>
+                                    <td>
+                                        <input type="number" name="rules[@i].DisplayOrder" value="@Model[i].DisplayOrder" class="adm-input adm-input--sm" style="width:60px" />
+                                    </td>
+                                    <td class="ws-text-right">
+                                        <button type="button" class="er-action er-action--delete" onclick="this.closest('tr').remove()" title="Remove">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.Count == 0)
+                {
+                    <div class="er-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        <h3 class="er-empty__title">No Rules Configured</h3>
+                        <p class="er-empty__desc">Add class progression rules to define promotion paths.</p>
+                    </div>
+                }
+
+                <div class="ws-mt-4 ws-text-right">
+                    <button type="submit" class="adm-btn adm-btn--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Save Rules
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let ruleIndex = @Model.Count;
+
+        function addRule() {
+            const tbody = document.getElementById('rulesBody');
+            const emptyRow = tbody.querySelector('.er-empty');
+            if (emptyRow) emptyRow.style.display = 'none';
+            const i = ruleIndex++;
+            const html = '<tr>' +
+                '<td><select name="rules[' + i + '].FromClassId" class="adm-input adm-input--sm" required>' +
+                '@foreach (var c in classes) { <option value="@c.Id">@c.Name</option> }' +
+                '</select></td>' +
+                '<td><select name="rules[' + i + '].ToClassId" class="adm-input adm-input--sm" required>' +
+                '@foreach (var c in classes) { <option value="@c.Id">@c.Name</option> }' +
+                '</select></td>' +
+                '<td><select name="rules[' + i + '].ProgressionType" class="adm-input adm-input--sm"><option value="Normal">Normal</option><option value="Graduation">Graduation</option><option value="Dropout">Dropout</option></select></td>' +
+                '<td><input type="checkbox" name="rules[' + i + '].IsActive" value="true" checked class="adm-checkbox" /></td>' +
+                '<td><input type="number" name="rules[' + i + '].DisplayOrder" value="0" class="adm-input adm-input--sm" style="width:60px" /></td>' +
+                '<td class="ws-text-right"><button type="button" class="er-action er-action--delete" onclick="this.closest(\'tr\').remove()" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button></td>' +
+                '</tr>';
+            tbody.insertAdjacentHTML('beforeend', html);
+        }
+    </script>
+}

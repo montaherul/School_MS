@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Promotion Reports";
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Promotion Reports</h1>
+            <p class="adm-page-header__sub">Comprehensive promotion reporting</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Dashboard", "PromotioSession")" class="adm-btn adm-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Report Types</h2>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body">
+                <div class="dash-actions">
+                    <a href="@Url.Action("FailedStudents", "PromotioSession")" class="dash-action-card">
+                        <div class="dash-action-card__icon dash-action-card__icon--danger">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                        </div>
+                        <div class="dash-action-card__body">
+                            <span class="dash-action-card__title">Failed Students Report</span>
+                            <span class="dash-action-card__sub">Students who did not meet promotion criteria</span>
+                        </div>
+                        <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </a>
+                    <a href="@Url.Action("Reports", "PromotioSession")" class="dash-action-card">
+                        <div class="dash-action-card__icon dash-action-card__icon--primary">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                        </div>
+                        <div class="dash-action-card__body">
+                            <span class="dash-action-card__title">Promotion Register</span>
+                            <span class="dash-action-card__sub">Full promotion history records</span>
+                        </div>
+                        <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </a>
+                    <a href="@Url.Action("Dashboard", "PromotioSession")" class="dash-action-card">
+                        <div class="dash-action-card__icon dash-action-card__icon--success">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                        </div>
+                        <div class="dash-action-card__body">
+                            <span class="dash-action-card__title">Dashboard</span>
+                            <span class="dash-action-card__sub">Promotion statistics overview</span>
+                        </div>
+                        <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

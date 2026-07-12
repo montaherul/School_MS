@@ -123,9 +123,11 @@ public class ImportErrorItemDto
     public class StudentSubjectResultDto
     {
         public int SubjectId { get; set; }
+        public string SubjectCode { get; set; } = string.Empty;
         public string SubjectName { get; set; } = string.Empty;
         public string SubjectNameBn { get; set; } = string.Empty; // Bangla name
         public string SubjectGroup { get; set; } = string.Empty; // Common, Science, Humanities, etc.
+        public int ExamId { get; set; }
 
         public decimal MarksObtained { get; set; }
         public decimal FullMarks { get; set; }
@@ -200,6 +202,8 @@ public class StudentTranscriptDto
     public decimal FinalGPA { get; set; }
     public string FinalGrade { get; set; } = string.Empty;
     public int MeritPosition { get; set; }
+    public int TotalExamsTaken { get; set; }
+    public int TotalAcademicYears { get; set; }
 
     // Phase 5: All 4 position types
     public int FinalClassPosition { get; set; }
@@ -477,3 +481,110 @@ public class FinalResultGenerationResult
     public int FailedCount { get; set; }
     public List<string> Errors { get; set; } = [];
 }
+
+public class MarkEntryStatusDto
+{
+    public int ExamId { get; set; }
+    public int SubjectId { get; set; }
+    public int ClassId { get; set; }
+    public ResultWorkflowStatus Status { get; set; }
+}
+
+public class PromotionRecord
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int FromClassId { get; set; }
+    public int ToClassId { get; set; }
+    public PromotionStatus Status { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public DateTime ProcessedAt { get; set; }
+    public int ProcessedByUserId { get; set; }
+}
+
+public class PromotionEligibility
+{
+    public int StudentId { get; set; }
+    public bool IsEligible { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public decimal GPA { get; set; }
+    public int FailedSubjects { get; set; }
+    public int TotalSubjects { get; set; }
+    public string RecommendedAction { get; set; } = string.Empty;
+}
+
+public class PromotionResult
+{
+    public int ClassId { get; set; }
+    public int AcademicYearId { get; set; }
+    public int TotalStudents { get; set; }
+    public int PromotedCount { get; set; }
+    public int RepeatCount { get; set; }
+    public int ConditionalCount { get; set; }
+    public List<PromotionRecord> Records { get; set; } = [];
+}
+
+public class BulkPromotionResult
+{
+    public int SuccessCount { get; set; }
+    public int FailureCount { get; set; }
+    public List<string> Errors { get; set; } = [];
+    public List<PromotionRecord> SuccessfulPromotions { get; set; } = [];
+}
+
+public class BulkPromotionRequest
+{
+    public int FromClassId { get; set; }
+    public int ToClassId { get; set; }
+    public int AcademicYearId { get; set; }
+    public int ProcessedByUserId { get; set; }
+    public string Comments { get; set; } = string.Empty;
+    public bool OverrideEligibility { get; set; } = false;
+}
+
+public class PromotionRules
+{
+    public int ClassId { get; set; }
+    public decimal MinimumGPA { get; set; } = 1.0m;
+    public int MaximumFailedSubjects { get; set; } = 2;
+    public bool AllowConditionalPromotion { get; set; } = true;
+    public decimal ConditionalPromotionGPA { get; set; } = 0.8m;
+    public bool RequireAllSubjectsPass { get; set; } = false;
+    public List<string> CriticalSubjects { get; set; } = [];
+}
+
+public class PromotionEligibilityResult
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public decimal FinalGpa { get; set; }
+    public int FinalPosition { get; set; }
+    public decimal AttendancePercentage { get; set; }
+    public int TotalPassedSubjects { get; set; }
+    public int TotalFailedSubjects { get; set; }
+    public bool IsEligible { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public PromotionStatus Status { get; set; } = PromotionStatus.Pending;
+}
+
+public class PromotionExecutionResult
+{
+    public int AcademicYearId { get; set; }
+    public int SchoolClassId { get; set; }
+    public int TotalStudents { get; set; }
+    public int PromotedCount { get; set; }
+    public int RepeatCount { get; set; }
+    public int FailedCount { get; set; }
+    public List<PromotionRecord> Records { get; set; } = [];
+    public List<string> Errors { get; set; } = [];
+}
+
+public class GroupAssignmentResult
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int? AssignedGroupId { get; set; }
+    public string AssignedGroupName { get; set; } = string.Empty;
+    public string Method { get; set; } = string.Empty;
+}
+

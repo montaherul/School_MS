@@ -8,9 +8,17 @@ public class AcademicYear : BaseEntity
     [MaxLength(30)]
     public string Name { get; set; } = string.Empty;
 
+    [MaxLength(20)]
+    public string Code { get; set; } = string.Empty;
+
     public DateTime StartsOn { get; set; }
     public DateTime EndsOn { get; set; }
     public bool IsActive { get; set; }
+    public bool IsCurrent { get; set; }
+    public bool IsLocked { get; set; }
+
+    [MaxLength(20)]
+    public string Status { get; set; } = "Active"; // Active, Closed, Locked
 }
 
 public class SchoolClass : BaseEntity
@@ -31,6 +39,7 @@ public class SchoolClass : BaseEntity
     public string? Description { get; set; }
 
     public bool IsGroupBased { get; set; }
+    public bool IsHigherSecondary { get; set; } // For classes 11-12
     public bool IsActive { get; set; } = true;
     public DateTime? ArchivedAt { get; set; }
 
@@ -91,6 +100,13 @@ public class Subject : BaseEntity
 
     public decimal DefaultFullMarks { get; set; } = 100;
     public decimal DefaultPassMarks { get; set; } = 33;
+    public decimal TheoryMarks { get; set; } = 100;
+    public decimal PracticalMarks { get; set; } = 0;
+    public decimal PassMarks { get; set; } = 33;
+    public decimal Credit { get; set; } = 1;
+
+    [MaxLength(30)]
+    public string? NctbCode { get; set; }
 
     public int DisplayOrder { get; set; } = 0;
     public bool IsActive { get; set; } = true;

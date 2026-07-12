@@ -1,0 +1,210 @@
+@model List<SchoolManagementSystem.Models.DTOs.Academic.CurriculumSubjectDto>
+@{
+    ViewData["Title"] = "Curriculum Subject Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var versionName = ViewBag.CurriculumVersionName as string ?? "";
+    var versionId = (int)ViewBag.CurriculumVersionId;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Management</h1>
+                <p class="adm-header__sub">Manage subjects in <strong>@versionName</strong></p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index", "NctbCompliance")" class="adm-btn adm-btn--ghost">
+                <svg class="ws-icon ws-mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="adm-alert adm-alert--success ws-mb-4">
+            <svg class="ws-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>@success</span>
+        </div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="adm-alert adm-alert--danger ws-mb-4">
+            <svg class="ws-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <span>@error</span>
+        </div>
+    }
+
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.Count</span>
+                <span class="dash-stat-card__label">Assigned Subjects</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.Count(s => s.IsCompulsory)</span>
+                <span class="dash-stat-card__label">Compulsory</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg class="ws-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 8v4M12 16h.01"/>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__value">@Model.Sum(s => s.TotalHours)</span>
+                <span class="dash-stat-card__label">Total Hours</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h2 class="adm-card__title">Add Subject</h2>
+        </div>
+        <div class="adm-card__body">
+            <form asp-action="AddSubject" method="post" class="adm-form-grid adm-form-grid--4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="CurriculumVersionId" value="@versionId" />
+
+                <div class="adm-form-group">
+                    <label class="adm-label">Subject</label>
+                    <select name="SubjectId" class="adm-input" required>
+                        <option value="">-- Select Subject --</option>
+                        @foreach (var s in ViewBag.AvailableSubjects as SelectList ?? new SelectList(Enumerable.Empty<SelectListItem>()))
+                        {
+                            <option value="@s.Value">@s.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="adm-form-group">
+                    <label class="adm-label">Category</label>
+                    <select name="Category" class="adm-input">
+                        <option value="">-- Select --</option>
+                        <option value="Core">Core</option>
+                        <option value="Elective">Elective</option>
+                        <option value="Vocational">Vocational</option>
+                        <option value="Religion">Religion</option>
+                    </select>
+                </div>
+
+                <div class="adm-form-group">
+                    <label class="adm-label">Total Hours</label>
+                    <input name="TotalHours" type="number" class="adm-input" value="0" min="0" />
+                </div>
+
+                <div class="adm-form-group">
+                    <label class="adm-label">Sort Order</label>
+                    <input name="SortOrder" type="number" class="adm-input" value="0" min="0" />
+                </div>
+
+                <div class="adm-form-group ws-flex ws-items-center ws-gap-2">
+                    <input name="IsCompulsory" type="checkbox" class="adm-checkbox" id="IsCompulsory" value="true" />
+                    <input type="hidden" name="IsCompulsory" value="false" />
+                    <label class="adm-label ws-mb-0" for="IsCompulsory">Compulsory Subject</label>
+                </div>
+
+                <div class="adm-form-group ws-flex ws-items-end">
+                    <button type="submit" class="adm-btn adm-btn--primary">
+                        <svg class="ws-icon ws-mr-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Subject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="adm-table-wrapper">
+        <div class="adm-table-toolbar">
+            <div class="adm-table-toolbar__left">
+                <h2 class="adm-card__title ws-mb-0">Assigned Subjects</h2>
+            </div>
+            <div class="adm-table-toolbar__right">
+                <input id="searchInput" type="text" class="adm-input adm-input--search" placeholder="Search subjects..." onkeyup="window.subjTable.setFilter('subjectName', 'like', this.value)" />
+            </div>
+        </div>
+        <div id="subjectsGrid"></div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        var subjectsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(s => new {
+            s.Id, s.SubjectCode, s.SubjectName, s.Category, s.TotalHours, s.IsCompulsory, s.SortOrder, curriculumVersionId = versionId
+        })));
+
+        window.subjTable = new Tabulator("#subjectsGrid", {
+            height: "calc(100vh - 500px)",
+            layout: "fitColumns",
+            data: subjectsData,
+            pagination: true,
+            paginationSize: 15,
+            paginationSizeSelector: [15, 25, 50, 100],
+            placeholder: "No subjects assigned to this curriculum version",
+            columns: [
+                { title: "#", formatter: "rownum", width: 50, hozAlign: "center" },
+                { title: "Subject Name", field: "subjectName", widthGrow: 2,
+                    formatter: function(cell) {
+                        return '<span class="ws-fw-600">' + (cell.getValue() || '') + '</span>';
+                    }
+                },
+                { title: "Code", field: "subjectCode", width: 100, hozAlign: "center" },
+                { title: "Category", field: "category", width: 120, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = cell.getValue() || '';
+                        var cls = v === 'Core' ? 'adm-status--approved' : v === 'Elective' ? 'adm-status--info' : v === 'Vocational' ? 'adm-status--warning' : v === 'Religion' ? 'adm-status--primary' : '';
+                        return '<span class="adm-status ' + cls + '">' + v + '</span>';
+                    }
+                },
+                { title: "Hours", field: "totalHours", width: 80, hozAlign: "center" },
+                { title: "Compulsory", field: "isCompulsory", width: 110, hozAlign: "center",
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span class="adm-status adm-status--approved">Yes</span>'
+                            : '<span class="adm-status adm-status--rejected">No</span>';
+                    }
+                },
+                { title: "Order", field: "sortOrder", width: 70, hozAlign: "center" },
+                { title: "Actions", width: 100, hozAlign: "center", headerSort: false,
+                    formatter: function(cell) {
+                        var data = cell.getData();
+                        var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        var tokenVal = token ? token.value : '';
+                        return '<form method="post" action="/Academic/NctbCompliance/RemoveSubject" style="display:inline" onsubmit="return confirm(\'Remove this subject from curriculum?\')">' +
+                            '<input type="hidden" name="id" value="' + data.id + '" />' +
+                            '<input type="hidden" name="curriculumVersionId" value="' + data.curriculumVersionId + '" />' +
+                            '<input type="hidden" name="__RequestVerificationToken" value="' + tokenVal + '" />' +
+                            '<button type="submit" class="adm-btn adm-btn--sm adm-btn--danger-outline" title="Remove">Remove</button></form>';
+                    }
+                }
+            ]
+        });
+    </script>
+}

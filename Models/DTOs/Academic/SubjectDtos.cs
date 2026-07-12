@@ -17,6 +17,11 @@ public class SubjectListItemDto
     public bool IsPractical { get; set; }
     public decimal DefaultFullMarks { get; set; }
     public decimal DefaultPassMarks { get; set; }
+    public decimal TheoryMarks { get; set; }
+    public decimal PracticalMarks { get; set; }
+    public decimal PassMarks { get; set; }
+    public decimal Credit { get; set; }
+    public string? NctbCode { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
 }
@@ -52,6 +57,13 @@ public class SubjectUpsertDto
     public bool IsPractical { get; set; }
     public decimal DefaultFullMarks { get; set; } = 100;
     public decimal DefaultPassMarks { get; set; } = 33;
+    public decimal TheoryMarks { get; set; } = 100;
+    public decimal PracticalMarks { get; set; } = 0;
+    public decimal PassMarks { get; set; } = 33;
+    public decimal Credit { get; set; } = 1;
+
+    [StringLength(30)]
+    public string? NctbCode { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
 }

@@ -24,7 +24,7 @@
 
     @if (summary != null)
     {
-        <div class="er-stats mb-4">
+        <div class="er-stats er-mb-4">
             <div class="er-stat">
                 <div class="er-stat__icon er-stat__icon--primary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg></div>
                 <div class="er-stat__body">
@@ -70,14 +70,14 @@
                                 <th>Duration</th>
                                 <th>Results (Pub/Total)</th>
                                 <th>Status</th>
-                                <th class="text-end">Actions</th>
+                                <th class="er-text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var exam in Model.Exams)
                             {
                                 <tr data-exam-id="@exam.ExamId">
-                                    <td style="text-align:center;">
+                                    <td class="er-text-center">
                                         <button type="button" class="row-expander er-btn er-btn--secondary" style="padding:2px 6px;min-width:auto;font-size:16px;line-height:1;" onclick="toggleRowDetail(@exam.ExamId, this)" title="Toggle details">
                                             <span class="expander-icon">+</span>
                                         </button>
@@ -116,21 +116,21 @@
                                         <div class="actions-cell" id="actions-@exam.ExamId" style="display:flex;gap:6px;justify-content:flex-end;">
                                             @if (exam.Status == 5 || exam.Status == 6)
                                             {
-                                                <button class="er-btn er-btn--secondary py-1 px-3" onclick="confirmAndUnpublish(@exam.ExamId)" title="Unpublish">
+                                                <button class="er-btn er-btn--secondary er-py-1 er-px-3" onclick="confirmAndUnpublish(@exam.ExamId)" title="Unpublish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Unpublish
                                                 </button>
                                             }
                                             @if (exam.Status == 5 || exam.Status == 6)
                                             {
-                                                <button class="er-btn er-btn--primary py-1 px-3" onclick="confirmAndRepublish(@exam.ExamId)" title="Republish">
+                                                <button class="er-btn er-btn--primary er-py-1 er-px-3" onclick="confirmAndRepublish(@exam.ExamId)" title="Republish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Republish
                                                 </button>
                                             }
                                             @if (exam.Status != 5 && exam.Status != 6)
                                             {
-                                                <button class="er-btn er-btn--primary py-1 px-3" onclick="confirmAndPublish(@exam.ExamId)" title="Publish">
+                                                <button class="er-btn er-btn--primary er-py-1 er-px-3" onclick="confirmAndPublish(@exam.ExamId)" title="Publish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Publish
                                                 </button>
@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <div class="er-card mt-4" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+    <div class="er-card er-mt-4" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
         <div class="er-card__body">
             <div style="padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="toggleAuditTrail()" role="button">
                 <div style="display:flex;align-items:center;gap:10px;">
@@ -218,7 +218,7 @@
             <div id="auditTrailContent" style="display:none;border-top:1px solid var(--adm-border);">
                 @if (history != null && history.Any())
                 {
-                    <div class="table-responsive" style="border:none;border-radius:0;box-shadow:none;">
+                    <div class="er-table-scroll" style="border:none;border-radius:0;box-shadow:none;">
                         <table class="dash-table" style="margin:0;">
                             <thead>
                                 <tr>

@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Auth;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -9,40 +12,38 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class NctbComplianceService : INctbComplianceService
 {
     private readonly IUnitOfWork _uow;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly INctbComplianceRepository _nctbRepo;
 
-    public NctbComplianceService(IUnitOfWork uow) { _uow = uow; }
+    public NctbComplianceService(IUnitOfWork uow, IHttpContextAccessor httpContextAccessor, INctbComplianceRepository nctbRepo)
+    {
+        _uow = uow;
+        _httpContextAccessor = httpContextAccessor;
+        _nctbRepo = nctbRepo;
+    }
 
     public async Task<NctbComplianceReportDto> GetComplianceReportAsync(int academicYearId, CancellationToken ct = default)
     {
-        var academicYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(y => y.Id == academicYearId, ct);
-        var yearName = academicYear?.Name ?? "Unknown";
+        var spData = await _nctbRepo.GetComplianceReportSpAsync(academicYearId, ct);
 
-        var activeSubjects = await _uow.Repository<Subject>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
-        var groups = await _uow.Repository<StudentGroup>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
-        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
-
-        var hasScience = groups.Any(g => g.Name.Contains("Science", StringComparison.OrdinalIgnoreCase));
-        var hasBusiness = groups.Any(g => g.Name.Contains("Business", StringComparison.OrdinalIgnoreCase));
-        var hasHumanities = groups.Any(g => g.Name.Contains("Humanities", StringComparison.OrdinalIgnoreCase));
-
-        var coreCount = activeSubjects.Count(s => s.Category == "Core");
-        var electiveCount = activeSubjects.Count(s => s.Category == "Elective");
-        var vocationalCount = activeSubjects.Count(s => s.Category == "Vocational");
-        var religionCount = activeSubjects.Count(s => s.IsReligionSubject);
-
-        var hasCompulsoryCore = coreCount >= 6;
-        var hasAllReligion = religionCount >= 2;
+        var hasScience = spData.HasScienceGroup;
+        var hasBusiness = spData.HasBusinessStudiesGroup;
+        var hasHumanities = spData.HasHumanitiesGroup;
+        var coreCount = spData.CoreSubjectCount;
+        var electiveCount = spData.ElectiveSubjectCount;
+        var vocationalCount = spData.VocationalSubjectCount;
+        var religionCount = spData.ReligionSubjectCount;
 
         var checklist = new List<NctbChecklistItem>
         {
             new() { Id = "groups", Label = "Academic Groups", Description = "Science, Business Studies, Humanities groups configured", Passed = hasScience && hasBusiness && hasHumanities, Severity = "high" },
-            new() { Id = "core", Label = "Core Subjects", Description = $"At least 6 core subjects (found {coreCount})", Passed = hasCompulsoryCore, Severity = "high" },
-            new() { Id = "religion", Label = "Religion Subjects", Description = $"Both Islam & others (found {religionCount})", Passed = hasAllReligion, Severity = "medium" },
+            new() { Id = "core", Label = "Core Subjects", Description = $"At least 6 core subjects (found {coreCount})", Passed = spData.HasCompulsoryCoreSubjects, Severity = "high" },
+            new() { Id = "religion", Label = "Religion Subjects", Description = $"Both Islam & others (found {religionCount})", Passed = spData.HasAllReligionTypes, Severity = "medium" },
             new() { Id = "vocational", Label = "Vocational Subjects", Description = $"Vocational subjects configured (found {vocationalCount})", Passed = vocationalCount > 0, Severity = "medium" },
-            new() { Id = "primary", Label = "Primary Classes (1-5)", Description = $"Primary section configured", Passed = classes.Any(c => c.Name.StartsWith("1") || c.Name.StartsWith("2") || c.Name.StartsWith("3") || c.Name.StartsWith("4") || c.Name.StartsWith("5")), Severity = "high" },
-            new() { Id = "secondary", Label = "Secondary Classes (6-10)", Description = $"Secondary section configured", Passed = classes.Any(c => c.Name.StartsWith("6") || c.Name.StartsWith("7") || c.Name.StartsWith("8") || c.Name.StartsWith("9") || c.Name.StartsWith("10")), Severity = "high" },
+            new() { Id = "primary", Label = "Primary Classes (1-5)", Description = "Primary section configured", Passed = spData.HasPrimaryClasses, Severity = "high" },
+            new() { Id = "secondary", Label = "Secondary Classes (6-10)", Description = "Secondary section configured", Passed = spData.HasSecondaryClasses, Severity = "high" },
             new() { Id = "elective", Label = "Elective Subjects", Description = $"Elective subjects available (found {electiveCount})", Passed = electiveCount > 0, Severity = "low" },
-            new() { Id = "islam", Label = "Islamic Studies", Description = "Islamic Studies subject exists", Passed = activeSubjects.Any(s => s.IsReligionSubject && (s.ReligionType ?? "").Contains("Islam", StringComparison.OrdinalIgnoreCase)), Severity = "medium" },
+            new() { Id = "islam", Label = "Islamic Studies", Description = "Islamic Studies subject exists", Passed = spData.HasIslamicStudies, Severity = "medium" },
         };
 
         var passed = checklist.Count(c => c.Passed);
@@ -50,41 +51,44 @@ public class NctbComplianceService : INctbComplianceService
         var complianceScore = totalChecks > 0 ? Math.Round((double)passed / totalChecks * 100, 1) : 0;
 
         var missing = checklist.Where(c => !c.Passed).Select(c => c.Label).ToList();
-        var warnings = new List<string>();
         var recommendations = new List<string>();
 
         if (!hasScience) recommendations.Add("Configure Science group for class 9-10");
         if (!hasBusiness) recommendations.Add("Configure Business Studies group for class 9-10");
         if (!hasHumanities) recommendations.Add("Configure Humanities group for class 9-10");
         if (vocationalCount == 0) recommendations.Add("Add vocational subjects for NCTB compliance");
-        if (!hasCompulsoryCore) recommendations.Add("Add more core subjects (minimum 6 required)");
+        if (!spData.HasCompulsoryCoreSubjects) recommendations.Add("Add more core subjects (minimum 6 required)");
+
+        var splitSubjects = (string input) => string.IsNullOrWhiteSpace(input)
+            ? new List<string>()
+            : input.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
         return new NctbComplianceReportDto
         {
-            AcademicYearId = academicYearId,
-            AcademicYearName = yearName,
+            AcademicYearId = spData.AcademicYearId,
+            AcademicYearName = spData.AcademicYearName,
             ComplianceScore = complianceScore,
             TotalChecks = totalChecks,
             PassedChecks = passed,
             HasScienceGroup = hasScience,
             HasBusinessStudiesGroup = hasBusiness,
             HasHumanitiesGroup = hasHumanities,
-            HasCompulsoryCoreSubjects = hasCompulsoryCore,
-            HasAllReligionTypes = hasAllReligion,
+            HasCompulsoryCoreSubjects = spData.HasCompulsoryCoreSubjects,
+            HasAllReligionTypes = spData.HasAllReligionTypes,
             VocationalSubjectCount = vocationalCount,
-            TotalSubjectCount = activeSubjects.Count,
-            GroupCount = groups.Count,
+            TotalSubjectCount = spData.TotalSubjectCount,
+            GroupCount = spData.GroupCount,
             ReligionSubjectCount = religionCount,
             MissingSubjects = missing,
-            Warnings = warnings,
+            Warnings = new List<string>(),
             Recommendations = recommendations,
             Checklist = checklist,
             SubjectCategoryBreakdown = new List<SubjectCategoryBreakdown>
             {
-                new() { Category = "Core", Count = coreCount, Subjects = activeSubjects.Where(s => s.Category == "Core").Select(s => s.Name).ToList() },
-                new() { Category = "Elective", Count = electiveCount, Subjects = activeSubjects.Where(s => s.Category == "Elective").Select(s => s.Name).ToList() },
-                new() { Category = "Vocational", Count = vocationalCount, Subjects = activeSubjects.Where(s => s.Category == "Vocational").Select(s => s.Name).ToList() },
-                new() { Category = "Religion", Count = religionCount, Subjects = activeSubjects.Where(s => s.IsReligionSubject).Select(s => s.Name).ToList() },
+                new() { Category = "Core", Count = coreCount, Subjects = splitSubjects(spData.CoreSubjectNames) },
+                new() { Category = "Elective", Count = electiveCount, Subjects = splitSubjects(spData.ElectiveSubjectNames) },
+                new() { Category = "Vocational", Count = vocationalCount, Subjects = splitSubjects(spData.VocationalSubjectNames) },
+                new() { Category = "Religion", Count = religionCount, Subjects = splitSubjects(spData.ReligionSubjectNames) },
             }
         };
     }
@@ -139,6 +143,8 @@ public class NctbComplianceService : INctbComplianceService
         await repo.AddAsync(entity, ct);
         await _uow.SaveChangesAsync(ct);
 
+        await LogAuditAsync("Created", "CurriculumVersion", entity.Id, null, dto.VersionName, ct);
+
         return await GetCurriculumVersionByIdAsync(entity.Id, ct);
     }
 
@@ -148,6 +154,7 @@ public class NctbComplianceService : INctbComplianceService
         var entity = await repo.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity is null) throw new KeyNotFoundException($"CurriculumVersion with id {id} not found");
 
+        var oldName = entity.VersionName;
         entity.VersionName = dto.VersionName;
         entity.AcademicYearId = dto.AcademicYearId;
         entity.EffectiveFrom = dto.EffectiveFrom;
@@ -158,6 +165,8 @@ public class NctbComplianceService : INctbComplianceService
         repo.Update(entity);
         await _uow.SaveChangesAsync(ct);
 
+        await LogAuditAsync("Updated", "CurriculumVersion", id, oldName, dto.VersionName, ct);
+
         return await GetCurriculumVersionByIdAsync(id, ct);
     }
 
@@ -167,10 +176,123 @@ public class NctbComplianceService : INctbComplianceService
         var entity = await repo.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity is null) return false;
 
+        var versionName = entity.VersionName;
         entity.IsDeleted = true;
         repo.Update(entity);
         await _uow.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Deleted", "CurriculumVersion", id, versionName, null, ct);
         return true;
+    }
+
+    public async Task<List<CurriculumSubjectDto>> GetCurriculumSubjectsAsync(int curriculumVersionId, CancellationToken ct = default)
+    {
+        var subjects = await _uow.Repository<CurriculumSubject>().Query().AsNoTracking()
+            .Include(x => x.Subject)
+            .Where(x => x.CurriculumVersionId == curriculumVersionId && !x.IsDeleted)
+            .OrderBy(x => x.SortOrder)
+            .ToListAsync(ct);
+
+        return subjects.Select(x => new CurriculumSubjectDto
+        {
+            Id = x.Id,
+            CurriculumVersionId = x.CurriculumVersionId,
+            SubjectId = x.SubjectId,
+            SubjectCode = x.SubjectCode,
+            SubjectName = x.Subject?.Name ?? "",
+            Category = x.Category,
+            TotalHours = x.TotalHours,
+            IsCompulsory = x.IsCompulsory,
+            SortOrder = x.SortOrder
+        }).ToList();
+    }
+
+    public async Task<CurriculumSubjectDto> AddSubjectToCurriculumAsync(CurriculumSubjectUpsertDto dto, CancellationToken ct = default)
+    {
+        var subject = await _uow.Repository<Subject>().FirstOrDefaultAsync(x => x.Id == dto.SubjectId && !x.IsDeleted, ct);
+        if (subject is null) throw new KeyNotFoundException($"Subject with id {dto.SubjectId} not found");
+
+        var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "system";
+
+        var entity = new CurriculumSubject
+        {
+            CurriculumVersionId = dto.CurriculumVersionId,
+            SubjectId = dto.SubjectId,
+            SubjectCode = subject.Code,
+            Category = dto.Category,
+            TotalHours = dto.TotalHours,
+            IsCompulsory = dto.IsCompulsory,
+            SortOrder = dto.SortOrder,
+            CreatedBy = userName
+        };
+
+        var repo = _uow.Repository<CurriculumSubject>();
+        await repo.AddAsync(entity, ct);
+        await _uow.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Created", "CurriculumSubject", entity.Id, null, $"{subject.Name} ({subject.Code})", ct);
+
+        return new CurriculumSubjectDto
+        {
+            Id = entity.Id,
+            CurriculumVersionId = entity.CurriculumVersionId,
+            SubjectId = entity.SubjectId,
+            SubjectCode = entity.SubjectCode,
+            SubjectName = subject.Name,
+            Category = entity.Category,
+            TotalHours = entity.TotalHours,
+            IsCompulsory = entity.IsCompulsory,
+            SortOrder = entity.SortOrder
+        };
+    }
+
+    public async Task<bool> RemoveSubjectFromCurriculumAsync(int id, CancellationToken ct = default)
+    {
+        var repo = _uow.Repository<CurriculumSubject>();
+        var entity = await repo.Query()
+            .Include(x => x.Subject)
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
+
+        if (entity is null) return false;
+
+        var subjectName = entity.Subject?.Name ?? entity.SubjectCode;
+        var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "system";
+
+        entity.IsDeleted = true;
+        entity.UpdatedBy = userName;
+        repo.Update(entity);
+        await _uow.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Deleted", "CurriculumSubject", id, subjectName, null, ct);
+        return true;
+    }
+
+    private async Task LogAuditAsync(string action, string entity, int? entityId, string? oldValue, string? newValue, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var details = entityId.HasValue
+            ? $"[{entity}#{entityId}] {action}"
+            : $"[{entity}] {action}";
+
+        if (oldValue != null || newValue != null)
+            details += $" | Old: {oldValue} | New: {newValue}";
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = "Curriculum",
+            Action = $"{entity}.{action}",
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _uow.Repository<AuditLog>().AddAsync(log, ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     private async Task ClearCurrentFlagAsync(CancellationToken ct = default)

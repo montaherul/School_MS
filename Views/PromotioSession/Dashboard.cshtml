@@ -1,0 +1,160 @@
+@{
+    ViewData["Title"] = "Promotion Dashboard";
+    var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+    var dashboard = ViewBag.Dashboard as PromotioDashboardDto ?? new();
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-page-header">
+        <div class="adm-page-header__left">
+            <h1 class="adm-page-header__title">Promotion Dashboard</h1>
+            <p class="adm-page-header__sub">Overview of promotion statistics</p>
+        </div>
+        <div class="adm-page-header__right">
+            <a href="@Url.Action("Index", "PromotioSession")" class="adm-btn adm-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                New Session
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters ws-mb-4">
+        <form method="get" action="@Url.Action("Dashboard")" class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Academic Year</label>
+                <select name="academicYearId" class="adm-input">
+                    @foreach (var y in years)
+                    {
+                        <!option value="@y.Id" selected="@(y.Id == selectedYearId)">@y.Name</!option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field ws-d-flex ws-ai-end">
+                <button type="submit" class="adm-btn adm-btn--primary">Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="er-stats ws-mb-4">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Students</span>
+                <span class="er-stat__value">@dashboard.TotalStudents</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Eligible for Promotion</span>
+                <span class="er-stat__value">@dashboard.EligibleForPromotion</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Failed Students</span>
+                <span class="er-stat__value">@dashboard.FailedStudents</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Already Promoted</span>
+                <span class="er-stat__value">@dashboard.AlreadyPromoted</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-stats ws-mb-4">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Promotions</span>
+                <span class="er-stat__value">@dashboard.TotalPromotions</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--pending">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Draft Sessions</span>
+                <span class="er-stat__value">@dashboard.DraftSessions</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--converted">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Completed Sessions</span>
+                <span class="er-stat__value">@dashboard.CompletedSessions</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Classes</span>
+                <span class="er-stat__value">@classes.Count</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-actions">
+        <a href="@Url.Action("Index", "PromotioSession")" class="dash-action-card">
+            <div class="dash-action-card__icon dash-action-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Promotion Sessions</span>
+                <span class="dash-action-card__sub">Manage bulk promotion sessions</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </a>
+        <a href="@Url.Action("ProgressionRules", "PromotioSession")" class="dash-action-card">
+            <div class="dash-action-card__icon dash-action-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Progression Rules</span>
+                <span class="dash-action-card__sub">Configure class progression paths</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </a>
+        <a href="@Url.Action("Reports", "PromotioSession")" class="dash-action-card">
+            <div class="dash-action-card__icon dash-action-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Reports</span>
+                <span class="dash-action-card__sub">View promotion reports and registers</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </a>
+        <a href="@Url.Action("FailedStudents", "PromotioSession", new { academicYearId = selectedYearId })" class="dash-action-card">
+            <div class="dash-action-card__icon dash-action-card__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Failed Students</span>
+                <span class="dash-action-card__sub">View and manage failed students</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+        </a>
+    </div>
+</div>

@@ -11,6 +11,7 @@ public interface ISchoolClassService
     Task UpdateAsync(SchoolClassUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task<IEnumerable<SchoolClassListItemDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>> GetAllSchoolClassesAsync(CancellationToken cancellationToken = default);
 
     Task<SchoolClassListItemDto> CloneAsync(int id, string createdBy, CancellationToken cancellationToken = default);
     Task ArchiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);

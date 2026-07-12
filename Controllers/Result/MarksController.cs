@@ -1,20 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Academic;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 using System.Text;
-using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -23,53 +22,60 @@ public class MarksController : Controller
 {
     private readonly IMarkEntryService _markEntryService;
     private readonly ITeacherService _teacherService;
-    private readonly IUnitOfWork _uow;
-    private readonly SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService _resultAuthService;
+    private readonly IResultAuthorizationService _resultAuthService;
     private readonly ITeacherResultRepository _teacherResultRepository;
     private readonly ISubjectMarkStructureService _markStructureService;
+    private readonly IAcademicYearService _academicYearService;
+    private readonly IExamService _examService;
+    private readonly ISchoolClassService _schoolClassService;
+    private readonly IStudentService _studentService;
+    private readonly IResultPublicationService _publicationService;
 
     public MarksController(
         IMarkEntryService markEntryService,
         ITeacherService teacherService,
-        IUnitOfWork uow,
-        SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService resultAuthService,
+        IResultAuthorizationService resultAuthService,
         ITeacherResultRepository teacherResultRepository,
-        ISubjectMarkStructureService markStructureService)
+        ISubjectMarkStructureService markStructureService,
+        IAcademicYearService academicYearService,
+        IExamService examService,
+        ISchoolClassService schoolClassService,
+        IStudentService studentService,
+        IResultPublicationService publicationService)
     {
         _markEntryService = markEntryService;
         _teacherService = teacherService;
-        _uow = uow;
         _resultAuthService = resultAuthService;
         _teacherResultRepository = teacherResultRepository;
         _markStructureService = markStructureService;
+        _academicYearService = academicYearService;
+        _examService = examService;
+        _schoolClassService = schoolClassService;
+        _studentService = studentService;
+        _publicationService = publicationService;
     }
 
     [HttpGet]
     [RequirePermission("Marks.View")]
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive, ct);
+        var activeYear = await _academicYearService.GetActiveYearAsync(ct);
         var activeYearId = activeYear?.Id ?? 1;
 
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => x.AcademicYearId == activeYearId && !x.IsDeleted);
-        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted);
+        var exams = await _examService.GetExamsByYearAsync(activeYearId, ct);
+        var classes = await _schoolClassService.GetAllSchoolClassesAsync(ct);
 
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
 
-        var model = new SchoolManagementSystem.Models.ViewModels.Result.MarksIndexViewModel
+        var model = new MarksIndexViewModel
         {
             Exams = exams.ToList(),
             Classes = classes.ToList(),
             IsTeacher = teacher != null,
             TeacherId = teacher?.Id ?? 0,
             Assignments = teacher != null
-                ? (await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().Query()
-                    .Include(a => a.Class)
-                    .Include(a => a.Section)
-                    .Include(a => a.Group)
-                    .Where(a => a.TeacherId == teacher.Id && !a.IsDeleted)
-                    .ToListAsync(ct))
+                ? await _teacherService.GetTeacherClassAssignmentsAsync(teacher.Id, ct)
                 : null
         };
 
@@ -92,10 +98,6 @@ public class MarksController : Controller
             if (!isAuthorized) return Forbid();
         }
 
-        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
-            .Where(s => s.ClassId == classId && s.SectionId == sectionId)
-            .Select(s => s.StudentGroupId)
-            .FirstOrDefaultAsync(ct);
         var dto = await _markEntryService.GetMarkEntryDataAsync(examId, subjectId, classId, sectionId);
         var vm = new MarkEntryViewModel
         {
@@ -124,8 +126,8 @@ public class MarksController : Controller
         var columns = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
         ViewBag.ComponentColumns = columns;
 
-        var exam = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().GetByIdAsync(examId);
-        if (exam != null && exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
+        var exam = await _examService.GetExamEntityByIdAsync(examId, ct);
+        if (exam != null && exam.Status == ResultWorkflowStatus.Published)
         {
             ViewBag.IsReadOnly = true;
             ViewBag.Message = "Exam marks have already been published and cannot be modified.";
@@ -155,12 +157,7 @@ public class MarksController : Controller
                 if (dto.Marks.Any())
                 {
                     var studentIds = dto.Marks.Select(m => m.StudentId).Distinct().ToList();
-                    var classSections = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
-                        .Query()
-                        .Where(s => studentIds.Contains(s.Id))
-                        .Select(s => new { s.ClassId, s.SectionId })
-                        .Distinct()
-                        .ToListAsync(ct);
+                    var classSections = await _studentService.GetStudentClassSectionsAsync(studentIds, ct);
 
                     foreach (var cs in classSections)
                     {
@@ -192,11 +189,7 @@ public class MarksController : Controller
 
             if (teacher != null && !User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
             {
-                var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
-                    .Query()
-                    .Where(s => s.Id == dto.StudentId)
-                    .Select(s => new { s.ClassId, s.SectionId })
-                    .FirstOrDefaultAsync(ct);
+                var student = (await _studentService.GetStudentClassSectionsAsync([dto.StudentId], ct)).FirstOrDefault();
 
                 if (student != null)
                 {
@@ -239,12 +232,7 @@ public class MarksController : Controller
                 if (dto.Marks.Any())
                 {
                     var studentIds = dto.Marks.Select(m => m.StudentId).Distinct().ToList();
-                    var classSections = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
-                        .Query()
-                        .Where(s => studentIds.Contains(s.Id))
-                        .Select(s => new { s.ClassId, s.SectionId })
-                        .Distinct()
-                        .ToListAsync(ct);
+                    var classSections = await _studentService.GetStudentClassSectionsAsync(studentIds, ct);
 
                     foreach (var cs in classSections)
                     {
@@ -350,20 +338,15 @@ public class MarksController : Controller
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (teacher == null) return Unauthorized();
 
-        var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive, ct);
+        var activeYear = await _academicYearService.GetActiveYearAsync(ct);
         var activeYearId = activeYear?.Id ?? 1;
 
         var assignedExams = await _teacherResultRepository.GetTeacherAssignedExamsAsync(teacher.Id, activeYearId, ct);
         var examIds = assignedExams.Select(e => e.ExamId).ToList();
 
-        var assignments = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherSubjectAssignment>().Query()
-            .Where(a => a.TeacherId == teacher.Id && a.IsActive && !a.IsDeleted && a.AcademicYearId == activeYearId)
-            .ToListAsync(ct);
+        var assignments = await _teacherService.GetTeacherSubjectAssignmentsAsync(teacher.Id, activeYearId, ct);
 
-        var allMarkEntries = await _uow.Repository<MarkEntry>().Query()
-            .Where(m => examIds.Contains(m.ExamId))
-            .Select(m => new { m.ExamId, m.SubjectId, m.ClassId, m.Status })
-            .ToListAsync(ct);
+        var allMarkEntries = await _markEntryService.GetMarkEntryStatusByExamIdsAsync(examIds, ct);
 
         int pendingEntries = 0;
         int submittedEntries = 0;
@@ -447,7 +430,7 @@ public class MarksController : Controller
     public async Task<IActionResult> EntryStatus(int examId, int? classId, CancellationToken ct)
     {
         var dto = await _markEntryService.GetEntryStatusAsync(examId, classId);
-        var exam = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().GetByIdAsync(examId);
+        var exam = await _examService.GetExamEntityByIdAsync(examId, ct);
         ViewBag.ExamName = exam?.Name ?? "";
         return View(dto);
     }
@@ -456,24 +439,12 @@ public class MarksController : Controller
     [RequirePermission("Marks.Audit")]
     public async Task<IActionResult> AuditLog(int? examId, int? studentId, CancellationToken ct)
     {
-        var query = _uow.Repository<ResultAuditLog>().Query()
-            .Include(l => l.Exam)
-            .Include(l => l.Student)
-            .Include(l => l.Subject)
-            .Where(l => !l.IsDeleted);
+        var logs = await _publicationService.GetAuditLogsAsync(examId, studentId, ct);
 
-        if (examId.HasValue && examId > 0)
-            query = query.Where(l => l.ExamId == examId.Value);
-
-        if (studentId.HasValue && studentId > 0)
-            query = query.Where(l => l.StudentId == studentId.Value);
-
-        var logs = await query.OrderByDescending(l => l.CreatedAt).Take(200).ToListAsync(ct);
-        
-        var model = new SchoolManagementSystem.Models.ViewModels.Result.MarksAuditLogViewModel
+        var model = new MarksAuditLogViewModel
         {
             Logs = logs,
-            Exams = (await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted)).ToList(),
+            Exams = (await _examService.GetAllExamsAsync(ct)).ToList(),
             SelectedExamId = examId
         };
         return View(model);

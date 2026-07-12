@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -574,5 +575,20 @@ public class PromotionPolicyService : IPromotionPolicyService
         };
 
         return rule.IsInverse ? !met : met;
+    }
+
+    public async Task<PromotionPolicy?> GetPolicyByIdWithRulesAsync(int policyId, CancellationToken ct = default)
+    {
+        return await _uow.Repository<PromotionPolicy>().Query()
+            .Include(p => p.Rules)
+            .FirstOrDefaultAsync(p => p.Id == policyId && !p.IsDeleted, ct);
+    }
+
+    public async Task<PromotionExecution?> GetPromotionExecutionAsync(int academicYearId, int classId, CancellationToken ct = default)
+    {
+        return await _uow.Repository<PromotionExecution>().Query()
+            .Where(e => e.AcademicYearId == academicYearId && e.SchoolClassId == classId && !e.IsDeleted)
+            .OrderByDescending(e => e.ExecutedAt)
+            .FirstOrDefaultAsync(ct);
     }
 }

@@ -31,11 +31,11 @@ public class SchoolClassService : ISchoolClassService
 
         var classEntities = await _unitOfWork.Repository<SchoolClass>().Query().AsNoTracking()
             .Where(c => ids.Contains(c.Id))
-            .Select(c => new { c.Id, c.NameBn, c.Code, c.Capacity, c.IsGroupBased })
+            .Select(c => new { c.Id, c.NameBn, c.Code, c.Capacity, c.IsGroupBased, c.IsHigherSecondary })
             .ToListAsync(ct);
         var entityLookup = classEntities.ToDictionary(x => x.Id);
 
-        var subjectCounts = await _unitOfWork.Repository<ClassSubject>().Query()
+        var subjectCounts = await _unitOfWork.Repository<ClassSubject>().QueryNoTracking()
             .Where(cs => ids.Contains(cs.SchoolClassId) && !cs.IsDeleted)
             .GroupBy(cs => cs.SchoolClassId)
             .Select(g => new { ClassId = g.Key, Count = g.Count() })
@@ -54,6 +54,7 @@ public class SchoolClassService : ISchoolClassService
                 SortOrder = x.SortOrder,
                 Capacity = entity?.Capacity ?? 0,
                 IsGroupBased = entity?.IsGroupBased ?? false,
+                IsHigherSecondary = entity?.IsHigherSecondary ?? false,
                 IsActive = entity != null,
                 SectionCount = x.SectionCount,
                 StudentCount = x.StudentCount,
@@ -84,6 +85,7 @@ public class SchoolClassService : ISchoolClassService
             Capacity = entity.Capacity,
             Description = entity.Description,
             IsGroupBased = entity.IsGroupBased,
+            IsHigherSecondary = entity.IsHigherSecondary,
             IsActive = entity.IsActive
         };
     }
@@ -105,6 +107,7 @@ public class SchoolClassService : ISchoolClassService
             Capacity = dto.Capacity,
             Description = dto.Description,
             IsGroupBased = dto.IsGroupBased,
+            IsHigherSecondary = dto.IsHigherSecondary,
             IsActive = dto.IsActive
         };
         await _unitOfWork.Repository<SchoolClass>().AddAsync(entity, ct);
@@ -129,6 +132,7 @@ public class SchoolClassService : ISchoolClassService
         entity.Capacity = dto.Capacity;
         entity.Description = dto.Description;
         entity.IsGroupBased = dto.IsGroupBased;
+        entity.IsHigherSecondary = dto.IsHigherSecondary;
         entity.IsActive = dto.IsActive;
         entity.UpdatedBy = updatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
@@ -150,9 +154,17 @@ public class SchoolClassService : ISchoolClassService
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
+    public async Task<IEnumerable<SchoolClass>> GetAllSchoolClassesAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<SchoolClass>().QueryNoTracking()
+            .Where(c => !c.IsDeleted)
+            .OrderBy(c => c.SortOrder)
+            .ToListAsync(ct);
+    }
+
     public async Task<IEnumerable<SchoolClassListItemDto>> GetAllAsync(CancellationToken ct = default)
     {
-        return await _unitOfWork.Repository<SchoolClass>().Query()
+        return await _unitOfWork.Repository<SchoolClass>().QueryNoTracking()
             .Where(c => !c.IsDeleted && c.IsActive)
             .OrderBy(c => c.SortOrder)
             .Select(c => new SchoolClassListItemDto
@@ -164,6 +176,7 @@ public class SchoolClassService : ISchoolClassService
                 SortOrder = c.SortOrder,
                 Capacity = c.Capacity,
                 IsGroupBased = c.IsGroupBased,
+                IsHigherSecondary = c.IsHigherSecondary,
                 IsActive = c.IsActive
             })
             .ToListAsync(ct);
@@ -184,6 +197,7 @@ public class SchoolClassService : ISchoolClassService
             Capacity = source.Capacity,
             Description = source.Description,
             IsGroupBased = source.IsGroupBased,
+            IsHigherSecondary = source.IsHigherSecondary,
             IsActive = false
         };
         await _unitOfWork.Repository<SchoolClass>().AddAsync(clone, ct);

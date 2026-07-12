@@ -409,6 +409,24 @@ public class StudentService : IStudentService
             .ToList();
     }
 
+    public async Task<int?> GetStudentGroupIdByClassSectionAsync(int classId, int sectionId, CancellationToken ct = default)
+    {
+        var studentGroupId = await _studentRepository.Query()
+            .Where(s => s.ClassId == classId && s.SectionId == sectionId)
+            .Select(s => s.StudentGroupId)
+            .FirstOrDefaultAsync(ct);
+        return studentGroupId;
+    }
+
+    public async Task<List<StudentClassSectionDto>> GetStudentClassSectionsAsync(List<int> studentIds, CancellationToken ct = default)
+    {
+        return await _studentRepository.Query()
+            .Where(s => studentIds.Contains(s.Id))
+            .Select(s => new StudentClassSectionDto { ClassId = s.ClassId, SectionId = s.SectionId })
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
     private async Task<string> GenerateStudentNoAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;

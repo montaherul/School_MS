@@ -33,6 +33,7 @@ using SchoolManagementSystem.Models.Enums;
 
 using SchoolManagementSystem.Models.Entities.Academic;
 using Microsoft.Extensions.Logging;
+using SchoolManagementSystem.Models.DTOs.Exam;
 
 namespace SchoolManagementSystem.Services.Implementations.Attendance
 {
@@ -461,70 +462,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             int pageSize = 50,
             CancellationToken ct = default)
         {
-            var dateOnly = DateOnly.FromDateTime(attendanceDate);
-            var studentRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
-            var attendanceRepo = _uow.Repository<AttendanceRecord>();
-
-            // Get active students
-            var studentsQuery = studentRepo.QueryNoTracking()
-                .Include(s => s.Class)
-                .Include(s => s.Section)
-                .Include(s => s.StudentGroup)
-                .Where(s => s.ClassId == classId 
-                    && s.SectionId == sectionId 
-                    && s.Status == SchoolManagementSystem.Models.Enums.StudentStatus.Active 
-                    && !s.IsDeleted);
-
-            if (studentGroupId.HasValue)
-            {
-                studentsQuery = studentsQuery.Where(s => s.StudentGroupId == studentGroupId);
-            }
-
-            var totalStudents = await studentsQuery.CountAsync(ct);
-
-            var students = await studentsQuery
-                .OrderBy(s => s.RollNumber)
-                .ThenBy(s => s.FullName)
-                .Skip((Math.Max(page, 1) - 1) * pageSize)
-                .Take(Math.Clamp(pageSize, 1, 10000))
-                .ToListAsync(ct);
-
-            var studentIds = students.Select(s => s.Id).ToList();
-
-            // Get existing attendance records
-            var attendanceRecords = await attendanceRepo.Query()
-                .Where(a => studentIds.Contains(a.StudentId) 
-                    && a.AttendanceDate == dateOnly 
-                    && !a.IsDeleted)
-                .ToListAsync(ct);
-
-            var attendanceDict = attendanceRecords.ToDictionary(a => a.StudentId);
-
-            // Build DTOs
-            var dtos = students.Select(s =>
-            {
-                var attendance = attendanceDict.ContainsKey(s.Id) ? attendanceDict[s.Id] : null;
-                return new StudentAttendanceDto
-                {
-                    Id = attendance?.Id ?? 0,
-                    StudentId = s.Id,
-                    StudentNo = s.StudentNo ?? "",
-                    StudentName = s.FullName ?? "",
-                    RollNumber = s.RollNumber.ToString(),
-                    ClassId = classId,
-                    ClassName = s.Class?.Name ?? "",
-                    SectionId = sectionId,
-                    SectionName = s.Section?.Name ?? "",
-                    StudentGroupId = s.StudentGroupId,
-                    StudentGroupName = s.StudentGroup?.Name ?? "",
-                    AttendanceDate = attendanceDate.Date,
-                    Status = attendance?.Status ?? SchoolManagementSystem.Models.Enums.AttendanceStatus.Present,
-                    StatusName = (attendance?.Status ?? SchoolManagementSystem.Models.Enums.AttendanceStatus.Present).ToString(),
-                    Remarks = attendance?.Remarks ?? ""
-                };
-            }).ToList();
-
-            return (dtos, totalStudents);
+            return await _repo.GetStudentsForAttendanceBySpAsync(
+                classId, sectionId, studentGroupId, attendanceDate, page, pageSize, ct);
         }
 
         public async Task UnlockAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string unlockedBy, string reason, CancellationToken ct = default)
@@ -854,6 +793,13 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         public async Task<double> GetAttendancePercentageAsync(int studentId, int year, int month, CancellationToken ct = default)
         {
             return await _percentageService.GetStudentAttendancePercentageAsync(studentId, year, month, ct);
+        }
+
+        public async Task<List<AttendanceForPromotionDto>> GetAttendanceForPromotionAsync(
+            int academicYearId, int? classId = null, int? sectionId = null,
+            decimal? minPercentage = null, CancellationToken ct = default)
+        {
+            return await _repo.GetAttendanceForPromotionAsync(academicYearId, classId, sectionId, minPercentage, ct);
         }
     }
 }

@@ -23,11 +23,17 @@
                     onchange="window.location.href = '/Academic/NctbCompliance?academicYearId=' + this.value;">
                 @foreach (var v in ViewBag.CurriculumVersions)
                 {
-                    <option value="@v.AcademicYearId" selected="@(v.AcademicYearId == Model.AcademicYearId)">
+                    <option value="@v.AcademicYearId" data-version-id="@v.Id" selected="@(v.AcademicYearId == Model.AcademicYearId)">
                         @v.VersionName @(v.IsCurrent ? "(Current)" : "")
                     </option>
                 }
             </select>
+            <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" id="manageSubjectsBtn">
+                <svg class="ws-icon ws-mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Manage Subjects
+            </button>
             <span class="adm-status adm-status--info">@Model.ComplianceScore%</span>
         </div>
     </div>
@@ -156,3 +162,18 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('manageSubjectsBtn')?.addEventListener('click', function() {
+            var sel = document.getElementById('academicYearSelect');
+            var opt = sel.options[sel.selectedIndex];
+            var versionId = opt ? opt.getAttribute('data-version-id') : '';
+            if (versionId) {
+                window.location.href = '@Url.Action("Subjects", "NctbCompliance")?curriculumVersionId=' + versionId;
+            } else {
+                toastr?.warning('Please select a curriculum version first.');
+            }
+        });
+    </script>
+}

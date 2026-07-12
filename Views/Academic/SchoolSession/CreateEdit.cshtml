@@ -1,0 +1,78 @@
+@model SchoolManagementSystem.Models.ViewModels.Academic.SchoolSessionViewModel
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit School Session" : "Add School Session";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar-range"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit School Session" : "Add School Session")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify session details" : "Create a new academic session")</p>
+            </div>
+        </div>
+        <a href="/Academic/SchoolSession/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-6">
+            <div class="adm-card ws-shadow-sm">
+                <div class="adm-card__body ws-p-4">
+                    <form asp-action="CreateEdit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="ws-mb-3">
+                            <label asp-for="Name" class="adm-label">Name <span class="ws-text-danger">*</span></label>
+                            <input asp-for="Name" class="adm-input" placeholder="e.g. Jan-Jun 2026" />
+                            <span asp-validation-for="Name" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-mb-3">
+                            <label asp-for="AcademicYearId" class="adm-label">Academic Year <span class="ws-text-danger">*</span></label>
+                            <input asp-for="AcademicYearId" class="adm-input" type="number" placeholder="Academic Year ID" />
+                            <span asp-validation-for="AcademicYearId" class="ws-text-danger ws-fs-13"></span>
+                        </div>
+
+                        <div class="ws-row">
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="StartDate" class="adm-label">Start Date <span class="ws-text-danger">*</span></label>
+                                <input asp-for="StartDate" type="date" class="adm-input" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="StartDate" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                            <div class="ws-col-md-6 ws-mb-3">
+                                <label asp-for="EndDate" class="adm-label">End Date <span class="ws-text-danger">*</span></label>
+                                <input asp-for="EndDate" type="date" class="adm-input" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="EndDate" class="ws-text-danger ws-fs-13"></span>
+                            </div>
+                        </div>
+
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsCurrent" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsCurrent" class="adm-form-check-label ws-fw-600">Set as Current Session</label>
+                        </div>
+
+                        <div class="ws-mb-4 adm-form-check">
+                            <input asp-for="IsActive" class="adm-form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="adm-form-check-label ws-fw-600">Active</label>
+                        </div>
+
+                        <div class="ws-flex ws-gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Academic/SchoolSession/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -169,3 +169,9 @@ public class StudentUpsertDto
     public string? GuardianCode { get; set; }
     public int LinkedChildrenCount { get; set; }
 }
+
+public class StudentClassSectionDto
+{
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
+}

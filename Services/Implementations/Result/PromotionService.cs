@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -10,6 +11,7 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Models.Entities.Guardian;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -444,6 +446,7 @@ public class PromotionService : IPromotionService
     public async Task<IEnumerable<PromotionRecord>> GetStudentPromotionHistoryAsync(int studentId)
     {
         return await _promotionHistoryRepository.Query()
+            .AsNoTracking()
             .Include(p => p.FromClass)
             .Include(p => p.ToClass)
             .Include(p => p.AcademicYear)
@@ -532,6 +535,42 @@ public class PromotionService : IPromotionService
                 _uow.Repository<StudentGroupAssignment>().Remove(existing);
             }
         }
+    }
+
+    public async Task<List<PromotionHistory>> GetPromotionHistoryAsync(int? studentId, int? classId, int? academicYearId, CancellationToken ct = default)
+    {
+        IQueryable<PromotionHistory> query = _uow.Repository<PromotionHistory>().Query()
+            .AsNoTracking()
+            .Include(h => h.Student)
+            .Include(h => h.FromClass)
+            .Include(h => h.ToClass)
+            .Include(h => h.AcademicYear)
+            .Where(h => !h.IsDeleted);
+
+        if (studentId.HasValue)
+            query = query.Where(h => h.StudentId == studentId.Value);
+
+        if (classId.HasValue && academicYearId.HasValue && academicYearId > 0)
+            query = query.Where(h => h.AcademicYearId == academicYearId.Value
+                && (h.FromClassId == classId.Value || h.ToClassId == classId.Value));
+
+        if (academicYearId.HasValue && academicYearId > 0 && !classId.HasValue && !studentId.HasValue)
+            query = query.Where(h => h.AcademicYearId == academicYearId.Value);
+
+        return await query.OrderByDescending(h => h.PromotedAt)
+            .Take(studentId.HasValue ? int.MaxValue : 200)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<object>> GetClassStudentsJsonAsync(int classId, CancellationToken ct = default)
+    {
+        var students = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
+            .Where(s => s.ClassId == classId && !s.IsDeleted)
+            .Select(s => new { s.Id, s.FullName, s.RollNumber })
+            .OrderBy(s => s.RollNumber)
+            .ToListAsync(ct);
+        return students.Cast<object>().ToList();
     }
 
     public async Task ReversePromotionAsync(int promotionHistoryId, int reversedByUserId, string reason)

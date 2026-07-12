@@ -17,6 +17,12 @@ public class SchoolProfile : BaseEntity
 
     [MaxLength(160)]
     public string Email { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Allows teachers to customize component MaxMarks/PassMarks for their assigned exam subjects.
+    /// When false, only admins can modify component marks via ExamSubjectComponent management.
+    /// </summary>
+    public bool AllowTeacherComponentCustomization { get; set; } = false;
 }
 
 public class SystemLog : BaseEntity

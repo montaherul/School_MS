@@ -10,4 +10,5 @@ public interface IStudentGroupService
     Task UpdateAsync(StudentGroupUpsertDto dto, string updatedBy, CancellationToken ct = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
     Task<bool> IsCodeUniqueAsync(string code, int? excludeId, CancellationToken ct = default);
+    Task<List<StudentGroupListItemDto>> GetAllAsync(CancellationToken ct = default);
 }

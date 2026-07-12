@@ -24,7 +24,7 @@
             {
                 <div class="er-page-header__right">
                     <button type="button" id="btnRecalcMerit" class="er-btn er-btn--primary">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="er-mr-2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
                         Recalculate Merit Positions
                     </button>
                 </div>
@@ -34,10 +34,10 @@
 
     <!-- ── Filter Panel ── -->
     <div class="er-card">
-        <form method="get" action="@Url.Action("Index")" class="row g-3">
-            <div class="col-md-5">
-                <label class="form-label">Select Examination</label>
-                <select name="examId" class="form-select er-filters__select" required>
+        <form method="get" action="@Url.Action("Index")" class="adm-form-grid adm-form-grid--gap">
+            <div class="adm-form-group">
+                <label class="adm-label">Select Examination</label>
+                <select name="examId" class="adm-select er-filters__select" required>
                     <option value="">-- Choose Exam --</option>
                     @if (exams != null)
                     {
@@ -48,17 +48,17 @@
                     }
                 </select>
             </div>
-            <div class="col-md-5">
-                <label class="form-label">Ranking Category</label>
-                <select name="category" class="form-select er-filters__select">
+            <div class="adm-form-group">
+                <label class="adm-label">Ranking Category</label>
+                <select name="category" class="adm-select er-filters__select">
                     <!option value="Class" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Class ? "selected" : "")>Class-wise Ranking</!option>
                     <!option value="Section" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Section ? "selected" : "")>Section-wise Ranking</!option>
                     <!option value="Group" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Group ? "selected" : "")>Group-wise (Sci/Hum/Arts) Ranking</!option>
                     <!option value="School" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.School ? "selected" : "")>School-wide Overall Ranking</!option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="er-btn er-btn--primary w-100">
+            <div class="adm-form-group er-flex er-align-end">
+                <button type="submit" class="er-btn er-btn--primary er-w-full">
                     View Rankings
                 </button>
             </div>
@@ -70,7 +70,7 @@
         <div class="er-card__body">
             @if (Model != null && Model.Any())
             {
-                <div class="table-responsive">
+                <div class="er-table-scroll">
                     <table class="dash-table">
                         <thead>
                             <tr>
@@ -89,7 +89,7 @@
                             @foreach (var m in Model)
                             {
                                 <tr>
-                                    <td class="text-center font-weight-bold">
+                                    <td class="er-text-center er-font-bold">
                                         @if (m.Position == 1)
                                         {
                                             <span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: black; padding: 4px 10px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 6px rgba(255,215,0,0.4);">1st</span>
@@ -109,12 +109,12 @@
                                     </td>
                                     <td><span>@m.StudentId</span></td>
                                     <td><span class="adm-cell-name">@m.StudentName</span></td>
-                                    <td class="text-center">@m.RollNumber</td>
+                                    <td class="er-text-center">@m.RollNumber</td>
                                     <td><span class="er-badge">@m.Section</span></td>
                                     <td><span class="er-badge">@m.StudentGroup</span></td>
-                                    <td class="text-center font-weight-bold text-success">@m.TotalMarks.ToString("F2")</td>
-                                    <td class="text-center text-primary font-weight-bold">@m.GPA.ToString("F2")</td>
-                                    <td class="text-center font-weight-bold">@m.Grade</td>
+                                    <td class="er-text-center er-font-bold er-text-success">@m.TotalMarks.ToString("F2")</td>
+                                    <td class="er-text-center er-text-primary er-font-bold">@m.GPA.ToString("F2")</td>
+                                    <td class="er-text-center er-font-bold">@m.Grade</td>
                                 </tr>
                             }
                         </tbody>

@@ -136,6 +136,10 @@ public static class ServiceRegistration
         services.AddScoped<ISchoolClassRepository, SchoolClassRepository>();
         services.AddScoped<ISectionRepository, SectionRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
+        services.AddScoped<ISchoolSessionRepository, SchoolSessionRepository>();
+        services.AddScoped<ISchoolShiftRepository, SchoolShiftRepository>();
+        services.AddScoped<IBuildingRepository, BuildingRepository>();
+        services.AddScoped<ISubjectCategoryRepository, SubjectCategoryRepository>();
         services.AddScoped<IExamRepository, ExamRepository>();
         services.AddScoped<IMarkEntryRepository, MarkEntryRepository>();
         services.AddScoped<IGradingRuleRepository, GradingRuleRepository>();
@@ -146,14 +150,18 @@ public static class ServiceRegistration
         services.AddScoped<IResultAuditLogRepository, ResultAuditLogRepository>();
         services.AddScoped<IFinalResultRepository, FinalResultRepository>();
         services.AddScoped<IPromotionHistoryRepository, PromotionHistoryRepository>();
-        services.AddScoped<ITeacherResultRepository, TeacherResultRepository>();
-        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IPromotioSessionRepository, PromotioSessionRepository>();
+        services.AddScoped<IClassProgressionRuleRepository, ClassProgressionRuleRepository>();
+services.AddScoped<ITeacherResultRepository, TeacherResultRepository>();
+services.AddScoped<IExamWizardRepository, ExamWizardRepository>();
+services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardQueryRepository, DashboardQueryRepository>();
         services.AddScoped<IAcademicCalendarRepository, AcademicCalendarRepository>();
         services.AddScoped<IAcademicCalendarEventRepository, AcademicCalendarEventRepository>();
         services.AddScoped<ISyllabusRepository, SyllabusRepository>();
         services.AddScoped<ILessonPlanRepository, LessonPlanRepository>();
         services.AddScoped<IStudyMaterialRepository, StudyMaterialRepository>();
+        services.AddScoped<INctbComplianceRepository, NctbComplianceRepository>();
         // Register Public Website Repositories
         services.AddScoped<ISchoolSettingRepository, SchoolSettingRepository>();
         services.AddScoped<IWebsitePageRepository, WebsitePageRepository>();
@@ -209,6 +217,7 @@ public static class ServiceRegistration
         services.AddScoped<ITeacherSynchronizationService, TeacherSynchronizationService>();
         services.AddScoped<ITeacherScopeService, TeacherScopeService>();
         services.AddScoped<ITeacherAssignmentService, TeacherAssignmentService>();
+        services.AddScoped<IAutoTeacherAssignmentService, AutoTeacherAssignmentService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceAuthorizationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceAuthorizationService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService, SchoolManagementSystem.Services.Implementations.Result.ResultAuthorizationService>();
         services.AddScoped<IAcademicYearService, AcademicYearService>();
@@ -230,6 +239,10 @@ public static class ServiceRegistration
         services.AddScoped<IStudentGroupService, StudentGroupService>();
         services.AddScoped<ITransferService, TransferService>();
         services.AddScoped<IAcademicReportService, AcademicReportService>();
+        services.AddScoped<ISchoolSessionService, SchoolSessionService>();
+        services.AddScoped<ISchoolShiftService, SchoolShiftService>();
+        services.AddScoped<IBuildingService, BuildingService>();
+        services.AddScoped<ISubjectCategoryService, SubjectCategoryService>();
         // Register Employee Services
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
@@ -253,12 +266,17 @@ public static class ServiceRegistration
         services.AddScoped<IReEvaluationService, ReEvaluationService>();
         services.AddScoped<IReportCardService, ReportCardService>();
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
-        services.AddScoped<IExamComponentService, ExamComponentService>();
-        services.AddScoped<ISubjectMarkStructureService, SubjectMarkStructureService>();
-        services.AddScoped<IExamValidationService, ExamValidationService>();
+        services.AddScoped<ITeacherResultService, TeacherResultService>();
+services.AddScoped<IExamComponentService, ExamComponentService>();
+services.AddScoped<ISubjectMarkStructureService, SubjectMarkStructureService>();
+services.AddScoped<IExamSubjectComponentTeacherService, ExamSubjectComponentTeacherService>();
+services.AddScoped<IExamValidationService, ExamValidationService>();
+        services.AddScoped<IResultValidationService, ResultValidationService>();
         services.AddScoped<IAdmitCardService, AdmitCardService>();
         services.AddScoped<IExamSubjectService, ExamSubjectService>();
+        services.AddScoped<IStudentComponentMarkService, StudentComponentMarkService>();
         services.AddScoped<IExamRoutineService, ExamRoutineService>();
+        services.AddScoped<IAutoScheduleService, AutoScheduleService>();
         services.AddScoped<IStudentSubjectFilterService, StudentSubjectFilterService>();
         services.AddScoped<ITranscriptService, TranscriptService>();
 
@@ -266,6 +284,8 @@ public static class ServiceRegistration
         services.AddScoped<IResultPolicyService, ResultPolicyService>();
         services.AddScoped<IPromotionPolicyService, PromotionPolicyService>();
         services.AddScoped<IRollGenerationService, RollGenerationService>();
+        services.AddScoped<IPromotioSessionService, PromotioSessionService>();
+        services.AddScoped<IPromotionWizardService, PromotionWizardService>();
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
@@ -289,6 +309,7 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IPaymentService, SchoolManagementSystem.Services.Implementations.Fees.PaymentService>();
         services.AddScoped(typeof(SchoolManagementSystem.Services.Interfaces.Base.IBaseService<>), typeof(SchoolManagementSystem.Services.Implementations.Base.BaseService<>));
         services.AddScoped<IExamService, ExamService>();
+        services.AddScoped<IExamWizardService, ExamWizardService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IAssignmentService, AssignmentService>();

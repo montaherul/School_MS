@@ -74,6 +74,7 @@ public class ExamAdminController : ControllerBase
     /// Create a new exam (Admin only)
     /// </summary>
     [HttpPost("create-exam")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateExam([FromBody] ExamUpsertDto dto, CancellationToken ct = default)
     {
         try
@@ -113,6 +114,7 @@ public class ExamAdminController : ControllerBase
     /// Update exam details (Admin only)
     /// </summary>
     [HttpPut("update-exam/{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateExam(int id, [FromBody] ExamUpsertDto dto, CancellationToken ct = default)
     {
         try
@@ -143,6 +145,7 @@ public class ExamAdminController : ControllerBase
     /// Delete exam (Admin only)
     /// </summary>
     [HttpDelete("delete-exam/{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteExam(int id, CancellationToken ct = default)
     {
         try
@@ -181,6 +184,7 @@ public class ExamAdminController : ControllerBase
     /// Create or update grading rules (Admin only)
     /// </summary>
     [HttpPost("upsert-grading-rule")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpsertGradingRule([FromBody] GradingRuleUpsertDto dto, CancellationToken ct = default)
     {
         try
@@ -208,6 +212,7 @@ public class ExamAdminController : ControllerBase
     /// Delete grading rule (Admin only)
     /// </summary>
     [HttpDelete("delete-grading-rule/{id}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteGradingRule(int id, CancellationToken ct = default)
     {
         try
@@ -227,6 +232,7 @@ public class ExamAdminController : ControllerBase
     /// Copy subject structure from one exam to sibling exams
     /// </summary>
     [HttpPost("copy-subjects/{sourceExamId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CopySubjects(int sourceExamId, [FromBody] List<int> targetExamIds, CancellationToken ct = default)
     {
         try
@@ -246,6 +252,7 @@ public class ExamAdminController : ControllerBase
     /// Lock exam from further modifications (Admin only)
     /// </summary>
     [HttpPost("lock-exam/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> LockExam(int examId, [FromBody] string? reason = null, CancellationToken ct = default)
     {
         try
@@ -266,6 +273,7 @@ public class ExamAdminController : ControllerBase
     /// Unlock exam (Admin only)
     /// </summary>
     [HttpPost("unlock-exam/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UnlockExam(int examId, [FromBody] string? reason = null, CancellationToken ct = default)
     {
         try
@@ -304,6 +312,7 @@ public class ExamAdminController : ControllerBase
     /// Calculate and publish merit positions for exam (Admin only)
     /// </summary>
     [HttpPost("calculate-merit/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CalculateMerit(int examId, CancellationToken ct = default)
     {
         try
@@ -323,6 +332,7 @@ public class ExamAdminController : ControllerBase
     /// Publish exam results — delegated to AdminResultController
     /// </summary>
     [HttpPost("publish-results/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> PublishResults(int examId, [FromBody] ResultPublishDto dto)
     {
         try
@@ -340,6 +350,7 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("review-results/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ReviewResults(int examId)
     {
         try
@@ -356,6 +367,7 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("approve-results/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ApproveResults(int examId)
     {
         try
@@ -372,6 +384,7 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("unpublish-results/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UnpublishResults(int examId)
     {
         try
@@ -388,6 +401,7 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("republish-results/{examId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> RepublishResults(int examId)
     {
         try
@@ -464,6 +478,7 @@ public class ExamAdminController : ControllerBase
     /// Get component preview for selected subjects (read-only display for exam wizard)
     /// </summary>
     [HttpPost("component-preview")]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Exam.View")]
     public async Task<IActionResult> GetComponentPreview([FromBody] List<int> subjectIds, CancellationToken ct = default)
     {
@@ -483,6 +498,7 @@ public class ExamAdminController : ControllerBase
     /// Generate FinalResult records for all students in an academic year
     /// </summary>
     [HttpPost("generate-final-results/{academicYearId}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateFinalResults(int academicYearId, CancellationToken ct = default)
     {
         try

@@ -73,6 +73,77 @@ public class GradeDistributionItemDto
     public int Count { get; set; }
 }
 
+public class TeacherResultDashboardDto
+{
+    public int TeacherId { get; set; }
+    public string TeacherName { get; set; } = "";
+    public int TotalAssignedExams { get; set; }
+    public int TotalAssignedSubjects { get; set; }
+    public int PendingMarkEntries { get; set; }
+    public int SubmittedMarkEntries { get; set; }
+    public int TotalMarkEntries { get; set; }
+    public double CompletionPercentage { get; set; }
+    public List<TeacherPendingExamDto> PendingExams { get; set; } = [];
+    public List<TeacherRecentActivityDto> RecentActivity { get; set; } = [];
+    public List<TodayScheduleItemDto> TodaySchedule { get; set; } = [];
+    public List<QuickActionItemDto> QuickActions { get; set; } = [];
+    public List<NotificationItemDto> Notifications { get; set; } = [];
+}
+
+public class TodayScheduleItemDto
+{
+    public int EntryId { get; set; }
+    public string PeriodName { get; set; } = "";
+    public string StartTime { get; set; } = "";
+    public string EndTime { get; set; } = "";
+    public string SubjectName { get; set; } = "";
+    public string ClassName { get; set; } = "";
+    public string SectionName { get; set; } = "";
+    public string RoomNo { get; set; } = "";
+    public int DayNumber { get; set; }
+}
+
+public class QuickActionItemDto
+{
+    public string Label { get; set; } = "";
+    public string Url { get; set; } = "";
+    public string IconName { get; set; } = "";
+    public string Color { get; set; } = "";
+}
+
+public class NotificationItemDto
+{
+    public string Title { get; set; } = "";
+    public string Body { get; set; } = "";
+    public bool IsRead { get; set; }
+    public DateTime? SentAt { get; set; }
+}
+
+public class TeacherPendingExamDto
+{
+    public int ExamId { get; set; }
+    public string ExamName { get; set; } = "";
+    public int SubjectId { get; set; }
+    public string SubjectName { get; set; } = "";
+    public int ClassId { get; set; }
+    public string ClassName { get; set; } = "";
+    public int SectionId { get; set; }
+    public string SectionName { get; set; } = "";
+    public int? GroupId { get; set; }
+    public string GroupName { get; set; } = "";
+    public int StudentCount { get; set; }
+    public int CompletedCount { get; set; }
+    public string Status { get; set; } = "";
+    public bool IsReadOnly { get; set; }
+}
+
+public class TeacherRecentActivityDto
+{
+    public string Action { get; set; } = "";
+    public string Detail { get; set; } = "";
+    public DateTime Timestamp { get; set; }
+}
+
 public class TeacherExportRowDto
 {
     public string RollNumber { get; set; } = "";
