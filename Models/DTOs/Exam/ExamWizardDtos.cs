@@ -103,6 +103,11 @@ public class ExamStatisticsDto
     public int SubjectCount { get; set; }
     public int ComponentCount { get; set; }
     public int TeacherCount { get; set; }
+    public int TotalClasses { get; set; }
+    public int TotalSections { get; set; }
+    public int TotalSubjects { get; set; }
+    public int TotalComponents { get; set; }
+    public int TotalTeachersAssigned { get; set; }
 }
 
 public class ExamClassHierarchyDto

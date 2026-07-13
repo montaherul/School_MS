@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
@@ -16,7 +17,27 @@ public class FeeStructureController : Controller
     private readonly IFeeStructureService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
-    public FeeStructureController(IFeeStructureService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
+    private readonly IFeeStructureWizardService _wizardService;
+    private static readonly JsonSerializerOptions _jsonOpts = new() { PropertyNameCaseInsensitive = true };
+    public FeeStructureController(IFeeStructureService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFeeStructureWizardService wizardService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _wizardService = wizardService; }
+
+    private FeeStructureWizardDto? GetWizardState()
+    {
+        var raw = TempData["WizardState"] as string;
+        if (string.IsNullOrEmpty(raw)) return null;
+        try { return JsonSerializer.Deserialize<FeeStructureWizardDto>(raw, _jsonOpts); }
+        catch { return null; }
+    }
+
+    private void SetWizardState(FeeStructureWizardDto state)
+    {
+        TempData["WizardState"] = JsonSerializer.Serialize(state);
+    }
+
+    private void ClearWizardState()
+    {
+        TempData.Remove("WizardState");
+    }
 
     [RequirePermission("FeeStructures.Read")]
     public IActionResult Index() { return View(); }
@@ -150,6 +171,69 @@ public class FeeStructureController : Controller
         var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Structures");
         var bytes = _pdfGenerator.GenerateFromHtml(html);
         return File(bytes, "application/pdf", "fee-structures.pdf");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeStructures.Create")]
+    public async Task<IActionResult> Wizard()
+    {
+        ClearWizardState();
+        var vm = await _wizardService.GetWizardDataAsync(new FeeStructureWizardDto { Step = 1 });
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("FeeStructures.Create")]
+    public async Task<IActionResult> Wizard([FromForm] FeeStructureWizardDto wizard)
+    {
+        var state = GetWizardState() ?? new FeeStructureWizardDto();
+        state.Step = wizard.Step;
+        state.AcademicYearId = wizard.AcademicYearId;
+        state.SchoolClassId = wizard.SchoolClassId;
+        state.SectionId = wizard.SectionId;
+        state.StudentGroupId = wizard.StudentGroupId;
+        state.FeeHeads = wizard.FeeHeads ?? [];
+        state.Discounts = wizard.Discounts ?? [];
+        state.FineRules = wizard.FineRules ?? [];
+        state.IsActive = wizard.IsActive;
+        SetWizardState(state);
+
+        if (wizard.Step >= 5)
+        {
+            return Json(new { step = 5 });
+        }
+
+        var vm = await _wizardService.GetWizardDataAsync(state);
+        return Json(new { step = state.Step, vm });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("FeeStructures.Create")]
+    public async Task<IActionResult> SaveWizard()
+    {
+        var state = GetWizardState();
+        if (state == null)
+        {
+            TempData["ErrorMessage"] = "Wizard state not found. Please start again.";
+            return RedirectToAction(nameof(Wizard));
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        var result = await _wizardService.SaveWizardAsync(state, userId);
+        ClearWizardState();
+
+        if (result.Success)
+        {
+            TempData["SuccessMessage"] = $"Fee structure wizard completed. {result.InvoicesGenerated} fee heads, {result.StudentsBilled} discounts/rules created.";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = result.ErrorMessage ?? "Failed to save wizard data.";
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
 }

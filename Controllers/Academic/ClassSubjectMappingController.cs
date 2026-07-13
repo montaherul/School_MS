@@ -42,12 +42,19 @@ public class ClassSubjectMappingController : Controller
         string? search = null, 
         CancellationToken ct = default)
     {
-        var result = await _mappingService.GetPagedAsync(page, size, classId, groupName, search, ct);
-        return Json(new 
-        { 
-            data = result.Items, 
-            last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) 
-        });
+        try
+        {
+            var result = await _mappingService.GetPagedAsync(page, size, classId, groupName, search, ct);
+            return Json(new 
+            { 
+                data = result.Items, 
+                last_page = result.TotalItems == 0 ? 1 : (int)Math.Ceiling((double)result.TotalItems / result.PageSize) 
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { error = true, message = ex.Message, data = System.Array.Empty<object>(), last_page = 1 });
+        }
     }
 
     [HttpGet]

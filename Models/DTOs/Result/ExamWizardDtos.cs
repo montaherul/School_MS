@@ -154,3 +154,107 @@ public class TemplateListRequest
     public int? AcademicYearId { get; set; }
     public ExamTerm? Term { get; set; }
 }
+
+public class ExamWizardStep1Request
+{
+    public int AcademicYearId { get; set; }
+    public ExamTerm Term { get; set; }
+    public List<int> SelectedClassIds { get; set; } = [];
+}
+
+public class ExamWizardPreviewRequest
+{
+    public int AcademicYearId { get; set; }
+    public List<int> SelectedClassIds { get; set; } = [];
+}
+
+public class ExamValidationRequest
+{
+    public int AcademicYearId { get; set; }
+    public string ExamName { get; set; } = "";
+    public ExamTerm Term { get; set; }
+    public List<int> SelectedClassIds { get; set; } = [];
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
+}
+
+public class CheckPublishReadinessRequest
+{
+    public int ExamId { get; set; }
+}
+
+public class GenerateScheduleRequest
+{
+    public int ExamId { get; set; }
+    public DateOnly StartDate { get; set; }
+    public DateOnly EndDate { get; set; }
+}
+
+public class GetConflictsRequest
+{
+    public int ExamId { get; set; }
+}
+
+public class AssignTeacherRequest
+{
+    public int AcademicYearId { get; set; }
+    public int SubjectId { get; set; }
+    public int ClassId { get; set; }
+    public int? SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
+    public int TeacherId { get; set; }
+}
+
+public class ConfigureComponentsRequest
+{
+    public int ExamSubjectId { get; set; }
+    public string ComponentsJson { get; set; } = "[]";
+}
+
+public class AddSectionsRequest
+{
+    public int ClassId { get; set; }
+    public string SectionNamesJson { get; set; } = "[]";
+    public int? StudentGroupId { get; set; }
+}
+
+public class MapSubjectRequest
+{
+    public int SubjectId { get; set; }
+    public int ClassId { get; set; }
+    public int? StudentGroupId { get; set; }
+    public decimal FullMarks { get; set; } = 100;
+    public decimal PassMarks { get; set; } = 33;
+    public bool IsOptional { get; set; } = false;
+    public int DisplayOrder { get; set; } = 0;
+}
+
+public class ConfigureMarkStructureRequest
+{
+    public int SubjectId { get; set; }
+    public int? ClassId { get; set; }
+    public int? StudentGroupId { get; set; }
+    public string ComponentsJson { get; set; } = "[]";
+}
+
+public class ExamWizardTemplateRequest
+{
+    public int AcademicYearId { get; set; }
+    public ExamTerm Term { get; set; }
+}
+
+public class ExamWizardSourceRequest
+{
+    public int AcademicYearId { get; set; }
+    public ExamTerm Term { get; set; }
+}
+
+public class TemplateLoadRequest
+{
+    public int TemplateId { get; set; }
+}
+
+public class TemplateDeleteRequest
+{
+    public int TemplateId { get; set; }
+}

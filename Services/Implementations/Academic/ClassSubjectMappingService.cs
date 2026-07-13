@@ -4,17 +4,19 @@ using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
 
 namespace SchoolManagementSystem.Services.Implementations.Academic;
 
 public class ClassSubjectMappingService : IClassSubjectMappingService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IClassSubjectRepository _classSubjectRepo;
 
-    public ClassSubjectMappingService(IUnitOfWork unitOfWork)
+    public ClassSubjectMappingService(IUnitOfWork unitOfWork, IClassSubjectRepository classSubjectRepo)
     {
         _unitOfWork = unitOfWork;
+        _classSubjectRepo = classSubjectRepo;
     }
 
     public async Task<PagedResult<ClassSubjectListItemDto>> GetPagedAsync(
@@ -25,71 +27,16 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         string? search,
         CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<ClassSubject>().Query().AsNoTracking()
-            .Include(x => x.SchoolClass)
-            .Include(x => x.Subject)
-            .Include(x => x.ClassSubjectGroups)
-                .ThenInclude(csg => csg.StudentGroup)
-            .Where(x => !x.IsDeleted && !x.SchoolClass!.IsDeleted && !x.Subject!.IsDeleted);
+        var results = await _classSubjectRepo.GetPagedBySpAsync(page, pageSize, classId, groupName, search);
 
-        if (classId.HasValue && classId > 0)
-            query = query.Where(x => x.SchoolClassId == classId.Value);
-
-        if (!string.IsNullOrEmpty(groupName))
-        {
-            if (groupName.Equals("General", StringComparison.OrdinalIgnoreCase))
-                query = query.Where(x => string.IsNullOrEmpty(x.GroupName) || x.GroupName == "General");
-            else
-                query = query.Where(x => x.GroupName == groupName);
-        }
-
-        if (!string.IsNullOrEmpty(search))
-        {
-            var lower = search.ToLower();
-            query = query.Where(x =>
-                x.SchoolClass!.Name.ToLower().Contains(lower) ||
-                x.Subject!.Name.ToLower().Contains(lower) ||
-                x.Subject!.NameBn.ToLower().Contains(lower) ||
-                x.Subject!.Code.ToLower().Contains(lower) ||
-                (x.GroupName != null && x.GroupName.ToLower().Contains(lower)));
-        }
-
-        var totalCount = await query.CountAsync(ct);
-
-        var items = await query
-            .OrderBy(x => x.SchoolClass!.SortOrder)
-            .ThenBy(x => x.DisplayOrder)
-            .ThenBy(x => x.Subject!.Code)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(x => new ClassSubjectListItemDto
-            {
-                Id = x.Id,
-                SchoolClassId = x.SchoolClassId,
-                SchoolClassName = x.SchoolClass != null ? x.SchoolClass.Name : string.Empty,
-                SubjectId = x.SubjectId,
-                SubjectCode = x.Subject != null ? x.Subject.Code : string.Empty,
-                SubjectNameEn = x.Subject != null ? x.Subject.Name : string.Empty,
-                SubjectNameBn = x.Subject != null ? x.Subject.NameBn : string.Empty,
-                SelectedGroupIds = x.ClassSubjectGroups.Where(csg => !csg.IsDeleted).Select(csg => csg.StudentGroupId).ToList(),
-                GroupName = x.GroupName,
-                FullMarks = x.FullMarks,
-                PassMarks = x.PassMarks,
-                IsMandatory = x.IsMandatory,
-                IsOptional = x.IsOptional,
-                IsReligionSubject = x.IsReligionSubject,
-                ReligionType = x.ReligionType,
-                DisplayOrder = x.DisplayOrder,
-                IsActive = x.IsActive
-            })
-            .ToListAsync(ct);
+        var totalRecords = results.Count > 0 ? results[0].TotalRecords : 0;
 
         return new PagedResult<ClassSubjectListItemDto>
         {
-            Items = items,
+            Items = results,
             Page = page,
             PageSize = pageSize,
-            TotalItems = totalCount
+            TotalItems = totalRecords
         };
     }
 
@@ -98,7 +45,6 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         var entity = await _unitOfWork.Repository<ClassSubject>().Query().AsNoTracking()
             .Include(x => x.SchoolClass)
             .Include(x => x.Subject)
-            .Include(x => x.ClassSubjectGroups)
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
 
         if (entity is null) return null;
@@ -108,7 +54,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             Id = entity.Id,
             SchoolClassId = entity.SchoolClassId,
             SubjectId = entity.SubjectId,
-            SelectedGroupIds = entity.ClassSubjectGroups.Where(csg => !csg.IsDeleted).Select(csg => csg.StudentGroupId).ToList(),
+            SelectedGroupIds = [],
             GroupName = entity.GroupName,
             FullMarks = entity.FullMarks,
             PassMarks = entity.PassMarks,

@@ -1,0 +1,519 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.StudentFeeProfileDto
+@{
+    ViewData["Title"] = $"Fee Profile - {Model.StudentName}";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <polyline points="17,8 19,10 23,10"></polyline>
+                    <line x1="19" y1="5" x2="19" y2="10"></line>
+                    <line x1="15" y1="13" x2="20.5" y2="13"></line>
+                    <path d="M20.5,16a2.5,2.5,0,0,1-5,0V13h5Z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@Model.StudentName</h1>
+                <p class="adm-header__sub">Student Fee Profile · @Model.StudentCode · @Model.ClassName · @Model.SectionName</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a href="/StudentFeeProfile" class="adm-btn adm-btn--ghost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12,19 5,12 12,5"></polyline>
+                </svg>
+                Back to Search
+            </a>
+            <a href="/StudentFeeProfile/Export/@Model.StudentId" class="adm-btn adm-btn--ghost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export PDF
+            </a>
+        </div>
+    </div>
+
+    @* Student Info Card *@
+    <div class="adm-card ws-mb-3">
+        <div class="dash-stat-row">
+            <div class="dash-stat-card ws-flex ws-items-center ws-gap-3">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary" style="width:48px;height:48px;border-radius:50%;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.1rem;">@Model.StudentName</div>
+                    <div class="text-muted small">@Model.StudentCode · @Model.ClassName · @Model.SectionName</div>
+                    <div class="text-muted small">Academic Year: @Model.AcademicYear</div>
+                </div>
+            </div>
+            <div class="dash-stat-card ws-flex ws-items-center ws-gap-3">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success" style="width:48px;height:48px;border-radius:50%;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.1rem;">@Model.GuardianName</div>
+                    <div class="text-muted small">Guardian</div>
+                    <div class="text-muted small">@Model.GuardianPhone</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Summary Cards *@
+    <div class="dash-stats ws-mb-3">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Assigned</span>
+                <span class="dash-stat-card__value">৳@Model.TotalAssigned.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Paid</span>
+                <span class="dash-stat-card__value">৳@Model.TotalPaid.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Due</span>
+                <span class="dash-stat-card__value">৳@Model.TotalDue.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Discount</span>
+                <span class="dash-stat-card__value">৳@Model.TotalDiscount.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon" style="background:var(--adm-purple);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Waiver</span>
+                <span class="dash-stat-card__value">৳@Model.TotalWaiver.ToString("N2")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M10.29,13.29,16.59,7"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="2" x2="12" y2="4"></line>
+                    <line x1="20" y1="12" x2="18" y2="12"></line>
+                    <line x1="12" y1="20" x2="12" y2="22"></line>
+                    <line x1="4" y1="12" x2="2" y2="12"></line>
+                    <line x1="17" y1="17" x2="7" y2="7"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Late Fee</span>
+                <span class="dash-stat-card__value">৳@Model.TotalLateFee.ToString("N2")</span>
+            </div>
+        </div>
+    </div>
+
+    @* Quick Stats Row *@
+    <div class="dash-stat-row ws-mb-3">
+        <div class="dash-stat-card ws-flex ws-items-center ws-gap-3">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary" style="width:40px;height:40px;border-radius:50%;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                </svg>
+            </div>
+            <div>
+                <div class="dash-stat-card__value" style="font-size:1.2rem;">@Model.InvoiceCount</div>
+                <div class="dash-stat-card__label">Invoices</div>
+            </div>
+        </div>
+        <div class="dash-stat-card ws-flex ws-items-center ws-gap-3">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success" style="width:40px;height:40px;border-radius:50%;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"></polyline>
+                </svg>
+            </div>
+            <div>
+                <div class="dash-stat-card__value" style="font-size:1.2rem;">@Model.PaymentCount</div>
+                <div class="dash-stat-card__label">Payments</div>
+            </div>
+        </div>
+        <div class="dash-stat-card ws-flex ws-items-center ws-gap-3">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger" style="width:40px;height:40px;border-radius:50%;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <div>
+                <div class="dash-stat-card__value" style="font-size:1.2rem;">@Model.OverdueCount</div>
+                <div class="dash-stat-card__label">Overdue</div>
+            </div>
+        </div>
+    </div>
+
+    @* Tabs *@
+    <div class="adm-tabs">
+        <div class="adm-tabs__nav" role="tablist">
+            <button class="adm-tabs__btn adm-tabs__btn--active" data-tab="fee-structures" role="tab">Fee Structures</button>
+            <button class="adm-tabs__btn" data-tab="invoices" role="tab">Invoices (@Model.InvoiceCount)</button>
+            <button class="adm-tabs__btn" data-tab="payments" role="tab">Payments (@Model.PaymentCount)</button>
+            <button class="adm-tabs__btn" data-tab="ledger" role="tab">Ledger (@Model.LedgerEntries.Count)</button>
+            <button class="adm-tabs__btn" data-tab="discounts" role="tab">Discounts (@Model.Discounts.Count)</button>
+            <button class="adm-tabs__btn" data-tab="waivers" role="tab">Waivers (@Model.Waivers.Count)</button>
+        </div>
+
+        @* Fee Structures Tab *@
+        <div class="adm-tabs__panel adm-tabs__panel--active" id="tab-fee-structures" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Assigned Fee Structures</h5>
+                </div>
+                <div class="adm-table-card__body" style="overflow-x:auto;">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Fee Structure</th>
+                                <th>Category</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">Custom Amount</th>
+                                <th>Frequency</th>
+                                <th>Status</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.FeeStructures.Count == 0)
+                            {
+                                <tr><td colspan="8" class="text-center text-muted">No fee structures assigned</td></tr>
+                            }
+                            @foreach (var fs in Model.FeeStructures)
+                            {
+                                <tr>
+                                    <td><span class="fw-semibold">@fs.FeeStructureName</span></td>
+                                    <td>@fs.FeeCategoryName</td>
+                                    <td class="text-end">@fs.Amount.ToString("N2")</td>
+                                    <td class="text-end">@(fs.CustomAmount?.ToString("N2") ?? "—")</td>
+                                    <td>@fs.Frequency</td>
+                                    <td>
+                                        @if (fs.IsActive)
+                                        {
+                                            <span class="adm-status adm-status--approved">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--rejected">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>@(fs.ValidFrom?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td>@(fs.ValidTo?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* Invoices Tab *@
+        <div class="adm-tabs__panel" id="tab-invoices" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Fee Invoices</h5>
+                </div>
+                <div class="adm-table-card__body">
+                    <div id="invoices-table"></div>
+                </div>
+            </div>
+        </div>
+
+        @* Payments Tab *@
+        <div class="adm-tabs__panel" id="tab-payments" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Payments</h5>
+                </div>
+                <div class="adm-table-card__body">
+                    <div id="payments-table"></div>
+                </div>
+            </div>
+        </div>
+
+        @* Ledger Tab *@
+        <div class="adm-tabs__panel" id="tab-ledger" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Fee Ledger</h5>
+                </div>
+                <div class="adm-table-card__body">
+                    <div id="ledger-table"></div>
+                </div>
+            </div>
+        </div>
+
+        @* Discounts Tab *@
+        <div class="adm-tabs__panel" id="tab-discounts" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Discounts</h5>
+                </div>
+                <div class="adm-table-card__body" style="overflow-x:auto;">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th class="text-end">Value</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Discounts.Count == 0)
+                            {
+                                <tr><td colspan="7" class="text-center text-muted">No discounts available</td></tr>
+                            }
+                            @foreach (var d in Model.Discounts)
+                            {
+                                <tr>
+                                    <td><span class="fw-semibold">@d.Name</span></td>
+                                    <td>@(d.DiscountType == 1 ? "Percentage" : "Fixed")</td>
+                                    <td class="text-end">@d.Value.ToString("N2")</td>
+                                    <td>@(d.FeeCategoryName ?? "All")</td>
+                                    <td>
+                                        @if (d.IsActive)
+                                        {
+                                            <span class="adm-status adm-status--approved">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--rejected">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>@(d.ValidFrom?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td>@(d.ValidTo?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* Waivers Tab *@
+        <div class="adm-tabs__panel" id="tab-waivers" role="tabpanel">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Fee Waivers</h5>
+                </div>
+                <div class="adm-table-card__body" style="overflow-x:auto;">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Reason</th>
+                                <th>Type</th>
+                                <th class="text-end">Value</th>
+                                <th class="text-end">Amount</th>
+                                <th>Status</th>
+                                <th>Approved By</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Waivers.Count == 0)
+                            {
+                                <tr><td colspan="8" class="text-center text-muted">No waivers found</td></tr>
+                            }
+                            @foreach (var w in Model.Waivers)
+                            {
+                                <tr>
+                                    <td>@(w.Reason ?? "—")</td>
+                                    <td>@(w.WaiverType == 1 ? "Percentage" : "Fixed")</td>
+                                    <td class="text-end">@w.WaiverValue.ToString("N2")</td>
+                                    <td class="text-end">@w.WaiverAmount.ToString("N2")</td>
+                                    <td>
+                                        @if (w.IsApproved)
+                                        {
+                                            <span class="adm-status adm-status--approved">Approved</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--pending">Pending</span>
+                                        }
+                                    </td>
+                                    <td>@(w.ApprovedBy ?? "—")</td>
+                                    <td>@(w.ValidFrom?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td>@(w.ValidTo?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        @* Tab switching *@
+        document.querySelectorAll('.adm-tabs__btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.adm-tabs__btn').forEach(function(b) {
+                    b.classList.remove('adm-tabs__btn--active');
+                });
+                document.querySelectorAll('.adm-tabs__panel').forEach(function(p) {
+                    p.classList.remove('adm-tabs__panel--active');
+                });
+                btn.classList.add('adm-tabs__btn--active');
+                var tabId = 'tab-' + btn.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('adm-tabs__panel--active');
+            });
+        });
+
+        @* Invoices Tabulator *@
+        var invoiceData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Invoices));
+        var invTable = new Tabulator("#invoices-table", {
+            height: "400px",
+            layout: "fitColumns",
+            data: invoiceData,
+            columns: [
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5, formatter: function(cell) {
+                    return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                }},
+                { title: "Due Date", field: "dueDate", width: 120, hozAlign: "center" },
+                { title: "Total", field: "totalAmount", width: 130, hozAlign: "right", formatter: function(cell) {
+                    return `<span class="fw-bold">৳${parseFloat(cell.getValue()).toFixed(2)}</span>`;
+                }},
+                { title: "Paid", field: "paidAmount", width: 130, hozAlign: "right", formatter: function(cell) {
+                    return `<span class="fw-bold" style="color:var(--adm-success)">৳${parseFloat(cell.getValue()).toFixed(2)}</span>`;
+                }},
+                { title: "Discount", field: "discountAmount", width: 120, hozAlign: "right", formatter: function(cell) {
+                    var v = parseFloat(cell.getValue());
+                    return v > 0 ? `৳${v.toFixed(2)}` : '—';
+                }},
+                { title: "Late Fee", field: "lateFee", width: 110, hozAlign: "right", formatter: function(cell) {
+                    var v = parseFloat(cell.getValue());
+                    return v > 0 ? `<span style="color:var(--adm-danger)">৳${v.toFixed(2)}</span>` : '—';
+                }},
+                { title: "Status", field: "status", width: 110, hozAlign: "center", formatter: function(cell) {
+                    var s = parseInt(cell.getValue());
+                    if (s === 2) return '<span class="adm-badge adm-badge--warning">Partial</span>';
+                    if (s === 3) return '<span class="adm-badge adm-badge--success">Paid</span>';
+                    if (s === 4) return '<span class="adm-badge adm-badge--danger">Waived</span>';
+                    if (s === 5) return '<span class="adm-badge adm-badge--danger">Cancelled</span>';
+                    return '<span class="adm-badge adm-badge--neutral">Unpaid</span>';
+                }}
+            ],
+            placeholder: "<div class='adm-loading__text'>No invoices found</div>"
+        });
+
+        @* Payments Tabulator *@
+        var paymentData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Payments));
+        var payTable = new Tabulator("#payments-table", {
+            height: "400px",
+            layout: "fitColumns",
+            data: paymentData,
+            columns: [
+                { title: "Date", field: "paidAt", width: 150, hozAlign: "center", formatter: function(cell) {
+                    var d = new Date(cell.getValue());
+                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }},
+                { title: "Invoice", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Amount", field: "amount", width: 130, hozAlign: "right", formatter: function(cell) {
+                    return `<span class="fw-bold" style="color:var(--adm-success)">৳${parseFloat(cell.getValue()).toFixed(2)}</span>`;
+                }},
+                { title: "Method", field: "method", width: 120, hozAlign: "center", formatter: function(cell) {
+                    var m = parseInt(cell.getValue());
+                    var labels = { 1: 'Cash', 2: 'Bank', 3: 'Online', 4: 'Cheque', 5: 'Mobile Banking' };
+                    var label = labels[m] || 'Unknown';
+                    var cls = m === 1 ? 'adm-badge--neutral' : m === 2 ? 'adm-badge--primary' : m === 3 ? 'adm-badge--info' : 'adm-badge--warning';
+                    return `<span class="adm-badge ${cls}">${label}</span>`;
+                }},
+                { title: "Reference", field: "referenceNo", widthGrow: 1, formatter: function(cell) {
+                    return cell.getValue() || '—';
+                }}
+            ],
+            placeholder: "<div class='adm-loading__text'>No payments found</div>"
+        });
+
+        @* Ledger Tabulator *@
+        var ledgerData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LedgerEntries));
+        var ledTable = new Tabulator("#ledger-table", {
+            height: "400px",
+            layout: "fitColumns",
+            data: ledgerData,
+            columns: [
+                { title: "Date", field: "transactionDate", width: 150, hozAlign: "center", formatter: function(cell) {
+                    var d = new Date(cell.getValue());
+                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                }},
+                { title: "Type", field: "transactionType", width: 110, hozAlign: "center", formatter: function(cell) {
+                    var types = { 1: 'Invoice', 2: 'Payment', 3: 'Discount', 4: 'Waiver', 5: 'Refund', 6: 'Adjustment', 7: 'Late Fee' };
+                    var badges = { 1: 'primary', 2: 'success', 3: 'info', 4: 'warning', 5: 'danger', 6: 'secondary', 7: 'dark' };
+                    var val = cell.getValue();
+                    var label = types[val] || 'Unknown';
+                    var cls = badges[val] || 'secondary';
+                    return `<span class="adm-badge adm-badge--${cls}">${label}</span>`;
+                }},
+                { title: "Debit (৳)", field: "debit", width: 120, hozAlign: "right", formatter: function(cell) {
+                    var v = parseFloat(cell.getValue());
+                    return v > 0 ? `<span style="color:var(--adm-danger)">৳${v.toFixed(2)}</span>` : '—';
+                }},
+                { title: "Credit (৳)", field: "credit", width: 120, hozAlign: "right", formatter: function(cell) {
+                    var v = parseFloat(cell.getValue());
+                    return v > 0 ? `<span style="color:var(--adm-success)">৳${v.toFixed(2)}</span>` : '—';
+                }},
+                { title: "Balance (৳)", field: "balance", width: 130, hozAlign: "right", formatter: function(cell) {
+                    return `<span class="fw-bold">৳${parseFloat(cell.getValue()).toFixed(2)}</span>`;
+                }},
+                { title: "Description", field: "description", widthGrow: 1.5, formatter: function(cell) {
+                    return cell.getValue() || '—';
+                }}
+            ],
+            placeholder: "<div class='adm-loading__text'>No ledger entries found</div>"
+        });
+    </script>
+}

@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Fees;
@@ -35,17 +36,14 @@ public class FeeReportRepository : IFeeReportRepository
                 items.Add(new StudentLedgerReportDto
                 {
                     Id = reader.GetInt32(0),
-                    InvoiceNo = reader.GetString(1),
-                    DueDate = DateOnly.FromDateTime(reader.GetDateTime(2)),
-                    TotalAmount = reader.GetDecimal(3),
-                    PaidAmount = reader.GetDecimal(4),
-                    DueAmount = reader.GetDecimal(5),
-                    Status = reader.GetString(6),
-                    PaidAt = reader.IsDBNull(7) ? null : reader.GetDateTime(7),
-                    ReferenceNo = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                    LateFee = reader.IsDBNull(9) ? 0 : reader.GetDecimal(9),
-                    DiscountAmount = reader.IsDBNull(10) ? 0 : reader.GetDecimal(10),
-                    TotalRecords = reader.GetInt32(11)
+                    TransactionType = ((FeeLedgerType)reader.GetInt32(1)).ToString(),
+                    InvoiceNo = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    TransactionDate = reader.GetDateTime(3),
+                    Debit = reader.GetDecimal(4),
+                    Credit = reader.GetDecimal(5),
+                    Balance = reader.GetDecimal(6),
+                    Description = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                    TotalRecords = reader.GetInt32(8)
                 });
             }
             var total = items.FirstOrDefault()?.TotalRecords ?? 0;
@@ -311,4 +309,56 @@ public class FeeReportRepository : IFeeReportRepository
             await _db.Database.CloseConnectionAsync();
         }
     }
+
+    public async Task<CashBookResultDto> GetCashBookAsync(DateOnly fromDate, DateOnly toDate, int? academicYearId = null)
+    {
+        var result = new CashBookResultDto();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetCashBook";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@FromDate", fromDate.ToDateTime(TimeOnly.MinValue)));
+        command.Parameters.Add(new SqlParameter("@ToDate", toDate.ToDateTime(TimeOnly.MinValue)));
+        command.Parameters.Add(new SqlParameter("@AcademicYearId", academicYearId ?? (object)DBNull.Value));
+
+        await _db.Database.OpenConnectionAsync();
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync();
+
+            // Result set 1: opening cash balance
+            if (await reader.ReadAsync())
+                result.OpeningBalance = reader.IsDBNull(0) ? 0 : reader.GetDecimal(0);
+
+            // Result set 2: daily cash flow
+            if (await reader.NextResultAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var day = new CashBookDayDto
+                    {
+                        OpeningBalance = result.OpeningBalance + result.Days.Sum(d => d.NetChange),
+                        TransactionDate = reader.GetDateTime(0),
+                        CashIn = reader.IsDBNull(1) ? 0 : reader.GetDecimal(1),
+                        CashOut = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2),
+                        NetChange = reader.IsDBNull(3) ? 0 : reader.GetDecimal(3),
+                        PaymentCount = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                        RefundCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                        EntryCount = reader.IsDBNull(6) ? 0 : reader.GetInt32(6)
+                    };
+                    day.ClosingBalance = day.OpeningBalance + day.NetChange;
+                    result.Days.Add(day);
+                }
+            }
+
+            result.TotalCashIn = result.Days.Sum(d => d.CashIn);
+            result.TotalCashOut = result.Days.Sum(d => d.CashOut);
+            result.ClosingBalance = result.OpeningBalance + result.TotalCashIn - result.TotalCashOut;
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
+        return result;
+    }
 }
+

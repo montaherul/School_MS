@@ -5,7 +5,7 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using SchoolManagementSystem.Models.Entities.Teachers;
+using TeacherEntity = SchoolManagementSystem.Models.Entities.Teachers.Teacher;
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
@@ -30,10 +30,10 @@ public class ExamSubjectComponentTeacherController : Controller
 
     private int GetTeacherId()
     {
-        var userId = User.Identity?.Name;
-        if (string.IsNullOrEmpty(userId)) return 0;
+        var userIdStr = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId)) return 0;
 
-        var teacher = _uow.Repository<Teacher>().QueryNoTracking()
+        var teacher = _uow.Repository<TeacherEntity>().QueryNoTracking()
             .FirstOrDefault(t => t.UserId == userId && !t.IsDeleted);
 
         return teacher?.Id ?? 0;

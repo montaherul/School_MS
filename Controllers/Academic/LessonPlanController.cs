@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
+using TeacherEntity = SchoolManagementSystem.Models.Entities.Teachers.Teacher;
 
 namespace SchoolManagementSystem.Controllers.Academic;
 
@@ -11,8 +16,21 @@ namespace SchoolManagementSystem.Controllers.Academic;
 public class LessonPlanController : Controller
 {
     private readonly ILessonPlanService _service;
+    private readonly IAcademicYearService _academicYearService;
+    private readonly ISchoolClassService _classService;
+    private readonly IUnitOfWork _uow;
 
-    public LessonPlanController(ILessonPlanService service) { _service = service; }
+    public LessonPlanController(
+        ILessonPlanService service,
+        IAcademicYearService academicYearService,
+        ISchoolClassService classService,
+        IUnitOfWork uow)
+    {
+        _service = service;
+        _academicYearService = academicYearService;
+        _classService = classService;
+        _uow = uow;
+    }
 
     [RequirePermission("LessonPlan.View")]
     public IActionResult Index() { return View(); }
@@ -25,16 +43,17 @@ public class LessonPlanController : Controller
     }
 
     [HttpGet, RequirePermission("LessonPlan.Create")]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(CancellationToken ct = default)
     {
+        await PopulateDropdownsAsync(ct);
         ViewBag.Action = "Create";
         return View(new LessonPlanUpsertDto());
     }
 
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("LessonPlan.Create")]
-    public async Task<IActionResult> Create(LessonPlanUpsertDto dto)
+    public async Task<IActionResult> Create(LessonPlanUpsertDto dto, CancellationToken ct = default)
     {
-        if (!ModelState.IsValid) { ViewBag.Action = "Create"; return View(dto); }
+        if (!ModelState.IsValid) { await PopulateDropdownsAsync(ct); ViewBag.Action = "Create"; return View(dto); }
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         await _service.CreateAsync(dto, userId);
         TempData["SuccessMessage"] = "Lesson Plan created successfully.";
@@ -42,18 +61,19 @@ public class LessonPlanController : Controller
     }
 
     [HttpGet, RequirePermission("LessonPlan.Edit")]
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(int id, CancellationToken ct = default)
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto is null) return NotFound();
+        await PopulateDropdownsAsync(ct);
         ViewBag.Action = "Edit";
         return View(dto);
     }
 
     [HttpPost, ValidateAntiForgeryToken, RequirePermission("LessonPlan.Edit")]
-    public async Task<IActionResult> Edit(LessonPlanUpsertDto dto)
+    public async Task<IActionResult> Edit(LessonPlanUpsertDto dto, CancellationToken ct = default)
     {
-        if (!ModelState.IsValid) { ViewBag.Action = "Edit"; return View(dto); }
+        if (!ModelState.IsValid) { await PopulateDropdownsAsync(ct); ViewBag.Action = "Edit"; return View(dto); }
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         await _service.UpdateAsync(dto, userId);
         TempData["SuccessMessage"] = "Lesson Plan updated successfully.";
@@ -82,5 +102,29 @@ public class LessonPlanController : Controller
         var pdf = await _service.ExportPdfAsync(id);
         if (pdf is null) return NotFound();
         return File(pdf, "application/pdf", $"lessonplan-{id}.pdf");
+    }
+
+    private async Task PopulateDropdownsAsync(CancellationToken ct)
+    {
+        var years = await _academicYearService.GetAllYearsAsync(ct);
+        ViewBag.AcademicYears = new SelectList(years, "Id", "Name");
+
+        var classes = await _classService.GetAllSchoolClassesAsync(ct);
+        ViewBag.SchoolClasses = new SelectList(classes, "Id", "Name");
+
+        var subjects = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Subject>().QueryNoTracking()
+            .Where(s => !s.IsDeleted && s.IsActive)
+            .OrderBy(s => s.Name)
+            .ToListAsync(ct);
+        ViewBag.Subjects = new SelectList(subjects, "Id", "Name");
+
+        var teacherRepo = _uow.Repository<TeacherEntity>();
+        var teachers = await teacherRepo.QueryNoTracking()
+            .Include(t => t.Employee)
+            .Where(t => !t.IsDeleted)
+            .OrderBy(t => t.Employee!.FullName)
+            .Select(t => new { t.Id, t.Employee!.FullName })
+            .ToListAsync(ct);
+        ViewBag.Teachers = new SelectList(teachers, "Id", "FullName");
     }
 }

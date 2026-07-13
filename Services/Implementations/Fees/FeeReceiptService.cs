@@ -2,9 +2,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -16,14 +17,12 @@ public class FeeReceiptService : IFeeReceiptService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPdfGenerator _pdfGenerator;
-    private readonly SchoolDbContext _db;
     private readonly IWebHostEnvironment _env;
 
-    public FeeReceiptService(IUnitOfWork unitOfWork, IPdfGenerator pdfGenerator, SchoolDbContext db, IWebHostEnvironment env)
+    public FeeReceiptService(IUnitOfWork unitOfWork, IPdfGenerator pdfGenerator, IWebHostEnvironment env)
     {
         _unitOfWork = unitOfWork;
         _pdfGenerator = pdfGenerator;
-        _db = db;
         _env = env;
     }
 
@@ -37,8 +36,9 @@ public class FeeReceiptService : IFeeReceiptService
             .FirstOrDefaultAsync(x => x.Id == payment.FeeInvoiceId && !x.IsDeleted, cancellationToken);
         if (invoice is null) return null;
 
-        var student = await _db.Students.FindAsync(new object[] { invoice.StudentId }, cancellationToken);
-        var schoolSetting = await _db.SchoolSettings.FirstOrDefaultAsync(cancellationToken);
+        var student = await _unitOfWork.Repository<Student>().GetByIdAsync(invoice.StudentId, cancellationToken);
+        var schoolSetting = await _unitOfWork.Repository<SchoolSetting>().Query().AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
 
         var logoBase64 = string.Empty;
         if (!string.IsNullOrEmpty(schoolSetting?.LogoPath))

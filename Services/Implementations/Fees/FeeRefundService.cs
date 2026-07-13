@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -12,11 +13,13 @@ public class FeeRefundService : IFeeRefundService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFeeRefundRepository _repository;
+    private readonly IAuditLogService _audit;
 
-    public FeeRefundService(IUnitOfWork unitOfWork, IFeeRefundRepository repository)
+    public FeeRefundService(IUnitOfWork unitOfWork, IFeeRefundRepository repository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeeRefundListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
@@ -39,13 +42,15 @@ public class FeeRefundService : IFeeRefundService
         var payment = await _unitOfWork.Repository<Payment>().FirstOrDefaultAsync(x => x.Id == dto.FeePaymentId && !x.IsDeleted, cancellationToken)
             ?? throw new InvalidOperationException("Payment not found.");
 
-        var entity = new FeeRefund { CreatedBy = createdBy, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = (PaymentMethod)dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate };
+        var entity = new FeeRefund { CreatedBy = createdBy, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = (PaymentMethod)dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = false, RefundDate = dto.RefundDate };
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             await _unitOfWork.Repository<FeeRefund>().AddAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }, cancellationToken);
+
+        await _audit.LogAsync("FeeRefunds", "Create", $"Refund {entity.Id} recorded for payment {dto.FeePaymentId}, amount {dto.RefundAmount}, approved={entity.IsApproved}", createdBy, cancellationToken: cancellationToken);
 
         return entity.Id;
     }
@@ -75,6 +80,7 @@ public class FeeRefundService : IFeeRefundService
                 StudentId = invoice?.StudentId ?? 0,
                 FeeInvoiceId = invoice?.Id,
                 FeePaymentId = entity.FeePaymentId,
+                FeeRefundId = entity.Id,
                 TransactionType = FeeLedgerType.Refund,
                 Debit = entity.RefundAmount,
                 Credit = 0,
@@ -87,6 +93,8 @@ public class FeeRefundService : IFeeRefundService
             await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }, cancellationToken);
+
+        await _audit.LogAsync("FeeRefunds", "Approve", $"Refund {id} approved, amount {entity.RefundAmount}", approvedBy, cancellationToken: cancellationToken);
     }
 
     public async Task RejectAsync(int id, string rejectedBy, CancellationToken cancellationToken = default)
@@ -103,6 +111,8 @@ public class FeeRefundService : IFeeRefundService
         entity.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<FeeRefund>().Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("FeeRefunds", "Reject", $"Refund {id} rejected", rejectedBy, cancellationToken: cancellationToken);
     }
 
     public async Task UpdateAsync(FeeRefundUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default)

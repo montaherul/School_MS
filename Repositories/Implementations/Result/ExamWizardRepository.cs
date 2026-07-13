@@ -21,6 +21,31 @@ public class ExamWizardRepository : IExamWizardRepository
         _connectionString = db.Database.GetConnectionString()!;
     }
 
+    // DateOnly/TimeOnly extension methods for SqlDataReader
+    private static DateOnly GetDateOnly(SqlDataReader reader, int ordinal)
+    {
+        var dateTime = reader.GetDateTime(ordinal);
+        return DateOnly.FromDateTime(dateTime);
+    }
+
+    private static TimeOnly GetTimeOnly(SqlDataReader reader, int ordinal)
+    {
+        var timeSpan = reader.GetTimeSpan(ordinal);
+        return TimeOnly.FromTimeSpan(timeSpan);
+    }
+
+    private static DateOnly GetDateOnly(DbDataReader reader, int ordinal)
+    {
+        var dateTime = reader.GetDateTime(ordinal);
+        return DateOnly.FromDateTime(dateTime);
+    }
+
+    private static TimeOnly GetTimeOnly(DbDataReader reader, int ordinal)
+    {
+        var timeSpan = reader.GetFieldValue<TimeSpan>(ordinal);
+        return TimeOnly.FromTimeSpan(timeSpan);
+    }
+
     public async Task<ExamCreationPreviewDto> GetExamCreationPreviewAsync(int academicYearId, List<int> classIds, CancellationToken ct = default)
     {
         var classIdsJson = JsonSerializer.Serialize(classIds);
@@ -350,9 +375,9 @@ public class ExamWizardRepository : IExamWizardRepository
             {
                 ConflictType = reader.GetString(reader.GetOrdinal("ConflictType")),
                 Description = $"Teacher conflict: {reader.GetString(reader.GetOrdinal("TeacherName"))} scheduled for {reader.GetString(reader.GetOrdinal("Subject1"))} and {reader.GetString(reader.GetOrdinal("Subject2"))} at same time",
-                Date = reader.GetDateOnly(reader.GetOrdinal("ExamDate")),
-                StartTime = reader.GetTimeOnly(reader.GetOrdinal("StartsAt")),
-                EndTime = reader.GetTimeOnly(reader.GetOrdinal("EndsAt"))
+                Date = GetDateOnly(reader, reader.GetOrdinal("ExamDate")),
+                StartTime = GetTimeOnly(reader, reader.GetOrdinal("StartsAt")),
+                EndTime = GetTimeOnly(reader, reader.GetOrdinal("EndsAt"))
             });
         }
 
@@ -365,9 +390,9 @@ public class ExamWizardRepository : IExamWizardRepository
                 {
                     ConflictType = reader.GetString(reader.GetOrdinal("ConflictType")),
                     Description = $"Room conflict: Room {reader.GetString(reader.GetOrdinal("RoomNo"))} double-booked for {reader.GetString(reader.GetOrdinal("Subject1"))} and {reader.GetString(reader.GetOrdinal("Subject2"))}",
-                    Date = reader.GetDateOnly(reader.GetOrdinal("ExamDate")),
-                    StartTime = reader.GetTimeOnly(reader.GetOrdinal("StartsAt")),
-                    EndTime = reader.GetTimeOnly(reader.GetOrdinal("EndsAt"))
+                    Date = GetDateOnly(reader, reader.GetOrdinal("ExamDate")),
+                    StartTime = GetTimeOnly(reader, reader.GetOrdinal("StartsAt")),
+                    EndTime = GetTimeOnly(reader, reader.GetOrdinal("EndsAt"))
                 });
             }
         }
@@ -381,9 +406,9 @@ public class ExamWizardRepository : IExamWizardRepository
                 {
                     ConflictType = reader.GetString(reader.GetOrdinal("ConflictType")),
                     Description = $"Student group conflict: {reader.GetString(reader.GetOrdinal("StudentGroup"))} has {reader.GetString(reader.GetOrdinal("Subject1"))} and {reader.GetString(reader.GetOrdinal("Subject2"))} at same time",
-                    Date = reader.GetDateOnly(reader.GetOrdinal("ExamDate")),
-                    StartTime = reader.GetTimeOnly(reader.GetOrdinal("StartsAt")),
-                    EndTime = reader.GetTimeOnly(reader.GetOrdinal("EndsAt"))
+                    Date = GetDateOnly(reader, reader.GetOrdinal("ExamDate")),
+                    StartTime = GetTimeOnly(reader, reader.GetOrdinal("StartsAt")),
+                    EndTime = GetTimeOnly(reader, reader.GetOrdinal("EndsAt"))
                 });
             }
         }
@@ -681,16 +706,4 @@ public class ExamWizardRepository : IExamWizardRepository
         };
     }
 
-    // DateOnly/TimeOnly extension methods for DbDataReader
-    private static DateOnly GetDateOnly(DbDataReader reader, int ordinal)
-    {
-        var dateTime = reader.GetDateTime(ordinal);
-        return DateOnly.FromDateTime(dateTime);
-    }
-
-    private static TimeOnly GetTimeOnly(DbDataReader reader, int ordinal)
-    {
-        var timeSpan = reader.GetTimeSpan(ordinal);
-        return TimeOnly.FromTimeSpan(timeSpan);
-    }
 }

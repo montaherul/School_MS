@@ -12,8 +12,8 @@ using SchoolManagementSystem.Data;
 namespace SchoolManagementSystem.Data.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    [Migration("20260712114120_AddExamGroupEntities")]
-    partial class AddExamGroupEntities
+    [Migration("20260713073008_SyncAllSchemaToMatchModel")]
+    partial class SyncAllSchemaToMatchModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -14781,6 +14781,36 @@ namespace SchoolManagementSystem.Data.Migrations
                             IsDeleted = false,
                             Module = "Calendar",
                             ModuleName = "Calendar"
+                        },
+                        new
+                        {
+                            Id = 618,
+                            Action = "Manage",
+                            CanCreate = true,
+                            CanDelete = true,
+                            CanRead = true,
+                            CanUpdate = true,
+                            Code = "ExamSubjectComponent.Manage",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "ExamSubjectComponent",
+                            ModuleName = "ExamSubjectComponent"
+                        },
+                        new
+                        {
+                            Id = 619,
+                            Action = "View",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = false,
+                            Code = "ExamSubjectComponent.View",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "ExamSubjectComponent",
+                            ModuleName = "ExamSubjectComponent"
                         });
                 });
 
@@ -18063,6 +18093,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 2,
                             PermissionId = 1
                         },
@@ -20523,6 +20563,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         },
                         new
                         {
+                            RoleId = 2,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 3,
                             PermissionId = 1
                         },
@@ -21708,6 +21758,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         },
                         new
                         {
+                            RoleId = 4,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 5,
                             PermissionId = 1
                         },
@@ -21765,6 +21825,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         {
                             RoleId = 5,
                             PermissionId = 326
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 619
                         },
                         new
                         {
@@ -26268,6 +26338,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         },
                         new
                         {
+                            RoleId = 26,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 26,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 27,
                             PermissionId = 1
                         },
@@ -26455,6 +26535,16 @@ namespace SchoolManagementSystem.Data.Migrations
                         {
                             RoleId = 27,
                             PermissionId = 542
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 619
                         });
                 });
 
@@ -28004,6 +28094,15 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<int>("AcademicYearId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ArchiveReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ArchivedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
@@ -28018,10 +28117,16 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<DateOnly>("EndsOn")
                         .HasColumnType("date");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LockedAt")
@@ -28076,13 +28181,66 @@ namespace SchoolManagementSystem.Data.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             EndsOn = new DateOnly(2026, 6, 12),
+                            IsArchived = false,
                             IsDeleted = false,
                             IsLocked = false,
+                            IsPublished = false,
                             Name = "Midterm",
                             StartsOn = new DateOnly(2026, 6, 1),
                             Status = 1,
                             Term = 8
                         });
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamClass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClassName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("ExamId", "ClassId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("ExamClasses");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamComponent", b =>
@@ -28213,280 +28371,6 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.ToTable("ExamConfigurations");
                 });
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AcademicYearId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ExamType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LockedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("LockedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Term")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AcademicYearId", "Name")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
-
-                    b.ToTable("ExamGroups");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupClass", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<int>("ExamGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("ExamGroupId", "ClassId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
-
-                    b.ToTable("ExamGroupClasses");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<int>("ExamGroupClassId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("SectionId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SectionId");
-
-                    b.HasIndex("ExamGroupClassId", "SectionId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
-
-                    b.ToTable("ExamGroupSections");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubject", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<int>("ExamGroupClassId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("FullMarks")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsOptional")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsReligionSubject")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("PassMarks")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SubjectId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TeacherId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubjectId");
-
-                    b.HasIndex("TeacherId");
-
-                    b.HasIndex("ExamGroupClassId", "SubjectId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
-
-                    b.ToTable("ExamGroupSubjects");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubjectComponent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ComponentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExamGroupSubjectId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("MaxMarks")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PassMarks")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComponentId");
-
-                    b.HasIndex("ExamGroupSubjectId", "ComponentId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
-
-                    b.ToTable("ExamGroupSubjectComponents");
-                });
-
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSchedule", b =>
                 {
                     b.Property<int>("Id")
@@ -28494,6 +28378,11 @@ namespace SchoolManagementSystem.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BuildingName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
@@ -28523,6 +28412,11 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<string>("RoomName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("RoomNo")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -28530,6 +28424,11 @@ namespace SchoolManagementSystem.Data.Migrations
 
                     b.Property<int?>("SectionId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ShiftName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<TimeOnly>("StartsAt")
                         .HasColumnType("time");
@@ -28564,6 +28463,54 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.ToTable("ExamSchedules");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("ExamClassId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("ExamClassId", "SectionId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("ExamSections");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", b =>
                 {
                     b.Property<int>("Id")
@@ -28582,6 +28529,13 @@ namespace SchoolManagementSystem.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Credit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ExamClassId")
+                        .HasColumnType("int");
 
                     b.Property<DateOnly?>("ExamDate")
                         .HasColumnType("date");
@@ -28608,7 +28562,18 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<bool>("IsOptional")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsReligionSubject")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NCTBCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<decimal>("PassMarks")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PracticalMarks")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -28616,14 +28581,49 @@ namespace SchoolManagementSystem.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("StudentGroupId")
                         .HasColumnType("int");
+
+                    b.Property<string>("SubjectCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SubjectGroup")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("SubjectId")
                         .HasColumnType("int");
 
+                    b.Property<string>("SubjectName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SubjectType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TeacherEmployeeCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int?>("TeacherId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TeacherName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("TheoryMarks")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -28636,6 +28636,8 @@ namespace SchoolManagementSystem.Data.Migrations
 
                     b.HasIndex("ClassId");
 
+                    b.HasIndex("ExamClassId");
+
                     b.HasIndex("StudentGroupId");
 
                     b.HasIndex("SubjectId");
@@ -28646,7 +28648,79 @@ namespace SchoolManagementSystem.Data.Migrations
                         .IsUnique()
                         .HasFilter("[IsDeleted] = 0");
 
+                    b.HasIndex("ExamId", "ClassId", "SubjectId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
                     b.ToTable("ExamSubjects");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubjectComponent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ComponentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ComponentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ComponentName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamSubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxMarks")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PassMarks")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComponentId");
+
+                    b.HasIndex("ExamSubjectId", "ComponentId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("ExamSubjectComponents");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamTemplate", b =>
@@ -28675,6 +28749,9 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ExamId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ExamType")
                         .IsRequired()
@@ -28707,6 +28784,8 @@ namespace SchoolManagementSystem.Data.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
 
                     b.ToTable("ExamTemplates");
                 });
@@ -31996,6 +32075,73 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.ToTable("RollGenerationConfigs");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentComponentMark", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamSubjectComponentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamSubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("ObtainedMarks")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StudentGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("ExamSubjectComponentId");
+
+                    b.HasIndex("ExamSubjectId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentComponentMarks");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentExamResult", b =>
                 {
                     b.Property<int>("Id")
@@ -32126,6 +32272,9 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ExamSubjectId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("FullMarks")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -32183,6 +32332,8 @@ namespace SchoolManagementSystem.Data.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExamSubjectId");
 
                     b.HasIndex("StudentId");
 
@@ -33365,6 +33516,9 @@ namespace SchoolManagementSystem.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<bool>("AllowTeacherComponentCustomization")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -33407,6 +33561,7 @@ namespace SchoolManagementSystem.Data.Migrations
                         {
                             Id = 1,
                             Address = "Dhaka, Bangladesh",
+                            AllowTeacherComponentCustomization = false,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             Email = "info@school.local",
@@ -36751,6 +36906,25 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Navigation("StudentGroup");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamClass", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
+                        .WithMany("Classes")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Exam");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamConfiguration", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
@@ -36768,100 +36942,6 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Navigation("Class");
 
                     b.Navigation("ExamType");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroup", b =>
-                {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", "AcademicYear")
-                        .WithMany()
-                        .HasForeignKey("AcademicYearId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AcademicYear");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupClass", b =>
-                {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
-                        .WithMany()
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamGroup", "ExamGroup")
-                        .WithMany("Classes")
-                        .HasForeignKey("ExamGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Class");
-
-                    b.Navigation("ExamGroup");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSection", b =>
-                {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamGroupClass", "ExamGroupClass")
-                        .WithMany("Sections")
-                        .HasForeignKey("ExamGroupClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
-                        .WithMany()
-                        .HasForeignKey("SectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ExamGroupClass");
-
-                    b.Navigation("Section");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubject", b =>
-                {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamGroupClass", "ExamGroupClass")
-                        .WithMany("Subjects")
-                        .HasForeignKey("ExamGroupClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Subject", "Subject")
-                        .WithMany()
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Teachers.Teacher", "Teacher")
-                        .WithMany()
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ExamGroupClass");
-
-                    b.Navigation("Subject");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubjectComponent", b =>
-                {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamComponent", "Component")
-                        .WithMany()
-                        .HasForeignKey("ComponentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubject", "ExamGroupSubject")
-                        .WithMany("Components")
-                        .HasForeignKey("ExamGroupSubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Component");
-
-                    b.Navigation("ExamGroupSubject");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSchedule", b =>
@@ -36905,6 +36985,25 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Navigation("Subject");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSection", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamClass", "ExamClass")
+                        .WithMany("Sections")
+                        .HasForeignKey("ExamClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExamClass");
+
+                    b.Navigation("Section");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
@@ -36913,10 +37012,15 @@ namespace SchoolManagementSystem.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamClass", null)
+                        .WithMany("Subjects")
+                        .HasForeignKey("ExamClassId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
                         .WithMany("ExamSubjects")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.StudentGroup", "StudentGroup")
@@ -36933,7 +37037,7 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.HasOne("SchoolManagementSystem.Models.Entities.Teachers.Teacher", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Class");
 
@@ -36944,6 +37048,33 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Navigation("Subject");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubjectComponent", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamComponent", "Component")
+                        .WithMany()
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", "ExamSubject")
+                        .WithMany("Components")
+                        .HasForeignKey("ExamSubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Component");
+
+                    b.Navigation("ExamSubject");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamTemplate", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", null)
+                        .WithMany("Templates")
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.SubjectMarkStructure", b =>
@@ -37415,6 +37546,41 @@ namespace SchoolManagementSystem.Data.Migrations
                     b.Navigation("SchoolClass");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentComponentMark", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
+                        .WithMany()
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamSubjectComponent", "ExamSubjectComponent")
+                        .WithMany()
+                        .HasForeignKey("ExamSubjectComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", "ExamSubject")
+                        .WithMany()
+                        .HasForeignKey("ExamSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Student.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("ExamSubject");
+
+                    b.Navigation("ExamSubjectComponent");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentExamResult", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
@@ -37442,6 +37608,12 @@ namespace SchoolManagementSystem.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", "ExamSubject")
+                        .WithMany()
+                        .HasForeignKey("ExamSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SchoolManagementSystem.Models.Entities.Student.Student", "Student")
                         .WithMany()
                         .HasForeignKey("StudentId")
@@ -37455,6 +37627,8 @@ namespace SchoolManagementSystem.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Exam");
+
+                    b.Navigation("ExamSubject");
 
                     b.Navigation("Student");
 
@@ -38236,24 +38410,23 @@ namespace SchoolManagementSystem.Data.Migrations
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.Exam", b =>
                 {
+                    b.Navigation("Classes");
+
                     b.Navigation("ExamSchedules");
 
                     b.Navigation("ExamSubjects");
+
+                    b.Navigation("Templates");
                 });
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroup", b =>
-                {
-                    b.Navigation("Classes");
-                });
-
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupClass", b =>
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamClass", b =>
                 {
                     b.Navigation("Sections");
 
                     b.Navigation("Subjects");
                 });
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamGroupSubject", b =>
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", b =>
                 {
                     b.Navigation("Components");
                 });

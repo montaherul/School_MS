@@ -1,0 +1,100 @@
+@model SchoolManagementSystem.Models.ViewModels.Fees.FeeInvoiceViewModel
+@{
+    ViewData["Title"] = "Cancel Invoice";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/FeeInvoice/Details/@Model.Id" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">Cancel Invoice</h1>
+                <p class="adm-header__sub">@Model.InvoiceNo</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--danger">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div style="max-width:560px;">
+        <div class="adm-card" style="padding:20px;margin-bottom:20px;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);width:140px;">Invoice No</td>
+                    <td style="padding:8px 0;font-weight:600;">@Model.InvoiceNo</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Total Amount</td>
+                    <td style="padding:8px 0;">@Model.TotalAmount.ToString("N2")</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Paid Amount</td>
+                    <td style="padding:8px 0;color:var(--adm-success);">@Model.PaidAmount.ToString("N2")</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Due Date</td>
+                    <td style="padding:8px 0;">@Model.DueDate.ToString("yyyy-MM-dd")</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Status</td>
+                    <td style="padding:8px 0;">
+                        @{
+                            var st = Model.Status switch { 1 => "Unpaid", 2 => "Partial", 3 => "Paid", 4 => "Waived", _ => Model.Status.ToString() };
+                        }
+                        <span class="adm-badge adm-badge--neutral">@st</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="adm-alert adm-alert--danger" style="margin-bottom:20px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M10.29,13.29,16.59,7"></path>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="2" x2="12" y2="4"></line>
+                <line x1="20" y1="12" x2="18" y2="12"></line>
+                <line x1="12" y1="20" x2="12" y2="22"></line>
+                <line x1="4" y1="12" x2="2" y2="12"></line>
+                <line x1="17" y1="17" x2="7" y2="7"></line>
+            </svg>
+            <div>
+                <strong>Warning:</strong> Cancelling this invoice will set its status to Waived. @if (Model.PaidAmount > 0) { <span>Any payments made will be automatically refunded.</span> }
+                This action cannot be undone.
+            </div>
+        </div>
+
+        <form asp-action="CancelConfirmed" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+            <div class="adm-form-group">
+                <label class="adm-form-label">Reason for Cancellation <span class="adm-required">*</span></label>
+                <textarea name="reason" class="adm-input" style="padding-left:12px;" rows="3" placeholder="Explain why this invoice is being cancelled..." required></textarea>
+            </div>
+            <div class="adm-btn-group" style="margin-top:20px;">
+                <button type="submit" class="adm-btn adm-btn--danger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Cancel Invoice
+                </button>
+                <a href="/FeeInvoice/Details/@Model.Id" class="adm-btn adm-btn--ghost">Go Back</a>
+            </div>
+        </form>
+    </div>
+</div>

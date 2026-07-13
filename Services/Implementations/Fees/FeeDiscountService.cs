@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -12,11 +13,13 @@ public class FeeDiscountService : IFeeDiscountService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFeeDiscountRepository _repository;
+    private readonly IAuditLogService _audit;
 
-    public FeeDiscountService(IUnitOfWork unitOfWork, IFeeDiscountRepository repository)
+    public FeeDiscountService(IUnitOfWork unitOfWork, IFeeDiscountRepository repository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeeDiscountListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
@@ -40,21 +43,7 @@ public class FeeDiscountService : IFeeDiscountService
         await _unitOfWork.Repository<FeeDiscount>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var ledger = new FeeLedger
-        {
-            StudentId = 0,
-            FeeInvoiceId = null,
-            TransactionType = FeeLedgerType.Discount,
-            Debit = 0,
-            Credit = dto.Value,
-            Balance = -dto.Value,
-            Description = $"Discount created: {dto.Name}",
-            TransactionDate = DateTime.UtcNow,
-            CreatedBy = createdBy,
-            CreatedAt = DateTime.UtcNow
-        };
-        await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("FeeDiscounts", "Create", $"Discount {entity.Id} created: {entity.Name}, value {entity.Value}", createdBy, cancellationToken: cancellationToken);
 
         return entity.Id;
     }

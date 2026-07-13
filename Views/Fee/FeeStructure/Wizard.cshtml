@@ -1,0 +1,507 @@
+@model SchoolManagementSystem.Models.ViewModels.Fees.FeeStructureWizardViewModel
+@{
+    ViewData["Title"] = "Fee Structure Builder Wizard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var step = Model.Wizard.Step;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/FeeStructure/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">Fee Structure Builder</h1>
+                <p class="adm-header__sub">Multi-step wizard to create fee structures, discounts, and fine rules</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="ws-card" style="margin-bottom:24px;">
+        <div class="ws-card__body" style="padding:24px;">
+            <div class="wizard-progress" style="display:flex;gap:0;align-items:center;justify-content:center;">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    var isActive = i == step;
+                    var isCompleted = i < step;
+                    var cls = isActive ? "wizard-step wizard-step--active" : isCompleted ? "wizard-step wizard-step--completed" : "wizard-step";
+                    <div class="@cls" style="display:flex;align-items:center;gap:8px;">
+                        <div class="wizard-step__circle" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;
+                            @(isActive ? "background:var(--adm-primary);color:#fff;box-shadow:0 0 0 4px var(--adm-primary-bg);" :
+                              isCompleted ? "background:var(--adm-success);color:#fff;" :
+                              "background:var(--adm-surface-2);color:var(--adm-text-3);border:2px solid var(--adm-border);")">
+                            @if (isCompleted)
+                            {
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20,6 9,17 4,12"></polyline></svg>
+                            }
+                            else
+                            {
+                                @i
+                            }
+                        </div>
+                        <span style="font-size:13px;font-weight:500;@(isActive ? "color:var(--adm-primary);" : isCompleted ? "color:var(--adm-success);" : "color:var(--adm-text-3);")">
+                            @switch (i)
+                            {
+                                case 1: <text>Class & Year</text> break;
+                                case 2: <text>Fee Heads</text> break;
+                                case 3: <text>Discounts</text> break;
+                                case 4: <text>Fine Rules</text> break;
+                                case 5: <text>Review</text> break;
+                            }
+                        </span>
+                    </div>
+                    @if (i < 5)
+                    {
+                        <div style="flex:1;height:2px;min-width:40px;margin:0 8px;border-radius:2px;background:var(--adm-border);overflow:hidden;">
+                            <div style="height:100%;width:@(isCompleted ? "100%" : "0%");background:var(--adm-success);transition:width 0.3s;"></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <form id="wizardForm" method="post" asp-action="Wizard">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="wizardStep" name="Step" value="@step" />
+
+        <div id="step1" class="wizard-step-content" style="display:@(step == 1 ? "block" : "none");">
+            <div class="ws-card">
+                <div class="ws-card__header">
+                    <h3 class="ws-card__title">Select Academic Year & Class</h3>
+                    <p class="ws-card__sub">Choose the academic year and class for this fee structure</p>
+                </div>
+                <div class="ws-card__body">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Academic Year <span class="adm-required">*</span></label>
+                        <select name="AcademicYearId" class="adm-select">
+                            <option value="">-- Select Academic Year --</option>
+                            @foreach (var item in Model.AcademicYears)
+                            {
+                                <option value="@item.Value" selected="@(Model.Wizard.AcademicYearId.ToString() == item.Value)">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Class <span class="adm-required">*</span></label>
+                        <select name="SchoolClassId" class="adm-select" id="classSelect">
+                            <option value="">-- Select Class --</option>
+                            @foreach (var item in Model.SchoolClasses)
+                            {
+                                <option value="@item.Value" selected="@(Model.Wizard.SchoolClassId.ToString() == item.Value)">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Section (Optional)</label>
+                        <select name="SectionId" class="adm-select" id="sectionSelect">
+                            <option value="">-- Select Section --</option>
+                            @foreach (var item in Model.Sections)
+                            {
+                                <option value="@item.Value" selected="@(Model.Wizard.SectionId?.ToString() == item.Value)">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Student Group (Optional)</label>
+                        <select name="StudentGroupId" class="adm-select" id="groupSelect">
+                            <option value="">-- Select Group --</option>
+                            @foreach (var item in Model.StudentGroups)
+                            {
+                                <option value="@item.Value" selected="@(Model.Wizard.StudentGroupId?.ToString() == item.Value)">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="step2" class="wizard-step-content" style="display:@(step == 2 ? "block" : "none");">
+            <div class="ws-card">
+                <div class="ws-card__header" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h3 class="ws-card__title">Fee Heads</h3>
+                        <p class="ws-card__sub">Define the fee items for this structure</p>
+                    </div>
+                    <button type="button" class="adm-btn adm-btn--primary" onclick="addFeeHeadRow()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Fee Head
+                    </button>
+                </div>
+                <div class="ws-card__body" style="overflow-x:auto;">
+                    <table class="adm-table" id="feeHeadsTable">
+                        <thead>
+                            <tr>
+                                <th>Fee Category</th>
+                                <th>Fee Name</th>
+                                <th>Amount (৳)</th>
+                                <th>Frequency</th>
+                                <th>Due Day</th>
+                                <th>Recurring</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="feeHeadsBody">
+                            @for (int i = 0; i < (Model.Wizard.FeeHeads.Count > 0 ? Model.Wizard.FeeHeads.Count : 0); i++)
+                            {
+                                var head = Model.Wizard.FeeHeads[i];
+                                <tr>
+                                    <td>
+                                        <select name="FeeHeads[@i].FeeCategoryId" class="adm-select" style="min-width:140px;">
+                                            <option value="">-- Select --</option>
+                                            @foreach (var cat in Model.FeeCategories)
+                                            {
+                                                <option value="@cat.Value" selected="@(head.FeeCategoryId.ToString() == cat.Value)">@cat.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td><input name="FeeHeads[@i].FeeName" class="adm-input" value="@head.FeeName" style="min-width:120px;" /></td>
+                                    <td><input name="FeeHeads[@i].Amount" class="adm-input" type="number" step="0.01" min="0" value="@head.Amount" style="width:100px;" /></td>
+                                    <td>
+                                        <select name="FeeHeads[@i].Frequency" class="adm-select" style="min-width:110px;">
+                                            <option value="1" selected="@(head.Frequency == 1)">Monthly</option>
+                                            <option value="2" selected="@(head.Frequency == 2)">Quarterly</option>
+                                            <option value="3" selected="@(head.Frequency == 3)">Half-Yearly</option>
+                                            <option value="4" selected="@(head.Frequency == 4)">Yearly</option>
+                                        </select>
+                                    </td>
+                                    <td><input name="FeeHeads[@i].DueDay" class="adm-input" type="number" min="1" max="31" value="@head.DueDay" style="width:70px;" /></td>
+                                    <td style="text-align:center;"><input name="FeeHeads[@i].IsRecurring" type="checkbox" checked="@head.IsRecurring" style="width:16px;height:16px;accent-color:var(--adm-primary);" /></td>
+                                    <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+                                </tr>
+                            }
+                            @if (Model.Wizard.FeeHeads.Count == 0)
+                            {
+                                <tr class="empty-row">
+                                    <td colspan="7" style="text-align:center;padding:32px;color:var(--adm-text-3);">No fee heads added yet. Click "Add Fee Head" to begin.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="step3" class="wizard-step-content" style="display:@(step == 3 ? "block" : "none");">
+            <div class="ws-card">
+                <div class="ws-card__header" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h3 class="ws-card__title">Discounts</h3>
+                        <p class="ws-card__sub">Define fee discounts for this structure</p>
+                    </div>
+                    <button type="button" class="adm-btn adm-btn--primary" onclick="addDiscountRow()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Discount
+                    </button>
+                </div>
+                <div class="ws-card__body" style="overflow-x:auto;">
+                    <table class="adm-table" id="discountsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Fee Category</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="discountsBody">
+                            @for (int i = 0; i < (Model.Wizard.Discounts.Count > 0 ? Model.Wizard.Discounts.Count : 0); i++)
+                            {
+                                var d = Model.Wizard.Discounts[i];
+                                <tr>
+                                    <td><input name="Discounts[@i].Name" class="adm-input" value="@d.Name" style="min-width:120px;" /></td>
+                                    <td>
+                                        <select name="Discounts[@i].DiscountType" class="adm-select" style="min-width:100px;">
+                                            <option value="1" selected="@(d.DiscountType == 1)">Fixed</option>
+                                            <option value="0" selected="@(d.DiscountType == 0)">Percentage</option>
+                                        </select>
+                                    </td>
+                                    <td><input name="Discounts[@i].Value" class="adm-input" type="number" step="0.01" min="0" value="@d.Value" style="width:100px;" /></td>
+                                    <td>
+                                        <select name="Discounts[@i].FeeCategoryId" class="adm-select" style="min-width:140px;">
+                                            <option value="">-- All --</option>
+                                            @foreach (var cat in Model.FeeCategories)
+                                            {
+                                                <option value="@cat.Value" selected="@(d.FeeCategoryId?.ToString() == cat.Value)">@cat.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+                                </tr>
+                            }
+                            @if (Model.Wizard.Discounts.Count == 0)
+                            {
+                                <tr class="empty-row">
+                                    <td colspan="5" style="text-align:center;padding:32px;color:var(--adm-text-3);">No discounts added yet. Click "Add Discount" to begin.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="step4" class="wizard-step-content" style="display:@(step == 4 ? "block" : "none");">
+            <div class="ws-card">
+                <div class="ws-card__header" style="display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <h3 class="ws-card__title">Fine Rules</h3>
+                        <p class="ws-card__sub">Define late payment fine rules</p>
+                    </div>
+                    <button type="button" class="adm-btn adm-btn--primary" onclick="addFineRuleRow()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Fine Rule
+                    </button>
+                </div>
+                <div class="ws-card__body" style="overflow-x:auto;">
+                    <table class="adm-table" id="fineRulesTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Grace Days</th>
+                                <th>Fine Per Day (৳)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="fineRulesBody">
+                            @for (int i = 0; i < (Model.Wizard.FineRules.Count > 0 ? Model.Wizard.FineRules.Count : 0); i++)
+                            {
+                                var f = Model.Wizard.FineRules[i];
+                                <tr>
+                                    <td><input name="FineRules[@i].Name" class="adm-input" value="@f.Name" style="min-width:120px;" /></td>
+                                    <td><input name="FineRules[@i].GraceDays" class="adm-input" type="number" min="0" value="@f.GraceDays" style="width:80px;" /></td>
+                                    <td><input name="FineRules[@i].FinePerDay" class="adm-input" type="number" step="0.01" min="0" value="@f.FinePerDay" style="width:100px;" /></td>
+                                    <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+                                </tr>
+                            }
+                            @if (Model.Wizard.FineRules.Count == 0)
+                            {
+                                <tr class="empty-row">
+                                    <td colspan="4" style="text-align:center;padding:32px;color:var(--adm-text-3);">No fine rules added yet. Click "Add Fine Rule" to begin.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="step5" class="wizard-step-content" style="display:@(step == 5 ? "block" : "none");">
+            <div class="ws-card">
+                <div class="ws-card__header">
+                    <h3 class="ws-card__title">Review & Confirm</h3>
+                    <p class="ws-card__sub">Review all data before saving</p>
+                </div>
+                <div class="ws-card__body">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+                        <div class="adm-form-group">
+                            <label class="adm-form-label">Academic Year</label>
+                            <div style="padding:8px 12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);font-weight:500;" id="reviewAcademicYear"></div>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-form-label">Class</label>
+                            <div style="padding:8px 12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);font-weight:500;" id="reviewClass"></div>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-form-label">Section</label>
+                            <div style="padding:8px 12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);" id="reviewSection"></div>
+                        </div>
+                        <div class="adm-form-group">
+                            <label class="adm-form-label">Student Group</label>
+                            <div style="padding:8px 12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);" id="reviewGroup"></div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom:12px;font-size:15px;color:var(--adm-text);">Fee Heads (@Model.Wizard.FeeHeads.Count)</h4>
+                    <div style="overflow-x:auto;margin-bottom:24px;">
+                        <table class="adm-table" id="reviewFeeHeadsTable">
+                            <thead><tr><th>Category</th><th>Name</th><th>Amount</th><th>Frequency</th><th>Due Day</th></tr></thead>
+                            <tbody>
+                                @foreach (var head in Model.Wizard.FeeHeads)
+                                {
+                                    <tr>
+                                        <td>@head.FeeCategoryId</td>
+                                        <td>@head.FeeName</td>
+                                        <td>@head.Amount.ToString("N2")</td>
+                                        <td>@(head.Frequency == 1 ? "Monthly" : head.Frequency == 2 ? "Quarterly" : head.Frequency == 3 ? "Half-Yearly" : "Yearly")</td>
+                                        <td>@(head.DueDay?.ToString() ?? "—")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="margin-bottom:12px;font-size:15px;color:var(--adm-text);">Discounts (@Model.Wizard.Discounts.Count)</h4>
+                    <div style="overflow-x:auto;margin-bottom:24px;">
+                        <table class="adm-table" id="reviewDiscountsTable">
+                            <thead><tr><th>Name</th><th>Type</th><th>Value</th><th>Fee Category</th></tr></thead>
+                            <tbody>
+                                @foreach (var d in Model.Wizard.Discounts)
+                                {
+                                    <tr>
+                                        <td>@d.Name</td>
+                                        <td>@(d.DiscountType == 1 ? "Fixed" : "Percentage")</td>
+                                        <td>@d.Value.ToString("N2")</td>
+                                        <td>@(d.FeeCategoryId?.ToString() ?? "All")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="margin-bottom:12px;font-size:15px;color:var(--adm-text);">Fine Rules (@Model.Wizard.FineRules.Count)</h4>
+                    <div style="overflow-x:auto;margin-bottom:24px;">
+                        <table class="adm-table" id="reviewFineRulesTable">
+                            <thead><tr><th>Name</th><th>Grace Days</th><th>Fine Per Day</th></tr></thead>
+                            <tbody>
+                                @foreach (var f in Model.Wizard.FineRules)
+                                {
+                                    <tr>
+                                        <td>@f.Name</td>
+                                        <td>@f.GraceDays</td>
+                                        <td>@f.FinePerDay.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox" name="IsActive" value="true" checked="@Model.Wizard.IsActive" style="width:16px;height:16px;accent-color:var(--adm-primary);" />
+                            Active
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-nav" style="display:flex;justify-content:space-between;margin-top:24px;">
+            <div>
+                <button type="button" class="adm-btn adm-btn--ghost" id="prevBtn" style="display:@(step > 1 ? "inline-flex" : "none");" onclick="goStep(@(step - 1))">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"></polyline></svg>
+                    Previous
+                </button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <a href="/FeeStructure/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                @if (step < 5)
+                {
+                    <button type="button" class="adm-btn adm-btn--primary" id="nextBtn" onclick="saveStep(@step)">
+                        Next
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"></polyline></svg>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="adm-btn adm-btn--primary" id="saveBtn" onclick="submitWizard()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17,21 17,13 7,13 7,21"></polyline><polyline points="7,3 7,8 15,8"></polyline></svg>
+                        Save Fee Structure
+                    </button>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        var feeCatOptions = `<option value="">-- Select --</option>@foreach (var cat in Model.FeeCategories) {<text><option value="@cat.Value">@cat.Text</option></text>}`;
+        var freqOptions = `<option value="1">Monthly</option><option value="2">Quarterly</option><option value="3">Half-Yearly</option><option value="4">Yearly</option>`;
+        var discountTypeOptions = `<option value="1">Fixed</option><option value="0">Percentage</option>`;
+
+        function addFeeHeadRow() {
+            var tbody = document.getElementById('feeHeadsBody');
+            var idx = tbody.querySelectorAll('tr:not(.empty-row)').length;
+            var emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><select name="FeeHeads[${idx}].FeeCategoryId" class="adm-select" style="min-width:140px;">${feeCatOptions}</select></td>
+                <td><input name="FeeHeads[${idx}].FeeName" class="adm-input" style="min-width:120px;" /></td>
+                <td><input name="FeeHeads[${idx}].Amount" class="adm-input" type="number" step="0.01" min="0" style="width:100px;" /></td>
+                <td><select name="FeeHeads[${idx}].Frequency" class="adm-select" style="min-width:110px;">${freqOptions}</select></td>
+                <td><input name="FeeHeads[${idx}].DueDay" class="adm-input" type="number" min="1" max="31" style="width:70px;" /></td>
+                <td style="text-align:center;"><input name="FeeHeads[${idx}].IsRecurring" type="checkbox" checked style="width:16px;height:16px;accent-color:var(--adm-primary);" /></td>
+                <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function addDiscountRow() {
+            var tbody = document.getElementById('discountsBody');
+            var idx = tbody.querySelectorAll('tr:not(.empty-row)').length;
+            var emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input name="Discounts[${idx}].Name" class="adm-input" style="min-width:120px;" /></td>
+                <td><select name="Discounts[${idx}].DiscountType" class="adm-select" style="min-width:100px;">${discountTypeOptions}</select></td>
+                <td><input name="Discounts[${idx}].Value" class="adm-input" type="number" step="0.01" min="0" style="width:100px;" /></td>
+                <td><select name="Discounts[${idx}].FeeCategoryId" class="adm-select" style="min-width:140px;"><option value="">-- All --</option>${feeCatOptions.substring(feeCatOptions.indexOf('>', feeCatOptions.indexOf('<option')))}</select></td>
+                <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function addFineRuleRow() {
+            var tbody = document.getElementById('fineRulesBody');
+            var idx = tbody.querySelectorAll('tr:not(.empty-row)').length;
+            var emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input name="FineRules[${idx}].Name" class="adm-input" style="min-width:120px;" /></td>
+                <td><input name="FineRules[${idx}].GraceDays" class="adm-input" type="number" min="0" style="width:80px;" /></td>
+                <td><input name="FineRules[${idx}].FinePerDay" class="adm-input" type="number" step="0.01" min="0" style="width:100px;" /></td>
+                <td><button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;" onclick="this.closest('tr').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function goStep(step) {
+            document.getElementById('wizardStep').value = step;
+            document.getElementById('wizardForm').submit();
+        }
+
+        function saveStep(currentStep) {
+            var form = document.getElementById('wizardForm');
+            var formData = new FormData(form);
+            formData.set('Step', currentStep);
+
+            fetch('@Url.Action("Wizard", "FeeStructure")', {
+                method: 'POST',
+                body: new URLSearchParams(formData),
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.step) {
+                    document.getElementById('wizardStep').value = data.step + 1;
+                    form.submit();
+                }
+            })
+            .catch(function() { form.submit(); });
+        }
+
+        function submitWizard() {
+            var form = document.getElementById('wizardForm');
+            form.action = '@Url.Action("SaveWizard", "FeeStructure")';
+            form.submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var classSelect = document.getElementById('classSelect');
+            if (classSelect) {
+                classSelect.addEventListener('change', function() {
+                    goStep(1);
+                });
+            }
+        });
+    </script>
+}

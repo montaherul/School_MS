@@ -171,7 +171,7 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                     DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
                     TotalAmount = app.AdmissionFee,
                     PaidAmount = 0,
-                    Status = PaymentStatus.Unpaid,
+                    Status = PaymentStatus.Draft,
                     Remarks = invoiceKey,
                     CreatedBy = receivedBy,
                     CreatedAt = DateTime.UtcNow
@@ -400,7 +400,7 @@ public class AdmissionFinanceService : IAdmissionFinanceService
             DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
             TotalAmount = admissionFee,
             PaidAmount = isPaid ? admissionFee : 0,
-            Status = isPaid ? PaymentStatus.Paid : PaymentStatus.Unpaid,
+            Status = isPaid ? PaymentStatus.Paid : PaymentStatus.Draft,
             Remarks = invoiceKey,
             CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow

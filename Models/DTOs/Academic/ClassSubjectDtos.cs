@@ -26,6 +26,7 @@ public class ClassSubjectListItemDto
 
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
+    public int TotalRecords { get; set; }
 }
 
 public class ClassSubjectUpsertDto

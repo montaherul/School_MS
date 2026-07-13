@@ -22,17 +22,23 @@
                     </div>
                     <div class="adm-form-group">
                         <label asp-for="SchoolClassId" class="adm-label"></label>
-                        <input asp-for="SchoolClassId" class="adm-input" type="number" min="1" />
+                        <select asp-for="SchoolClassId" asp-items="ViewBag.SchoolClasses" class="adm-select">
+                            <option value="">Select Class</option>
+                        </select>
                         <span asp-validation-for="SchoolClassId" class="adm-field-error"></span>
                     </div>
                     <div class="adm-form-group">
                         <label asp-for="SubjectId" class="adm-label"></label>
-                        <input asp-for="SubjectId" class="adm-input" type="number" min="1" />
+                        <select asp-for="SubjectId" asp-items="ViewBag.Subjects" class="adm-select">
+                            <option value="">Select Subject</option>
+                        </select>
                         <span asp-validation-for="SubjectId" class="adm-field-error"></span>
                     </div>
                     <div class="adm-form-group">
                         <label asp-for="AcademicYearId" class="adm-label"></label>
-                        <input asp-for="AcademicYearId" class="adm-input" type="number" min="1" />
+                        <select asp-for="AcademicYearId" asp-items="ViewBag.AcademicYears" class="adm-select">
+                            <option value="">Select Academic Year</option>
+                        </select>
                         <span asp-validation-for="AcademicYearId" class="adm-field-error"></span>
                     </div>
                     <div class="adm-form-group">

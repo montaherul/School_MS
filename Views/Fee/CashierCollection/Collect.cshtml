@@ -1,0 +1,218 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.CashierCollectionDto
+@{
+    ViewData["Title"] = "Collect Payment";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/CashierCollection/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <line x1="12" y1="10" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Collect Payment</h1>
+                <p class="adm-header__sub">@Model.StudentName &middot; @Model.StudentCode &middot; @Model.ClassName</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;">
+        <div>
+            <div class="adm-card" style="padding:0;">
+                <div class="adm-card__header" style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                    <h3 style="font-size:0.9375rem;font-weight:600;color:var(--adm-text);">Outstanding Invoices</h3>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="dash-table" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;padding:10px 12px;text-align:left;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">
+                                    <input type="checkbox" id="selectAll" checked />
+                                </th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Invoice No</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Due Date</th>
+                                <th style="padding:10px 12px;text-align:right;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Total</th>
+                                <th style="padding:10px 12px;text-align:right;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Paid</th>
+                                <th style="padding:10px 12px;text-align:right;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Due</th>
+                                <th style="padding:10px 12px;text-align:center;font-size:0.75rem;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--adm-border);">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inv in Model.Invoices)
+                            {
+                                <tr data-invoice-id="@inv.InvoiceId" data-due="@inv.DueAmount" data-total="@inv.TotalAmount">
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);">
+                                        <input type="checkbox" class="invoice-check" checked value="@inv.InvoiceId" />
+                                    </td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);font-size:0.875rem;font-weight:600;color:var(--adm-text);">@inv.InvoiceNo</td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);font-size:0.8125rem;color:var(--adm-text-3);">@inv.DueDate.ToString("dd-MMM-yyyy")</td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);font-size:0.875rem;text-align:right;font-weight:600;">@inv.TotalAmount.ToString("N2")</td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);font-size:0.875rem;text-align:right;color:var(--adm-success);">@inv.PaidAmount.ToString("N2")</td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);font-size:0.875rem;text-align:right;font-weight:700;color:var(--adm-rejected);">@inv.DueAmount.ToString("N2")</td>
+                                    <td style="padding:10px 12px;border-bottom:1px solid var(--adm-border);text-align:center;">
+                                        @if (inv.Status == 2)
+                                        {
+                                            <span class="adm-badge adm-badge--warning">Partial</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-badge adm-badge--neutral">Unpaid</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="adm-card" style="padding:20px;">
+                <h3 style="font-size:0.9375rem;font-weight:600;color:var(--adm-text);margin-bottom:16px;">Payment Details</h3>
+                <div class="adm-form-group">
+                    <label class="adm-form-label">Total Due</label>
+                    <div id="totalDue" style="font-size:1.5rem;font-weight:700;color:var(--adm-primary);">৳ 0.00</div>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-form-label">Amount <span class="adm-required">*</span></label>
+                    <div style="display:flex;">
+                        <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                        <input type="number" id="payAmount" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" step="0.01" min="0" />
+                    </div>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-form-label">Payment Method <span class="adm-required">*</span></label>
+                    <select id="payMethod" class="adm-select" style="padding-left:12px;">
+                        <option value="1">Cash</option>
+                        <option value="2">Bank Transfer</option>
+                        <option value="3">Card</option>
+                        <option value="4">Mobile Banking</option>
+                        <option value="5">Online</option>
+                    </select>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-form-label">Reference No</label>
+                    <input type="text" id="payReference" class="adm-input" style="padding-left:12px;" placeholder="e.g. Transaction ID" />
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-form-label">Remarks</label>
+                    <textarea id="payRemarks" class="adm-input" style="padding-left:12px;" rows="2" placeholder="Optional notes..."></textarea>
+                </div>
+                <button id="payNowBtn" class="adm-btn adm-btn--primary" style="width:100%;justify-content:center;padding:12px;font-size:1rem;margin-top:8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                    Pay Now
+                </button>
+                <div id="payError" style="display:none;margin-top:12px;padding:10px 14px;border-radius:var(--adm-radius);background:rgba(239,68,68,0.1);color:var(--adm-rejected);font-size:0.8125rem;"></div>
+                <div id="payLoading" style="display:none;margin-top:12px;text-align:center;color:var(--adm-text-3);font-size:0.8125rem;">
+                    Processing payment...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var allInvoices = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Invoices.Select(i => new { i.InvoiceId, i.DueAmount })));
+
+        function updateTotals() {
+            var checks = document.querySelectorAll('.invoice-check:checked');
+            var total = 0;
+            checks.forEach(function(cb) {
+                var row = cb.closest('tr');
+                var due = parseFloat(row.getAttribute('data-due')) || 0;
+                total += due;
+            });
+            document.getElementById('totalDue').textContent = '৳ ' + total.toFixed(2);
+            if (total > 0 && !document.getElementById('payAmount').value) {
+                document.getElementById('payAmount').value = total.toFixed(2);
+            }
+        }
+
+        document.querySelectorAll('.invoice-check').forEach(function(cb) {
+            cb.addEventListener('change', updateTotals);
+        });
+
+        document.getElementById('selectAll').addEventListener('change', function() {
+            document.querySelectorAll('.invoice-check').forEach(function(cb) {
+                cb.checked = this.checked;
+            }.bind(this));
+            updateTotals();
+        });
+
+        updateTotals();
+
+        document.getElementById('payNowBtn').addEventListener('click', function() {
+            var invoiceIds = [];
+            document.querySelectorAll('.invoice-check:checked').forEach(function(cb) {
+                invoiceIds.push(parseInt(cb.value));
+            });
+
+            if (invoiceIds.length === 0) {
+                showError('Please select at least one invoice.');
+                return;
+            }
+
+            var amount = parseFloat(document.getElementById('payAmount').value);
+            if (!amount || amount <= 0) {
+                showError('Please enter a valid payment amount.');
+                return;
+            }
+
+            var btn = this;
+            btn.disabled = true;
+            document.getElementById('payLoading').style.display = 'block';
+            document.getElementById('payError').style.display = 'none';
+
+            fetch('@Url.Action("Pay", "CashierCollection")?studentId=@Model.StudentId', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({
+                    invoiceIds: invoiceIds,
+                    amount: amount,
+                    lateFee: 0,
+                    discountAmount: 0,
+                    method: parseInt(document.getElementById('payMethod').value),
+                    referenceNo: document.getElementById('payReference').value,
+                    remarks: document.getElementById('payRemarks').value
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/CashierCollection/Success/' + data.paymentId;
+                } else {
+                    showError(data.errorMessage || 'Payment failed.');
+                    btn.disabled = false;
+                    document.getElementById('payLoading').style.display = 'none';
+                }
+            })
+            .catch(function(err) {
+                showError('A network error occurred. Please try again.');
+                btn.disabled = false;
+                document.getElementById('payLoading').style.display = 'none';
+            });
+        });
+
+        function showError(msg) {
+            var el = document.getElementById('payError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+    </script>
+}

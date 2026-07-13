@@ -3,6 +3,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -13,11 +14,13 @@ public class FeeInvoiceService : IFeeInvoiceService
 {
     private readonly IUnitOfWork _uow;
     private readonly IFeeInvoiceRepository _invoiceRepository;
+    private readonly IAuditLogService _audit;
 
-    public FeeInvoiceService(IUnitOfWork uow, IFeeInvoiceRepository invoiceRepository)
+    public FeeInvoiceService(IUnitOfWork uow, IFeeInvoiceRepository invoiceRepository, IAuditLogService audit)
     {
         _uow = uow;
         _invoiceRepository = invoiceRepository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeeInvoiceListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, int? status = null, CancellationToken cancellationToken = default)
@@ -55,6 +58,8 @@ public class FeeInvoiceService : IFeeInvoiceService
         };
         await _uow.Repository<FeeLedger>().AddAsync(ledger, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("FeeInvoices", "Create", $"Invoice {invoice.InvoiceNo} created for student {invoice.StudentId}, amount {invoice.TotalAmount}", createdBy, cancellationToken: cancellationToken);
 
         return invoice.Id;
     }
@@ -233,5 +238,92 @@ public class FeeInvoiceService : IFeeInvoiceService
             result.Errors.Add("No invoices required late fee application.");
 
         return result;
+    }
+
+    public async Task<AutoBillingResultDto> CancelInvoiceAsync(int invoiceId, string reason, string cancelledBy, CancellationToken cancellationToken = default)
+    {
+        var invoice = await _invoiceRepository.FirstOrDefaultAsync(x => x.Id == invoiceId && !x.IsDeleted, cancellationToken)
+            ?? throw new InvalidOperationException("Invoice not found.");
+
+        if (invoice.Status == PaymentStatus.Paid)
+            return new AutoBillingResultDto { ErrorMessage = "Cannot cancel a fully paid invoice. Process a refund instead." };
+
+        if (invoice.Status == PaymentStatus.Waived || invoice.Status == PaymentStatus.Cancelled || invoice.Status == PaymentStatus.Refunded)
+            return new AutoBillingResultDto { ErrorMessage = "Invoice is already closed (waived, cancelled, or refunded)." };
+
+        await _uow.ExecuteInTransactionAsync(async () =>
+        {
+            var payments = await _uow.Repository<Payment>()
+                .ListAsync(x => x.FeeInvoiceId == invoiceId && !x.IsDeleted, cancellationToken);
+
+            foreach (var payment in payments)
+            {
+                payment.IsDeleted = true;
+                payment.UpdatedBy = cancelledBy;
+                payment.UpdatedAt = DateTime.UtcNow;
+                _uow.Repository<Payment>().Update(payment);
+
+                var refund = new FeeRefund
+                {
+                    FeePaymentId = payment.Id,
+                    RefundAmount = payment.Amount,
+                    RefundMethod = payment.Method,
+                    ReferenceNo = $"CNCL-{invoice.InvoiceNo}",
+                    Reason = reason,
+                    IsApproved = true,
+                    ApprovedBy = cancelledBy,
+                    ApprovedAt = DateTime.UtcNow,
+                    RefundDate = DateTime.UtcNow,
+                    CreatedBy = cancelledBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _uow.Repository<FeeRefund>().AddAsync(refund, cancellationToken);
+
+                var refundLedger = new FeeLedger
+                {
+                    StudentId = invoice.StudentId,
+                    FeeInvoiceId = invoiceId,
+                    FeePaymentId = payment.Id,
+                    FeeRefundId = refund.Id,
+                    TransactionType = FeeLedgerType.Refund,
+                    Debit = payment.Amount,
+                    Credit = 0,
+                    Balance = payment.Amount,
+                    Description = $"Auto-refund on invoice cancel: {reason}",
+                    TransactionDate = DateTime.UtcNow,
+                    CreatedBy = cancelledBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _uow.Repository<FeeLedger>().AddAsync(refundLedger, cancellationToken);
+            }
+
+            invoice.Status = PaymentStatus.Cancelled;
+            invoice.PaidAmount = 0;
+            invoice.Remarks = $"Cancelled: {reason}";
+            invoice.UpdatedBy = cancelledBy;
+            invoice.UpdatedAt = DateTime.UtcNow;
+            _invoiceRepository.Update(invoice);
+
+            var cancelLedger = new FeeLedger
+            {
+                StudentId = invoice.StudentId,
+                FeeInvoiceId = invoiceId,
+                TransactionType = FeeLedgerType.Adjustment,
+                Debit = 0,
+                Credit = invoice.TotalAmount,
+                Balance = -invoice.TotalAmount,
+                Description = $"Invoice cancelled: {reason}",
+                TransactionDate = DateTime.UtcNow,
+                CreatedBy = cancelledBy,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _uow.Repository<FeeLedger>().AddAsync(cancelLedger, cancellationToken);
+
+            await _uow.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
+
+        await _audit.LogAsync("FeeInvoices", "Cancel", $"Invoice {invoice.InvoiceNo} cancelled. Reason: {reason}", cancelledBy, cancellationToken: cancellationToken);
+
+        return new AutoBillingResultDto { InvoicesGenerated = 1 };
     }
 }

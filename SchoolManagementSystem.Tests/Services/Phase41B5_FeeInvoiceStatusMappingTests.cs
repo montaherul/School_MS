@@ -5,10 +5,10 @@ namespace SchoolManagementSystem.Tests.Services;
 
 public class Phase41B5_FeeInvoiceStatusMappingTests
 {
-    [Fact(DisplayName = "1. Unpaid = 1")]
-    public void Unpaid_IsValue1()
+    [Fact(DisplayName = "1. Draft = 1")]
+    public void Draft_IsValue1()
     {
-        Assert.Equal(1, (int)PaymentStatus.Unpaid);
+        Assert.Equal(1, (int)PaymentStatus.Draft);
     }
 
     [Fact(DisplayName = "2. Partial = 2")]
@@ -23,11 +23,12 @@ public class Phase41B5_FeeInvoiceStatusMappingTests
         Assert.Equal(3, (int)PaymentStatus.Paid);
     }
 
-    [Fact(DisplayName = "4. Cancelled does not exist")]
-    public void Cancelled_DoesNotExist()
+    [Fact(DisplayName = "4. Cancelled exists with value 6")]
+    public void Cancelled_Exists()
     {
-        Assert.False(Enum.IsDefined(typeof(PaymentStatus), 0));
-        Assert.DoesNotContain("Cancelled", Enum.GetNames(typeof(PaymentStatus)));
+        Assert.True(Enum.IsDefined(typeof(PaymentStatus), 6));
+        Assert.Contains("Cancelled", Enum.GetNames(typeof(PaymentStatus)));
+        Assert.Equal(6, (int)PaymentStatus.Cancelled);
     }
 
     [Fact(DisplayName = "5. Waived = 4")]
@@ -48,10 +49,13 @@ public class Phase41B5_FeeInvoiceStatusMappingTests
         var enumValues = Enum.GetValues<PaymentStatus>();
         var dropdownOptions = new Dictionary<int, string>
         {
-            { 1, "Unpaid" },
+            { 1, "Draft" },
             { 2, "Partial" },
             { 3, "Paid" },
-            { 4, "Waived" }
+            { 4, "Waived" },
+            { 5, "Issued" },
+            { 6, "Cancelled" },
+            { 7, "Refunded" }
         };
 
         Assert.Equal(enumValues.Length, dropdownOptions.Count);
@@ -79,10 +83,13 @@ public class Phase41B5_FeeInvoiceStatusMappingTests
     {
         var expectedLabels = new Dictionary<int, string>
         {
-            { 1, "Unpaid" },
+            { 1, "Draft" },
             { 2, "Partial" },
             { 3, "Paid" },
-            { 4, "Waived" }
+            { 4, "Waived" },
+            { 5, "Issued" },
+            { 6, "Cancelled" },
+            { 7, "Refunded" }
         };
 
         foreach (PaymentStatus status in Enum.GetValues<PaymentStatus>())

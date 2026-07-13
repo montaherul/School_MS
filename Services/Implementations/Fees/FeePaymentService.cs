@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -12,11 +13,13 @@ public class FeePaymentService : IFeePaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFeePaymentRepository _repository;
+    private readonly IAuditLogService _audit;
 
-    public FeePaymentService(IUnitOfWork unitOfWork, IFeePaymentRepository repository)
+    public FeePaymentService(IUnitOfWork unitOfWork, IFeePaymentRepository repository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeePaymentListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? feeInvoiceId = null, int? paymentMethod = null, CancellationToken cancellationToken = default)
@@ -54,8 +57,10 @@ public class FeePaymentService : IFeePaymentService
             await _unitOfWork.Repository<Payment>().AddAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await RecalculateInvoiceAsync(dto.FeeInvoiceId, cancellationToken);
-            await WriteLedgerEntryAsync(invoice.StudentId, dto.FeeInvoiceId, entity.Id, FeeLedgerType.Payment, 0, dto.Amount, $"Payment received: {dto.ReferenceNo ?? "N/A"}", cancellationToken);
+            await WriteLedgerEntryAsync(invoice.StudentId, dto.FeeInvoiceId, entity.Id, FeeLedgerType.Payment, 0, dto.Amount, $"Payment received: {dto.ReferenceNo ?? "N/A"}", createdBy, cancellationToken);
         }, cancellationToken);
+
+        await _audit.LogAsync("FeePayments", "Create", $"Payment {entity.Id} received for invoice {dto.FeeInvoiceId}, amount {dto.Amount}, method {dto.Method}", createdBy, cancellationToken: cancellationToken);
 
         return entity.Id;
     }
@@ -93,7 +98,7 @@ public class FeePaymentService : IFeePaymentService
             _unitOfWork.Repository<Payment>().Update(entity);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await RecalculateInvoiceAsync(dto.FeeInvoiceId, cancellationToken);
-            await WriteLedgerEntryAsync(invoice.StudentId, dto.FeeInvoiceId, entity.Id, FeeLedgerType.Payment, 0, dto.Amount, $"Payment updated: {dto.ReferenceNo ?? "N/A"}", cancellationToken);
+            await WriteLedgerEntryAsync(invoice.StudentId, dto.FeeInvoiceId, entity.Id, FeeLedgerType.Payment, 0, dto.Amount, $"Payment updated: {dto.ReferenceNo ?? "N/A"}", updatedBy, cancellationToken);
         }, cancellationToken);
     }
 
@@ -112,8 +117,10 @@ public class FeePaymentService : IFeePaymentService
 
             var invoice = await _unitOfWork.Repository<FeeInvoice>().FirstOrDefaultAsync(x => x.Id == invoiceId && !x.IsDeleted, cancellationToken);
             if (invoice is not null)
-                await WriteLedgerEntryAsync(invoice.StudentId, invoiceId, id, FeeLedgerType.Payment, entity.Amount, 0, $"Payment deleted (reversal): {entity.ReferenceNo ?? "N/A"}", cancellationToken);
+                await WriteLedgerEntryAsync(invoice.StudentId, invoiceId, id, FeeLedgerType.Payment, entity.Amount, 0, $"Payment deleted (reversal): {entity.ReferenceNo ?? "N/A"}", updatedBy, cancellationToken);
         }, cancellationToken);
+
+        await _audit.LogAsync("FeePayments", "Delete", $"Payment {id} deleted for invoice {invoiceId}, amount {entity.Amount}", updatedBy, cancellationToken: cancellationToken);
     }
 
     public async Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default)
@@ -127,7 +134,7 @@ public class FeePaymentService : IFeePaymentService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task WriteLedgerEntryAsync(int studentId, int? feeInvoiceId, int? feePaymentId, FeeLedgerType type, decimal debit, decimal credit, string? description, CancellationToken cancellationToken)
+    private async Task WriteLedgerEntryAsync(int studentId, int? feeInvoiceId, int? feePaymentId, FeeLedgerType type, decimal debit, decimal credit, string? description, string createdBy, CancellationToken cancellationToken)
     {
         var entry = new FeeLedger
         {
@@ -140,7 +147,7 @@ public class FeePaymentService : IFeePaymentService
             Balance = debit - credit,
             Description = description,
             TransactionDate = DateTime.UtcNow,
-            CreatedBy = "system",
+            CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow
         };
         await _unitOfWork.Repository<FeeLedger>().AddAsync(entry, cancellationToken);
@@ -162,8 +169,10 @@ public class FeePaymentService : IFeePaymentService
             invoice.Status = PaymentStatus.Paid;
         else if (totalPaid > 0)
             invoice.Status = PaymentStatus.Partial;
+        else if (invoice.Status == PaymentStatus.Issued)
+            invoice.Status = PaymentStatus.Issued;
         else
-            invoice.Status = PaymentStatus.Unpaid;
+            invoice.Status = PaymentStatus.Draft;
 
         _unitOfWork.Repository<FeeInvoice>().Update(invoice);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

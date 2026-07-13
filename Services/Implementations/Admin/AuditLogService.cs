@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Common;
+using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.ViewModels.Admin;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -15,9 +16,9 @@ public class AuditLogService : IAuditLogService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<PagedResult<AuditLogListItemViewModel>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct = default)
+    public async Task<PagedResult<AuditLogListItemViewModel>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
-        var query = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Auth.AuditLog>().Query().AsNoTracking()
+        var query = _unitOfWork.Repository<AuditLog>().Query().AsNoTracking()
             .Include(a => a.User)
             .Where(a => !a.IsDeleted);
 
@@ -31,7 +32,7 @@ public class AuditLogService : IAuditLogService
                 (a.User != null && a.User.UserName.ToLower().Contains(lower)));
         }
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
             .OrderByDescending(a => a.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -46,7 +47,7 @@ public class AuditLogService : IAuditLogService
                 UserName = a.User != null ? a.User.UserName : null,
                 CreatedAt = a.CreatedAt
             })
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return new PagedResult<AuditLogListItemViewModel>
         {
@@ -55,5 +56,20 @@ public class AuditLogService : IAuditLogService
             PageSize = pageSize,
             TotalItems = totalCount
         };
+    }
+
+    public async Task LogAsync(string module, string action, string? details = null, string? userId = null, string? ipAddress = null, CancellationToken cancellationToken = default)
+    {
+        await _unitOfWork.Repository<AuditLog>().AddAsync(new AuditLog
+        {
+            Module = module,
+            Action = action,
+            Details = details,
+            IpAddress = ipAddress,
+            UserId = int.TryParse(userId, out var uid) ? uid : null,
+            CreatedBy = userId ?? "system",
+            CreatedAt = DateTime.UtcNow
+        }, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

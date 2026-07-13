@@ -1,5 +1,43 @@
 namespace SchoolManagementSystem.Models.DTOs.Fees;
 
+public class EnhancedFeeDashboardDto
+{
+    public decimal TotalAssigned { get; set; }
+    public decimal TotalCollected { get; set; }
+    public decimal TotalOutstanding { get; set; }
+    public decimal TotalDiscounted { get; set; }
+    public decimal TotalWaived { get; set; }
+    public decimal TotalLateFeeCollected { get; set; }
+    public int TotalInvoices { get; set; }
+    public int TotalPayments { get; set; }
+    public int OverdueInvoices { get; set; }
+    public decimal CollectionRate { get; set; }
+
+    public decimal TodayCollection { get; set; }
+    public int TodayPaymentCount { get; set; }
+    public decimal LateFeeOutstanding { get; set; }
+    public int DueStudentCount { get; set; }
+    public decimal CashBalance { get; set; }
+    public decimal ScholarshipAmount { get; set; }
+    public int ScholarshipCount { get; set; }
+    public int PendingInvoiceCount { get; set; }
+
+    public List<ClassCollectionSummary> ClassCollections { get; set; } = [];
+    public List<DueSoonInvoiceDto> DueSoonInvoices { get; set; } = [];
+    public List<MonthlyCollectionDto> MonthlyTrend { get; set; } = [];
+    public List<MonthlyCollectionDto> MonthlyCollections { get; set; } = [];
+    public List<PaymentMethodBreakdownDto> PaymentMethodBreakdown { get; set; } = [];
+}
+
+public class ClassCollectionSummary
+{
+    public string ClassName { get; set; } = "";
+    public decimal Assigned { get; set; }
+    public decimal Collected { get; set; }
+    public decimal Due { get; set; }
+    public decimal Rate { get; set; }
+}
+
 public class FeeDashboardDto
 {
     public decimal TotalAssigned { get; set; }

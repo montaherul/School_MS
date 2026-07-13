@@ -9,13 +9,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 public class FeeDashboardController : Controller
 {
     private readonly IFeeDashboardService _service;
+    private readonly IEnhancedFeeDashboardService _enhancedService;
     private readonly IFeeSecurityService _security;
-    public FeeDashboardController(IFeeDashboardService service, IFeeSecurityService security) { _service = service; _security = security; }
+    public FeeDashboardController(IFeeDashboardService service, IEnhancedFeeDashboardService enhancedService, IFeeSecurityService security) { _service = service; _enhancedService = enhancedService; _security = security; }
 
     [RequirePermission("FeeDashboard.Read")]
     public async Task<IActionResult> Index(int? academicYearId = null)
     {
-        var data = await _service.GetDashboardDataAsync(academicYearId);
+        var data = await _enhancedService.GetDashboardAsync(academicYearId);
         return View(data);
     }
 

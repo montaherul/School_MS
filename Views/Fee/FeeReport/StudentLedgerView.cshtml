@@ -43,22 +43,23 @@
                 return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
             },
             columns: [
-                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5 },
-                { title: "Due Date", field: "dueDate", width: 110, hozAlign: "center" },
-                { title: "Total Amount", field: "totalAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
-                { title: "Paid Amount", field: "paidAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
-                { title: "Due Amount", field: "dueAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
-                { title: "Status", field: "status", width: 100, hozAlign: "center", formatter: function(c) {
+                { title: "Date", field: "transactionDate", width: 150, hozAlign: "center", formatter: function(c) { return c.getValue() ? new Date(c.getValue()).toLocaleString() : '—'; } },
+                { title: "Type", field: "transactionType", width: 110, hozAlign: "center", formatter: function(c) {
                     var s = c.getValue();
-                    if (s === "3" || s === "Paid") return '<span class="adm-badge adm-badge--success">Paid</span>';
-                    if (s === "2" || s === "Partial") return '<span class="adm-badge adm-badge--warning">Partial</span>';
-                    if (s === "4" || s === "Waived") return '<span class="adm-badge adm-badge--danger">Waived</span>';
-                    return '<span class="adm-badge adm-badge--secondary">Unpaid</span>';
+                    if (s === "Invoice") return '<span class="adm-badge adm-badge--secondary">Invoice</span>';
+                    if (s === "Payment") return '<span class="adm-badge adm-badge--success">Payment</span>';
+                    if (s === "Discount") return '<span class="adm-badge adm-badge--info">Discount</span>';
+                    if (s === "Waiver") return '<span class="adm-badge adm-badge--primary">Waiver</span>';
+                    if (s === "Refund") return '<span class="adm-badge adm-badge--danger">Refund</span>';
+                    if (s === "LateFee") return '<span class="adm-badge adm-badge--warning">Late Fee</span>';
+                    if (s === "Adjustment") return '<span class="adm-badge adm-badge--dark">Adjustment</span>';
+                    return '<span class="adm-badge adm-badge--secondary">' + (s || '—') + '</span>';
                 }},
-                { title: "Paid At", field: "paidAt", width: 150, hozAlign: "center", formatter: function(c) { return c.getValue() ? new Date(c.getValue()).toLocaleString() : '—'; } },
-                { title: "Reference", field: "referenceNo", width: 130 },
-                { title: "Late Fee", field: "lateFee", width: 100, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
-                { title: "Discount", field: "discountAmount", width: 100, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } }
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Debit", field: "debit", width: 120, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Credit", field: "credit", width: 120, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Balance", field: "balance", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Description", field: "description", widthGrow: 2 }
             ],
             placeholder: "<div class='p-4 text-center text-muted'>Enter a Student ID and click Load</div>"
         });

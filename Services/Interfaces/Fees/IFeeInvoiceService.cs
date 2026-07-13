@@ -13,5 +13,6 @@ public interface IFeeInvoiceService
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task<LateFeeEngineResultDto> ApplyLateFeesAsync(CancellationToken cancellationToken = default);
+    Task<AutoBillingResultDto> CancelInvoiceAsync(int invoiceId, string reason, string cancelledBy, CancellationToken cancellationToken = default);
 }
 

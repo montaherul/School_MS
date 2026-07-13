@@ -1,6 +1,7 @@
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -11,11 +12,13 @@ public class StudentFeeAssignmentService : IStudentFeeAssignmentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStudentFeeAssignmentRepository _repository;
+    private readonly IAuditLogService _audit;
 
-    public StudentFeeAssignmentService(IUnitOfWork unitOfWork, IStudentFeeAssignmentRepository repository)
+    public StudentFeeAssignmentService(IUnitOfWork unitOfWork, IStudentFeeAssignmentRepository repository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<StudentFeeAssignmentListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, int? feeStructureId = null, CancellationToken cancellationToken = default)
@@ -39,6 +42,7 @@ public class StudentFeeAssignmentService : IStudentFeeAssignmentService
         var entity = new StudentFeeAssignment { CreatedBy = createdBy, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo };
         await _unitOfWork.Repository<StudentFeeAssignment>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("StudentFeeAssignments", "Create", $"Fee assignment {entity.Id} created for student {dto.StudentId}, structure {dto.FeeStructureId}", createdBy, cancellationToken: cancellationToken);
         return entity.Id;
     }
 

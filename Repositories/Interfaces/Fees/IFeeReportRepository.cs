@@ -12,4 +12,5 @@ public interface IFeeReportRepository
     Task<(List<WaiverReportDto> items, int total)> GetWaiverReportAsync(int page, int pageSize);
     Task<(List<RefundReportDto> items, int total)> GetRefundReportAsync(int page, int pageSize);
     Task<(List<ClassCollectionSummaryDto> items, int total)> GetClassCollectionSummaryAsync(int academicYearId, int page, int pageSize);
+    Task<CashBookResultDto> GetCashBookAsync(DateOnly fromDate, DateOnly toDate, int? academicYearId = null);
 }

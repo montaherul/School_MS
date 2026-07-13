@@ -37,7 +37,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "1. Partial payment sets invoice status to Partial")]
     public async Task PartialPayment_UpdatesInvoiceToPartial()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         _paymentBaseRepoMock.Setup(r => r.ListAsync(It.IsAny<Expression<Func<Payment, bool>>>(), It.IsAny<CancellationToken>()))
@@ -56,7 +56,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "2. Full payment sets invoice status to Paid")]
     public async Task FullPayment_UpdatesInvoiceToPaid()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         _paymentBaseRepoMock.Setup(r => r.ListAsync(It.IsAny<Expression<Func<Payment, bool>>>(), It.IsAny<CancellationToken>()))
@@ -74,7 +74,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "3. Multiple payments accumulate correctly")]
     public async Task MultiplePayments_AccumulateToFull()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         var allPayments = new List<Payment>
@@ -100,7 +100,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "4. Generated (Unpaid) → Partial status transition")]
     public async Task GeneratedToPartial_StatusTransition()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         _paymentBaseRepoMock.Setup(r => r.ListAsync(It.IsAny<Expression<Func<Payment, bool>>>(), It.IsAny<CancellationToken>()))
@@ -140,7 +140,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "6. Transaction rollback on invoice update failure")]
     public async Task TransactionRollback_OnInvoiceFailure()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         _paymentBaseRepoMock.Setup(r => r.ListAsync(It.IsAny<Expression<Func<Payment, bool>>>(), It.IsAny<CancellationToken>()))
@@ -171,7 +171,7 @@ public class Phase41B_PaymentInvoiceSyncTests
     [Fact(DisplayName = "8. Update payment recalculates invoice")]
     public async Task UpdatePayment_RecalculatesInvoice()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 1000, PaidAmount = 0, Status = PaymentStatus.Draft };
         var payment = new Payment { Id = 1, FeeInvoiceId = 1, Amount = 300, CreatedBy = "user" };
 
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
@@ -208,7 +208,7 @@ public class Phase41B_PaymentInvoiceSyncTests
         await svc.DeleteAsync(1, "test-user");
 
         Assert.Equal(0, invoice.PaidAmount);
-        Assert.Equal(PaymentStatus.Unpaid, invoice.Status);
+        Assert.Equal(PaymentStatus.Draft, invoice.Status);
         Assert.True(payment.IsDeleted);
     }
 }

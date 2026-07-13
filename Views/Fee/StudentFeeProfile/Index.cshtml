@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Student Fee Profile";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <polyline points="17,8 19,10 23,10"></polyline>
+                    <line x1="19" y1="5" x2="19" y2="10"></line>
+                    <line x1="15" y1="13" x2="20.5" y2="13"></line>
+                    <path d="M20.5,16a2.5,2.5,0,0,1-5,0V13h5Z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Student Fee Profile</h1>
+                <p class="adm-header__sub">Search and view consolidated fee information for any student</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search Student</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="studentSearch" class="adm-input" placeholder="Search by student name or ID...">
+                    <button type="button" class="adm-input-wrap__btn" id="studentSearchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="student-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = new Tabulator("#student-table", {
+            height: "calc(100vh - 300px)",
+            layout: "fitColumns",
+            pagination: false,
+            data: [],
+            columns: [
+                { title: "Student ID", field: "studentNo", widthGrow: 1, formatter: function(cell) {
+                    return `<span class="fw-semibold">${cell.getValue()}</span>`;
+                }},
+                { title: "Name", field: "fullName", widthGrow: 2, formatter: function(cell) {
+                    return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                }},
+                { title: "Class", field: "className", widthGrow: 1, hozAlign: "center" },
+                { title: "Section", field: "sectionName", widthGrow: 1, hozAlign: "center" },
+                {
+                    title: "Actions",
+                    field: "id",
+                    hozAlign: "right",
+                    headerSort: false,
+                    widthGrow: 0.8,
+                    formatter: function(cell) {
+                        var id = cell.getValue();
+                        return `<a href="/StudentFeeProfile/${id}" class="adm-btn adm-btn--sm adm-btn--primary">View Profile</a>`;
+                    }
+                }
+            ],
+            placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__text'>Type a student name or ID to search</div></div>"
+        });
+
+        function searchStudents() {
+            var term = document.getElementById('studentSearch').value.trim();
+            if (!term) {
+                table.replaceData([]);
+                return;
+            }
+            table.setData();
+            fetch('/StudentFeeProfile/Search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: 'term=' + encodeURIComponent(term)
+            })
+            .then(r => r.json())
+            .then(data => {
+                table.replaceData(data);
+            });
+        }
+
+        document.getElementById('studentSearchBtn').addEventListener('click', searchStudents);
+        document.getElementById('studentSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchStudents();
+        });
+    </script>
+}

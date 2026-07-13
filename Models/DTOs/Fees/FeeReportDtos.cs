@@ -3,16 +3,13 @@ namespace SchoolManagementSystem.Models.DTOs.Fees;
 public class StudentLedgerReportDto
 {
     public int Id { get; set; }
+    public string TransactionType { get; set; } = string.Empty;
     public string InvoiceNo { get; set; } = string.Empty;
-    public DateOnly DueDate { get; set; }
-    public decimal TotalAmount { get; set; }
-    public decimal PaidAmount { get; set; }
-    public decimal DueAmount { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public DateTime? PaidAt { get; set; }
-    public string ReferenceNo { get; set; } = string.Empty;
-    public decimal LateFee { get; set; }
-    public decimal DiscountAmount { get; set; }
+    public DateTime TransactionDate { get; set; }
+    public decimal Debit { get; set; }
+    public decimal Credit { get; set; }
+    public decimal Balance { get; set; }
+    public string Description { get; set; } = string.Empty;
     public int TotalRecords { get; set; }
 }
 

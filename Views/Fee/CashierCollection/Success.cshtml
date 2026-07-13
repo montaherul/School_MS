@@ -1,0 +1,69 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.FeeReceiptDto
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="adm-page">
+    <div style="max-width:520px;margin:40px auto;text-align:center;">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--adm-success)" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="20,6 9,17 4,12"></polyline>
+            </svg>
+        </div>
+        <h1 style="font-size:1.5rem;font-weight:700;color:var(--adm-text);margin-bottom:4px;">Payment Successful</h1>
+        <p style="color:var(--adm-text-3);font-size:0.9375rem;margin-bottom:24px;">Receipt #@Model.ReceiptNo</p>
+
+        <div class="adm-table-card" style="text-align:left;">
+            <div style="padding:20px;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+                    <tr>
+                        <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);width:130px;">Student</td>
+                        <td style="padding:8px 0;color:var(--adm-text);font-weight:600;">@Model.StudentName</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Invoice</td>
+                        <td style="padding:8px 0;color:var(--adm-text);">@Model.InvoiceNo</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Amount</td>
+                        <td style="padding:8px 0;font-weight:700;color:var(--adm-success);font-size:1.125rem;">৳ @Model.Amount.ToString("N2")</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Method</td>
+                        <td style="padding:8px 0;color:var(--adm-text);">@Model.PaymentMethod</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 12px 8px 0;font-weight:600;color:var(--adm-text-3);">Date</td>
+                        <td style="padding:8px 0;color:var(--adm-text);">@Model.PaidAt.ToString("dd-MMM-yyyy HH:mm")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+            <a href="/FeePayment/Receipt/@Context.Request.RouteValues["paymentId"]" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;">
+                    <path d="M6 9V2h12v7"></path>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                View Receipt
+            </a>
+            <a href="/FeePayment/DownloadReceipt/@Context.Request.RouteValues["paymentId"]" class="adm-btn adm-btn--ghost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download PDF
+            </a>
+            <a href="/CashierCollection/Index" class="adm-btn adm-btn--ghost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Payment
+            </a>
+        </div>
+    </div>
+</div>

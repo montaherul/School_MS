@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -12,11 +13,13 @@ public class FeeStructureService : IFeeStructureService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFeeStructureRepository _structureRepository;
+    private readonly IAuditLogService _audit;
 
-    public FeeStructureService(IUnitOfWork unitOfWork, IFeeStructureRepository structureRepository)
+    public FeeStructureService(IUnitOfWork unitOfWork, IFeeStructureRepository structureRepository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _structureRepository = structureRepository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeeStructureListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? schoolClassId = null, int? feeCategoryId = null, CancellationToken cancellationToken = default)
@@ -51,6 +54,7 @@ public class FeeStructureService : IFeeStructureService
         };
         await _unitOfWork.Repository<FeeStructure>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("FeeStructures", "Create", $"Fee structure {entity.Id} created: {entity.FeeName}, class {entity.SchoolClassId}, amount {entity.Amount}", createdBy, cancellationToken: cancellationToken);
         return entity.Id;
     }
 
@@ -64,6 +68,7 @@ public class FeeStructureService : IFeeStructureService
         entity.UpdatedBy = updatedBy; entity.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<FeeStructure>().Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _audit.LogAsync("FeeStructures", "Update", $"Fee structure {entity.Id} updated: {entity.FeeName}, amount {entity.Amount}", updatedBy, cancellationToken: cancellationToken);
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default)

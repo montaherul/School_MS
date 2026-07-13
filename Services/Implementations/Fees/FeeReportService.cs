@@ -66,6 +66,11 @@ public class FeeReportService : IFeeReportService
         return new PagedResult<ClassCollectionSummaryDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = total };
     }
 
+    public async Task<CashBookResultDto> GetCashBookAsync(DateOnly fromDate, DateOnly toDate, int? academicYearId = null)
+    {
+        return await _repository.GetCashBookAsync(fromDate, toDate, academicYearId);
+    }
+
     public async Task<byte[]> ExportToExcelAsync<T>(List<T> data, string reportName)
     {
         using var workbook = new XLWorkbook();

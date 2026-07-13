@@ -9,6 +9,7 @@ using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -36,7 +37,7 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
 
         var assignments = await _uow.Repository<TeacherSubjectAssignment>().QueryNoTracking()
             .Where(a => a.TeacherId == teacherId && a.IsActive && !a.IsDeleted)
-            .Select(a => new { a.SubjectId, a.ClassId, a.SectionId, a.StudentGroupId, a.AcademicYearId })
+            .Select(a => new { a.SubjectId, a.ClassId, a.SectionId, StudentGroupId = a.GroupId, a.AcademicYearId })
             .ToListAsync(ct);
 
         if (assignments.Count == 0)
@@ -46,7 +47,6 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
             .Include(es => es.Exam)
             .Include(es => es.Subject)
             .Include(es => es.Class)
-            .Include(es => es.Section)
             .Include(es => es.StudentGroup)
             .Where(es => es.IsActive && !es.IsDeleted
                 && es.Exam != null && !es.Exam.IsDeleted
@@ -58,7 +58,6 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
                     && a.AcademicYearId == es.Exam.AcademicYearId))
             .OrderBy(es => es.Exam!.Name)
             .ThenBy(es => es.Class!.Name)
-            .ThenBy(es => es.Section!.Name)
             .ThenBy(es => es.Subject!.Name)
             .ToListAsync(ct);
 
@@ -81,7 +80,7 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
             ClassId = es.ClassId,
             ClassName = es.Class?.Name ?? string.Empty,
             SectionId = es.SectionId,
-            SectionName = es.Section?.Name ?? string.Empty,
+            SectionName = string.Empty,
             StudentGroupId = es.StudentGroupId,
             StudentGroupName = es.StudentGroup?.Name ?? string.Empty,
             FullMarks = es.FullMarks,
@@ -142,7 +141,7 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
                 a.SubjectId == examSubject.SubjectId &&
                 a.ClassId == examSubject.ClassId &&
                 a.SectionId == examSubject.SectionId &&
-                (a.StudentGroupId == examSubject.StudentGroupId || (a.StudentGroupId == null && examSubject.StudentGroupId == null)) &&
+                (a.GroupId == examSubject.StudentGroupId || (a.GroupId == null && examSubject.StudentGroupId == null)) &&
                 a.AcademicYearId == examSubject.Exam.AcademicYearId, ct);
 
         return assignment != null;
@@ -250,7 +249,6 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
             .Include(es => es.Exam)
             .Include(es => es.Subject)
             .Include(es => es.Class)
-            .Include(es => es.Section)
             .Include(es => es.StudentGroup)
             .FirstOrDefaultAsync(es => es.Id == examSubjectId && !es.IsDeleted, ct);
 
@@ -285,7 +283,7 @@ public class ExamSubjectComponentTeacherService : IExamSubjectComponentTeacherSe
             SubjectId = examSubject.SubjectId,
             SubjectName = examSubject.Subject?.Name ?? string.Empty,
             ClassId = examSubject.ClassId,
-            SectionId = examSubject.SectionId,
+            SectionId = examSubject.SectionId ?? 0,
             StudentGroupId = examSubject.StudentGroupId,
             Components = components
         };

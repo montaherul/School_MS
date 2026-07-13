@@ -7,20 +7,20 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    SELECT fi.Id, fi.InvoiceNo, fi.DueDate, fi.TotalAmount, fi.PaidAmount,
-           (fi.TotalAmount - fi.PaidAmount) AS DueAmount,
-           CAST(fi.Status AS NVARCHAR(20)) AS Status,
-           agg.PaidAt, agg.ReferenceNo, fi.LateFee, fi.DiscountAmount,
-           COUNT(*) OVER() AS TotalRecords
-FROM FeeInvoices fi WITH(NOLOCK)
-    OUTER APPLY (
-        SELECT TOP 1 p.PaidAt, p.ReferenceNo
-FROM Payments p WITH(NOLOCK)
-        WHERE p.FeeInvoiceId = fi.Id AND p.IsDeleted = 0
-        ORDER BY p.PaidAt DESC
-    ) agg
-    WHERE fi.StudentId = @StudentId AND fi.IsDeleted = 0
-    ORDER BY fi.DueDate DESC, fi.Id DESC
+    SELECT
+        fl.Id,
+        CAST(fl.TransactionType AS NVARCHAR(20)) AS TransactionType,
+        ISNULL(fi.InvoiceNo, '') AS InvoiceNo,
+        fl.TransactionDate,
+        fl.Debit,
+        fl.Credit,
+        SUM(fl.Debit - fl.Credit) OVER (ORDER BY fl.TransactionDate, fl.Id ROWS UNBOUNDED PRECEDING) AS Balance,
+        ISNULL(fl.Description, '') AS Description,
+        COUNT(*) OVER() AS TotalRecords
+    FROM FeeLedgers fl WITH(NOLOCK)
+    LEFT JOIN FeeInvoices fi WITH(NOLOCK) ON fi.Id = fl.FeeInvoiceId AND fi.IsDeleted = 0
+    WHERE fl.StudentId = @StudentId AND fl.IsDeleted = 0
+    ORDER BY fl.TransactionDate DESC, fl.Id DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

@@ -1,0 +1,147 @@
+@{
+    ViewData["Title"] = "Cash Book";
+}
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <h1 class="adm-header__title">Cash Book</h1>
+            <p class="adm-header__sub">Daily cash flow and balance summary</p>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--success me-1" id="exportExcelBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+            <button class="adm-btn" style="background:var(--adm-rejected);color:#fff;" id="exportPdfBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>
+        </div>
+    </div>
+    <div class="adm-table-card mb-4">
+        <div class="adm-table-card__body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">From Date</label>
+                    <input type="date" id="fromDate" class="adm-input" style="padding-left:12px;" value="@DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)).ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">To Date</label>
+                    <input type="date" id="toDate" class="adm-input" style="padding-left:12px;" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Academic Year</label>
+                    <select id="academicYearId" class="adm-input" style="padding-left:12px;">
+                        <option value="">All Years</option>
+                        @if (ViewBag.AcademicYears is IEnumerable<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> years)
+                        {
+                            foreach (var y in years)
+                            {
+                                <option value="@y.Id">@y.Name (@y.Code)</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="adm-btn adm-btn--primary w-100" id="loadBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Load</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dash-stats mb-4" id="summaryCards" style="display:none;">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Opening Balance</span>
+                <span class="dash-stat-card__value" id="openingBalance">৳0.00</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                    <line x1="8" y1="12" x2="8" y2="22"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Cash In</span>
+                <span class="dash-stat-card__value" id="totalCashIn">৳0.00</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                    <line x1="16" y1="12" x2="16" y2="22"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Cash Out</span>
+                <span class="dash-stat-card__value" id="totalCashOut">৳0.00</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                </svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Closing Balance</span>
+                <span class="dash-stat-card__value" id="closingBalance">৳0.00</span>
+            </div>
+        </div>
+    </div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="cashbook-table"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function fmt(n) { return parseFloat(n).toLocaleString('en-IN', {minimumFractionDigits: 2}); }
+        function loadData() {
+            var fd = document.getElementById('fromDate').value;
+            var td = document.getElementById('toDate').value;
+            var ay = document.getElementById('academicYearId').value;
+            var url = '/FeeReport/CashBook?fromDate=' + fd + '&toDate=' + td + (ay ? '&academicYearId=' + ay : '');
+            fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+                var summaryEl = document.getElementById('summaryCards');
+                summaryEl.style.display = 'flex';
+                document.getElementById('openingBalance').textContent = '\u09F3' + fmt(d.openingBalance);
+                document.getElementById('totalCashIn').textContent = '\u09F3' + fmt(d.totalCashIn);
+                document.getElementById('totalCashOut').textContent = '\u09F3' + fmt(d.totalCashOut);
+                document.getElementById('closingBalance').textContent = '\u09F3' + fmt(d.closingBalance);
+                table.setData(d.days || []);
+                var expBase = '/FeeReport/ExportCashBookExcel?fromDate=' + fd + '&toDate=' + td + (ay ? '&academicYearId=' + ay : '');
+                var pdfBase = '/FeeReport/ExportCashBookPdf?fromDate=' + fd + '&toDate=' + td + (ay ? '&academicYearId=' + ay : '');
+                document.getElementById('exportExcelBtn').onclick = function() { window.location.href = expBase; };
+                document.getElementById('exportPdfBtn').onclick = function() { window.location.href = pdfBase; };
+            });
+        }
+        var table = new Tabulator("#cashbook-table", {
+            height: "calc(100vh - 350px)", layout: "fitColumns",
+            columns: [
+                { title: "Date", field: "transactionDate", width: 120, hozAlign: "center", formatter: function(c) { return new Date(c.getValue()).toLocaleDateString('en-IN', {year:'numeric',month:'short',day:'numeric'}); } },
+                { title: "Opening", field: "openingBalance", width: 130, hozAlign: "right", formatter: function(c) { return '\u09F3' + fmt(c.getValue()); } },
+                { title: "Cash In", field: "cashIn", width: 130, hozAlign: "right", formatter: function(c) { return '\u09F3' + fmt(c.getValue()); } },
+                { title: "Cash Out", field: "cashOut", width: 130, hozAlign: "right", formatter: function(c) { return '\u09F3' + fmt(c.getValue()); } },
+                { title: "Net Change", field: "netChange", width: 130, hozAlign: "right", formatter: function(c) { var v = parseFloat(c.getValue()); return '<span style="color:' + (v >= 0 ? 'var(--adm-success)' : 'var(--adm-rejected)') + '">' + (v >= 0 ? '+' : '') + fmt(v) + '</span>'; } },
+                { title: "Closing", field: "closingBalance", width: 130, hozAlign: "right", formatter: function(c) { return '\u09F3' + fmt(c.getValue()); } },
+                { title: "Payments", field: "paymentCount", width: 100, hozAlign: "center" },
+                { title: "Refunds", field: "refundCount", width: 100, hozAlign: "center" },
+                { title: "Entries", field: "entryCount", width: 90, hozAlign: "center" }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>Select date range and click Load</div>"
+        });
+        document.getElementById('loadBtn').addEventListener('click', loadData);
+        loadData();
+    </script>
+}

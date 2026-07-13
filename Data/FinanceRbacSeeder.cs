@@ -7,17 +7,32 @@ public static class FinanceRbacSeeder
 {
     private static readonly string[] FinanceModules =
     [
+        "FeeDashboard",
+        "FeeCategories",
         "FeeStructures",
+        "StudentFeeAssignments",
+        "FeeInvoices",
+        "FeeInvoiceItems",
+        "FeePayments",
+        "FeeDiscounts",
+        "FeeWaivers",
+        "FeeRefunds",
+        "FeeLedger",
+        "FeeCollectionSummaries",
+        "LateFeeRules",
+        "FineRules",
+        "FinanceReports",
+        "CashierCollection",
         "Invoices",
         "Payments",
         "Scholarships",
         "Waivers",
         "StudentDues",
         "FinancialTransactions",
-        "FinanceReports",
         "FinanceConfiguration",
         "FinanceDashboard",
-        "Receipts"
+        "Receipts",
+        "StudentFeeProfile"
     ];
 
     private static readonly string[] FinanceActions =
@@ -46,6 +61,8 @@ public static class FinanceRbacSeeder
             db.Roles.Add(new Role { Name = "Admin", Description = "Administrator", CreatedAt = now, CreatedBy = "finance-rbac-seeder" });
         if (!existingRoleNames.Contains("Accountant"))
             db.Roles.Add(new Role { Name = "Accountant", Description = "Accounts and finance", CreatedAt = now, CreatedBy = "finance-rbac-seeder" });
+        if (!existingRoleNames.Contains("Cashier"))
+            db.Roles.Add(new Role { Name = "Cashier", Description = "Collects payments, prints receipts, views ledger", CreatedAt = now, CreatedBy = "finance-rbac-seeder" });
 
         var existingCodes = (await db.Permissions.Select(p => p.Code).ToListAsync(cancellationToken)).ToHashSet();
 
@@ -77,11 +94,20 @@ public static class FinanceRbacSeeder
 
         await GrantBatchAsync(db, FullFinanceRoles, FinanceModules, FinanceActions, cancellationToken);
         await GrantBatchAsync(db, ["Principal"],
-            ["FinanceDashboard", "FinanceReports", "Payments", "Invoices", "StudentDues", "Scholarships", "Waivers"],
+            ["FeeDashboard", "FinanceDashboard", "FinanceReports", "FeeCategories", "FeeStructures", "FeePayments", "Payments", "FeeInvoices", "Invoices", "StudentDues", "StudentFeeAssignments", "FeeDiscounts", "Scholarships", "FeeWaivers", "Waivers", "FeeRefunds", "FeeLedger", "FeeCollectionSummaries", "LateFeeRules", "FineRules", "CashierCollection"],
             ["View", "Read", "Approve", "Export", "Print"], cancellationToken);
         await GrantBatchAsync(db, ["Student"],
-            ["Invoices", "Payments", "StudentDues", "Receipts"],
+            ["FeeInvoices", "Invoices", "FeePayments", "Payments", "StudentDues", "FeeLedger", "Receipts", "StudentFeeProfile"],
             ["View", "Read", "Print", "Export"], cancellationToken);
+
+        // Cashier: collect payments, print receipts, view ledger.
+        // CANNOT edit fee structures, CANNOT approve waivers/refunds, CANNOT delete.
+        await GrantBatchAsync(db, ["Cashier"],
+            ["CashierCollection", "FeePayments", "Payments", "StudentDues", "FeeLedger", "Receipts", "StudentFeeProfile", "FinanceDashboard", "FeeDashboard"],
+            ["View", "Read", "Create", "Print", "Export"], cancellationToken);
+        await GrantBatchAsync(db, ["Cashier"],
+            ["FeeInvoices", "Invoices"],
+            ["View", "Read"], cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
     }

@@ -14778,6 +14778,36 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Module = "Calendar",
                             ModuleName = "Calendar"
+                        },
+                        new
+                        {
+                            Id = 618,
+                            Action = "Manage",
+                            CanCreate = true,
+                            CanDelete = true,
+                            CanRead = true,
+                            CanUpdate = true,
+                            Code = "ExamSubjectComponent.Manage",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "ExamSubjectComponent",
+                            ModuleName = "ExamSubjectComponent"
+                        },
+                        new
+                        {
+                            Id = 619,
+                            Action = "View",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = false,
+                            Code = "ExamSubjectComponent.View",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "ExamSubjectComponent",
+                            ModuleName = "ExamSubjectComponent"
                         });
                 });
 
@@ -18060,6 +18090,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 2,
                             PermissionId = 1
                         },
@@ -20520,6 +20560,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 2,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 3,
                             PermissionId = 1
                         },
@@ -21705,6 +21755,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 4,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 5,
                             PermissionId = 1
                         },
@@ -21762,6 +21822,16 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 5,
                             PermissionId = 326
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 619
                         },
                         new
                         {
@@ -26265,6 +26335,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 26,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 26,
+                            PermissionId = 619
+                        },
+                        new
+                        {
                             RoleId = 27,
                             PermissionId = 1
                         },
@@ -26452,6 +26532,16 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 27,
                             PermissionId = 542
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 618
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 619
                         });
                 });
 
@@ -28488,6 +28578,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("StudentGroupId")
                         .HasColumnType("int");
 
@@ -29186,10 +29279,19 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int?>("FeeDiscountId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("FeeInvoiceId")
                         .HasColumnType("int");
 
                     b.Property<int?>("FeePaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeRefundId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeWaiverId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -29212,6 +29314,18 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FeeDiscountId");
+
+                    b.HasIndex("FeeInvoiceId");
+
+                    b.HasIndex("FeePaymentId");
+
+                    b.HasIndex("FeeRefundId");
+
+                    b.HasIndex("FeeWaiverId");
+
+                    b.HasIndex("StudentId");
 
                     b.HasIndex("StudentId", "TransactionDate");
 
@@ -33420,6 +33534,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<bool>("AllowTeacherComponentCustomization")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -33462,6 +33579,7 @@ namespace SchoolManagementSystem.Migrations
                         {
                             Id = 1,
                             Address = "Dhaka, Bangladesh",
+                            AllowTeacherComponentCustomization = false,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             Email = "info@school.local",
@@ -37007,6 +37125,44 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("StudentGroup");
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeLedger", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Fees.FeeDiscount", "FeeDiscount")
+                        .WithMany()
+                        .HasForeignKey("FeeDiscountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Fees.FeeInvoice", "FeeInvoice")
+                        .WithMany()
+                        .HasForeignKey("FeeInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Fees.Payment", "FeePayment")
+                        .WithMany()
+                        .HasForeignKey("FeePaymentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Fees.FeeRefund", "FeeRefund")
+                        .WithMany()
+                        .HasForeignKey("FeeRefundId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Fees.FeeWaiver", "FeeWaiver")
+                        .WithMany()
+                        .HasForeignKey("FeeWaiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("FeeDiscount");
+
+                    b.Navigation("FeeInvoice");
+
+                    b.Navigation("FeePayment");
+
+                    b.Navigation("FeeRefund");
+
+                    b.Navigation("FeeWaiver");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.Payment", b =>

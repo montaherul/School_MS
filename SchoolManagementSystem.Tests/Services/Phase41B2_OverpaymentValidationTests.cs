@@ -128,7 +128,7 @@ public class Phase41B2_OverpaymentValidationTests
     [Fact(DisplayName = "4. Multiple payments reaching exact invoice total")]
     public async Task MultiplePayments_ExactTotal_Succeeds()
     {
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 10000, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 10000, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
         var paymentIdSeq = 1;
@@ -214,7 +214,7 @@ public class Phase41B2_OverpaymentValidationTests
         await svc.DeleteAsync(1, "test-user");
 
         Assert.Equal(0, invoice.PaidAmount);
-        Assert.Equal(PaymentStatus.Unpaid, invoice.Status);
+        Assert.Equal(PaymentStatus.Draft, invoice.Status);
         Assert.True(payment.IsDeleted);
     }
 
@@ -231,7 +231,7 @@ public class Phase41B2_OverpaymentValidationTests
                 return op();
             });
 
-        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Unpaid };
+        var invoice = new FeeInvoice { Id = 1, TotalAmount = 500, PaidAmount = 0, Status = PaymentStatus.Draft };
         _invoiceRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
 

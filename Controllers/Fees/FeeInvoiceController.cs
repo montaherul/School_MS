@@ -185,4 +185,45 @@ public class FeeInvoiceController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    [RequirePermission("FeeInvoices.Delete")]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
+        if (!_security.IsStudentScope(User, entity.StudentId)) return Forbid();
+        if (entity.Status == Models.Enums.PaymentStatus.Paid)
+        {
+            TempData["ErrorMessage"] = "Cannot cancel a fully paid invoice. Process a refund instead.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        return View(new FeeInvoiceViewModel
+        {
+            Id = entity.Id, InvoiceNo = entity.InvoiceNo, StudentId = entity.StudentId,
+            AcademicYearId = entity.AcademicYearId, DueDate = entity.DueDate,
+            TotalAmount = entity.TotalAmount, PaidAmount = entity.PaidAmount,
+            DiscountAmount = entity.DiscountAmount, LateFee = entity.LateFee,
+            Status = (int)entity.Status, Remarks = entity.Remarks
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("FeeInvoices.Delete")]
+    public async Task<IActionResult> CancelConfirmed(int id, string reason)
+    {
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
+        if (!_security.IsStudentScope(User, entity.StudentId)) return Forbid();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        var result = await _service.CancelInvoiceAsync(id, reason ?? "No reason provided", userId);
+        if (!result.Success)
+        {
+            TempData["ErrorMessage"] = result.ErrorMessage;
+            return RedirectToAction(nameof(Cancel), new { id });
+        }
+        TempData["SuccessMessage"] = "Invoice cancelled successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
 }

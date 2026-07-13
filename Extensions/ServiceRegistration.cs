@@ -67,6 +67,7 @@ using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
@@ -108,6 +109,8 @@ public static class ServiceRegistration
         services.AddScoped<IFeeDashboardRepository, FeeDashboardRepository>();
         services.AddScoped<IFeeReportRepository, FeeReportRepository>();
         services.AddScoped<IStudentFinanceRepository, StudentFinanceRepository>();
+        services.AddScoped<IAutoBillingRepository, AutoBillingRepository>();
+        services.AddScoped<IAutoFeeAssignmentRepository, AutoFeeAssignmentRepository>();
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherClassAssignmentRepository, TeacherClassAssignmentRepository>();
@@ -136,6 +139,7 @@ public static class ServiceRegistration
         services.AddScoped<ISchoolClassRepository, SchoolClassRepository>();
         services.AddScoped<ISectionRepository, SectionRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
+        services.AddScoped<IClassSubjectRepository, ClassSubjectRepository>();
         services.AddScoped<ISchoolSessionRepository, SchoolSessionRepository>();
         services.AddScoped<ISchoolShiftRepository, SchoolShiftRepository>();
         services.AddScoped<IBuildingRepository, BuildingRepository>();
@@ -208,11 +212,16 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ILateFeeRuleService, LateFeeRuleService>();
         services.AddScoped<IFineRuleService, FineRuleService>();
         services.AddScoped<IFeeDashboardService, FeeDashboardService>();
+        services.AddScoped<IEnhancedFeeDashboardService, EnhancedFeeDashboardService>();
         services.AddScoped<IFeeReportService, FeeReportService>();
         services.AddScoped<ILateFeeEngineService, LateFeeEngineService>();
+        services.AddScoped<IAutoBillingService, AutoBillingService>();
         services.AddScoped<IFeeReceiptService, FeeReceiptService>();
         services.AddScoped<IFeeSecurityService, FeeSecurityService>();
+        services.AddScoped<ICashierCollectionService, CashierCollectionService>();
+        services.AddScoped<IFeeStructureWizardService, FeeStructureWizardService>();
         services.AddScoped<IStudentFinanceService, StudentFinanceService>();
+        services.AddScoped<IStudentFeeProfileService, StudentFeeProfileService>();
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<ITeacherSynchronizationService, TeacherSynchronizationService>();
         services.AddScoped<ITeacherScopeService, TeacherScopeService>();
@@ -346,6 +355,9 @@ services.AddScoped<IExamValidationService, ExamValidationService>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AutoAbsentWorker>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventNotificationWorker>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventReminderWorker>();
+
+        // Finance — automatic monthly invoice generation
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.AutoBillingScheduler>();
 
         // Routine Module
         services.AddScoped<IRoutinePeriodRepository, RoutinePeriodRepository>();

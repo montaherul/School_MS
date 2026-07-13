@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Base;
 using SchoolManagementSystem.Models.Enums;
 
@@ -58,7 +59,7 @@ public class FeeInvoice : BaseEntity
     public decimal PaidAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal LateFee { get; set; }
-    public PaymentStatus Status { get; set; } = PaymentStatus.Unpaid;
+    public PaymentStatus Status { get; set; } = PaymentStatus.Draft;
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
@@ -168,11 +169,20 @@ public class FeeRefund : BaseEntity
     public DateTime RefundDate { get; set; } = DateTime.UtcNow;
 }
 
+[Index(nameof(StudentId))]
+[Index(nameof(FeeInvoiceId))]
+[Index(nameof(FeePaymentId))]
+[Index(nameof(FeeDiscountId))]
+[Index(nameof(FeeWaiverId))]
+[Index(nameof(FeeRefundId))]
 public class FeeLedger : BaseEntity
 {
     public int StudentId { get; set; }
     public int? FeeInvoiceId { get; set; }
     public int? FeePaymentId { get; set; }
+    public int? FeeDiscountId { get; set; }
+    public int? FeeWaiverId { get; set; }
+    public int? FeeRefundId { get; set; }
     public FeeLedgerType TransactionType { get; set; }
     public decimal Debit { get; set; }
     public decimal Credit { get; set; }
@@ -182,6 +192,12 @@ public class FeeLedger : BaseEntity
     public string? Description { get; set; }
 
     public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+
+    public FeeInvoice? FeeInvoice { get; set; }
+    public Payment? FeePayment { get; set; }
+    public FeeDiscount? FeeDiscount { get; set; }
+    public FeeWaiver? FeeWaiver { get; set; }
+    public FeeRefund? FeeRefund { get; set; }
 }
 
 public class FeeCollectionSummary : BaseEntity

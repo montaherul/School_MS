@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -10,10 +11,12 @@ namespace SchoolManagementSystem.Services.Implementations.Fees;
 public class LateFeeEngineService : ILateFeeEngineService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditLogService _audit;
 
-    public LateFeeEngineService(IUnitOfWork unitOfWork)
+    public LateFeeEngineService(IUnitOfWork unitOfWork, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
+        _audit = audit;
     }
 
     public async Task<LateFeeEngineResultDto> RunAsync(CancellationToken cancellationToken = default)
@@ -24,7 +27,7 @@ public class LateFeeEngineService : ILateFeeEngineService
             x => x.IsActive && !x.IsDeleted, cancellationToken);
 
         var overdueInvoices = await _unitOfWork.Repository<FeeInvoice>().ListAsync(
-            x => !x.IsDeleted && (x.Status == PaymentStatus.Unpaid || x.Status == PaymentStatus.Partial)
+            x => !x.IsDeleted && (x.Status == PaymentStatus.Issued || x.Status == PaymentStatus.Partial)
                  && x.DueDate < DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
         foreach (var invoice in overdueInvoices)
@@ -92,6 +95,9 @@ public class LateFeeEngineService : ILateFeeEngineService
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("LateFees", "Apply", $"Late fee engine run: {result.InvoicesProcessed} invoice(s) processed, total {result.TotalLateFeeApplied} applied, {result.Errors.Count} error(s).", "system", cancellationToken: cancellationToken);
+
         return result;
     }
 

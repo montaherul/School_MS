@@ -21,14 +21,15 @@ public static class ExamControllerRbacSeeder
         "Marks.View", "Marks.Read", "Marks.Create", "Marks.Edit", "Marks.Approve", "Marks.Publish",
         "Results.View", "Results.Read", "Results.Approve", "Results.Publish",
         "Result.View", "Result.Read",
-        "Reports.View", "Reports.Read"
+        "Reports.View", "Reports.Read",
+        "ClassSubjectMappings.View",
+        "CashierCollection.View"
     ];
 
     public static async Task SeedAsync(SchoolDbContext db, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
 
-        // Ensure "Exam Controller" role exists
         var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == "Exam Controller", cancellationToken);
         if (role == null)
         {
@@ -43,33 +44,69 @@ public static class ExamControllerRbacSeeder
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        // Re-fetch to get Id after save
         role = await db.Roles.FirstAsync(r => r.Name == "Exam Controller", cancellationToken);
 
-        var existingCodes = await db.RolePermissions
+        // Ensure ClassSubjectMappings.View permission exists (missing from DbInitializer matrix)
+        if (!await db.Permissions.AnyAsync(p => p.Code == "ClassSubjectMappings.View", cancellationToken))
+        {
+            db.Permissions.Add(new Permission
+            {
+                Module = "ClassSubjectMappings",
+                ModuleName = "ClassSubjectMappings",
+                Action = "View",
+                Code = "ClassSubjectMappings.View",
+                CanRead = true,
+                CreatedAt = now
+            });
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        var permission = await db.Permissions.FirstAsync(p => p.Code == "ClassSubjectMappings.View", cancellationToken);
+
+        // Assign to Exam Controller role
+        var examControllerCodes = await db.RolePermissions
             .Where(rp => rp.RoleId == role.Id && rp.Permission != null)
             .Select(rp => rp.Permission!.Code)
             .ToListAsync(cancellationToken);
 
-        var missingCodes = AllowedCodes.Except(existingCodes).ToArray();
+        var missingExamControllerCodes = AllowedCodes.Except(examControllerCodes).ToArray();
 
-        if (missingCodes.Length > 0)
+        if (missingExamControllerCodes.Length > 0)
         {
             var permissionIds = await db.Permissions
-                .Where(p => missingCodes.Contains(p.Code))
+                .Where(p => missingExamControllerCodes.Contains(p.Code))
                 .Select(p => p.Id)
                 .ToListAsync(cancellationToken);
 
-            foreach (var permissionId in permissionIds)
+            foreach (var permissionId1 in permissionIds)
             {
                 db.RolePermissions.Add(new RolePermission
                 {
                     RoleId = role.Id,
-                    PermissionId = permissionId
+                    PermissionId = permissionId1
                 });
             }
-
-            await db.SaveChangesAsync(cancellationToken);
         }
+
+        // Assign ClassSubjectMappings.View to Admin role (Id=26) since it needs it for exam wizard
+        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Id == 26, cancellationToken);
+        var adminAdded = false;
+        if (adminRole != null)
+        {
+            var adminHasIt = await db.RolePermissions
+                .AnyAsync(rp => rp.RoleId == 26 && rp.PermissionId == permission.Id, cancellationToken);
+            if (!adminHasIt)
+            {
+                db.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = 26,
+                    PermissionId = permission.Id
+                });
+                adminAdded = true;
+            }
+        }
+
+        if (missingExamControllerCodes.Length > 0 || adminAdded)
+            await db.SaveChangesAsync(cancellationToken);
     }
 }

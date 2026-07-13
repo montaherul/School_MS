@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Cashier Collection";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <line x1="12" y1="10" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Cashier Collection</h1>
+                <p class="adm-header__sub">Search student & collect payments</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="max-width:640px;margin:0 auto;padding:40px 0;">
+        <div class="adm-table-card" style="text-align:center;padding:48px 24px;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="1.5" stroke-linecap="round" style="margin-bottom:16px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <h2 style="font-size:1.25rem;font-weight:600;margin-bottom:8px;color:var(--adm-text);">Find a Student</h2>
+            <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:24px;">Search by student name, ID or roll number</p>
+            <div class="adm-input-wrap" style="max-width:400px;margin:0 auto;">
+                <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="studentSearch" class="adm-input" placeholder="Type name, ID or roll..." autofocus />
+            </div>
+            <div id="searchResults" style="margin-top:16px;text-align:left;"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var searchTimeout;
+        var searchInput = document.getElementById('studentSearch');
+        var resultsDiv = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            var term = this.value.trim();
+            if (term.length < 2) { resultsDiv.innerHTML = ''; return; }
+            searchTimeout = setTimeout(function() { doSearch(term); }, 300);
+        });
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                doSearch(this.value.trim());
+            }
+        });
+
+        function doSearch(term) {
+            if (term.length < 2) return;
+            fetch('@Url.Action("Search", "CashierCollection")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value },
+                body: JSON.stringify({ searchTerm: term })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    resultsDiv.innerHTML = '<div style="padding:16px;text-align:center;color:var(--adm-text-3);font-size:0.875rem;">No students found</div>';
+                    return;
+                }
+                var html = '<div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius);overflow:hidden;">';
+                data.forEach(function(s) {
+                    html += '<a href="/CashierCollection/Collect/' + s.studentId + '" style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--adm-border);text-decoration:none;color:var(--adm-text);transition:background 0.15s;" onmouseover="this.style.background=\'var(--adm-surface-2)\'" onmouseout="this.style.background=\'transparent\'">';
+                    html += '<div style="width:40px;height:40px;border-radius:50%;background:var(--adm-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.875rem;margin-right:12px;">' + s.studentName.charAt(0) + '</div>';
+                    html += '<div style="flex:1;"><div style="font-weight:600;font-size:0.9375rem;">' + s.studentName + '</div>';
+                    html += '<div style="font-size:0.8125rem;color:var(--adm-text-3);">' + s.studentCode + ' &middot; ' + s.className + '</div></div>';
+                    html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-text-3)" stroke-width="2" stroke-linecap="round"><polyline points="9,18 15,12 9,6"></polyline></svg>';
+                    html += '</a>';
+                });
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            });
+        }
+    </script>
+}

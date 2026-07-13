@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
@@ -12,11 +13,13 @@ public class FeeWaiverService : IFeeWaiverService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFeeWaiverRepository _repository;
+    private readonly IAuditLogService _audit;
 
-    public FeeWaiverService(IUnitOfWork unitOfWork, IFeeWaiverRepository repository)
+    public FeeWaiverService(IUnitOfWork unitOfWork, IFeeWaiverRepository repository, IAuditLogService audit)
     {
         _unitOfWork = unitOfWork;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<PagedResult<FeeWaiverListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, CancellationToken cancellationToken = default)
@@ -47,6 +50,8 @@ public class FeeWaiverService : IFeeWaiverService
                 await WriteLedgerForWaiverAsync(dto.StudentId, dto.FeeInvoiceId, entity.Id, dto.WaiverAmount, "Waiver applied", createdBy, cancellationToken);
         }, cancellationToken);
 
+        await _audit.LogAsync("FeeWaivers", "Create", $"Waiver {entity.Id} recorded for student {dto.StudentId}, amount {dto.WaiverAmount}, approved={dto.IsApproved}", createdBy, cancellationToken: cancellationToken);
+
         return entity.Id;
     }
 
@@ -70,7 +75,7 @@ public class FeeWaiverService : IFeeWaiverService
         {
             if (wasApproved)
             {
-                var oldLedgers = await _unitOfWork.Repository<FeeLedger>().ListAsync(x => x.FeePaymentId == entity.Id && !x.IsDeleted, cancellationToken);
+                var oldLedgers = await _unitOfWork.Repository<FeeLedger>().ListAsync(x => x.FeeWaiverId == entity.Id && !x.IsDeleted, cancellationToken);
                 foreach (var old in oldLedgers) { old.IsDeleted = true; _unitOfWork.Repository<FeeLedger>().Update(old); }
             }
             await WriteLedgerForWaiverAsync(dto.StudentId, dto.FeeInvoiceId, entity.Id, dto.WaiverAmount, wasApproved ? "Waiver updated" : "Waiver approved", updatedBy, cancellationToken);
@@ -83,6 +88,7 @@ public class FeeWaiverService : IFeeWaiverService
         {
             StudentId = studentId,
             FeeInvoiceId = feeInvoiceId,
+            FeeWaiverId = waiverId,
             TransactionType = FeeLedgerType.Waiver,
             Debit = 0,
             Credit = amount,
@@ -115,12 +121,16 @@ public class FeeWaiverService : IFeeWaiverService
 
             await WriteLedgerForWaiverAsync(entity.StudentId, entity.FeeInvoiceId, entity.Id, entity.WaiverAmount, $"Waiver approved: {entity.Reason}", approvedBy, cancellationToken);
         }, cancellationToken);
+
+        await _audit.LogAsync("FeeWaivers", "Approve", $"Waiver {id} approved, amount {entity.WaiverAmount}", approvedBy, cancellationToken: cancellationToken);
     }
 
     public async Task RejectAsync(int id, string rejectedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Repository<FeeWaiver>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken)
             ?? throw new InvalidOperationException("Waiver not found.");
+
+        var wasApproved = entity.IsApproved;
 
         entity.IsApproved = false;
         entity.ApprovedBy = null;
@@ -131,6 +141,26 @@ public class FeeWaiverService : IFeeWaiverService
         entity.UpdatedAt = DateTime.UtcNow;
         _unitOfWork.Repository<FeeWaiver>().Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (wasApproved)
+        {
+            var reversal = new FeeLedger
+            {
+                StudentId = entity.StudentId,
+                FeeInvoiceId = entity.FeeInvoiceId,
+                FeeWaiverId = entity.Id,
+                TransactionType = FeeLedgerType.Adjustment,
+                Debit = entity.WaiverAmount,
+                Credit = 0,
+                Balance = entity.WaiverAmount,
+                Description = $"Waiver rejected (reversal): {entity.Reason}",
+                TransactionDate = DateTime.UtcNow,
+                CreatedBy = rejectedBy,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<FeeLedger>().AddAsync(reversal, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default)
