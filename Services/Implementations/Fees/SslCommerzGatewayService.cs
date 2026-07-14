@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SchoolManagementSystem.Data;
@@ -24,6 +25,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
     private readonly IAuditService _auditService;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<SslCommerzGatewayService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public SslCommerzGatewayService(
         IOptions<SslCommerzConfig> config,
@@ -33,7 +35,8 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         IHttpClientFactory httpClientFactory,
         IAuditService auditService,
         IEmailSender emailSender,
-        ILogger<SslCommerzGatewayService> logger)
+        ILogger<SslCommerzGatewayService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _config = config.Value;
         _db = db;
@@ -43,6 +46,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         _auditService = auditService;
         _emailSender = emailSender;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<SslCommerzInitResponse?> InitiatePaymentAsync(int onlinePaymentRequestId, CancellationToken ct = default)
@@ -67,6 +71,13 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             _logger.LogWarning("Invalid amount {Amount} for request {Id}", request.Amount, onlinePaymentRequestId);
             return null;
         }
+
+        var httpCtx = _httpContextAccessor.HttpContext;
+        var baseUrl = $"{httpCtx.Request.Scheme}://{httpCtx.Request.Host}";
+        var successUrl = $"{baseUrl}/Fees/PaymentGateway/Success";
+        var failUrl = $"{baseUrl}/Fees/PaymentGateway/Fail";
+        var cancelUrl = $"{baseUrl}/Fees/PaymentGateway/Cancel";
+        var ipnUrl = $"{baseUrl}/Fees/PaymentGateway/Ipn";
 
         PaymentGatewayTransaction? existingTx = null;
         if (!string.IsNullOrEmpty(request.GatewaySessionKey))
@@ -121,10 +132,10 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             total_amount = request.Amount,
             currency = _config.Currency,
             tran_id = tranId,
-            success_url = _config.SuccessUrl,
-            fail_url = _config.FailUrl,
-            cancel_url = _config.CancelUrl,
-            ipn_url = _config.IpnUrl,
+            success_url = successUrl,
+            fail_url = failUrl,
+            cancel_url = cancelUrl,
+            ipn_url = ipnUrl,
             cus_name = cusName,
             cus_email = cusEmail,
             cus_phone = cusPhone,
