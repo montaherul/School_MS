@@ -20,11 +20,15 @@ using SchoolManagementSystem.Repositories.Implementations.Teachers;
 using SchoolManagementSystem.Repositories.Implementations.Website;
 using SchoolManagementSystem.Repositories.Implementations.Routine;
 using SchoolManagementSystem.Repositories.Interfaces.Routine;
+using SchoolManagementSystem.Repositories.Interfaces.Accounting;
+using SchoolManagementSystem.Repositories.Implementations.Accounting;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Services.Implementations.Exam;
 using SchoolManagementSystem.Services.Interfaces.Routine;
 using SchoolManagementSystem.Services.Implementations.Routine;
 using SchoolManagementSystem.Services.Interfaces.Exam;
+using SchoolManagementSystem.Services.Interfaces.Audit;
+using SchoolManagementSystem.Services.Implementations.Audit;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
@@ -39,6 +43,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Student;
 using SchoolManagementSystem.Services.Interfaces.Base;
 using SchoolManagementSystem.Services.Implementations.Base;
 using SchoolManagementSystem.Services.Interfaces.Assignment;
@@ -73,6 +78,9 @@ using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.Services.Implementations.Website;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
+using SchoolManagementSystem.Services.Implementations.Accounting;
+using SchoolManagementSystem.Services.Implementations.Student;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -111,6 +119,14 @@ public static class ServiceRegistration
         services.AddScoped<IStudentFinanceRepository, StudentFinanceRepository>();
         services.AddScoped<IAutoBillingRepository, AutoBillingRepository>();
         services.AddScoped<IAutoFeeAssignmentRepository, AutoFeeAssignmentRepository>();
+
+        // Register Accounting Repositories
+        services.AddScoped<IChartOfAccountRepository, ChartOfAccountRepository>();
+        services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
+        services.AddScoped<ILedgerRepository, LedgerRepository>();
+        services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
+        services.AddScoped<IFinancialPeriodRepository, FinancialPeriodRepository>();
+
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherClassAssignmentRepository, TeacherClassAssignmentRepository>();
@@ -195,9 +211,12 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IConversionPipelineService, ConversionPipelineService>();
         services.AddScoped<IAdmissionDashboardService, AdmissionDashboardService>();
         services.AddScoped<IAdmissionReportService, AdmissionReportService>();
+        services.AddScoped<IAdmissionPaymentReportRepository, AdmissionPaymentReportRepository>();
+        services.AddScoped<IAdmissionPaymentReportService, AdmissionPaymentReportService>();
         services.AddScoped<IDocumentVerificationService, DocumentVerificationService>();
         services.AddScoped<IWorkflowService, WorkflowService>();
         services.AddScoped<IGuardianService, GuardianService>();
+        services.AddScoped<IStudentPortalService, StudentPortalService>();
         services.AddScoped<IFeeCategoryService, FeeCategoryService>();
         services.AddScoped<IFeeStructureService, FeeStructureService>();
         services.AddScoped<IFeeInvoiceService, FeeInvoiceService>();
@@ -222,6 +241,18 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IFeeStructureWizardService, FeeStructureWizardService>();
         services.AddScoped<IStudentFinanceService, StudentFinanceService>();
         services.AddScoped<IStudentFeeProfileService, StudentFeeProfileService>();
+        services.AddScoped<IOnlinePaymentService, OnlinePaymentService>();
+        services.AddScoped<IPaymentGatewayService, SslCommerzGatewayService>();
+        services.AddScoped<IAuditService, AuditService>();
+
+        // Register Accounting Services
+        services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
+        services.AddScoped<IJournalEntryService, JournalEntryService>();
+        services.AddScoped<ILedgerService, LedgerService>();
+        services.AddScoped<IBankService, BankService>();
+        services.AddScoped<IFinancialPeriodService, FinancialPeriodService>();
+        services.AddScoped<IFinancePostingService, FinancePostingService>();
+
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<ITeacherSynchronizationService, TeacherSynchronizationService>();
         services.AddScoped<ITeacherScopeService, TeacherScopeService>();
@@ -325,6 +356,7 @@ services.AddScoped<IExamValidationService, ExamValidationService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ClassSubjectMappingSeeder>();
         services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
+        // AccountingRbacSeeder is static — called directly from Program.cs
         services.AddScoped<SchoolManagementSystem.Services.Implementations.Result.SubjectMarkStructureSeeder>();
         services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
         services.AddMemoryCache();
@@ -358,6 +390,9 @@ services.AddScoped<IExamValidationService, ExamValidationService>();
 
         // Finance — automatic monthly invoice generation
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.AutoBillingScheduler>();
+
+        // Finance — expire stale gateway-pending payments after 24h
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.PaymentExpiryWorker>();
 
         // Routine Module
         services.AddScoped<IRoutinePeriodRepository, RoutinePeriodRepository>();

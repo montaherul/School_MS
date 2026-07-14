@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
 using System.Security.Claims;
@@ -17,7 +18,8 @@ public class FeePaymentController : Controller
     private readonly IFeePaymentService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
-    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
+    private readonly IFinancePostingService _postingService;
+    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; }
 
     [RequirePermission("FeePayments.Read")]
     public IActionResult Index() { return View(); }
@@ -88,7 +90,17 @@ public class FeePaymentController : Controller
         if (!ModelState.IsValid) return View(vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Payment updated."; }
-        else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Payment recorded."; }
+        else
+        {
+            var paymentId = await _service.CreateAsync(vm, userId);
+            var invoiceService = HttpContext.RequestServices.GetRequiredService<IFeeInvoiceService>();
+            var invoice = await invoiceService.GetByIdAsync(vm.FeeInvoiceId);
+            if (invoice != null)
+            {
+                await _postingService.PostFeeCollectionAsync(invoice.StudentId, vm.Amount, vm.FeeInvoiceId, userId);
+            }
+            TempData["SuccessMessage"] = "Payment recorded and posted to General Ledger.";
+        }
         return RedirectToAction(nameof(Index));
     }
 

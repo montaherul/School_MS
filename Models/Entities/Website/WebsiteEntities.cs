@@ -240,7 +240,9 @@ public class SchoolSetting : BaseEntity
 
     public bool AllowResultWithDue { get; set; } = false;
 
-    // Guardian Portal Feature Toggles
+    // Portal Feature Toggles
+    public bool EnableStudentPortal { get; set; } = false;
+
     public bool EnableGuardianPortal { get; set; } = false;
 
     public bool EnableGuardianActivation { get; set; } = false;

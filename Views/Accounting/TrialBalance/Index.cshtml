@@ -1,0 +1,87 @@
+@model TrialBalanceResultDto
+
+@{
+    ViewData["Title"] = "Trial Balance";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-balance-scale ws-me-2"></i>Trial Balance</h4>
+            <p class="adm-header__desc">As of @ViewBag.AsOfDate.ToString("dd MMM yyyy")</p>
+        </div>
+        <div>
+            @if (Model.IsBalanced)
+            {
+                <span class="adm-badge adm-badge--success" style="font-size:14px;padding:6px 16px;"><i class="bi bi-check-circle-fill ws-me-1"></i> Balanced</span>
+            }
+            else
+            {
+                <span class="adm-badge adm-badge--danger" style="font-size:14px;padding:6px 16px;"><i class="bi bi-exclamation-triangle-fill ws-me-1"></i> Not Balanced</span>
+            }
+        </div>
+    </div>
+
+    <form method="get" class="adm-card ws-mb-4">
+        <div class="adm-card__body ws-flex-wrap ws-gap-2 ws-items-end">
+            <div style="min-width:200px;">
+                <label class="adm-form-label">Period</label>
+                <select name="periodId" class="adm-input">
+                    <option value="">All</option>
+                    @foreach (var p in (IEnumerable<SelectListItem>)ViewBag.Periods)
+                    {
+                        <option value="@p.Value">@p.Text</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-arrow-repeat ws-me-1"></i> Refresh</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="adm-table-card">
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <thead>
+                    <tr style="background:var(--adm-bg-sub);border-bottom:2px solid var(--adm-border);">
+                        <th style="padding:12px 18px;text-align:left;">Account</th>
+                        <th style="padding:12px 18px;text-align:left;">Type</th>
+                        <th style="padding:12px 18px;text-align:right;">Opening Debit</th>
+                        <th style="padding:12px 18px;text-align:right;">Opening Credit</th>
+                        <th style="padding:12px 18px;text-align:right;">Debit</th>
+                        <th style="padding:12px 18px;text-align:right;">Credit</th>
+                        <th style="padding:12px 18px;text-align:right;">Closing Debit</th>
+                        <th style="padding:12px 18px;text-align:right;">Closing Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr style="border-bottom:1px solid var(--adm-border);">
+                            <td style="padding:12px 18px;"><span class="ws-fw-600">@entry.AccountCode</span> - @entry.AccountName</td>
+                            <td style="padding:12px 18px;"><span class="adm-badge adm-badge--secondary">@entry.AccountType</span></td>
+                            <td style="padding:12px 18px;text-align:right;">@(entry.OpeningDebit > 0 ? "৳" + entry.OpeningDebit.ToString("N2") : "—")</td>
+                            <td style="padding:12px 18px;text-align:right;">@(entry.OpeningCredit > 0 ? "৳" + entry.OpeningCredit.ToString("N2") : "—")</td>
+                            <td style="padding:12px 18px;text-align:right;">@(entry.Debit > 0 ? "৳" + entry.Debit.ToString("N2") : "—")</td>
+                            <td style="padding:12px 18px;text-align:right;">@(entry.Credit > 0 ? "৳" + entry.Credit.ToString("N2") : "—")</td>
+                            <td style="padding:12px 18px;text-align:right;font-weight:700;">@(entry.ClosingDebit > 0 ? "৳" + entry.ClosingDebit.ToString("N2") : "—")</td>
+                            <td style="padding:12px 18px;text-align:right;font-weight:700;">@(entry.ClosingCredit > 0 ? "৳" + entry.ClosingCredit.ToString("N2") : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid var(--adm-border);font-weight:700;background:var(--adm-bg-sub);">
+                        <td colspan="2" style="padding:12px 18px;text-align:right;">Total</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalOpeningDebit.ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalOpeningCredit.ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalDebit.ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalCredit.ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalClosingDebit.ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.TotalClosingCredit.ToString("N2")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

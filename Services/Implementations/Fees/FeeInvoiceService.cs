@@ -128,7 +128,7 @@ public class FeeInvoiceService : IFeeInvoiceService
         }
 
         var studentIds = overdueInvoices.Select(i => i.StudentId).Distinct().ToList();
-        var students = (await _uow.Repository<Student>()
+        var students = (await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
             .ListAsync(x => studentIds.Contains(x.Id) && !x.IsDeleted, cancellationToken)).ToList();
         var studentClassMap = students.ToDictionary(s => s.Id, s => s.ClassId);
 

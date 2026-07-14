@@ -39,7 +39,7 @@ public class StudentFeeProfileService : IStudentFeeProfileService
 
     public async Task<StudentFeeProfileDto> GetProfileAsync(int studentId, int? academicYearId = null)
     {
-        var student = await _unitOfWork.Repository<Student>().Query()
+        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .Include(s => s.Class)
             .Include(s => s.Section)
             .Include(s => s.StudentGuardians).ThenInclude(sg => sg.Guardian)

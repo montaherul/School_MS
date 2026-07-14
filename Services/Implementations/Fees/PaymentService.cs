@@ -26,7 +26,7 @@ public class PaymentService : BaseService<Payment>, IPaymentService
             var userIdStr = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))
             {
-                var student = _unitOfWork.Repository<Student>().Query()
+                var student = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
                     .AsNoTracking()
                     .FirstOrDefault(s => s.UserId == userId && !s.IsDeleted);
 

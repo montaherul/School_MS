@@ -1,0 +1,317 @@
+@model SchoolManagementSystem.Models.DTOs.Result.StudentTranscriptDto
+@{
+    ViewData["Title"] = "Student Transcript";
+    var totalExams = Model?.ExamResults?.Count ?? 0;
+    var passedExams = Model?.ExamResults?.Count(e => e.IsPassed) ?? 0;
+    var bestGpa = (Model?.ExamResults?.Any() ?? false) ? Model.ExamResults.Max(e => e.Gpa) : 0m;
+    var studentId = Model?.StudentId ?? ViewBag.StudentId ?? 0;
+}
+
+<div class="adm-page">
+    <div class="adm-header no-print">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Student Transcript</h1>
+                <p class="adm-header__sub">@Model?.StudentName</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="adm-btn adm-btn--primary" onclick="window.print()">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </button>
+            <a href="@Url.Action("Results", "StudentPortalPages")" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left me-1"></i>Back to Results
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null)
+    {
+        <div class="adm-table-card">
+            <div class="text-center py-5">
+                <i class="bi bi-journal-text fs-1 text-muted"></i>
+                <p class="text-muted mt-2">Transcript data not found.</p>
+            </div>
+        </div>
+        return;
+    }
+
+    <div class="print-header">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width:48px;height:48px;border-radius:50%;border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;background:#f0fdfa;color:#0F766E;">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <p style="font-size:16px;font-weight:800;color:#0F766E;margin:0;">@Model.SchoolName</p>
+                <p style="font-size:10px;color:#64748b;margin:0;">@Model.SchoolAddress</p>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#64748b;">Academic Year</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">@Model.AcademicYear</div>
+        </div>
+    </div>
+
+    <div style="max-width:900px;margin:0 auto;">
+        <div class="tr-header">
+            <div class="tr-header__left">
+                <div class="tr-header__logo">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="tr-header__school">
+                    <p class="tr-header__school-name">@Model.SchoolName</p>
+                    <p class="tr-header__address">@Model.SchoolAddress</p>
+                </div>
+            </div>
+            <div class="tr-header__right">
+                <div class="tr-header__academic-year">Academic Year</div>
+                <div class="tr-header__academic-year-value">@Model.AcademicYear</div>
+            </div>
+        </div>
+
+        <div class="adm-table-card mb-4">
+            <div class="tr-section-header">
+                <i class="bi bi-person-vcard"></i> Student Details
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+                    <tbody>
+                        <tr>
+                            <td style="width:180px;font-weight:600;color:var(--adm-text-2);">Student Name</td>
+                            <td style="font-weight:700;">@Model.StudentName</td>
+                            <td style="width:180px;font-weight:600;color:var(--adm-text-2);">Roll Number</td>
+                            <td class="font-monospace">@Model.RollNumber</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--adm-text-2);">Father's Name</td>
+                            <td>@Model.FatherName</td>
+                            <td style="font-weight:600;color:var(--adm-text-2);">Mother's Name</td>
+                            <td>@Model.MotherName</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:600;color:var(--adm-text-2);">Date of Birth</td>
+                            <td>@Model.DateOfBirth.ToString("dd MMM yyyy")</td>
+                            <td style="font-weight:600;color:var(--adm-text-2);">Reg. No.</td>
+                            <td class="font-monospace">@Model.RegistrationNumber</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.ExamResults.Any())
+        {
+            <div class="adm-table-card mb-4">
+                <div class="tr-section-header">
+                    <i class="bi bi-journal-check"></i> Exam History
+                </div>
+                @foreach (var exam in Model.ExamResults)
+                {
+                    <div style="border-bottom:1px solid var(--adm-border);">
+                        <div class="tr-exam-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>@exam.ExamName</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span style="font-size:11px;color:var(--adm-text-3);font-weight:500;">
+                                    <strong style="color:var(--adm-text);">@exam.PassedSubjectCount</strong> passed /
+                                    <strong style="color:var(--adm-text);">@(exam.PassedSubjectCount + exam.FailedSubjectCount)</strong> subjects
+                                </span>
+                                @if (exam.IsPassed)
+                                {
+                                    <span class="tr-exam-header__badge tr-exam-header__badge--pass">Passed</span>
+                                }
+                                else
+                                {
+                                    <span class="tr-exam-header__badge tr-exam-header__badge--fail">Failed</span>
+                                }
+                            </div>
+                        </div>
+                        @if (exam.Subjects.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Subject</th>
+                                            <th style="text-align:center;width:120px;">Marks</th>
+                                            <th style="text-align:center;width:70px;">Grade</th>
+                                            <th style="text-align:center;width:90px;">Grade Point</th>
+                                            <th style="text-align:center;width:70px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var sub in exam.Subjects)
+                                        {
+                                            <tr>
+                                                <td style="font-weight:600;">@sub.SubjectName</td>
+                                                <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">
+                                                    @sub.MarksObtained.ToString("F0") / @sub.FullMarks.ToString("F0")
+                                                </td>
+                                                <td style="text-align:center;font-weight:700;">@sub.Grade</td>
+                                                <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
+                                                <td style="text-align:center;">
+                                                    @if (sub.IsPassed)
+                                                    {
+                                                        <span class="adm-badge adm-badge--success">Pass</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="adm-badge adm-badge--danger">Fail</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="tr-summary-row">
+                                            <td style="font-weight:700;">Exam Summary</td>
+                                            <td style="text-align:center;font-weight:700;">
+                                                @exam.TotalMarks.ToString("F0") / @exam.TotalFullMarks.ToString("F0")
+                                            </td>
+                                            <td style="text-align:center;font-weight:700;">@exam.Grade</td>
+                                            <td style="text-align:center;font-weight:700;">@exam.Gpa.ToString("F2")</td>
+                                            <td style="text-align:center;">
+                                                @if (exam.IsPassed)
+                                                {
+                                                    <span class="adm-badge adm-badge--success">Passed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-badge adm-badge--danger">Failed</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        @if (exam.ClassPosition > 0)
+                                        {
+                                            <tr style="background:var(--adm-surface-2);">
+                                                <td colspan="5" style="padding:6px 14px;font-size:12px;color:var(--adm-text-3);">
+                                                    <i class="bi bi-trophy" style="color:#eab308;"></i>
+                                                    Class Position: <strong style="color:var(--adm-text);">@exam.ClassPosition</strong>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="padding:16px;text-align:center;color:var(--adm-text-3);font-size:13px;">
+                                <i class="bi bi-info-circle"></i> No subject details available for this exam.
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Model.SubjectWiseResults.Any())
+        {
+            <div class="adm-table-card mb-4">
+                <div class="tr-section-header">
+                    <i class="bi bi-bar-chart"></i> Subject Summary
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle mb-0">
+                        <thead><tr><th>Subject</th><th style="text-align:center;width:120px;">Average Marks</th><th style="text-align:center;width:70px;">Grade</th><th style="text-align:center;width:90px;">Grade Point</th><th style="text-align:center;width:70px;">Status</th></tr></thead>
+                        <tbody>
+                            @foreach (var sub in Model.SubjectWiseResults)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@sub.SubjectName</td>
+                                    <td style="text-align:center;">@sub.TotalMarks.ToString("F2") / @sub.FullMarks.ToString("F2")</td>
+                                    <td style="text-align:center;font-weight:700;">@sub.Grade</td>
+                                    <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
+                                    <td style="text-align:center;">
+                                        @if (sub.IsPassed) { <span class="adm-badge adm-badge--success">Pass</span> }
+                                        else { <span class="adm-badge adm-badge--danger">Fail</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="adm-table-card border-start border-4 border-primary h-100">
+                    <div class="p-3">
+                        <small class="text-muted">Final GPA</small>
+                        <h3 class="fw-bold text-primary">@Model.FinalGPA.ToString("F2")</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="adm-table-card border-start border-4 border-info h-100">
+                    <div class="p-3">
+                        <small class="text-muted">Final Grade</small>
+                        <h3 class="fw-bold text-info">@Model.FinalGrade</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="adm-table-card border-start border-4 border-warning h-100">
+                    <div class="p-3">
+                        <small class="text-muted">Merit Position</small>
+                        <h3 class="fw-bold text-warning">
+                            @if (Model.MeritPosition > 0) { @Model.MeritPosition<sup>th</sup> }
+                            else { <span class="text-muted">N/A</span> }
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!Model.ExamResults.Any() && !Model.SubjectWiseResults.Any())
+        {
+            <div class="adm-table-card">
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-text fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No exam results available for this student.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .tr-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 3px solid var(--adm-primary); margin-bottom: 20px; }
+    .tr-header__left { display: flex; align-items: center; gap: 16px; }
+    .tr-header__logo { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--adm-border); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; background: var(--adm-primary-bg); color: var(--adm-primary); font-size: 28px; }
+    .tr-header__school-name { font-size: 20px; font-weight: 800; color: var(--adm-primary); margin: 0; line-height: 1.2; }
+    .tr-header__address { font-size: 12px; color: var(--adm-text-2); margin: 2px 0 0; }
+    .tr-header__right { text-align: right; }
+    .tr-header__academic-year { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-text-3); }
+    .tr-header__academic-year-value { font-size: 16px; font-weight: 800; color: var(--adm-text); }
+    .tr-section-header { font-size: 14px; font-weight: 700; color: var(--adm-text); padding: 14px 18px; background: var(--adm-surface-2); border-bottom: 1px solid var(--adm-border); display: flex; align-items: center; gap: 10px; }
+    .tr-section-header i { color: var(--adm-primary); font-size: 16px; }
+    .tr-exam-header { font-size: 13px; font-weight: 700; color: var(--adm-primary); padding: 12px 14px; background: var(--adm-primary-bg); border-bottom: 1px solid var(--adm-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .tr-exam-header__badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 100px; }
+    .tr-exam-header__badge--pass { background: var(--adm-success-bg); color: var(--adm-success); }
+    .tr-exam-header__badge--fail { background: var(--adm-rejected-bg); color: var(--adm-rejected); }
+    .tr-summary-row { background: var(--adm-surface-2); font-weight: 700; }
+    .tr-summary-row td { border-top: 2px solid var(--adm-primary) !important; }
+    .print-header { display: none; }
+    @@media print {
+        @@page { size: A4; margin: 12mm 15mm; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { background: #fff !important; font-size: 11px !important; }
+        .sidebar, .topbar, .adm-header, .no-print, .btn, .adm-btn { display: none !important; }
+        .app-shell, .app-layout, .main-panel, .content, .adm-page { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+        .print-header { display: flex !important; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid #0F766E; margin-bottom: 16px; }
+        .adm-table-card { border: 1px solid #e2e8f0 !important; border-radius: 6px !important; box-shadow: none !important; page-break-inside: avoid; }
+        .dash-table { font-size: 10px !important; }
+        .dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; page-break-inside: avoid; }
+        .dash-stat-card { padding: 12px !important; border: 1px solid #e2e8f0 !important; }
+        .tr-header { display: none !important; }
+    }
+</style>
+}

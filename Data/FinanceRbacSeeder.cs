@@ -32,7 +32,8 @@ public static class FinanceRbacSeeder
         "FinanceConfiguration",
         "FinanceDashboard",
         "Receipts",
-        "StudentFeeProfile"
+        "StudentFeeProfile",
+        "OnlinePayments"
     ];
 
     private static readonly string[] FinanceActions =

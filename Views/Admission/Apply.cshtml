@@ -458,19 +458,18 @@
                                                     </select>
                                                     <span asp-validation-for="AppliedStudentGroupId" class="adm-field-error"></span>
                                                 </div>
-                                                <div class="ws-form-group">
-                                                    <label class="ws-form-label" for="PaymentMethod">Payment Method</label>
-                                                    <select asp-for="PaymentMethod" class="ws-form-select ws-form-select">
-                                                        <option value="">Select</option>
-                                                        <option value="Cash">Cash</option>
-                                                        <option value="Bank Transfer">Bank Transfer</option>
-                                                        <option value="bKash">bKash</option>
-                                                        <option value="Nagad">Nagad</option>
-                                                        <option value="Rocket">Rocket</option>
-                                                    </select>
+                                                <div class="ws-form-group" style="grid-column:1/-1;">
+                                                    <label class="ws-form-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+                                                        <input asp-for="PayOnlineViaGateway" type="checkbox" style="width:18px;height:18px;" />
+                                                        <span>Pay Admission Fee Online via <strong>SSLCommerz</strong></span>
+                                                    </label>
+                                                    <p class="ws-text-muted" style="font-size:13px;margin:8px 0 0 28px;line-height:1.5;">
+                                                        Pay instantly using bKash, Nagad, cards, or internet banking.
+                                                        No manual transaction entry needed — gateway handles everything.
+                                                    </p>
                                                 </div>
-                                                <div class="ws-form-group">
-                                                    <label class="ws-form-label" for="TransactionDetails">Transaction Details</label>
+                                                <div class="ws-form-group" id="manualPaymentFields" style="display:none;">
+                                                    <label class="ws-form-label" for="TransactionDetails">Transaction Details (for manual payment)</label>
                                                     <input asp-for="TransactionDetails" class="ws-form-input ws-form-input" placeholder="Transaction ID / Receipt No." />
                                                 </div>
                                             </div>
@@ -903,8 +902,7 @@
                 html += section('Academic &amp; Payment',
                     row('Applied Class', v('AppliedClassId')) +
                     row('Section/Group', v('AppliedStudentGroupId')) +
-                    row('Payment Method', v('PaymentMethod')) +
-                    row('Transaction Details', v('TransactionDetails'))
+                    row('Payment', (document.getElementById('PayOnlineViaGateway')?.checked ? '<span class=\"ws-badge ws-badge--accent\">Online — SSLCommerz</span>' : v('TransactionDetails') || 'Pay on admission' ))
                 );
                 document.getElementById('reviewSummary').innerHTML = '<div class="ws-card__body ws-review">' + html + '</div>';
             }
@@ -939,7 +937,7 @@
             var classDropdown = document.getElementById('AppliedClassId');
             var sectionContainer = document.getElementById('sectionContainer');
             var groupSelect = document.getElementById('AppliedStudentGroupId');
-            var groupThreshold = @(ViewBag.GroupStartsFromClassId ?? 9);
+            var groupThreshold = Math.max(@(ViewBag.GroupStartsFromClassId ?? 9), 9);
             if (classDropdown) {
                 classDropdown.addEventListener('change', function () {
                     var selectedOption = this.options[this.selectedIndex];
@@ -958,6 +956,22 @@
                         }
                     }
                 });
+            }
+
+            /* ---- Payment gateway checkbox: toggle manual payment fields ---- */
+            var gatewayCheckbox = document.getElementById('PayOnlineViaGateway');
+            var manualPaymentFields = document.getElementById('manualPaymentFields');
+            var paymentSlipGroup = document.querySelector('.ws-form-group.ws-mt-3');
+            function toggleGatewayFields() {
+                var isOnline = gatewayCheckbox && gatewayCheckbox.checked;
+                if (manualPaymentFields) manualPaymentFields.style.display = isOnline ? 'none' : '';
+                if (paymentSlipGroup) paymentSlipGroup.style.display = isOnline ? 'none' : '';
+                var txField = document.getElementById('TransactionDetails');
+                if (txField) txField.required = !isOnline;
+            }
+            if (gatewayCheckbox) {
+                gatewayCheckbox.addEventListener('change', toggleGatewayFields);
+                toggleGatewayFields();
             }
 
             /* ---- Upload zone (drag-drop) ---- */

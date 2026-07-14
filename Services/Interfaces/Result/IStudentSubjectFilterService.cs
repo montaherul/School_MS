@@ -1,8 +1,8 @@
-using SchoolManagementSystem.Models.Entities.Student;
+using StudentModel = SchoolManagementSystem.Models.Entities.Student.Student;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
 
 public interface IStudentSubjectFilterService
 {
-    Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(Student student, CancellationToken ct = default);
+    Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(StudentModel student, CancellationToken ct = default);
 }

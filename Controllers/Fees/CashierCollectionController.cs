@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -14,21 +15,24 @@ public class CashierCollectionController : Controller
     private readonly ICashierCollectionService _service;
     private readonly IFeeSecurityService _security;
     private readonly IFeeReceiptService _receiptService;
+    private readonly IFinancePostingService _postingService;
 
     public CashierCollectionController(
         ICashierCollectionService service,
         IFeeSecurityService security,
-        IFeeReceiptService receiptService)
+        IFeeReceiptService receiptService,
+        IFinancePostingService postingService)
     {
         _service = service;
         _security = security;
         _receiptService = receiptService;
+        _postingService = postingService;
     }
 
     [HttpGet]
     public IActionResult Index()
     {
-        return View();
+        return View("~/Views/Fee/CashierCollection/Index.cshtml");
     }
 
     [HttpPost]
@@ -46,7 +50,7 @@ public class CashierCollectionController : Controller
 
         var data = await _service.GetStudentCollectionDataAsync(studentId);
         if (data == null) return NotFound();
-        return View(data);
+        return View("~/Views/Fee/CashierCollection/Collect.cshtml", data);
     }
 
     [HttpPost]
@@ -68,6 +72,11 @@ public class CashierCollectionController : Controller
         };
 
         var result = await _service.ProcessPaymentAsync(studentId, request.InvoiceIds, paymentDto, userId);
+        if (result.Success && result.PaymentId > 0)
+        {
+            await _postingService.PostFeeCollectionAsync(
+                studentId, request.Amount, request.InvoiceIds.FirstOrDefault(), userId);
+        }
         return Json(result);
     }
 
@@ -76,7 +85,7 @@ public class CashierCollectionController : Controller
     {
         var receipt = await _receiptService.GetReceiptDataAsync(paymentId);
         if (receipt == null) return NotFound();
-        return View(receipt);
+        return View("~/Views/Fee/CashierCollection/Success.cshtml", receipt);
     }
 }
 

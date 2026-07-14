@@ -1,0 +1,222 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>
+@using SchoolManagementSystem.Models.Entities.Fees
+@using SchoolManagementSystem.Models.DTOs.Fees
+@{
+    ViewData["Title"] = "Fees";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var payments = ViewBag.Payments as List<Payment> ?? new();
+    var totalDue = (decimal)(ViewBag.TotalDue ?? 0m);
+    var totalPaid = (decimal)(ViewBag.TotalPaid ?? 0m);
+    var onlineRequests = ViewBag.OnlinePaymentRequests as List<OnlinePaymentRequestDto> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Fees</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="adm-table-card border-start border-4 border-danger h-100">
+                <div class="p-4">
+                    <small class="text-muted">Outstanding</small>
+                    <h3 class="fw-bold text-danger">৳@totalDue.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-table-card border-start border-4 border-success h-100">
+                <div class="p-4">
+                    <small class="text-muted">Total Paid</small>
+                    <h3 class="fw-bold text-success">৳@totalPaid.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-table-card border-start border-4 border-info h-100">
+                <div class="p-4">
+                    <small class="text-muted">Invoices</small>
+                    <h3 class="fw-bold text-info">@Model.Count()</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
+            <h5 class="mb-0 fw-bold">Invoices</h5>
+        </div>
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Due Date</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Due</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inv in Model)
+                            {
+                                <tr>
+                                    <td>@inv.InvoiceNo</td>
+                                    <td>@inv.DueDate.ToString("dd MMM yyyy")</td>
+                                    <td>৳@inv.TotalAmount.ToString("N2")</td>
+                                    <td>৳@inv.PaidAmount.ToString("N2")</td>
+                                    <td>৳@((inv.TotalAmount - inv.PaidAmount).ToString("N2"))</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@((int)inv.Status == 3 ? "success" : (int)inv.Status == 2 ? "warning" : "info")">
+                                            @inv.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if ((int)inv.Status != 3)
+                                        {
+                                            <a asp-action="PayFee" asp-route-invoiceId="@inv.Id" class="adm-btn adm-btn--primary adm-btn--sm">
+                                                <i class="bi bi-credit-card"></i> Pay Now
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No invoices found.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="px-4 py-3 border-bottom fw-bold">
+            <h5 class="mb-0 fw-bold">Recent Payments</h5>
+        </div>
+        <div class="adm-table-card__body">
+            @if (payments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Reference</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in payments.Take(15))
+                            {
+                                <tr>
+                                    <td>@p.PaidAt.ToString("dd MMM yyyy")</td>
+                                    <td>@(p.ReferenceNo ?? "N/A")</td>
+                                    <td>৳@p.Amount.ToString("N2")</td>
+                                    <td>@p.Method</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No payments yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
+            <h5 class="mb-0 fw-bold">Online Payment Requests</h5>
+        </div>
+        <div class="adm-table-card__body">
+            @if (onlineRequests.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in onlineRequests.OrderByDescending(x => x.CreatedAt))
+                            {
+                                <tr>
+                                    <td>@r.InvoiceNo</td>
+                                    <td>৳@r.Amount.ToString("N2")</td>
+                                    <td>@r.PaymentMethod</td>
+                                    <td>@(r.ReferenceNo ?? "N/A")</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@(r.Status == "Verified" ? "success" : r.Status == "Rejected" ? "danger" : "warning")">
+                                            @r.Status
+                                        </span>
+                                    </td>
+                                    <td>@r.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                    <td>
+                                        @if (r.Status == "Rejected" || r.Status == "GatewayPending")
+                                        {
+                                            <a asp-action="PayFee" asp-route-invoiceId="@r.FeeInvoiceId" class="adm-btn adm-btn--primary adm-btn--sm">
+                                                <i class="bi bi-arrow-clockwise"></i> Retry
+                                            </a>
+                                        }
+                                        else if (r.Status == "Pending")
+                                        {
+                                            <span class="text-muted"><i class="bi bi-hourglass-split"></i> Awaiting verification</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success"><i class="bi bi-check-circle"></i> Done</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No online payment requests yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

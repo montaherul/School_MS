@@ -1,0 +1,90 @@
+@model List<SchoolManagementSystem.Models.DTOs.Fees.OnlinePaymentRequestDto>
+@{
+    ViewData["Title"] = "Online Payment Verification";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Online Payment Verification</h1>
+                <p class="adm-header__sub">Verify pending online payment requests</p>
+            </div>
+        </div>
+        <a asp-controller="FeeDashboard" asp-action="Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Fee Dashboard
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Invoice</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Submitted</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Count; i++)
+                            {
+                                var req = Model[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@req.StudentName</td>
+                                    <td>@req.InvoiceNo</td>
+                                    <td>৳@req.Amount.ToString("N2")</td>
+                                    <td>@req.PaymentMethod</td>
+                                    <td>@(req.ReferenceNo ?? "N/A")</td>
+                                    <td>@req.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                    <td>
+                                        <form asp-action="Verify" asp-route-id="@req.Id" method="post" style="display:inline" class="verify-form">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="adm-btn adm-btn--success adm-btn--sm" onclick="return confirm('Verify this payment?')">
+                                                <i class="bi bi-check-lg"></i> Verify
+                                            </button>
+                                        </form>
+                                        <form asp-action="Reject" asp-route-id="@req.Id" method="post" style="display:inline" class="reject-form">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm" onclick="return confirm('Reject this payment?')">
+                                                <i class="bi bi-x-lg"></i> Reject
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle text-success" style="font-size:3rem;"></i>
+                    <p class="text-muted mt-3">No pending payment requests.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

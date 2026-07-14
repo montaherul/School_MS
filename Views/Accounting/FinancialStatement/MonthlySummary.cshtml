@@ -1,0 +1,52 @@
+@model List<MonthlyIncomeSummaryDto>
+
+@{
+    ViewData["Title"] = "Monthly Summary - " + ViewBag.Year;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-bar-chart ws-me-2"></i>Monthly Income Summary</h4>
+            <p class="adm-header__desc">@ViewBag.Year</p>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <thead>
+                    <tr style="background:var(--adm-bg-sub);border-bottom:2px solid var(--adm-border);">
+                        <th style="padding:12px 18px;text-align:left;">Month</th>
+                        <th style="padding:12px 18px;text-align:right;">Income</th>
+                        <th style="padding:12px 18px;text-align:right;">Expense</th>
+                        <th style="padding:12px 18px;text-align:right;">Net Profit / Loss</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr style="border-bottom:1px solid var(--adm-border);">
+                            <td style="padding:12px 18px;" class="ws-fw-600">@item.Month @item.Year</td>
+                            <td style="padding:12px 18px;text-align:right;" class="ws-text-success">৳@item.TotalIncome.ToString("N2")</td>
+                            <td style="padding:12px 18px;text-align:right;" class="ws-text-danger">৳@item.TotalExpense.ToString("N2")</td>
+                            <td style="padding:12px 18px;text-align:right;font-weight:700;" class="@(item.NetProfit >= 0 ? "ws-text-success" : "ws-text-danger")">
+                                ৳@item.NetProfit.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid var(--adm-border);font-weight:700;background:var(--adm-bg-sub);">
+                        <td style="padding:12px 18px;">Total</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.Sum(m => m.TotalIncome).ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;">৳@Model.Sum(m => m.TotalExpense).ToString("N2")</td>
+                        <td style="padding:12px 18px;text-align:right;" class="@(Model.Sum(m => m.NetProfit) >= 0 ? "ws-text-success" : "ws-text-danger")">
+                            ৳@Model.Sum(m => m.NetProfit).ToString("N2")
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

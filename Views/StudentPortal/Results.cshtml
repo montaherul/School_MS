@@ -1,0 +1,120 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
+@using SchoolManagementSystem.Models.Entities.Result
+@{
+    ViewData["Title"] = "Results";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var subjectResults = ViewBag.SubjectResults as List<StudentSubjectResult> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bar-chart"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Results</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="adm-table-card mb-4">
+            <div class="px-4 py-3 border-bottom fw-bold">
+                <h5 class="mb-0 fw-bold">Exam-wise Summary</h5>
+            </div>
+            <div class="adm-table-card__body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Exam</th>
+                                <th>Total Marks</th>
+                                <th>Full Marks</th>
+                                <th>GPA</th>
+                                <th>Grade</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model)
+                            {
+                                <tr>
+                                    <td>@r.Exam?.Name</td>
+                                    <td>@r.TotalMarks</td>
+                                    <td>@r.TotalFullMarks</td>
+                                    <td><strong>@r.Gpa</strong></td>
+                                    <td>@r.Grade</td>
+                                    <td>@(r.Position > 0 ? r.Position.ToString() : "-")</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@(r.IsPassed ? "success" : "danger")">
+                                            @(r.IsPassed ? "Pass" : "Fail")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        if (subjectResults.Any())
+        {
+            <div class="adm-table-card">
+                <div class="px-4 py-3 border-bottom fw-bold">
+                    <h5 class="mb-0 fw-bold">Subject-wise Breakdown (Latest)</h5>
+                </div>
+                <div class="adm-table-card__body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Marks Obtained</th>
+                                    <th>Full Marks</th>
+                                    <th>Grade</th>
+                                    <th>Grade Point</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in subjectResults.OrderByDescending(x => x.Id).Take(20))
+                                {
+                                    <tr>
+                                        <td>@s.Subject?.Name</td>
+                                        <td>@s.MarksObtained</td>
+                                        <td>@s.FullMarks</td>
+                                        <td>@s.Grade</td>
+                                        <td>@s.GradePoint</td>
+                                        <td>
+                                            <span class="adm-badge adm-badge--@(s.IsPassed ? "success" : "danger")">
+                                                @(s.IsPassed ? "Pass" : "Fail")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="text-center py-5">
+                <i class="bi bi-bar-chart fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No published results yet.</p>
+            </div>
+        </div>
+    }
+</div>

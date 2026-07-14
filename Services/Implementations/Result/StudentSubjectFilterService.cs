@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Student;
+using StudentModel = SchoolManagementSystem.Models.Entities.Student.Student;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -15,7 +15,7 @@ public class StudentSubjectFilterService : IStudentSubjectFilterService
         _uow = uow;
     }
 
-    public async Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(Student student, CancellationToken ct = default)
+    public async Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(StudentModel student, CancellationToken ct = default)
     {
         var validIds = new HashSet<int>();
 

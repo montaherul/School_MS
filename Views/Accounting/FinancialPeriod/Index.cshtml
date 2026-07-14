@@ -1,0 +1,64 @@
+@{
+    ViewData["Title"] = "Financial Periods";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-calendar2-range ws-me-2"></i>Financial Periods</h4>
+            <p class="adm-header__desc">Manage open, locked, and closed accounting periods</p>
+        </div>
+        <div class="adm-header__actions">
+            <a href="/Accounting/FinancialPeriod/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i>New Period</a>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="ws-p-3">
+            <div id="period-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let grid;
+        function loadGrid() {
+            if (grid) { grid.replaceData(); return; }
+            grid = new Tabulator("#period-grid", {
+                ajaxURL: "/Accounting/FinancialPeriod/GetList",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No financial periods found",
+                columns: [
+                    { title: "Name", field: "name", widthGrow: 2 },
+                    { title: "Start", field: "startDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "End", field: "endDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Status", field: "status", width: 100,
+                        formatter: function(c) {
+                            const colors = {Open: "success", Locked: "warning", Closed: "secondary"};
+                            return `<span class="adm-badge adm-badge--${colors[c.getValue()]||'secondary'}">${c.getValue()}</span>`;
+                        }
+                    },
+                    { title: "Active", field: "isActive", width: 80, formatter: "tickCross" },
+                    { title: "Actions", width: 160, formatter: function(c) {
+                        const d = c.getData();
+                        let html = `<a href="/Accounting/FinancialPeriod/CreateEdit/${d.id}" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-pencil"></i></a>`;
+                        if (d.status === 'Open') {
+                            html += `<form method="post" action="/Accounting/FinancialPeriod/Close" style="display:inline" onsubmit="return confirm('Close this period? This cannot be undone.')">
+                                        <input type="hidden" name="id" value="${d.id}"/>
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="adm-btn adm-btn--sm adm-btn--ghost ws-text-warning"><i class="bi bi-lock"></i></button>
+                                    </form>`;
+                        }
+                        return html;
+                    }}
+                ]
+            });
+        }
+        document.addEventListener('DOMContentLoaded', loadGrid);
+    </script>
+}

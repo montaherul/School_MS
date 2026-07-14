@@ -343,6 +343,25 @@ body {
         transition: max-width 0.18s var(--ease), opacity 0.14s var(--ease);
     }
 
+.nav-section-label-sub {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--clr-sidebar-text);
+    padding: 12px 18px 4px 24px;
+    opacity: 0.4;
+}
+
+    .nav-section-label-sub .nav-text {
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: 180px;
+        display: inline;
+        transition: max-width 0.18s var(--ease), opacity 0.14s var(--ease);
+    }
+
 /* ── Nav Links ── */
 .sidebar-nav a {
     display: flex;
@@ -3229,6 +3248,17 @@ tr:hover .action-group {
             color: var(--clr-sidebar-text);
             font-size: 10px;
             letter-spacing: 2px;
+        }
+
+    .app-shell.sidebar-collapsed .nav-section-label-sub {
+        text-align: center;
+        padding: 10px 8px 2px;
+    }
+
+        .app-shell.sidebar-collapsed .nav-section-label-sub::after {
+            content: '·';
+            color: var(--clr-sidebar-text);
+            font-size: 8px;
         }
 
     .app-shell.sidebar-collapsed .sidebar-role {

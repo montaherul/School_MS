@@ -60,7 +60,7 @@ public class StudentService : IStudentService
             var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
             if (settings != null)
             {
-                bool classRequiresGroup = schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
+                bool classRequiresGroup = settings.GroupStartsFromClassId > 0 && schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
                 if (classRequiresGroup && !groupId.HasValue)
                     throw new InvalidOperationException("An academic group is required for the selected class.");
                 if (!classRequiresGroup)
@@ -84,7 +84,7 @@ public class StudentService : IStudentService
             }
         }
 
-        var student = new Student
+        var student = new SchoolManagementSystem.Models.Entities.Student.Student
         {
             StudentNo = !string.IsNullOrWhiteSpace(dto.StudentNo) ? dto.StudentNo : await GenerateStudentNoAsync(cancellationToken),
             FullName = dto.FullName,
@@ -254,7 +254,7 @@ public class StudentService : IStudentService
                 var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
                 if (settings != null)
                 {
-                    bool classRequiresGroup = schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
+                bool classRequiresGroup = settings.GroupStartsFromClassId > 0 && schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
                     if (classRequiresGroup && !dto.StudentGroupId.HasValue && !student.StudentGroupId.HasValue)
                         throw new InvalidOperationException("An academic group is required for the selected class.");
                     if (!classRequiresGroup)

@@ -45,10 +45,12 @@
     bool isApplicationAdmin = User.IsInRole("Admin");
     bool isGuardian = User.IsInRole("Guardian");
     bool guardianPortalEnabled = false;
+    bool studentPortalEnabled = false;
     try
     {
-        var guardianSetting = await _websiteService.GetSettingsAsync();
-        guardianPortalEnabled = guardianSetting?.EnableGuardianPortal ?? false;
+        var portalSetting = await _websiteService.GetSettingsAsync();
+        guardianPortalEnabled = portalSetting?.EnableGuardianPortal ?? false;
+        studentPortalEnabled = portalSetting?.EnableStudentPortal ?? false;
     }
     catch { }
     bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
@@ -140,7 +142,7 @@
                        ──────────────────────────────────────────────── *@
                     @if (isGuardian && guardianPortalEnabled)
                     {
-                        @if (CanAny("Dashboard.View","Attendance.View","Results.View","Fees.View","Leave.View","Notice.View","Calendar.View","Profile.View","Notification.View","Routine.View"))
+                        @if (CanAny("Dashboard.View","Attendance.View","Results.View","Fees.View","Leave.View","Notice.View","Calendar.View","Profile.View","Notification.View","Routine.View","Assignments.View","AdmitCard.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
                             @if (Can("Dashboard.View"))
@@ -151,29 +153,49 @@
                             {
                                 <a href="/Guardian/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                             }
-                            @if (Can("Results.View"))
+                            @if (CanAny("Results.View","Routine.View","Assignments.View","AdmitCard.View"))
                             {
-                                <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
-                            }
-                            @if (Can("Routine.View"))
-                            {
-                                <a href="/Guardian/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
+                                <span class="nav-section-label-sub"><span class="nav-text">Academics</span></span>
+                                @if (Can("Results.View"))
+                                {
+                                    <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                                    <a href="/Guardian/Portal/ReportCard" data-title="Report Card"><i class="bi bi-file-text"></i><span class="nav-text">Report Card</span></a>
+                                    <a href="/Guardian/Portal/Transcript" data-title="Transcript"><i class="bi bi-journal-arrow-up"></i><span class="nav-text">Transcript</span></a>
+                                    <a href="/Guardian/Portal/ExamComparison" data-title="Exam Comparison"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Exam Comparison</span></a>
+                                }
+                                @if (Can("Routine.View"))
+                                {
+                                    <a href="/Guardian/Portal/Timetable" data-title="Timetable"><i class="bi bi-calendar-week"></i><span class="nav-text">Timetable</span></a>
+                                }
+                                @if (Can("Assignments.View"))
+                                {
+                                    <a href="/Guardian/Portal/Assignments" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                                }
+                                @if (Can("AdmitCard.View"))
+                                {
+                                    <a href="/Guardian/Portal/AdmitCard" data-title="Admit Card"><i class="bi bi-card-text"></i><span class="nav-text">Admit Card</span></a>
+                                }
                             }
                             @if (Can("Fees.View"))
                             {
-                                <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
+                                <span class="nav-section-label-sub"><span class="nav-text">Finance</span></span>
+                                <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees & Payments</span></a>
                             }
-                            @if (Can("Leave.View"))
+                            @if (CanAny("Leave.View","Notice.View","Calendar.View"))
                             {
-                                <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
-                            }
-                            @if (Can("Notice.View"))
-                            {
-                                <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
-                            }
-                            @if (Can("Calendar.View"))
-                            {
-                                <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
+                                <span class="nav-section-label-sub"><span class="nav-text">Communication</span></span>
+                                @if (Can("Notice.View"))
+                                {
+                                    <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                                }
+                                @if (Can("Calendar.View"))
+                                {
+                                    <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
+                                }
+                                @if (Can("Leave.View"))
+                                {
+                                    <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
+                                }
                             }
                             @if (Can("Notification.View"))
                             {
@@ -196,9 +218,75 @@
                         <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
                     }
                     @* ────────────────────────────────────────────────
-                       STUDENT
+                       STUDENT — Portal Enabled
                        ──────────────────────────────────────────────── *@
-                    else if (isStudent)
+                    @if (isStudent && studentPortalEnabled)
+                    {
+                        @if (CanAny("Dashboard.View","Attendance.View","Results.View","Fees.View","Leave.View","Notice.View","Calendar.View","Profile.View","Notification.View","Routine.View","AdmitCard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Student Portal</span></span>
+                            @if (Can("Dashboard.View"))
+                            {
+                                <a href="/Student/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                            }
+                            @if (Can("Attendance.View"))
+                            {
+                                <a href="/Student/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                            }
+                            @if (CanAny("Results.View","Routine.View","AdmitCard.View"))
+                            {
+                                <span class="nav-section-label-sub"><span class="nav-text">Academics</span></span>
+                                @if (Can("Results.View"))
+                                {
+                                    <a href="/Student/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                                    <a href="/Student/Portal/ReportCard?examId=0" data-title="Report Card"><i class="bi bi-file-text"></i><span class="nav-text">Report Card</span></a>
+                                    <a href="/Student/Portal/Transcript" data-title="Transcript"><i class="bi bi-journal-arrow-up"></i><span class="nav-text">Transcript</span></a>
+                                    <a href="/Student/Portal/ExamComparison" data-title="Exam Comparison"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Exam Comparison</span></a>
+                                }
+                                @if (Can("Routine.View"))
+                                {
+                                    <a href="/Routine/StudentView" data-title="My Timetable"><i class="bi bi-calendar-week"></i><span class="nav-text">Timetable</span></a>
+                                }
+                                @if (Can("AdmitCard.View"))
+                                {
+                                    <a href="/AdmitCard/MyAdmitCard" data-title="My Admit Card"><i class="bi bi-card-text"></i><span class="nav-text">Admit Card</span></a>
+                                }
+                            }
+                            @if (Can("Fees.View"))
+                            {
+                                <span class="nav-section-label-sub"><span class="nav-text">Finance</span></span>
+                                <a href="/Student/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees & Payments</span></a>
+                            }
+                            @if (CanAny("Leave.View","Notice.View","Calendar.View"))
+                            {
+                                <span class="nav-section-label-sub"><span class="nav-text">Communication</span></span>
+                                @if (Can("Notice.View"))
+                                {
+                                    <a href="/Student/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                                }
+                                @if (Can("Calendar.View"))
+                                {
+                                    <a href="/Student/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
+                                }
+                                @if (Can("Leave.View"))
+                                {
+                                    <a href="/Student/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
+                                }
+                            }
+                            @if (Can("Notification.View"))
+                            {
+                                <a href="/Student/Portal/Notifications" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
+                            }
+                            @if (Can("Profile.View"))
+                            {
+                                <a href="/Student/Portal/Profile" data-title="Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                            }
+                        }
+                    }
+                    @* ────────────────────────────────────────────────
+                       STUDENT — Portal Disabled
+                       ──────────────────────────────────────────────── *@
+                    else if (isStudent && !studentPortalEnabled)
                     {
                         @if (Can("Dashboard.View"))
                         {
@@ -236,10 +324,6 @@
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
                             <a asp-controller="Payment" asp-action="Index" data-title="My Finance"><i class="bi bi-cash-coin"></i><span class="nav-text">My Finance</span></a>
-                            @if (Can("Payments.Read"))
-                            {
-                                <a asp-controller="Payment" asp-action="Index" data-title="Payment History"><i class="bi bi-credit-card"></i><span class="nav-text">Payment History</span></a>
-                            }
                         }
                         @if (Can("Notifications.View"))
                         {
@@ -339,7 +423,7 @@
                             <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                         }
 
-                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View"))
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
                             @if (Can("FeeDashboard.Read"))
@@ -378,6 +462,10 @@
                             {
                                 <a asp-controller="FeePayment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
                             }
+                            @if (Can("OnlinePayments.Read"))
+                            {
+                                <a asp-controller="OnlinePaymentVerification" asp-action="Index" data-title="Online Payments"><i class="bi bi-globe"></i><span class="nav-text">Online Payments</span></a>
+                            }
                             @if (Can("FeeDiscounts.Read"))
                             {
                                 <a asp-controller="FeeDiscount" asp-action="Index" data-title="Discounts"><i class="bi bi-percent"></i><span class="nav-text">Discounts</span></a>
@@ -409,6 +497,24 @@
                             @if (Can("FinanceReports.Read"))
                             {
                                 <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Reports</span></a>
+                            }
+                        }
+
+                        @if (CanAny("Accounting.View","Accounting.Post","Accounting.ClosePeriod","Accounting.Reconcile","Accounting.Export"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Accounting</span></span>
+                            @if (Can("Accounting.View"))
+                            {
+                                <a asp-controller="ChartOfAccount" asp-action="Index" data-title="Chart of Accounts"><i class="bi bi-journal-text"></i><span class="nav-text">Chart of Accounts</span></a>
+                                <a asp-controller="JournalEntry" asp-action="Index" data-title="Journal Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Journal Entry</span></a>
+                                <a asp-controller="GeneralLedger" asp-action="Index" data-title="General Ledger"><i class="bi bi-book"></i><span class="nav-text">General Ledger</span></a>
+                                <a asp-controller="TrialBalance" asp-action="Index" data-title="Trial Balance"><i class="bi bi-balance-scale"></i><span class="nav-text">Trial Balance</span></a>
+                                <a asp-controller="FinancialStatement" asp-action="Index" data-title="Financial Statements"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Financial Statements</span></a>
+                                <a asp-controller="BankBook" asp-action="Index" data-title="Bank Book"><i class="bi bi-bank"></i><span class="nav-text">Bank Book</span></a>
+                                @if (Can("Accounting.ClosePeriod"))
+                                {
+                                    <a asp-controller="FinancialPeriod" asp-action="Index" data-title="Financial Periods"><i class="bi bi-calendar-lock"></i><span class="nav-text">Financial Periods</span></a>
+                                }
                             }
                         }
 
@@ -617,6 +723,99 @@
                             @if (Can("Reports.View"))
                             {
                                 <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Result Analytics"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Result Analytics</span></a>
+                            }
+                        }
+
+                        @* ── 11. Accounting ── *@
+                        @if (CanAny("Accounting.View","Accounting.Post","Accounting.ClosePeriod","Accounting.Reconcile","Accounting.Export"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Accounting</span></span>
+                            @if (Can("Accounting.View"))
+                            {
+                                <a asp-controller="ChartOfAccount" asp-action="Index" data-title="Chart of Accounts"><i class="bi bi-journal-text"></i><span class="nav-text">Chart of Accounts</span></a>
+                                <a asp-controller="JournalEntry" asp-action="Index" data-title="Journal Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Journal Entry</span></a>
+                                <a asp-controller="GeneralLedger" asp-action="Index" data-title="General Ledger"><i class="bi bi-book"></i><span class="nav-text">General Ledger</span></a>
+                                <a asp-controller="TrialBalance" asp-action="Index" data-title="Trial Balance"><i class="bi bi-balance-scale"></i><span class="nav-text">Trial Balance</span></a>
+                                <a asp-controller="FinancialStatement" asp-action="Index" data-title="Financial Statements"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Financial Statements</span></a>
+                                <a asp-controller="BankBook" asp-action="Index" data-title="Bank Book"><i class="bi bi-bank"></i><span class="nav-text">Bank Book</span></a>
+                                @if (Can("Accounting.ClosePeriod"))
+                                {
+                                    <a asp-controller="FinancialPeriod" asp-action="Index" data-title="Financial Periods"><i class="bi bi-calendar-lock"></i><span class="nav-text">Financial Periods</span></a>
+                                }
+                            }
+                        }
+
+                        @* ── 11.5. Finance ── *@
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Finance</span></span>
+                            @if (Can("FeeDashboard.Read"))
+                            {
+                                <a asp-controller="FeeDashboard" asp-action="Index" data-title="Fee Dashboard"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Dashboard</span></a>
+                            }
+                            @if (Can("FeeCategories.Read"))
+                            {
+                                <a asp-controller="FeeCategory" asp-action="Index" data-title="Fee Categories"><i class="bi bi-tags"></i><span class="nav-text">Categories</span></a>
+                            }
+                            @if (Can("FeeStructures.Read"))
+                            {
+                                <a asp-controller="FeeStructure" asp-action="Index" data-title="Fee Structures"><i class="bi bi-cash-coin"></i><span class="nav-text">Fee Structures</span></a>
+                            }
+                            @if (Can("StudentFeeAssignments.Read"))
+                            {
+                                <a asp-controller="StudentFeeAssignment" asp-action="Index" data-title="Student Fee Assignments"><i class="bi bi-person-plus"></i><span class="nav-text">Assignments</span></a>
+                            }
+                            @if (Can("StudentFeeProfile.View"))
+                            {
+                                <a asp-controller="StudentFeeProfile" asp-action="Index" data-title="Student Fee Profile"><i class="bi bi-person-badge"></i><span class="nav-text">Fee Profiles</span></a>
+                            }
+                            @if (Can("CashierCollection.View"))
+                            {
+                                <a asp-controller="CashierCollection" asp-action="Index" data-title="Cashier Collection"><i class="bi bi-cash-register"></i><span class="nav-text">Collections</span></a>
+                            }
+                            @if (Can("FeeInvoices.Read"))
+                            {
+                                <a asp-controller="FeeInvoice" asp-action="Index" data-title="Fee Invoices"><i class="bi bi-file-text"></i><span class="nav-text">Invoices</span></a>
+                            }
+                            @if (Can("FeeInvoiceItems.Read"))
+                            {
+                                <a asp-controller="FeeInvoiceItem" asp-action="Index" data-title="Invoice Items"><i class="bi bi-list-check"></i><span class="nav-text">Invoice Items</span></a>
+                            }
+                            @if (Can("FeePayments.Read"))
+                            {
+                                <a asp-controller="FeePayment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
+                            }
+                            @if (Can("OnlinePayments.Read"))
+                            {
+                                <a asp-controller="OnlinePaymentVerification" asp-action="Index" data-title="Online Payments"><i class="bi bi-globe"></i><span class="nav-text">Online Payments</span></a>
+                            }
+                            @if (Can("FeeDiscounts.Read"))
+                            {
+                                <a asp-controller="FeeDiscount" asp-action="Index" data-title="Discounts"><i class="bi bi-percent"></i><span class="nav-text">Discounts</span></a>
+                            }
+                            @if (Can("FeeWaivers.Read"))
+                            {
+                                <a asp-controller="FeeWaiver" asp-action="Index" data-title="Waivers"><i class="bi bi-gift"></i><span class="nav-text">Waivers</span></a>
+                            }
+                            @if (Can("FeeRefunds.Read"))
+                            {
+                                <a asp-controller="FeeRefund" asp-action="Index" data-title="Refunds"><i class="bi bi-arrow-return-left"></i><span class="nav-text">Refunds</span></a>
+                            }
+                            @if (Can("FeeLedger.Read"))
+                            {
+                                <a asp-controller="FeeLedger" asp-action="Index" data-title="Fee Ledger"><i class="bi bi-journal-text"></i><span class="nav-text">Fee Ledger</span></a>
+                            }
+                            @if (Can("FinanceReports.Read"))
+                            {
+                                <a asp-controller="FinanceReports" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Finance Reports</span></a>
+                            }
+                            @if (Can("LateFeeRules.Read"))
+                            {
+                                <a asp-controller="LateFeeRule" asp-action="Index" data-title="Late Fee Rules"><i class="bi bi-clock"></i><span class="nav-text">Late Fee Rules</span></a>
+                            }
+                            @if (Can("FineRules.Read"))
+                            {
+                                <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
                             }
                         }
 
@@ -834,12 +1033,12 @@
                         </div>
                         @if (Can("Notifications.View") || (isGuardian && guardianPortalEnabled) || isStudent || isTeacherLike || isAccountant)
                         {
-                            <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
+                            <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : isStudent && studentPortalEnabled ? "/Student/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
                                 <i class="bi bi-bell"></i>
                                 <span class="notif-dot"></span>
                             </a>
                         }
-                        <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Profile" : "/Details")" title="My Profile">
+                        <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Profile" : isStudent && studentPortalEnabled ? "/Student/Portal/Profile" : "/Details")" title="My Profile">
                             @if (!string.IsNullOrEmpty(profilePicture))
                             {
                                 <img src="@profilePicture" alt="@userName" />

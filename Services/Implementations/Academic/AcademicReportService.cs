@@ -75,7 +75,7 @@ public class AcademicReportService : IAcademicReportService
             .Select(g => g.Count())
             .FirstOrDefaultAsync(ct);
 
-        var studentCounts = await _uow.Repository<Student>().Query().AsNoTracking()
+        var studentCounts = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Where(s => !s.IsDeleted)
             .GroupBy(s => true)
             .Select(g => g.Count())
@@ -197,7 +197,7 @@ public class AcademicReportService : IAcademicReportService
 
     private async Task<List<StudentDistributionReportDto>> GetStudentDistributionAsync(CancellationToken ct)
     {
-        return await _uow.Repository<Student>().Query().AsNoTracking()
+        return await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Include(s => s.Class)
             .Include(s => s.Section)
             .Include(s => s.StudentGroup)
@@ -232,7 +232,7 @@ public class AcademicReportService : IAcademicReportService
             })
             .ToListAsync(ct);
 
-        var occupiedCounts = await _uow.Repository<Student>().Query().AsNoTracking()
+        var occupiedCounts = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Where(s => !s.IsDeleted && s.Status == StudentStatus.Active)
             .GroupBy(s => s.ClassId)
             .Select(g => new { ClassId = g.Key, Count = g.Count() })

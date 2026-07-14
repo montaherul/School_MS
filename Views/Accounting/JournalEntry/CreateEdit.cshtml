@@ -1,0 +1,144 @@
+@model JournalEntryViewModel
+@using SchoolManagementSystem.Models.Enums
+
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Journal Entry" : "New Journal Entry";
+}
+
+<div class="adm-page">
+    <div class="ws-mb-4">
+        <a href="/Accounting/JournalEntry" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back</a>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-journal-text ws-me-2"></i>@ViewData["Title"]</h5>
+        </div>
+        <div class="adm-card__body">
+            <form method="post" id="journalForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="ws-row ws-g-3">
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Journal No</label>
+                        <input asp-for="JournalNo" class="adm-input" readonly />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Entry Date</label>
+                        <input asp-for="EntryDate" class="adm-input" type="date" required />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Entry Type</label>
+                        <select asp-for="EntryType" class="adm-input" asp-items="Html.GetEnumSelectList<JournalEntryType>()"></select>
+                    </div>
+                    <div class="ws-col-12">
+                        <label class="adm-form-label">Description</label>
+                        <textarea asp-for="Description" class="adm-input" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <hr class="ws-my-3" />
+                <h6 class="ws-fw-700 ws-mb-3"><i class="bi bi-list-columns ws-me-2"></i>Journal Lines</h6>
+
+                <div class="adm-table-card ws-mb-3" style="overflow-x:auto;">
+                    <table id="lines-table" style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="background:var(--adm-bg-sub);border-bottom:2px solid var(--adm-border);">
+                                <th style="padding:10px 12px;text-align:left;">Account</th>
+                                <th style="padding:10px 12px;text-align:left;">Type</th>
+                                <th style="padding:10px 12px;text-align:right;">Amount</th>
+                                <th style="padding:10px 12px;text-align:left;">Narration</th>
+                                <th style="padding:10px 12px;text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lines-body">
+                        </tbody>
+                        <tfoot>
+                            <tr style="border-top:2px solid var(--adm-border);font-weight:700;">
+                                <td colspan="2" style="padding:10px 12px;text-align:right;">Total</td>
+                                <td style="padding:10px 12px;text-align:right;"><span id="total-amount">0.00</span></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <button type="button" class="adm-btn adm-btn--secondary ws-mb-3" onclick="addLine()"><i class="bi bi-plus-circle ws-me-1"></i>Add Line</button>
+
+                <div class="ws-text-end ws-mt-3 ws-pt-3 ws-border-top">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save</button>
+                    <a href="/Accounting/JournalEntry" class="adm-btn adm-btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const accounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            ((IEnumerable<SelectListItem>)ViewBag.Accounts).Select(a => new { id = a.Value, name = a.Text })));
+        let lineIndex = 0;
+
+        @if (Model.IsEditMode && Model.Lines.Any())
+        {
+            @:const existingLines = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Lines));
+            @:existingLines.forEach(l => addLine(l.accountId, l.lineType == 1 ? 'Debit' : 'Credit', l.amount, l.narration));
+        }
+
+        function addLine(accountId, type, amount, narration) {
+            const tbody = document.getElementById('lines-body');
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--adm-border)';
+            const idx = lineIndex++;
+
+            const acctOpts = accounts.map(a =>
+                `<option value="${a.id}" ${a.id == accountId ? 'selected' : ''}>${a.name}</option>`).join('');
+
+            tr.innerHTML = `
+                <td style="padding:8px 12px;">
+                    <select name="Lines[${idx}].AccountId" class="adm-input" required style="min-width:200px;">
+                        <option value="">Select account</option>
+                        ${acctOpts}
+                    </select>
+                </td>
+                <td style="padding:8px 12px;">
+                    <select name="Lines[${idx}].LineType" class="adm-input" required onchange="recalc()">
+                        <option value="1" ${type==='Debit'?'selected':''}>Debit</option>
+                        <option value="2" ${type==='Credit'?'selected':''}>Credit</option>
+                    </select>
+                </td>
+                <td style="padding:8px 12px;">
+                    <input name="Lines[${idx}].Amount" type="number" step="0.01" class="adm-input line-amount" value="${amount||''}" required onchange="recalc()" style="text-align:right;width:140px;" />
+                </td>
+                <td style="padding:8px 12px;">
+                    <input name="Lines[${idx}].Narration" class="adm-input" value="${narration||''}" style="min-width:150px;" />
+                </td>
+                <td style="padding:8px 12px;text-align:center;">
+                    <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost ws-text-danger" onclick="this.closest('tr').remove();recalc();"><i class="bi bi-x-circle"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            recalc();
+        }
+
+        function recalc() {
+            let total = 0;
+            document.querySelectorAll('.line-amount').forEach(el => {
+                total += parseFloat(el.value) || 0;
+            });
+            document.getElementById('total-amount').textContent = total.toFixed(2);
+        }
+
+        document.getElementById('journalForm').addEventListener('submit', function(e) {
+            const amounts = document.querySelectorAll('.line-amount');
+            if (amounts.length === 0) {
+                e.preventDefault();
+                alert('Add at least one journal line.');
+                return;
+            }
+        });
+    </script>
+}

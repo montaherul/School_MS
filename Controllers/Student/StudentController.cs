@@ -8,6 +8,7 @@ using SchoolManagementSystem.Models.ViewModels.Student;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.Services.Interfaces.Website;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Student;
@@ -20,18 +21,21 @@ public class StudentController : Controller
     private readonly ISectionService _sectionService;
     private readonly ISchoolClassService _classService;
     private readonly IFileStorageService _fileStorage;
+    private readonly ISchoolWebsiteService _websiteService;
     public StudentController(
         IStudentService studentService,
         ITeacherService teacherService,
         ISectionService sectionService,
         ISchoolClassService classService,
-        IFileStorageService fileStorage)
+        IFileStorageService fileStorage,
+        ISchoolWebsiteService websiteService)
     {
         _studentService = studentService;
         _teacherService = teacherService;
         _sectionService = sectionService;
         _classService = classService;
         _fileStorage = fileStorage;
+        _websiteService = websiteService;
     }
 
     [RequirePermission("Student.View")]
@@ -154,6 +158,9 @@ public class StudentController : Controller
 
         var classes = await _classService.GetAllAsync(ct);
         ViewBag.Classes = classes;
+
+        var settings = await _websiteService.GetSettingsAsync(ct);
+        ViewBag.GroupStartsFromClassId = settings?.GroupStartsFromClassId ?? 9;
 
         var sections = await _sectionService.GetByClassIdAsync(0, null, ct); // Get all or handle by class
         var selectList = sections.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem

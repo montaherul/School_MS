@@ -113,3 +113,68 @@ public enum InterviewResult
     Failed = 4,
     Rescheduled = 5
 }
+
+// FIN-02: Enterprise Accounting Enums
+public enum AccountType
+{
+    Asset = 1,
+    Liability = 2,
+    Income = 3,
+    Expense = 4,
+    Equity = 5
+}
+
+public enum JournalEntryType
+{
+    Manual = 1,
+    FeeCollection = 2,
+    BankReceipt = 3,
+    BankPayment = 4,
+    Contra = 5,
+    OpeningBalance = 6,
+    ClosingEntry = 7,
+    Adjustment = 8
+}
+
+public enum FinancialPeriodStatus
+{
+    Open = 1,
+    Locked = 2,
+    Closed = 3
+}
+
+public enum BankTransactionType
+{
+    Deposit = 1,
+    Withdrawal = 2,
+    Transfer = 3,
+    Charge = 4,
+    Reconciliation = 5
+}
+
+public enum BankAccountType
+{
+    Cash = 1,
+    BankAccount = 2,
+    Bkash = 3,
+    Nagad = 4,
+    Rocket = 5
+}
+
+public enum JournalLineType
+{
+    Debit = 1,
+    Credit = 2
+}
+
+public enum OnlinePaymentRequestStatus { Pending = 1, Verified = 2, Rejected = 3, GatewayPending = 4 }
+
+public enum PaymentPurpose
+{
+    AdmissionFee = 1,
+    StudentFee = 2,
+    TransportFee = 3,
+    HostelFee = 4,
+    LibraryFine = 5,
+    Other = 6
+}

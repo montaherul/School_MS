@@ -1,0 +1,50 @@
+@model FinancialPeriodViewModel
+
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Financial Period" : "New Financial Period";
+}
+
+<div class="adm-page">
+    <div class="ws-mb-4">
+        <a href="/Accounting/FinancialPeriod" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back</a>
+    </div>
+
+    <div class="adm-card" style="max-width:560px;">
+        <div class="adm-card__header">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-@(Model.IsEditMode ? "pencil" : "plus-circle") ws-me-2"></i>@ViewData["Title"]</h5>
+        </div>
+        <div class="adm-card__body">
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="ws-row ws-g-3">
+                    <div class="ws-col-12">
+                        <label class="adm-form-label">Period Name</label>
+                        <input asp-for="Name" class="adm-input" required placeholder="e.g. FY 2026-2027" />
+                        <span asp-validation-for="Name" class="ws-text-danger ws-fs-12"></span>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Start Date</label>
+                        <input asp-for="StartDate" class="adm-input" type="date" required />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">End Date</label>
+                        <input asp-for="EndDate" class="adm-input" type="date" required />
+                    </div>
+                    <div class="ws-col-12">
+                        <div class="ws-form-check">
+                            <input asp-for="IsActive" class="ws-form-check-input" />
+                            <label class="ws-fw-700" for="IsActive">Active</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ws-text-end ws-mt-3 ws-pt-3 ws-border-top">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save</button>
+                    <a href="/Accounting/FinancialPeriod" class="adm-btn adm-btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

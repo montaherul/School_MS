@@ -4,6 +4,7 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
 using System.Security.Claims;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
@@ -16,7 +17,8 @@ public class FeeWaiverController : Controller
     private readonly IFeeWaiverService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
-    public FeeWaiverController(IFeeWaiverService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
+    private readonly IFinancePostingService _postingService;
+    public FeeWaiverController(IFeeWaiverService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; }
 
     [RequirePermission("FeeWaivers.Read")]
     public IActionResult Index() { return View(); }
@@ -96,8 +98,12 @@ public class FeeWaiverController : Controller
     public async Task<IActionResult> Approve(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        var dto = await _service.GetForEditAsync(id);
+        if (dto == null) return NotFound();
+        if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
         await _service.ApproveAsync(id, userId);
-        TempData["SuccessMessage"] = "Waiver approved.";
+        await _postingService.PostFeeWaiverAsync(dto.StudentId, dto.WaiverAmount, dto.Reason ?? "Waiver approved", userId);
+        TempData["SuccessMessage"] = "Waiver approved and posted to General Ledger.";
         return RedirectToAction(nameof(Index));
     }
 

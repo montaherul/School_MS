@@ -21,6 +21,7 @@ using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Entities.Transport;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Website;
+using SchoolManagementSystem.Models.Entities.Accounting;
 
 
 namespace SchoolManagementSystem.Data;
@@ -111,6 +112,9 @@ public class SchoolDbContext : DbContext
     public DbSet<FeeRefund> FeeRefunds => Set<FeeRefund>();
     public DbSet<FeeLedger> FeeLedgers => Set<FeeLedger>();
     public DbSet<FeeCollectionSummary> FeeCollectionSummaries => Set<FeeCollectionSummary>();
+    public DbSet<OnlinePaymentRequest> OnlinePaymentRequests => Set<OnlinePaymentRequest>();
+    public DbSet<PaymentGatewayTransaction> PaymentGatewayTransactions => Set<PaymentGatewayTransaction>();
+    public DbSet<AdmissionReceipt> AdmissionReceipts => Set<AdmissionReceipt>();
     public DbSet<LateFeeRule> LateFeeRules => Set<LateFeeRule>();
     public DbSet<FineRule> FineRules => Set<FineRule>();
     public DbSet<Notice> Notices => Set<Notice>();
@@ -197,6 +201,14 @@ public class SchoolDbContext : DbContext
     public DbSet<ClassPromotionRule> ClassPromotionRules => Set<ClassPromotionRule>();
     public DbSet<ResultLock> ResultLocks => Set<ResultLock>();
     public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
+
+    // FIN-02: Enterprise Accounting DbSets
+    public DbSet<ChartOfAccount> ChartOfAccounts => Set<ChartOfAccount>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<JournalEntryLine> JournalEntryLines => Set<JournalEntryLine>();
+    public DbSet<GeneralLedgerEntry> GeneralLedgerEntries => Set<GeneralLedgerEntry>();
+    public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
+    public DbSet<FinancialPeriod> FinancialPeriods => Set<FinancialPeriod>();
 
     // Phase 5: Dynamic Result Policy & Promotion Engine DbSets
     public DbSet<ResultPolicy> ResultPolicies => Set<ResultPolicy>();
@@ -836,6 +848,64 @@ modelBuilder.Entity<AdmitCard>()
             .WithMany(x => x.History)
             .HasForeignKey(x => x.WorkflowInstanceId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // FIN-02: Accounting Entity Configurations
+        modelBuilder.Entity<ChartOfAccount>(entity =>
+        {
+            entity.Property(e => e.OpeningBalance).HasPrecision(18, 2);
+            entity.HasIndex(e => e.AccountCode).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasOne<ChartOfAccount>().WithMany().HasForeignKey(e => e.ParentAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<JournalEntry>(entity =>
+        {
+            entity.HasIndex(e => e.JournalNo).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasOne<FinancialPeriod>().WithMany().HasForeignKey(e => e.FinancialPeriodId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<JournalEntryLine>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.HasOne<JournalEntry>().WithMany().HasForeignKey(e => e.JournalEntryId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<ChartOfAccount>().WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.JournalEntryId, e.AccountId }).HasFilter("[IsDeleted] = 0");
+        });
+
+        modelBuilder.Entity<GeneralLedgerEntry>(entity =>
+        {
+            entity.Property(e => e.DebitAmount).HasPrecision(18, 2);
+            entity.Property(e => e.CreditAmount).HasPrecision(18, 2);
+            entity.Property(e => e.RunningBalance).HasPrecision(18, 2);
+            entity.HasOne<ChartOfAccount>().WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<JournalEntry>().WithMany().HasForeignKey(e => e.JournalEntryId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne<FinancialPeriod>().WithMany().HasForeignKey(e => e.FinancialPeriodId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.AccountId, e.EntryDate });
+        });
+
+        modelBuilder.Entity<BankTransaction>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.HasOne<ChartOfAccount>().WithMany().HasForeignKey(e => e.AccountId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<FinancialPeriod>().WithMany().HasForeignKey(e => e.FinancialPeriodId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.AccountId, e.TransactionDate });
+            entity.HasIndex(e => e.ReferenceNo).HasFilter("[ReferenceNo] IS NOT NULL");
+        });
+
+        modelBuilder.Entity<FinancialPeriod>(entity =>
+        {
+            entity.HasIndex(e => e.Name).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
+        modelBuilder.Entity<OnlinePaymentRequest>(entity =>
+        {
+            entity.HasIndex(e => e.AdmissionApplicationId).HasFilter("[AdmissionApplicationId] IS NOT NULL");
+        });
+
+        modelBuilder.Entity<AdmissionReceipt>(entity =>
+        {
+            entity.HasIndex(e => e.ReceiptNo).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.AdmissionApplicationId);
+        });
 
 DbInitializer.Seed(modelBuilder);
     }

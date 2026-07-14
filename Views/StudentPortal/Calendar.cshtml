@@ -1,0 +1,203 @@
+@{
+    ViewData["Title"] = "Academic Calendar";
+}
+
+<link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
+
+<div class="adm-page">
+
+    <div class="gp-cal-hero d-flex align-items-center justify-content-between">
+        <div>
+            <h2><i class="bi bi-calendar3"></i>Academic Calendar</h2>
+            <p>View school holidays, exam schedules, and events</p>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i>Dashboard
+        </a>
+    </div>
+
+    <div class="ac-stats" id="statsContainer"></div>
+
+    <div class="adm-table-card mb-4">
+        <div class="p-4">
+            <div class="ac-month-nav">
+                <button class="ac-month-nav__btn" id="prevMonth" title="Previous month"><i class="bi bi-chevron-left"></i></button>
+                <h3 class="ac-month-nav__title" id="monthTitle">Loading...</h3>
+                <button class="ac-month-nav__btn" id="nextMonth" title="Next month"><i class="bi bi-chevron-right"></i></button>
+                <button class="ac-month-nav__today" id="todayBtn"><i class="bi bi-dot"></i> Today</button>
+            </div>
+
+            <div class="ac-filters__quick mb-3" id="filterBar">
+                <button type="button" class="ac-filters__quick-btn ac-filters__quick-btn--active" data-cat="all">All</button>
+                <button type="button" class="ac-filters__quick-btn" data-cat="exam">Exams</button>
+                <button type="button" class="ac-filters__quick-btn" data-cat="holiday">Holidays</button>
+                <button type="button" class="ac-filters__quick-btn" data-cat="website_event">Website Events</button>
+                <button type="button" class="ac-filters__quick-btn" data-cat="academic">Academic Events</button>
+            </div>
+
+            <div class="ac-calendar-wrapper">
+                <div id="calGrid">
+                    <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading calendar...</div>
+                </div>
+            </div>
+
+            <div class="ac-legend">
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--event"></span> Academic Event</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--webevent"></span> Website Event</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="p-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-calendar-event fs-5" style="color:var(--ac-exam)"></i>
+                <h5 class="fw-bold mb-0">Upcoming Events</h5>
+            </div>
+            <div id="upcomingList"></div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .gp-cal-hero {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        border-radius: 16px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        color: #fff;
+    }
+    .gp-cal-hero h2 { font-weight: 800; margin: 0 0 6px; font-size: 26px; }
+    .gp-cal-hero p { color: rgba(255,255,255,0.6); margin: 0; font-size: 14px; }
+    .gp-cal-hero i { margin-right: 10px; opacity: 0.8; }
+</style>
+}
+
+@section Scripts {
+    <script src="~/js/academic-calendar.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            var currentYear = new Date().getFullYear();
+            var currentMonth = new Date().getMonth();
+            var allEvents = [];
+
+            function renderGrid() {
+                AcademicCalendar.renderMonthGrid(currentYear, currentMonth, allEvents, 'calGrid');
+            }
+
+            function loadMonth(year, month) {
+                AcademicCalendar.showLoading('calGrid');
+                fetch('/api/website/academic-calendar?year=' + year + '&month=' + (month + 1))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        allEvents = data;
+                        document.getElementById('monthTitle').textContent = monthNames[month] + ' ' + year;
+                        renderGrid();
+                    });
+            }
+
+            document.getElementById('prevMonth').addEventListener('click', function () {
+                currentMonth--;
+                if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                loadMonth(currentYear, currentMonth);
+            });
+            document.getElementById('nextMonth').addEventListener('click', function () {
+                currentMonth++;
+                if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                loadMonth(currentYear, currentMonth);
+            });
+            document.getElementById('todayBtn').addEventListener('click', function () {
+                currentYear = new Date().getFullYear();
+                currentMonth = new Date().getMonth();
+                loadMonth(currentYear, currentMonth);
+            });
+
+            document.getElementById('filterBar').addEventListener('click', function (e) {
+                var btn = e.target.closest('.ac-filters__quick-btn');
+                if (!btn) return;
+                document.querySelectorAll('#filterBar .ac-filters__quick-btn').forEach(function (b) {
+                    b.classList.remove('ac-filters__quick-btn--active');
+                });
+                btn.classList.add('ac-filters__quick-btn--active');
+                AcademicCalendar.activeFilter = btn.getAttribute('data-cat');
+                renderGrid();
+            });
+
+            function loadUpcoming() {
+                var list = document.getElementById('upcomingList');
+                AcademicCalendar.showLoading('upcomingList');
+                fetch('/api/website/academic-calendar/upcoming?count=8')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || data.length === 0) {
+                            list.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-calendar-check fs-2 d-block mb-2"></i>No upcoming events</div>';
+                            return;
+                        }
+                        var html = data.map(function (ev, idx) {
+                            var ti = AcademicCalendar.getTypeInfo(ev);
+                            var hasRange = ev.startDate && ev.endDate;
+                            var dateLabel = hasRange ? ev.startDate + ' \u2013 ' + ev.endDate : (ev.date || '');
+                            return '<div class="d-flex align-items-center gap-3 py-3 border-bottom" style="cursor:pointer" data-idx="' + idx + '">' +
+                                '<div class="text-center flex-shrink-0" style="min-width:52px">' +
+                                '<div class="fw-bold fs-5" style="color:var(--adm-text)">' + (ev.date ? ev.date.split(' ')[0] : '--') + '</div>' +
+                                '<div class="small text-uppercase text-muted" style="font-size:10px;font-weight:700">' + (ev.date ? (ev.date.split(' ')[1] || '').substring(0, 3) : '') + '</div>' +
+                                '</div>' +
+                                '<div class="flex-grow-1 min-width-0">' +
+                                '<div class="fw-semibold">' + AcademicCalendar.escapeHtml(ev.title || '') + '</div>' +
+                                (ev.description ? '<div class="small text-muted">' + AcademicCalendar.escapeHtml(ev.description) + '</div>' : '') +
+                                '<div class="mt-1"><span class="badge rounded-pill px-2 py-1" style="background:' + ti.color + '20;color:' + ti.color + ';font-weight:600;font-size:10px">' + (ti.shortLabel || ti.label) + '</span></div>' +
+                                '</div></div>';
+                        }).join('');
+                        list.innerHTML = html;
+                        list.querySelectorAll('[data-idx]').forEach(function (el) {
+                            el.addEventListener('click', function () {
+                                var idx = parseInt(el.getAttribute('data-idx'));
+                                if (!isNaN(idx) && data[idx]) AcademicCalendar.showEventModal(data[idx]);
+                            });
+                        });
+                    });
+            }
+
+            function loadStats() {
+                var container = document.getElementById('statsContainer');
+                fetch('/api/website/academic-calendar/upcoming?count=100')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var totalEvents = data.length;
+                        var totalExams = 0, totalHolidays = 0, totalWeb = 0, totalAc = 0;
+                        data.forEach(function (item) {
+                            if (item.source === 'exam' || item.isExamDay) totalExams++;
+                            if (item.isHoliday) totalHolidays++;
+                            if (item.isWebsiteEvent || item.source === 'website_event') totalWeb++;
+                            if (item.source === 'academic' && !item.isHoliday && !item.isExamDay) totalAc++;
+                        });
+                        var cards = [
+                            { icon: 'bi-calendar-check', css: 'working',  label: 'Total Events',  value: totalEvents },
+                            { icon: 'bi-pencil-square',  css: 'exam',     label: 'Exams',         value: totalExams },
+                            { icon: 'bi-snow',           css: 'holiday',  label: 'Holidays',      value: totalHolidays },
+                            { icon: 'bi-globe',          css: 'webevent', label: 'Website Events',value: totalWeb },
+                            { icon: 'bi-star',           css: 'event',    label: 'Academic Events',value: totalAc }
+                        ];
+                        var html = cards.map(function (c) {
+                            return '<div class="ac-stat">' +
+                                '<div class="ac-stat__icon ac-stat__icon--' + c.css + '"><i class="bi ' + c.icon + '"></i></div>' +
+                                '<div class="ac-stat__body"><div class="ac-stat__label">' + c.label + '</div><div class="ac-stat__value">' + c.value + '</div></div>' +
+                                '</div>';
+                        }).join('');
+                        container.innerHTML = html;
+                    })
+                    .catch(function () { container.innerHTML = ''; });
+            }
+
+            loadMonth(currentYear, currentMonth);
+            loadUpcoming();
+            loadStats();
+        })();
+    </script>
+}

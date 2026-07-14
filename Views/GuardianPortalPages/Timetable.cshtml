@@ -1,0 +1,128 @@
+@model RoutineStudentViewModel
+@{
+    ViewData["Title"] = "Timetable";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Timetable</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="ws-row ws-g-4 ws-mb-4">
+        @foreach (var stat in Model.Statistics)
+        {
+            <div class="ws-col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--@stat.IconClass">
+                        <i class="bi bi-@stat.Icon"></i>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__value">@stat.Value</div>
+                        <div class="dash-stat-card__label">@stat.Label</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__header">
+            <h3>Weekly Timetable</h3>
+            <div class="ws-flex ws-gap-2">
+                <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+        </div>
+        <div class="adm-card__body">
+            <div id="guardian-routine-grid"></div>
+        </div>
+    </div>
+
+    @if (Model.TodayClasses != null && Model.TodayClasses.Count > 0)
+    {
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <h3>Today's Classes</h3>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-table-wrapper">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th class="ws-fs-13">Period</th>
+                                <th class="ws-fs-13">Subject</th>
+                                <th class="ws-fs-13">Teacher</th>
+                                <th class="ws-fs-13">Room</th>
+                                <th class="ws-fs-13">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cls in Model.TodayClasses)
+                            {
+                                <tr>
+                                    <td class="ws-fw-600">@cls.PeriodName</td>
+                                    <td>@cls.SubjectName</td>
+                                    <td>@cls.TeacherName</td>
+                                    <td>@cls.RoomNo</td>
+                                    <td class="adm-cell-mono">@cls.StartTime - @cls.EndTime</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        var columns = [
+            { title: "Period", field: "periodName", width: 100, cssClass: "fw-semibold" },
+            { title: "Saturday", field: "sat", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Sunday", field: "sun", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Monday", field: "mon", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Tuesday", field: "tue", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Wednesday", field: "wed", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Thursday", field: "thu", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            },
+            { title: "Friday", field: "fri", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '\u2014'; }
+            }
+        ];
+
+        var table = new Tabulator("#guardian-routine-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeeklyGrid)),
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week ws-fs-48'></i><div class='dash-empty__title'>No Timetable Found</div><div class='dash-empty__sub'>The timetable has not been published yet.</div></div>"
+        });
+    </script>
+}

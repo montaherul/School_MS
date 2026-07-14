@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Services.Implementations.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -32,9 +33,15 @@ public class Phase41B3_FeeLedgerTests
     private readonly List<FeeWaiver> _waivers = new();
     private readonly List<FeeDiscount> _discounts = new();
     private readonly List<FeeRefund> _refunds = new();
+    private readonly IAuditLogService _auditServiceMock;
 
     public Phase41B3_FeeLedgerTests()
     {
+        var auditMock = new Mock<IAuditLogService>();
+        auditMock.Setup(a => a.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _auditServiceMock = auditMock.Object;
+
         _uowMock.Setup(u => u.Repository<FeeInvoice>()).Returns(_invoiceBaseRepoMock.Object);
         _uowMock.Setup(u => u.Repository<Payment>()).Returns(_paymentBaseRepoMock.Object);
         _uowMock.Setup(u => u.Repository<FeeLedger>()).Returns(_ledgerBaseRepoMock.Object);
@@ -85,7 +92,7 @@ public class Phase41B3_FeeLedgerTests
     [Fact(DisplayName = "1. Invoice creation creates FeeLedger entry")]
     public async Task InvoiceCreation_CreatesLedger()
     {
-        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object);
+        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
         var invoice = new FeeInvoice { Id = 1, StudentId = 10, InvoiceNo = "INV-001", TotalAmount = 5000 };
 
         await svc.CreateAsync(invoice, "test-user");
@@ -109,7 +116,7 @@ public class Phase41B3_FeeLedgerTests
         _invoiceBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 2000, Method = 1, PaidAt = DateTime.UtcNow, ReferenceNo = "PAY-001" };
 
         await svc.CreateAsync(dto, "test-user");
@@ -140,7 +147,7 @@ public class Phase41B3_FeeLedgerTests
         _paymentBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Payment, bool>>>(e => true), It.IsAny<CancellationToken>()))
             .ReturnsAsync(_payments.First());
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto = new FeePaymentUpsertDto { Id = 1, FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow, ReferenceNo = "PAY-001" };
 
         await svc.UpdateAsync(dto, "test-user");
@@ -165,7 +172,7 @@ public class Phase41B3_FeeLedgerTests
         _paymentBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Payment, bool>>>(e => true), It.IsAny<CancellationToken>()))
             .ReturnsAsync(payment);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         await svc.DeleteAsync(1, "test-user");
 
         var reversal = _ledgerEntries.SingleOrDefault(e => e.Description != null && e.Description.Contains("reversal"));
@@ -190,7 +197,7 @@ public class Phase41B3_FeeLedgerTests
             })
             .Returns(Task.CompletedTask);
 
-        var svc = new FeeWaiverService(_uowMock.Object, _waiverRepoMock.Object);
+        var svc = new FeeWaiverService(_uowMock.Object, _waiverRepoMock.Object, _auditServiceMock);
         var dto = new FeeWaiverUpsertDto { StudentId = 10, FeeInvoiceId = 1, WaiverAmount = 1000, IsApproved = true };
 
         await svc.CreateAsync(dto, "test-user");
@@ -230,7 +237,7 @@ public class Phase41B3_FeeLedgerTests
             .ReturnsAsync((Expression<Func<FeeRefund, bool>> expr, CancellationToken ct) =>
                 _refunds.AsQueryable().FirstOrDefault(expr));
 
-        var svc = new FeeRefundService(_uowMock.Object, _refundRepoMock.Object);
+        var svc = new FeeRefundService(_uowMock.Object, _refundRepoMock.Object, _auditServiceMock);
 
         var dto = new FeeRefundUpsertDto { FeePaymentId = 1, RefundAmount = 500, ReferenceNo = "REF-001", IsApproved = false };
         await svc.CreateAsync(dto, "test-user");
@@ -259,7 +266,7 @@ public class Phase41B3_FeeLedgerTests
             })
             .Returns(Task.CompletedTask);
 
-        var svc = new FeeDiscountService(_uowMock.Object, _discountRepoMock.Object);
+        var svc = new FeeDiscountService(_uowMock.Object, _discountRepoMock.Object, _auditServiceMock);
         var dto = new FeeDiscountUpsertDto { Name = "Early Bird", Value = 500, DiscountType = 1 };
 
         await svc.CreateAsync(dto, "test-user");
@@ -291,7 +298,7 @@ public class Phase41B3_FeeLedgerTests
         _paymentBaseRepoMock.Setup(r => r.AddAsync(It.IsAny<Payment>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("DB failure"));
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 2000, Method = 1, PaidAt = DateTime.UtcNow };
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
@@ -307,7 +314,7 @@ public class Phase41B3_FeeLedgerTests
         _invoiceBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow };
 
         await svc.CreateAsync(dto, "test-user");
@@ -321,7 +328,7 @@ public class Phase41B3_FeeLedgerTests
     [Fact(DisplayName = "10. Invoice ledger entry contains InvoiceNo in description")]
     public async Task InvoiceLedger_HasInvoiceNo()
     {
-        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object);
+        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
         var invoice = new FeeInvoice { Id = 1, StudentId = 10, InvoiceNo = "INV-2024-001", TotalAmount = 7500 };
 
         await svc.CreateAsync(invoice, "test-user");
@@ -339,7 +346,7 @@ public class Phase41B3_FeeLedgerTests
         _invoiceBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 2000, Method = 1, PaidAt = DateTime.UtcNow, ReferenceNo = "PAY-REF-001" };
 
         await svc.CreateAsync(dto, "test-user");
@@ -357,10 +364,10 @@ public class Phase41B3_FeeLedgerTests
         _invoiceBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeeInvoice, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(invoice);
 
-        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object);
+        var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
         await svc.CreateAsync(invoice, "test-user");
 
-        var paymentSvc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var paymentSvc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto1 = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow, ReferenceNo = "P1" };
         await paymentSvc.CreateAsync(dto1, "test-user");
 

@@ -62,7 +62,7 @@ public class ResultValidationService : IResultValidationService
 
         var classIds = request.ClassIds ?? [exam.ClassId];
 
-        var students = await _uow.Repository<Student>().QueryNoTracking()
+        var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().QueryNoTracking()
             .Where(s => classIds.Contains(s.ClassId) && s.Status == StudentStatus.Active)
             .ToListAsync(ct);
 

@@ -153,7 +153,7 @@ public class TransferService : ITransferService
 
             // 2. Update Student
             var now = DateTime.UtcNow;
-            await _uow.Repository<Student>().Query()
+            await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
                 .Where(s => s.Id == dto.StudentId && !s.IsDeleted)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(x => x.ClassId, dto.NewClassId)

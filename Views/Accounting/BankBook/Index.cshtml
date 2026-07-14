@@ -1,0 +1,109 @@
+@{
+    ViewData["Title"] = "Bank Book";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-wallet2 ws-me-2"></i>Bank Book</h4>
+            <p class="adm-header__desc">Cash and bank transaction register</p>
+        </div>
+        <div class="adm-header__actions">
+            <a href="/Accounting/BankBook/Create" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i>New Transaction</a>
+            <a href="/Accounting/BankBook/Reconciliation" class="adm-btn adm-btn--secondary"><i class="bi bi-arrow-repeat ws-me-1"></i>Reconciliation</a>
+        </div>
+    </div>
+
+    <div class="ws-row ws-g-3 ws-mb-4" id="summary-cards">
+        <div class="ws-col-6 ws-col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-cash-stack"></i></div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__label">Opening Balance</div>
+                    <div class="dash-stat-card__value" id="sum-opening">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-6 ws-col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-arrow-down-circle"></i></div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__label">Deposits</div>
+                    <div class="dash-stat-card__value ws-text-success" id="sum-deposits">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-6 ws-col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--danger"><i class="bi bi-arrow-up-circle"></i></div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__label">Withdrawals</div>
+                    <div class="dash-stat-card__value ws-text-danger" id="sum-withdrawals">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="ws-col-6 ws-col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-cash-coin"></i></div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__label">Closing Balance</div>
+                    <div class="dash-stat-card__value" id="sum-closing">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="ws-p-3">
+            <div id="bankbook-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let grid;
+
+        async function loadSummary() {
+            try {
+                const r = await fetch('/Accounting/BankBook/GetSummary');
+                const d = await r.json();
+                document.getElementById('sum-opening').textContent = '৳' + d.openingBalance.toLocaleString(undefined, {minimumFractionDigits:2});
+                document.getElementById('sum-deposits').textContent = '৳' + d.totalDeposits.toLocaleString(undefined, {minimumFractionDigits:2});
+                document.getElementById('sum-withdrawals').textContent = '৳' + d.totalWithdrawals.toLocaleString(undefined, {minimumFractionDigits:2});
+                document.getElementById('sum-closing').textContent = '৳' + d.closingBalance.toLocaleString(undefined, {minimumFractionDigits:2});
+            } catch(e) {}
+        }
+
+        function loadGrid() {
+            if (grid) { grid.replaceData(); return; }
+            grid = new Tabulator("#bankbook-grid", {
+                ajaxURL: "/Accounting/BankBook/GetList",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No transactions found",
+                columns: [
+                    { title: "Date", field: "transactionDate", width: 110, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Type", field: "bankAccountType", width: 90 },
+                    { title: "Tx Type", field: "transactionType", width: 110,
+                        formatter: function(c) {
+                            const v = c.getValue();
+                            const colors = {Deposit: "success", Withdrawal: "danger", Transfer: "info", Charge: "warning", Reconciliation: "secondary"};
+                            return `<span class="adm-badge adm-badge--${colors[v]||'secondary'}">${v}</span>`;
+                        }
+                    },
+                    { title: "Description", field: "description", widthGrow: 2 },
+                    { title: "Amount", field: "amount", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Reference", field: "referenceNo", width: 130 },
+                    { title: "Party", field: "counterParty", width: 120 },
+                    { title: "Balance", field: "runningBalance", width: 130, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } }
+                ]
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { loadSummary(); loadGrid(); });
+    </script>
+}

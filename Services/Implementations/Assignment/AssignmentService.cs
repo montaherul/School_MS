@@ -21,7 +21,7 @@ public class AssignmentService : BaseService<AssignmentTask>, IAssignmentService
     {
         if (isStudent)
         {
-            var student = await _unitOfWork.Repository<Student>().Query().AsNoTracking().FirstOrDefaultAsync(s => s.UserId == userId && !s.IsDeleted, ct);
+            var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking().FirstOrDefaultAsync(s => s.UserId == userId && !s.IsDeleted, ct);
             if (student != null) return query.Where(a => a.SchoolClassId == student.ClassId && a.SectionId == student.SectionId);
             return query.Where(a => false);
         }

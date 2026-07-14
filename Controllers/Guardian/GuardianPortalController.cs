@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.Entities.Fees;
@@ -55,6 +56,7 @@ public class GuardianPortalController : Controller
 
     [HttpGet("Dashboard")]
     [HttpGet("Dashboard/{studentId:int?}")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Dashboard(int? studentId, CancellationToken cancellationToken)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -88,6 +90,7 @@ public class GuardianPortalController : Controller
         }
     }
     [HttpGet("SwitchChild/{studentId:int}")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> SwitchChild(int studentId, CancellationToken cancellationToken)
     {
         var userId = CurrentUserId();

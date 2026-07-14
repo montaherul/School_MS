@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "General Ledger";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-book ws-me-2"></i>General Ledger</h4>
+            <p class="adm-header__desc">View all posted transactions across accounts</p>
+        </div>
+    </div>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__body">
+            <form id="filter-form" class="ws-flex-wrap ws-gap-2 ws-items-end">
+                <div style="min-width:200px;">
+                    <label class="adm-form-label">Account</label>
+                    <select id="filter-account" class="adm-input">
+                        <option value="">All Accounts</option>
+                    </select>
+                </div>
+                <div style="min-width:160px;">
+                    <label class="adm-form-label">From</label>
+                    <input id="filter-from" type="date" class="adm-input" />
+                </div>
+                <div style="min-width:160px;">
+                    <label class="adm-form-label">To</label>
+                    <input id="filter-to" type="date" class="adm-input" />
+                </div>
+                <div style="min-width:160px;">
+                    <label class="adm-form-label">Period</label>
+                    <select id="filter-period" class="adm-input">
+                        <option value="">All Periods</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="button" class="adm-btn adm-btn--primary" onclick="applyFilter()"><i class="bi bi-search ws-me-1"></i>Search</button>
+                    <button type="button" class="adm-btn adm-btn--ghost" onclick="resetFilter()">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="ws-p-3">
+            <div id="ledger-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let grid;
+
+        async function loadFilterOptions() {
+            const r = await fetch('/Accounting/GeneralLedger/FilterOptions');
+            const d = await r.json();
+            const acctSel = document.getElementById('filter-account');
+            d.accounts.forEach(a => {
+                acctSel.innerHTML += `<option value="${a.id}">${a.accountCode} - ${a.accountName}</option>`;
+            });
+            const periodSel = document.getElementById('filter-period');
+            d.periods.forEach(p => {
+                periodSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+        }
+
+        function applyFilter() {
+            if (grid) {
+                grid.setData('/Accounting/GeneralLedger/GetList', {
+                    page: 1, size: 10,
+                    accountId: document.getElementById('filter-account').value || null,
+                    from: document.getElementById('filter-from').value || null,
+                    to: document.getElementById('filter-to').value || null,
+                    periodId: document.getElementById('filter-period').value || null
+                });
+            }
+        }
+
+        function resetFilter() {
+            document.getElementById('filter-account').value = '';
+            document.getElementById('filter-from').value = '';
+            document.getElementById('filter-to').value = '';
+            document.getElementById('filter-period').value = '';
+            applyFilter();
+        }
+
+        function loadGrid() {
+            if (grid) { grid.replaceData(); return; }
+            grid = new Tabulator("#ledger-grid", {
+                ajaxURL: "/Accounting/GeneralLedger/GetList",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No ledger entries found",
+                columns: [
+                    { title: "Date", field: "entryDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Account", field: "accountName", widthGrow: 2 },
+                    { title: "Journal", field: "journalNo", width: 140 },
+                    { title: "Description", field: "description", widthGrow: 2 },
+                    { title: "Debit", field: "debitAmount", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Credit", field: "creditAmount", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Balance", field: "runningBalance", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } }
+                ]
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { loadFilterOptions(); loadGrid(); });
+    </script>
+}

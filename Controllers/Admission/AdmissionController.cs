@@ -54,9 +54,28 @@ public class AdmissionController : Controller
     public IActionResult ApplySuccess()
     {
         ViewBag.ApplicationNo = TempData["ApplicationNo"] as string;
+        ViewBag.ApplicationId = TempData["ApplicationId"] as int?;
+        ViewBag.PaymentMethod = TempData["PaymentMethod"] as string;
         if (string.IsNullOrEmpty(ViewBag.ApplicationNo))
             return RedirectToAction("Apply");
         return View();
+    }
+
+    [HttpGet("PayOnline/{applicationId:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PayOnline(int applicationId, CancellationToken ct)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Public_Applicant";
+        try
+        {
+            var requestId = await _admissionFinanceService.CreateAdmissionOnlinePaymentAsync(applicationId, userId, ct);
+            return RedirectToAction("Init", "PaymentGateway", new { requestId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(ApplySuccess));
+        }
     }
 
     [HttpPost]
@@ -77,8 +96,17 @@ public class AdmissionController : Controller
         {
             // Anonymous applications are attributed to "Public_Applicant" or "System"
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Public_Applicant";
-            string applicationNo = await _admissionService.SubmitAsync(model, userId, ct);
-            TempData["ApplicationNo"] = applicationNo;
+            var (appNo, appId) = await _admissionService.SubmitAsync(model, userId, ct);
+            TempData["ApplicationNo"] = appNo;
+            TempData["ApplicationId"] = appId;
+
+            if (model.PayOnlineViaGateway)
+            {
+                model.PaymentMethod = "Online";
+                var requestId = await _admissionFinanceService.CreateAdmissionOnlinePaymentAsync(appId, userId, ct);
+                return RedirectToAction("Init", "PaymentGateway", new { requestId });
+            }
+
             return RedirectToAction(nameof(ApplySuccess));
         }
         catch (Exception ex)
@@ -130,6 +158,7 @@ public class AdmissionController : Controller
     public async Task<IActionResult> CreateEdit(int? id, CancellationToken ct)
     {
         ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+        ViewBag.GroupStartsFromClassId = await _admissionService.GetGroupStartThresholdAsync(ct);
 
         if (id.HasValue && id > 0)
         {
@@ -170,7 +199,7 @@ public class AdmissionController : Controller
             }
             else
             {
-                await _admissionService.SubmitAsync(model, userId, ct);
+                var _ = await _admissionService.SubmitAsync(model, userId, ct);
                 TempData["SuccessMessage"] = "Admission application submitted successfully.";
             }
         }

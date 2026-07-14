@@ -26,7 +26,7 @@ public class AcademicDashboardService : IAcademicDashboardService
         var today = DateOnly.FromDateTime(DateTime.Today);
         var currentYear = today.Year;
 
-        var totalStudents = await _uow.Repository<Student>().Query().AsNoTracking()
+        var totalStudents = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .CountAsync(s => !s.IsDeleted, ct);
         var totalTeachers = await _uow.Repository<EmployeeEntity>().Query().AsNoTracking()
             .CountAsync(e => !e.IsDeleted && e.IsTeachingStaff, ct);
@@ -100,7 +100,7 @@ public class AcademicDashboardService : IAcademicDashboardService
             })
             .ToListAsync(ct);
 
-        var studentDist = await _uow.Repository<Student>().Query().AsNoTracking()
+        var studentDist = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Where(s => !s.IsDeleted && s.ClassId != null)
             .GroupBy(s => s.ClassId)
             .Select(g => new { ClassId = g.Key, Count = g.Count() })
@@ -125,7 +125,7 @@ public class AcademicDashboardService : IAcademicDashboardService
             .Select(s => s.Id)
             .ToListAsync(ct);
 
-        var occupiedCounts = await _uow.Repository<Student>().Query().AsNoTracking()
+        var occupiedCounts = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Where(st => !st.IsDeleted && sectionIds.Contains(st.SectionId))
             .GroupBy(st => st.SectionId)
             .Select(g => new { SectionId = g.Key, Count = g.Count() })

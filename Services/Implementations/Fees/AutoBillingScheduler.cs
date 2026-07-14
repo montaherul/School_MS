@@ -117,7 +117,7 @@ public class AutoBillingScheduler : BackgroundService
         if (billedInvoices.Count == 0) return;
 
         var studentIds = billedInvoices.Select(i => i.StudentId).Distinct().ToList();
-        var students = await uow.Repository<Student>().Query()
+        var students = await uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .Where(s => studentIds.Contains(s.Id) && !s.IsDeleted)
             .Select(s => new { s.Id, s.FullName })
             .ToListAsync(ct);

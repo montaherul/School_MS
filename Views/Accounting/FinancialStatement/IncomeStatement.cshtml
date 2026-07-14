@@ -1,0 +1,71 @@
+@model IncomeStatementDto
+
+@{
+    ViewData["Title"] = "Income Statement";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-cash-stack ws-me-2"></i>Income Statement</h4>
+            <p class="adm-header__desc">@ViewBag.FromDate.ToString("dd MMM yyyy") - @ViewBag.ToDate.ToString("dd MMM yyyy")</p>
+        </div>
+        <div>
+            <span class="ws-fw-700 ws-fs-18 @(Model.NetProfit >= 0 ? "ws-text-success" : "ws-text-danger")">
+                @(Model.NetProfit >= 0 ? "Profit" : "Loss"): ৳@Math.Abs(Model.NetProfit).ToString("N2")
+            </span>
+        </div>
+    </div>
+
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-12 ws-col-md-6">
+            <div class="adm-table-card">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);background:var(--clr-success-bg);">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-success"><i class="bi bi-arrow-up-circle ws-me-2"></i>Income</h5>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        @foreach (var item in Model.Incomes)
+                        {
+                            <tr style="border-bottom:1px solid var(--adm-border);">
+                                <td style="padding:10px 18px;"><span class="ws-fw-600">@item.AccountCode</span> - @item.AccountName</td>
+                                <td style="padding:10px 18px;text-align:right;" class="ws-fw-600">৳@item.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tfoot>
+                            <tr style="border-top:2px solid var(--adm-border);font-weight:700;">
+                                <td style="padding:10px 18px;">Total Income</td>
+                                <td style="padding:10px 18px;text-align:right;">৳@Model.TotalIncome.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-col-12 ws-col-md-6">
+            <div class="adm-table-card">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);background:var(--clr-danger-bg);">
+                    <h5 class="ws-fw-700 ws-mb-0 ws-text-danger"><i class="bi bi-arrow-down-circle ws-me-2"></i>Expenses</h5>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        @foreach (var item in Model.Expenses)
+                        {
+                            <tr style="border-bottom:1px solid var(--adm-border);">
+                                <td style="padding:10px 18px;"><span class="ws-fw-600">@item.AccountCode</span> - @item.AccountName</td>
+                                <td style="padding:10px 18px;text-align:right;" class="ws-fw-600">৳@item.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        <tfoot>
+                            <tr style="border-top:2px solid var(--adm-border);font-weight:700;">
+                                <td style="padding:10px 18px;">Total Expense</td>
+                                <td style="padding:10px 18px;text-align:right;">৳@Model.TotalExpense.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

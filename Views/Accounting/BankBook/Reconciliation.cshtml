@@ -1,0 +1,75 @@
+@model List<BankReconciliationDto>
+
+@{
+    ViewData["Title"] = "Bank Reconciliation";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-arrow-repeat ws-me-2"></i>Bank Reconciliation</h4>
+            <p class="adm-header__desc">Mark unreconciled transactions as cleared</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="adm-card">
+            <div class="adm-card__body ws-text-center ws-py-4" style="color:var(--adm-text-3);">
+                <i class="bi bi-check-circle" style="font-size:48px;opacity:.4;display:block;margin-bottom:12px;"></i>
+                All transactions are reconciled.
+            </div>
+        </div>
+    }
+    else
+    {
+        <form method="post" action="/Accounting/BankBook/Reconcile">
+            @Html.AntiForgeryToken()
+            <div class="adm-table-card">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="background:var(--adm-bg-sub);border-bottom:2px solid var(--adm-border);">
+                                <th style="padding:12px 18px;text-align:center;width:40px;"><input type="checkbox" id="select-all" onchange="toggleAll()" /></th>
+                                <th style="padding:12px 18px;text-align:left;">Date</th>
+                                <th style="padding:12px 18px;text-align:left;">Description</th>
+                                <th style="padding:12px 18px;text-align:left;">Reference</th>
+                                <th style="padding:12px 18px;text-align:right;">Amount</th>
+                                <th style="padding:12px 18px;text-align:left;">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr style="border-bottom:1px solid var(--adm-border);">
+                                    <td style="padding:12px 18px;text-align:center;">
+                                        <input type="checkbox" name="transactionIds" value="@item.TransactionId" class="tx-check" />
+                                    </td>
+                                    <td style="padding:12px 18px;">@item.TransactionDate.ToString("dd MMM yyyy")</td>
+                                    <td style="padding:12px 18px;">@item.Description</td>
+                                    <td style="padding:12px 18px;">@item.ReferenceNo</td>
+                                    <td style="padding:12px 18px;text-align:right;" class="ws-fw-600">৳@item.Amount.ToString("N2")</td>
+                                    <td style="padding:12px 18px;">
+                                        <span class="adm-badge adm-badge--@(item.TransactionType == "Deposit" ? "success" : "danger")">@item.TransactionType</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="ws-text-end ws-mt-3">
+                <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check2-circle ws-me-1"></i> Reconcile Selected</button>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleAll() {
+            const checked = document.getElementById('select-all').checked;
+            document.querySelectorAll('.tx-check').forEach(c => c.checked = checked);
+        }
+    </script>
+}

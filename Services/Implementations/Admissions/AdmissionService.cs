@@ -132,7 +132,7 @@ public class AdmissionService : IAdmissionService
         return (items, totalCount, countsObj);
     }
 
-    public async Task<string> SubmitAsync(AdmissionCreateDto dto, string createdBy, CancellationToken cancellationToken = default)
+    public async Task<(string ApplicationNo, int ApplicationId)> SubmitAsync(AdmissionCreateDto dto, string createdBy, CancellationToken cancellationToken = default)
     {
         if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
         {
@@ -266,7 +266,7 @@ public class AdmissionService : IAdmissionService
                     catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
                 }
 
-                return application.ApplicationNo;
+                return (application.ApplicationNo, application.Id);
             }
             catch (DbUpdateException ex) when (attempt < maxRetries && ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
             {
@@ -308,7 +308,7 @@ public class AdmissionService : IAdmissionService
             if (schoolClass != null)
             {
                 var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
-                bool classRequiresGroup = settings != null && schoolClass.SortOrder >= settings.GroupStartsFromClassId;
+            bool classRequiresGroup = settings != null && settings.GroupStartsFromClassId > 0 && schoolClass.SortOrder >= settings.GroupStartsFromClassId;
                 if (classRequiresGroup && !dto.AppliedStudentGroupId.HasValue)
                     throw new InvalidOperationException("An academic group (Science, Humanities, Business Studies) is required for the selected class.");
                 if (!classRequiresGroup)

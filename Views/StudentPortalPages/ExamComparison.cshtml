@@ -1,0 +1,213 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
+@using SchoolManagementSystem.Models.Entities.Result
+@{
+    ViewData["Title"] = "Exam Comparison";
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var childName = ViewBag.StudentName as string ?? "";
+    var results = Model?.ToList() ?? new();
+    var subjectResults = ViewBag.SubjectResults as List<StudentSubjectResult> ?? new();
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bar-chart-steps"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Exam Comparison</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a href="@Url.Action("Results", "StudentPortalPages")" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Results
+        </a>
+    </div>
+
+    @if (results.Count < 2)
+    {
+        <div class="adm-table-card">
+            <div class="text-center py-5">
+                <i class="bi bi-bar-chart-steps fs-1 text-muted"></i>
+                <p class="text-muted mt-2">At least two exam results are required for comparison.</p>
+            </div>
+        </div>
+        return;
+    }
+
+    @{
+        var orderedResults = results.OrderBy(r => r.ExamId).ToList();
+        var examNames = orderedResults.Select(r => r.Exam?.Name ?? "Exam").ToList();
+        var gpas = orderedResults.Select(r => (double)r.Gpa).ToList();
+        var passedCounts = orderedResults.Select(r => r.PassedSubjectCount).ToList();
+        var failedCounts = orderedResults.Select(r => r.FailedSubjectCount).ToList();
+
+        var allSubjectIds = subjectResults
+            .Where(s => s.Subject != null)
+            .Select(s => s.SubjectId)
+            .Distinct()
+            .ToList();
+    }
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="adm-table-card border-start border-4 border-primary h-100">
+                <div class="p-3 text-center">
+                    <small class="text-muted">Exams Compared</small>
+                    <h3 class="fw-bold text-primary">@results.Count</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="adm-table-card border-start border-4 border-success h-100">
+                <div class="p-3 text-center">
+                    <small class="text-muted">Highest GPA</small>
+                    <h3 class="fw-bold text-success">@results.Max(r => r.Gpa).ToString("F2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="adm-table-card border-start border-4 border-warning h-100">
+                <div class="p-3 text-center">
+                    <small class="text-muted">Average GPA</small>
+                    <h3 class="fw-bold text-warning">@results.Average(r => r.Gpa).ToString("F2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="adm-table-card border-start border-4 border-info h-100">
+                <div class="p-3 text-center">
+                    <small class="text-muted">GPA Trend</small>
+                    <h3 class="fw-bold text-info">
+                        @if (gpas.Count > 1)
+                        {
+                            var diff = gpas.Last() - gpas.First();
+                            <span class="@(diff >= 0 ? "text-success" : "text-danger")">
+                                @(diff >= 0 ? "+" : "")@diff.ToString("F2")
+                            </span>
+                        }
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Side-by-Side Comparison</h5>
+        </div>
+        <div class="adm-table-card__body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead><tr><th style="min-width:120px;">Metric</th>@foreach (var r in orderedResults) { <th style="text-align:center;" class="fw-bold">@r.Exam?.Name</th> }</tr></thead>
+                    <tbody>
+                        <tr><td style="font-weight:600;">Total Marks</td>@foreach (var r in orderedResults) { <td style="text-align:center;">@r.TotalMarks.ToString("F0") / @r.TotalFullMarks.ToString("F0")</td> }</tr>
+                        <tr><td style="font-weight:600;">GPA</td>@foreach (var r in orderedResults) { <td style="text-align:center;font-weight:700;font-size:1.1em;" class="text-primary">@r.Gpa.ToString("F2")</td> }</tr>
+                        <tr><td style="font-weight:600;">Grade</td>@foreach (var r in orderedResults) { <td style="text-align:center;"><span class="adm-badge adm-badge--neutral">@r.Grade</span></td> }</tr>
+                        <tr><td style="font-weight:600;">Section Position</td>@foreach (var r in orderedResults) { <td style="text-align:center;">@(r.Position > 0 ? r.Position.ToString() : "-")</td> }</tr>
+                        <tr><td style="font-weight:600;">Class Position</td>@foreach (var r in orderedResults) { <td style="text-align:center;">@(r.ClassPosition > 0 ? r.ClassPosition.ToString() : "-")</td> }</tr>
+                        <tr><td style="font-weight:600;">Passed Subjects</td>@foreach (var r in orderedResults) { <td style="text-align:center;font-weight:600;" class="text-success">@r.PassedSubjectCount / @(r.PassedSubjectCount + r.FailedSubjectCount)</td> }</tr>
+                        <tr><td style="font-weight:600;">Status</td>@foreach (var r in orderedResults) { <td style="text-align:center;"><span class="adm-badge adm-badge--@(r.IsPassed ? "success" : "danger")">@(r.IsPassed ? "Pass" : "Fail")</span></td> }</tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="adm-table-card h-100">
+                <div class="px-4 py-3 border-bottom fw-bold"><h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2 text-success"></i>GPA Trend</h5></div>
+                <div class="p-4"><canvas id="comparisonGpaChart" height="200"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="adm-table-card h-100">
+                <div class="px-4 py-3 border-bottom fw-bold"><h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-info"></i>Pass/Fail Distribution</h5></div>
+                <div class="p-4"><canvas id="comparisonBarChart" height="200"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    @if (allSubjectIds.Any())
+    {
+        <div class="adm-table-card mt-4">
+            <div class="px-4 py-3 border-bottom fw-bold"><h5 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap me-2 text-warning"></i>Subject-wise Marks Across Exams</h5></div>
+            <div class="adm-table-card__body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead><tr><th>Subject</th>@foreach (var r in orderedResults) { <th style="text-align:center;min-width:100px;" class="fw-bold">@r.Exam?.Name<br /><small class="fw-normal">(Full / Obtained)</small></th> }</tr></thead>
+                        <tbody>
+                            @foreach (var subjectId in allSubjectIds)
+                            {
+                                var subName = subjectResults.FirstOrDefault(s => s.SubjectId == subjectId)?.Subject?.Name ?? "Subject";
+                                <tr>
+                                    <td style="font-weight:600;">@subName</td>
+                                    @foreach (var r in orderedResults)
+                                    {
+                                        var sr = subjectResults.FirstOrDefault(s => s.SubjectId == subjectId && s.ExamId == r.ExamId);
+                                        if (sr != null)
+                                        {
+                                            <td style="text-align:center;">
+                                                <span class="font-monospace">@sr.MarksObtained.ToString("F0")</span>
+                                                <span class="text-muted">/ @sr.FullMarks.ToString("F0")</span>
+                                                <br /><small class="adm-badge adm-badge--@(sr.IsPassed ? "success" : "danger")" style="font-size:9px;">@sr.Grade (@sr.GradePoint.ToString("F2"))</small>
+                                            </td>
+                                        }
+                                        else { <td style="text-align:center;color:var(--adm-text-3);"><i class="bi bi-dash"></i></td> }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var examLabels = [@Html.Raw(string.Join(",", examNames.Select(n => System.Text.Json.JsonSerializer.Serialize(n ?? ""))))];
+            var gpaCtx = document.getElementById('comparisonGpaChart');
+            if (gpaCtx) {
+                new Chart(gpaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: examLabels,
+                        datasets: [{
+                            label: 'GPA',
+                            data: [@string.Join(",", gpas.Select(g => g.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)))],
+                            borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)',
+                            fill: true, tension: 0.3, pointBackgroundColor: '#0d6efd', pointRadius: 6, pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return 'GPA: ' + ctx.parsed.y.toFixed(2); } } } },
+                        scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 0.5 } } }
+                    }
+                });
+            }
+            var barCtx = document.getElementById('comparisonBarChart');
+            if (barCtx) {
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: examLabels,
+                        datasets: [
+                            { label: 'Passed', data: [@string.Join(",", passedCounts)], backgroundColor: 'rgba(25,135,84,0.7)', borderColor: '#198754', borderWidth: 1 },
+                            { label: 'Failed', data: [@string.Join(",", failedCounts)], backgroundColor: 'rgba(220,53,69,0.7)', borderColor: '#dc3545', borderWidth: 1 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 12 } } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            }
+        });
+    </script>
+}

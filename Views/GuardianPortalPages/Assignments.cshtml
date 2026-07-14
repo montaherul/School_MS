@@ -1,0 +1,67 @@
+@using SchoolManagementSystem.Models.Entities.Assignment
+@using SchoolManagementSystem.Models.Enums
+@model IEnumerable<AssignmentTask>
+@{
+    ViewData["Title"] = "Assignments";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Assignments</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Subject</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model)
+                            {
+                                <tr>
+                                    <td class="ws-fw-600">@a.Title</td>
+                                    <td>@a.SubjectId</td>
+                                    <td>@a.Deadline.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@(a.Status == AssignmentStatus.Open ? "success" : a.Status == AssignmentStatus.Closed ? "danger" : "warning")">
+                                            @a.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-journal-text fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No assignments available.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

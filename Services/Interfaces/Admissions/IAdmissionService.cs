@@ -7,7 +7,7 @@ namespace SchoolManagementSystem.Services.Interfaces.Admissions;
 public interface IAdmissionService
 {
     Task<int?> GetGroupStartThresholdAsync(CancellationToken ct = default);
-    Task<string> SubmitAsync(AdmissionCreateDto dto, string createdBy, CancellationToken cancellationToken = default);
+    Task<(string ApplicationNo, int ApplicationId)> SubmitAsync(AdmissionCreateDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task<int> ApproveAndConvertAsync(int applicationId, int sectionId, string approvedBy, CancellationToken cancellationToken = default);
     Task RejectAsync(int applicationId, string rejectedBy, string? rejectionReason = null, CancellationToken cancellationToken = default);
     Task UpdateAsync(int id, AdmissionCreateDto dto, string updatedBy, CancellationToken cancellationToken = default);

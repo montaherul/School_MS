@@ -96,6 +96,7 @@ public class AdmissionCreateDto : IValidatableObject
         public string? TransactionDetails { get; set; }
         public string? PaymentSlipPath { get; set; }
         public IFormFile? PaymentSlipFile { get; set; }
+        public bool PayOnlineViaGateway { get; set; }
 
         [Required, Range(1, int.MaxValue, ErrorMessage = "Please select a valid class.")]
         public int AppliedClassId { get; set; }

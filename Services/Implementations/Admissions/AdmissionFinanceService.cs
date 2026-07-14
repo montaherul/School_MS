@@ -23,6 +23,7 @@ public class AdmissionFinanceService : IAdmissionFinanceService
     private readonly IFeeDiscountService _feeDiscountService;
     private readonly IFeeWaiverService _feeWaiverService;
     private readonly IFeeRefundService _feeRefundService;
+    private readonly IOnlinePaymentService _onlinePaymentService;
 
     public AdmissionFinanceService(
         IUnitOfWork unitOfWork,
@@ -32,7 +33,8 @@ public class AdmissionFinanceService : IAdmissionFinanceService
         IFeeInvoiceItemService feeInvoiceItemService,
         IFeeDiscountService feeDiscountService,
         IFeeWaiverService feeWaiverService,
-        IFeeRefundService feeRefundService)
+        IFeeRefundService feeRefundService,
+        IOnlinePaymentService onlinePaymentService)
     {
         _unitOfWork = unitOfWork;
         _admissionRepository = admissionRepository;
@@ -42,6 +44,7 @@ public class AdmissionFinanceService : IAdmissionFinanceService
         _feeDiscountService = feeDiscountService;
         _feeWaiverService = feeWaiverService;
         _feeRefundService = feeRefundService;
+        _onlinePaymentService = onlinePaymentService;
     }
 
     public async Task<List<AdmissionFeeSummaryListItemDto>> GetAllFeeSummariesAsync(CancellationToken ct = default)
@@ -471,5 +474,36 @@ public class AdmissionFinanceService : IAdmissionFinanceService
         }
 
         return invoiceId;
+    }
+
+    public async Task<int> CreateAdmissionOnlinePaymentAsync(int applicationId, string createdBy, CancellationToken ct = default)
+    {
+        var app = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, ct)
+            ?? throw new InvalidOperationException("Application not found.");
+
+        var invoiceKey = $"AdmissionApp_{applicationId}";
+        var existingInvoice = await _unitOfWork.Repository<FeeInvoice>()
+            .FirstOrDefaultAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct);
+
+        int invoiceId;
+        if (existingInvoice != null)
+        {
+            invoiceId = existingInvoice.Id;
+        }
+        else
+        {
+            invoiceId = await CreateAdmissionInvoiceAsync(
+                applicationId, 0, app.AdmissionFee, false,
+                null, null, null, createdBy, ct);
+        }
+
+        var onlineRequest = await _onlinePaymentService.CreateGatewayPendingAsync(0, invoiceId, createdBy, ct);
+
+        // Tag as admission fee payment
+        onlineRequest.PaymentPurpose = PaymentPurpose.AdmissionFee;
+        onlineRequest.AdmissionApplicationId = applicationId;
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return onlineRequest.Id;
     }
 }

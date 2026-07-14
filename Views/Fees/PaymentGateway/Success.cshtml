@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Payment Successful";
+    var message = ViewBag.Message as string;
+    var invoiceNo = ViewBag.InvoiceNo as string;
+    var amount = (decimal)(ViewBag.Amount ?? 0m);
+    var transactionId = ViewBag.TransactionId as string;
+}
+
+<div class="adm-page">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="adm-table-card text-center p-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="fw-bold text-success mb-3">Payment Successful!</h2>
+                <p class="text-muted mb-4">@message</p>
+
+                @if (!string.IsNullOrEmpty(invoiceNo))
+                {
+                    <div class="border rounded p-3 mb-3 bg-light text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Invoice:</span>
+                            <span class="fw-bold">@invoiceNo</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Amount Paid:</span>
+                            <span class="fw-bold text-success">৳@amount.ToString("N2")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(transactionId))
+                        {
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Transaction ID:</span>
+                                <span class="fw-bold">@transactionId</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <a href="@(ViewBag.PortalFees ?? "~/Fee/FeeDashboard/Index")" class="adm-btn adm-btn--primary">
+                        <i class="bi bi-wallet2"></i> Go to Fees
+                    </a>
+                    <a href="@(ViewBag.PortalHome ?? "~/" )" class="adm-btn adm-btn--ghost ms-2">
+                        <i class="bi bi-house"></i> @(ViewBag.PortalLabel ?? "Dashboard")
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

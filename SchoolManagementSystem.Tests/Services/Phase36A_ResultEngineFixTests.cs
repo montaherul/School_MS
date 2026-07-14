@@ -160,7 +160,7 @@ public class Phase36A_ResultEngineFixTests
             gradingRepoMock.Object, subjectRepoMock.Object,
             classRepoMock.Object, sectionRepoMock.Object,
             studentRepoMock.Object, markStructMock.Object,
-            auditMock.Object, gradeCalcMock.Object);
+            auditMock.Object, gradeCalcMock.Object, Mock.Of<IStudentComponentMarkService>());
 
         var dto = new MarkBatchDto
         {
@@ -229,7 +229,7 @@ public class Phase36A_ResultEngineFixTests
             gradingRepoMock.Object, subjectRepoMock.Object,
             classRepoMock.Object, sectionRepoMock.Object,
             studentRepoMock.Object, markStructMock.Object,
-            auditMock.Object, gradeCalcMock.Object);
+            auditMock.Object, gradeCalcMock.Object, Mock.Of<IStudentComponentMarkService>());
 
         var dto = new MarkBatchDto
         {
@@ -296,7 +296,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
             Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
             Mock.Of<IMeritCalculationService>(MockBehavior.Loose),
-            Mock.Of<IResultPolicyService>(MockBehavior.Loose));
+            Mock.Of<IResultPolicyService>(MockBehavior.Loose),
+            Mock.Of<IStudentComponentMarkService>());
 
         await service.CalculateExamResultsAsync(1);
 
@@ -327,7 +328,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
             Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
             Mock.Of<IMeritCalculationService>(MockBehavior.Loose),
-            Mock.Of<IResultPolicyService>(MockBehavior.Loose));
+            Mock.Of<IResultPolicyService>(MockBehavior.Loose),
+            Mock.Of<IStudentComponentMarkService>());
 
         var result = await service.CanCalculateResultsAsync(1);
         Assert.False(result);
@@ -741,7 +743,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IGradingRuleRepository>(MockBehavior.Loose),
             Mock.Of<IGradeCalculator>(MockBehavior.Loose),
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
-            Mock.Of<IPassFailPolicy>(MockBehavior.Loose));
+            Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
+            Mock.Of<IResultAuditLogRepository>());
 
         var dto = new ResultPublishDto { ExamId = 1 };
 
@@ -778,7 +781,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IGradingRuleRepository>(MockBehavior.Loose),
             Mock.Of<IGradeCalculator>(MockBehavior.Loose),
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
-            Mock.Of<IPassFailPolicy>(MockBehavior.Loose));
+            Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
+            Mock.Of<IResultAuditLogRepository>());
 
         var dto = new ResultPublishDto { ExamId = 1 };
 
@@ -855,7 +859,8 @@ public class Phase36A_ResultEngineFixTests
             gradingRepoMock.Object,
             gradeCalcMock.Object,
             aggMock.Object,
-            Mock.Of<IPassFailPolicy>(MockBehavior.Loose));
+            Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
+            Mock.Of<IResultAuditLogRepository>());
 
         var dto = new ResultPublishDto { ExamId = 1, LockResults = false };
 
@@ -881,7 +886,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IGradingRuleRepository>(MockBehavior.Loose),
             Mock.Of<IGradeCalculator>(MockBehavior.Loose),
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
-            Mock.Of<IPassFailPolicy>(MockBehavior.Loose));
+            Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
+            Mock.Of<IResultAuditLogRepository>());
 
         var dto = new ResultPublishDto { ExamId = 1 };
 

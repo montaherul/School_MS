@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -588,7 +589,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var result = await service.GetPagedAsync(1, 10, null, null, null);
 
         Assert.Equal(2, result.TotalItems);
@@ -609,7 +610,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var result = await service.GetPagedAsync(1, 10, null, "National", null);
 
         Assert.Equal(1, result.TotalItems);
@@ -629,7 +630,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var result = await service.GetByIdAsync(1);
 
         Assert.NotNull(result);
@@ -649,7 +650,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var result = await service.GetByIdAsync(1);
 
         Assert.Null(result);
@@ -667,7 +668,7 @@ public class HolidayMasterServiceTests
             .Callback<HolidayMaster, CancellationToken>((entity, _) => entity.Id = 1);
         uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var dto = new HolidayMasterUpsertDto
         {
             Name = "New Holiday",
@@ -694,7 +695,7 @@ public class HolidayMasterServiceTests
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
         uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         await service.DeleteAsync(1, "test");
 
         Assert.True(entity.IsDeleted);
@@ -710,7 +711,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(999, "test"));
     }
@@ -727,7 +728,7 @@ public class HolidayMasterServiceTests
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
         uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         await service.ActivateAsync(1, "test");
 
         Assert.True(entity.IsActive);
@@ -745,7 +746,7 @@ public class HolidayMasterServiceTests
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
         uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         await service.DeactivateAsync(1, "test");
 
         Assert.False(entity.IsActive);
@@ -762,7 +763,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var dtoList = new List<HolidayMasterUpsertDto>
         {
             new() { Name = "Existing", HolidayType = "National", HolidayDate = new DateOnly(2026, 1, 1), CountryCode = "BD" }
@@ -788,7 +789,7 @@ public class HolidayMasterServiceTests
         uow.Setup(x => x.Repository<HolidayMaster>()).Returns(repo.Object);
         repo.Setup(x => x.Query()).Returns(() => data.AsAsyncQueryable());
 
-        var service = new HolidayMasterService(uow.Object);
+        var service = new HolidayMasterService(uow.Object, Mock.Of<IMemoryCache>());
         var result = await service.GetAllAsync();
 
         var item = Assert.Single(result);

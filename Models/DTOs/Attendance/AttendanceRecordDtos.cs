@@ -35,3 +35,10 @@ public class AttendanceRecordUpsertDto
     public DateOnly AttendanceDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 }
 
+public class AttendanceCalendarDto
+{
+    public DateTime Date { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string StatusColor { get; set; } = string.Empty;
+}
+

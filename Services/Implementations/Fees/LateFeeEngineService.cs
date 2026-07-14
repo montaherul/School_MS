@@ -103,7 +103,7 @@ public class LateFeeEngineService : ILateFeeEngineService
 
     private async Task<int?> GetStudentClassIdAsync(int studentId, CancellationToken cancellationToken)
     {
-        var student = await _unitOfWork.Repository<Student>()
+        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
             .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted, cancellationToken);
         return student?.ClassId;
     }

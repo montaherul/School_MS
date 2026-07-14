@@ -1,19 +1,27 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Guardian;
+using SchoolManagementSystem.Models.DTOs.Routine;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Assignment;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Communication;
 using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using GuardianEntity = SchoolManagementSystem.Models.Entities.Guardian.Guardian;
+using StudentEntity = SchoolManagementSystem.Models.Entities.Student.Student;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
+using SchoolManagementSystem.Services.Interfaces.Assignment;
+using SchoolManagementSystem.Services.Interfaces.Exam;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Services.Interfaces.Routine;
+using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
@@ -28,7 +36,12 @@ public class GuardianPortalPagesController : Controller
     private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
     private readonly ITranscriptService _transcriptService;
+    private readonly IAssignmentService _assignmentService;
+    private readonly IAdmitCardService _admitCardService;
+    private readonly IRoutineEntryService _routineEntryService;
+    private readonly IRoutinePeriodService _routinePeriodService;
     private readonly ILogger<GuardianPortalPagesController> _logger;
+    private readonly IOnlinePaymentService _onlinePaymentService;
 
     public GuardianPortalPagesController(
         IGuardianService guardianService,
@@ -36,14 +49,24 @@ public class GuardianPortalPagesController : Controller
         IUnitOfWork uow,
         IStudentExamResultRepository studentExamResultRepository,
         ITranscriptService transcriptService,
-        ILogger<GuardianPortalPagesController> logger)
+        IAssignmentService assignmentService,
+        IAdmitCardService admitCardService,
+        IRoutineEntryService routineEntryService,
+        IRoutinePeriodService routinePeriodService,
+        ILogger<GuardianPortalPagesController> logger,
+        IOnlinePaymentService onlinePaymentService)
     {
         _guardianService = guardianService;
         _settingRepo = settingRepo;
         _uow = uow;
         _studentExamResultRepository = studentExamResultRepository;
         _transcriptService = transcriptService;
+        _assignmentService = assignmentService;
+        _admitCardService = admitCardService;
+        _routineEntryService = routineEntryService;
+        _routinePeriodService = routinePeriodService;
         _logger = logger;
+        _onlinePaymentService = onlinePaymentService;
     }
 
     private async Task<bool> IsGuardianPortalEnabledAsync()
@@ -69,6 +92,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Attendance")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Attendance(int? studentId, DateTime? from, DateTime? to, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -93,6 +117,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Results")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Results(int? studentId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -122,6 +147,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Fees")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Fees(int? studentId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -144,15 +170,19 @@ public class GuardianPortalPagesController : Controller
             .OrderByDescending(p => p.PaidAt)
             .ToListAsync(ct);
 
+        var onlineRequests = await _onlinePaymentService.GetByStudentAsync(sid, ct);
+
         ViewBag.StudentId = sid;
         ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
         ViewBag.Payments = payments;
         ViewBag.TotalDue = invoices.Where(i => (int)i.Status != 3).Sum(i => i.TotalAmount - i.PaidAmount);
         ViewBag.TotalPaid = invoices.Sum(i => i.PaidAmount);
+        ViewBag.OnlinePaymentRequests = onlineRequests;
         return View("~/Views/GuardianPortal/Fees.cshtml", invoices);
     }
 
     [HttpGet("Leaves")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Leaves(int? studentId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -177,6 +207,7 @@ public class GuardianPortalPagesController : Controller
 
     [HttpPost("Leaves/Apply")]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> ApplyLeave(int studentId, int leaveTypeId, DateTime fromDate, DateTime toDate, string reason, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -216,6 +247,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Notices")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Notices(CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -230,6 +262,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Calendar")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Calendar(CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -243,6 +276,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Notifications")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Notifications(CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -261,6 +295,7 @@ public class GuardianPortalPagesController : Controller
 
     [HttpPost("Notifications/MarkRead/{id:int}")]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> MarkRead(int id, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -281,6 +316,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Profile")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Profile(CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -302,6 +338,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("ReportCard")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> ReportCard(int? studentId, int examId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -319,6 +356,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("Transcript")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> Transcript(int? studentId, int? academicYearId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -340,6 +378,7 @@ public class GuardianPortalPagesController : Controller
     }
 
     [HttpGet("ExamComparison")]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> ExamComparison(int? studentId, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -370,6 +409,7 @@ public class GuardianPortalPagesController : Controller
 
     [HttpPost("Profile/Update")]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Guardian.View")]
     public async Task<IActionResult> UpdateProfile([FromForm] GuardianProfileUpdateDto dto, CancellationToken ct)
     {
         if (!await IsGuardianPortalEnabledAsync())
@@ -388,5 +428,203 @@ public class GuardianPortalPagesController : Controller
         }
 
         return RedirectToAction(nameof(Profile));
+    }
+
+    [HttpGet("Timetable")]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> Timetable(int? studentId, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        var student = await _uow.Repository<StudentEntity>().Query()
+            .AsNoTracking()
+            .Include(s => s.Class)
+            .Include(s => s.Section)
+            .Include(s => s.StudentGroup)
+            .FirstOrDefaultAsync(s => s.Id == sid, ct);
+        if (student == null) return NotFound();
+
+        var currentYear = await _uow.Repository<AcademicYear>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+        var academicYearId = currentYear?.Id ?? 0;
+
+        var entries = await _routineEntryService.GetGridAsync(
+            academicYearId, student.ClassId, student.SectionId, student.StudentGroupId, null, null, 1, 500, ct);
+        var periods = await _routinePeriodService.GetActivePeriodsAsync(ct);
+        var dayNames = new[] { "sat", "sun", "mon", "tue", "wed", "thu", "fri" };
+
+        var grid = periods.Select(p => new Dictionary<string, object?>
+        {
+            ["periodName"] = p.Name,
+            ["sat"] = (string?)null,
+            ["sun"] = (string?)null,
+            ["mon"] = (string?)null,
+            ["tue"] = (string?)null,
+            ["wed"] = (string?)null,
+            ["thu"] = (string?)null,
+            ["fri"] = (string?)null
+        }).ToList();
+
+        foreach (var entry in entries.Items)
+        {
+            var row = grid.FirstOrDefault(r => (string?)r["periodName"] == entry.PeriodName);
+            if (row != null && entry.DayNumber >= 1 && entry.DayNumber <= 7)
+            {
+                row[dayNames[entry.DayNumber - 1]] = $"{entry.SubjectName}<br><small>{entry.TeacherName}<br>{entry.RoomNo}</small>";
+            }
+        }
+
+        var todayDayNumber = ((int)DateTime.Today.DayOfWeek + 1) % 7 + 1;
+        var todayEntries = entries.Items.Where(e => e.DayNumber == todayDayNumber).ToList();
+
+        var model = new RoutineStudentViewModel
+        {
+            ClassName = student.Class?.Name ?? string.Empty,
+            SectionName = student.Section?.Name,
+            GroupName = student.StudentGroup?.Name,
+            WeeklyGrid = grid.Cast<object>().ToList(),
+            Statistics = new List<StatisticItem>
+            {
+                new() { IconClass = "primary", Icon = "book", Value = entries.Items.Select(e => e.SubjectName).Distinct().Count(), Label = "Subjects" },
+                new() { IconClass = "info", Icon = "clock", Value = entries.Items.Count, Label = "Total Periods" },
+                new() { IconClass = "success", Icon = "calendar-day", Value = todayEntries.Count, Label = "Today's Classes" }
+            },
+            TodayClasses = todayEntries.Select(e => new TodayStudentClassDto
+            {
+                PeriodName = e.PeriodName,
+                SubjectName = e.SubjectName,
+                TeacherName = e.TeacherName,
+                RoomNo = e.RoomNo,
+                StartTime = periods.FirstOrDefault(p => p.Name == e.PeriodName)?.StartTime ?? string.Empty,
+                EndTime = periods.FirstOrDefault(p => p.Name == e.PeriodName)?.EndTime ?? string.Empty
+            }).ToList()
+        };
+
+        ViewBag.StudentId = sid;
+        ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
+        return View("~/Views/GuardianPortalPages/Timetable.cshtml", model);
+    }
+
+    [HttpGet("Assignments")]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> Assignments(int? studentId, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        var student = await _uow.Repository<StudentEntity>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == sid, ct);
+        if (student == null) return NotFound();
+
+        var query = _assignmentService.Query()
+            .AsNoTracking()
+            .Where(a => a.SchoolClassId == student.ClassId && a.SectionId == student.SectionId && !a.IsDeleted)
+            .OrderByDescending(a => a.Deadline);
+
+        var assignments = await query.ToListAsync(ct);
+
+        ViewBag.StudentId = sid;
+        ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
+        return View("~/Views/GuardianPortalPages/Assignments.cshtml", assignments);
+    }
+
+    [HttpGet("AdmitCard")]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> AdmitCard(int? studentId, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        var exams = await _uow.Repository<Models.Entities.Exam.Exam>().Query()
+            .AsNoTracking()
+            .Where(e => !e.IsDeleted)
+            .OrderByDescending(e => e.Id)
+            .ToListAsync(ct);
+
+        ViewBag.StudentId = sid;
+        ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
+        return View("~/Views/GuardianPortalPages/AdmitCard.cshtml", exams);
+    }
+
+    [HttpGet("AdmitCard/View/{examId:int}")]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> AdmitCardView(int examId, int? studentId, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        return RedirectToAction("View", "AdmitCard", new { examId, studentId = sid });
+    }
+
+    [HttpGet("PayFee/{invoiceId:int}")]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> PayFee(int invoiceId, int? studentId, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        var invoice = await _uow.Repository<FeeInvoice>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.Id == invoiceId && i.StudentId == sid && !i.IsDeleted, ct);
+        if (invoice == null) return NotFound();
+
+        ViewBag.StudentId = sid;
+        ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
+        return View("~/Views/GuardianPortal/PayFee.cshtml", invoice);
+    }
+
+    [HttpPost("PayFee/{invoiceId:int}")]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("Guardian.View")]
+    public async Task<IActionResult> PayFee(int invoiceId, int? studentId, [FromForm] Models.DTOs.Fees.OnlinePaymentSubmitDto dto, CancellationToken ct)
+    {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+        var userId = CurrentUserId();
+        var sid = await ResolveOrFirstChildAsync(studentId, ct);
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
+        if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
+
+        if (dto.Amount <= 0)
+        {
+            TempData["ErrorMessage"] = "Amount must be greater than zero.";
+            return RedirectToAction(nameof(PayFee), new { invoiceId, studentId = sid });
+        }
+
+        try
+        {
+            var request = await _onlinePaymentService.CreateAsync(sid, dto, User.Identity?.Name ?? "guardian", ct);
+            TempData["SuccessMessage"] = $"Payment request submitted successfully. Reference: {request.ReferenceNo ?? request.Id.ToString()}";
+            return RedirectToAction(nameof(Fees), new { studentId = sid });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to submit online payment for invoice {InvoiceId}", invoiceId);
+            TempData["ErrorMessage"] = "Failed to submit payment request. Please try again.";
+            return RedirectToAction(nameof(PayFee), new { invoiceId, studentId = sid });
+        }
     }
 }

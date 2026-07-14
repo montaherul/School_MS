@@ -1,0 +1,100 @@
+@model JournalEntryDetailDto
+
+@{
+    ViewData["Title"] = "Journal Entry - " + Model.JournalNo;
+}
+
+<div class="adm-page">
+    <div class="ws-mb-4">
+        <a href="/Accounting/JournalEntry" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back to Journal</a>
+    </div>
+
+    <div class="adm-card ws-mb-4">
+        <div class="adm-card__header ws-flex ws-flex-between ws-items-center">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-journal-text ws-me-2"></i>@Model.JournalNo</h5>
+            <div>
+                @if (!Model.IsPosted)
+                {
+                    <form method="post" action="/Accounting/JournalEntry/Post" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="adm-btn adm-btn--success adm-btn--sm"><i class="bi bi-check2-circle ws-me-1"></i>Post to Ledger</button>
+                    </form>
+                    <a href="/Accounting/JournalEntry/CreateEdit/@Model.Id" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-pencil ws-me-1"></i>Edit</a>
+                }
+            </div>
+        </div>
+        <div class="adm-card__body">
+            <div class="ws-row ws-g-3 ws-mb-3">
+                <div class="ws-col-6 ws-col-md-3">
+                    <div class="ws-fs-11 ws-text-muted">Date</div>
+                    <div class="ws-fw-600">@Model.EntryDate.ToString("dd MMM yyyy")</div>
+                </div>
+                <div class="ws-col-6 ws-col-md-3">
+                    <div class="ws-fs-11 ws-text-muted">Type</div>
+                    <div class="ws-fw-600">@Model.EntryType</div>
+                </div>
+                <div class="ws-col-6 ws-col-md-3">
+                    <div class="ws-fs-11 ws-text-muted">Status</div>
+                    <div>@if (Model.IsPosted) { <span class="adm-badge adm-badge--success">Posted</span> } else { <span class="adm-badge adm-badge--warning">Draft</span> }</div>
+                </div>
+                <div class="ws-col-6 ws-col-md-3">
+                    <div class="ws-fs-11 ws-text-muted">Period</div>
+                    <div class="ws-fw-600">@(Model.FinancialPeriodName ?? "N/A")</div>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="ws-mb-3">
+                    <div class="ws-fs-11 ws-text-muted">Description</div>
+                    <div>@Model.Description</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-list-columns ws-me-2"></i>Journal Lines</h5>
+        </div>
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                <thead>
+                    <tr style="background:var(--adm-bg-sub);border-bottom:2px solid var(--adm-border);">
+                        <th style="padding:12px 18px;text-align:left;">Account</th>
+                        <th style="padding:12px 18px;text-align:left;">Type</th>
+                        <th style="padding:12px 18px;text-align:right;">Amount</th>
+                        <th style="padding:12px 18px;text-align:left;">Narration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr style="border-bottom:1px solid var(--adm-border);">
+                            <td style="padding:12px 18px;"><span class="ws-fw-600">@line.AccountCode</span> - @line.AccountName</td>
+                            <td style="padding:12px 18px;">
+                                <span class="adm-badge adm-badge--@(line.LineType == "Debit" ? "primary" : "secondary")">@line.LineType</span>
+                            </td>
+                            <td style="padding:12px 18px;text-align:right;" class="ws-fw-700">৳@line.Amount.ToString("N2")</td>
+                            <td style="padding:12px 18px;">@(line.Narration ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid var(--adm-border);font-weight:700;">
+                        <td colspan="2" style="padding:12px 18px;text-align:right;">Total</td>
+                        <td style="padding:12px 18px;text-align:right;" colspan="2">৳@Model.TotalDebit.ToString("N2")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="ws-mt-3 ws-fs-12 ws-text-muted">
+        Created by @Model.CreatedBy on @Model.CreatedAt.ToString("dd MMM yyyy hh:mm tt")
+        @if (Model.IsPosted && Model.PostedAt.HasValue)
+        {
+            <span> &bull; Posted by @Model.PostedBy on @Model.PostedAt.Value.ToString("dd MMM yyyy hh:mm tt")</span>
+        }
+    </div>
+</div>

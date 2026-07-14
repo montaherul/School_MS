@@ -1,0 +1,105 @@
+@model SchoolManagementSystem.Models.Entities.Fees.FeeInvoice
+@using SchoolManagementSystem.Models.Enums
+@{
+    ViewData["Title"] = "Pay Fee";
+    var studentName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Pay Fee</h1>
+                <p class="adm-header__sub">@studentName</p>
+            </div>
+        </div>
+        <a asp-action="Fees" asp-route-studentId="@studentId" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Fees
+        </a>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-6">
+            <div class="adm-table-card p-4">
+                <h5 class="fw-bold mb-3">Invoice Details</h5>
+                <table class="table table-bordered">
+                    <tr><th>Invoice #</th><td>@Model.InvoiceNo</td></tr>
+                    <tr><th>Due Date</th><td>@Model.DueDate.ToString("dd MMM yyyy")</td></tr>
+                    <tr><th>Total Amount</th><td>৳@Model.TotalAmount.ToString("N2")</td></tr>
+                    <tr><th>Paid Amount</th><td>৳@Model.PaidAmount.ToString("N2")</td></tr>
+                    <tr><th>Due Amount</th><td class="text-danger fw-bold">৳@((Model.TotalAmount - Model.PaidAmount).ToString("N2"))</td></tr>
+                    <tr><th>Status</th><td><span class="adm-badge adm-badge--@((int)Model.Status == 3 ? "success" : (int)Model.Status == 2 ? "warning" : "info")">@Model.Status</span></td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-table-card p-4">
+                <h5 class="fw-bold mb-3">Submit Payment</h5>
+                <form asp-action="PayFee" asp-route-invoiceId="@Model.Id" asp-route-studentId="@studentId" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="FeeInvoiceId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Amount (৳)</label>
+                        <input type="number" name="Amount" class="form-control" step="0.01"
+                               value="@((Model.TotalAmount - Model.PaidAmount).ToString("F2"))" max="@(Model.TotalAmount - Model.PaidAmount)" min="0.01" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Payment Method</label>
+                        <select name="PaymentMethod" class="form-select" required>
+                            <option value="">-- Select Method --</option>
+                            <option value="2">Bank Deposit</option>
+                            <option value="4">bKash / Nagad / Rocket</option>
+                            <option value="1">Cash (School Office)</option>
+                            <option value="5">Online</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Reference / Transaction ID</label>
+                        <input type="text" name="ReferenceNo" class="form-control" placeholder="e.g. bank ref or mobile banking trxID" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Remarks (optional)</label>
+                        <textarea name="Remarks" class="form-control" rows="2" placeholder="Any note about this payment"></textarea>
+                    </div>
+
+                    <button type="submit" class="adm-btn adm-btn--primary w-100">
+                        <i class="bi bi-send"></i> Submit Payment Request
+                    </button>
+                </form>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> After submitting, the school will verify your payment. Check the Fees page for status updates.
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="text-center">
+                <h5 class="fw-bold mb-3">Or Pay Automatically</h5>
+                <p class="text-muted mb-3">Pay instantly using bKash, Nagad, cards, or internet banking via SSLCommerz.</p>
+                <a href="/Fees/PaymentGateway/PayDirect/@Model.Id?studentId=@studentId" class="adm-btn adm-btn--success adm-btn--lg w-100 ssl-btn" onclick="this.disabled=true;this.innerHTML='<i class=\'bi bi-hourglass-split\'></i> Redirecting...';return true;">
+                    <i class="bi bi-credit-card"></i> Pay with SSLCommerz
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.ssl-btn, .adm-btn--primary.w-100').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (this.disabled) return;
+                this.disabled = true;
+                this.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+            });
+        });
+    </script>
+}

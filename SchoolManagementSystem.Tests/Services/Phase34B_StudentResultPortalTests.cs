@@ -47,7 +47,8 @@ public class Phase34B_StudentResultPortalTests
             _gradingRepoMock.Object,
             _gradeCalcMock.Object,
             _aggMock.Object,
-            _pfMock.Object);
+            _pfMock.Object,
+            Mock.Of<IResultAuditLogRepository>());
     }
 
     // ─── StudentExamResultDto property completeness ───────────────

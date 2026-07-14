@@ -1,0 +1,70 @@
+@using SchoolManagementSystem.Models.Enums
+@model ChartOfAccountViewModel
+
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Account" : "New Account";
+}
+
+<div class="adm-page">
+    <div class="ws-mb-4">
+        <a href="/Accounting/ChartOfAccount" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back to Chart of Accounts</a>
+    </div>
+
+    <div class="adm-card" style="max-width:720px;">
+        <div class="adm-card__header">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-@(Model.IsEditMode ? "pencil" : "plus-circle") ws-me-2"></i>@ViewData["Title"]</h5>
+        </div>
+        <div class="adm-card__body">
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="ws-row ws-g-3">
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Account Code</label>
+                        <input asp-for="AccountCode" class="adm-input" required />
+                        <span asp-validation-for="AccountCode" class="ws-text-danger ws-fs-12"></span>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-8">
+                        <label class="adm-form-label">Account Name</label>
+                        <input asp-for="AccountName" class="adm-input" required />
+                        <span asp-validation-for="AccountName" class="ws-text-danger ws-fs-12"></span>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Account Type</label>
+                        <select asp-for="AccountType" class="adm-input" asp-items="Html.GetEnumSelectList<AccountType>()" required></select>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Parent Account</label>
+                        <select asp-for="ParentAccountId" class="adm-input">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Display Order</label>
+                        <input asp-for="DisplayOrder" class="adm-input" type="number" />
+                    </div>
+                    <div class="ws-col-12">
+                        <label class="adm-form-label">Description</label>
+                        <textarea asp-for="Description" class="adm-input" rows="2"></textarea>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <label class="adm-form-label">Opening Balance</label>
+                        <input asp-for="OpeningBalance" class="adm-input" type="number" step="0.01" />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-4 ws-flex ws-items-center ws-pt-4">
+                        <div class="ws-form-check">
+                            <input asp-for="IsActive" class="ws-form-check-input" />
+                            <label class="ws-fw-700" for="IsActive">Active</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ws-text-end ws-mt-3 ws-pt-3 ws-border-top">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save</button>
+                    <a href="/Accounting/ChartOfAccount" class="adm-btn adm-btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

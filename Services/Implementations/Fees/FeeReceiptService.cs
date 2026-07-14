@@ -36,7 +36,7 @@ public class FeeReceiptService : IFeeReceiptService
             .FirstOrDefaultAsync(x => x.Id == payment.FeeInvoiceId && !x.IsDeleted, cancellationToken);
         if (invoice is null) return null;
 
-        var student = await _unitOfWork.Repository<Student>().GetByIdAsync(invoice.StudentId, cancellationToken);
+        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(invoice.StudentId, cancellationToken);
         var schoolSetting = await _unitOfWork.Repository<SchoolSetting>().Query().AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 

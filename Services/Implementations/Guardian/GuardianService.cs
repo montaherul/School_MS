@@ -543,7 +543,7 @@ public class GuardianService : IGuardianService
         var fromDate = (from ?? DateTime.Today.AddMonths(-1)).Date;
         var toDate = (to ?? DateTime.Today).Date;
 
-        var student = await _uow.Repository<Student>().Query().AsNoTracking()
+        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().AsNoTracking()
             .Include(s => s.Class)
             .Include(s => s.Section)
             .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted, ct)

@@ -12,4 +12,5 @@ public interface IAdmissionFinanceService
     Task<List<AdmissionInstallmentPlanDto>> CreateInstallmentPlanAsync(int applicationId, int installments, string createdBy, CancellationToken ct = default);
     Task<bool> ProcessRefundAsync(int applicationId, decimal amount, string reason, string processedBy, CancellationToken ct = default);
     Task<int> CreateAdmissionInvoiceAsync(int applicationId, int studentId, decimal admissionFee, bool isPaid, string? className, string? paymentMethod, string? transactionDetails, string createdBy, CancellationToken ct = default);
+    Task<int> CreateAdmissionOnlinePaymentAsync(int applicationId, string createdBy, CancellationToken ct = default);
 }

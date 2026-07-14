@@ -150,6 +150,11 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 // All repository and service registrations are now in ServiceRegistration.AddSchoolApplicationServices()
 builder.Services.AddSchoolApplicationServices();
 
+builder.Services.Configure<SchoolManagementSystem.Models.DTOs.Fees.SslCommerzConfig>(builder.Configuration.GetSection("SslCommerz"));
+builder.Services.AddHttpClient("SslCommerz", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -255,6 +260,9 @@ await using (var scope = app.Services.CreateAsyncScope())
     await seederSubjectMark.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
+
+    // RBAC: Accounting permissions (Chart of Accounts, Journal, Ledger, Trial Balance, Financial Statements, Bank Book, Financial Periods)
+    await AccountingRbacSeeder.SeedAsync(db);
 
     // RBAC: ensure Exam Controller role exists and has the required permissions
     await ExamControllerRbacSeeder.SeedAsync(db);

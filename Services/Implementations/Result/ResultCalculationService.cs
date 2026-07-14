@@ -111,7 +111,7 @@ public class ResultCalculationService : IResultCalculationService
                 .Distinct()
                 .ToListAsync();
 
-            var students = await _uow.Repository<Student>().Query()
+            var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
                 .AsNoTracking()
                 .Where(s => classIds.Contains(s.ClassId) && !s.IsDeleted)
                 .ToListAsync();
@@ -177,14 +177,14 @@ public class ResultCalculationService : IResultCalculationService
         var studentIds = markEntries.Select(m => m.StudentId).Distinct().ToList();
 
         // Get all distinct class IDs from the students in mark entries
-        var classIds = await _uow.Repository<Student>().Query()
+        var classIds = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => studentIds.Contains(s.Id))
             .Select(s => s.ClassId)
             .Distinct()
             .ToListAsync();
 
-        var studentGroups = await _uow.Repository<Student>().Query()
+        var studentGroups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => studentIds.Contains(s.Id))
             .Select(s => new { s.Id, s.ClassId, s.StudentGroupId, s.AssignedReligionSubjectId })
@@ -274,7 +274,7 @@ public class ResultCalculationService : IResultCalculationService
             .GroupBy(cm => new { cm.ExamSubjectId, cm.StudentId });
 
         var studentIds = grouped.Select(g => g.Key.StudentId).Distinct().ToList();
-        var studentGroups = await _uow.Repository<Student>().Query()
+        var studentGroups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => studentIds.Contains(s.Id))
             .Select(s => new { s.Id, s.ClassId, s.SectionId, s.StudentGroupId, s.AssignedReligionSubjectId })
@@ -686,7 +686,7 @@ public class ResultCalculationService : IResultCalculationService
             .Where(es => es.ExamId == examId)
             .ToDictionaryAsync(es => es.SubjectId);
 
-        int? classId = await _uow.Repository<Student>().Query()
+        int? classId = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.Id == studentId)
             .Select(s => s.ClassId)
@@ -703,7 +703,7 @@ public class ResultCalculationService : IResultCalculationService
             .GroupBy(cs => cs.SubjectId)
             .ToDictionary(g => g.Key, g => g.First());
 
-        var student = await _uow.Repository<Student>().Query()
+        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.Id == studentId)
             .Select(s => new { s.AssignedReligionSubjectId, s.StudentGroupId })
@@ -842,7 +842,7 @@ public class ResultCalculationService : IResultCalculationService
         }
         else
         {
-            var student = await _uow.Repository<Student>().Query()
+            var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
                 .AsNoTracking()
                 .Where(s => s.Id == studentId)
                 .Select(s => new { s.ClassId, s.SectionId, s.StudentGroupId })
@@ -882,7 +882,7 @@ public class ResultCalculationService : IResultCalculationService
         var gradingRules = await _gradingRuleRepository.ListAsync();
         var examSubject = await _uow.Repository<ExamSubject>().FirstOrDefaultAsync(es => es.ExamId == markEntry.ExamId && es.SubjectId == markEntry.SubjectId);
 
-        int? classId = await _uow.Repository<Student>().Query()
+        int? classId = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.Id == markEntry.StudentId)
             .Select(s => s.ClassId)

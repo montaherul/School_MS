@@ -764,6 +764,23 @@
                     </div>
                 </div>
 
+                <!-- Student Portal Settings -->
+                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
+                    <div style="flex:1 1 100%;min-width:280px;">
+                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-mortarboard-fill ws-me-1 ws-text-primary"></i> Student Portal Settings</h6>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Enable or disable student self-service portal. When disabled, student portal menus are hidden and URLs are blocked.</p>
+                        <div class="ws-flex-wrap ws-gap-3">
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="ws-form-check">
+                                    <input class="ws-form-check-input" type="checkbox" name="EnableStudentPortal" value="true" @(Model.EnableStudentPortal ? "checked" : "") id="chkEnableStudentPortal"/>
+                                    <input type="hidden" name="EnableStudentPortal" value="false"/>
+                                    <label class="ws-fw-700" for="chkEnableStudentPortal">Enable Student Portal</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit -->
                 <div class="ws-text-end ws-pt-4 ws-mt-3 ws-border-top ws-w-full">
                     <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save All Settings</button>

@@ -1,0 +1,88 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Attendance.StudentAttendanceDto>
+@{
+    ViewData["Title"] = "Attendance";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var from = ViewBag.From as string;
+    var to = ViewBag.To as string;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Attendance</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="adm-table-card mb-4">
+        <div class="p-4">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <input type="date" name="from" value="@from" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <input type="date" name="to" value="@to" class="form-control" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="adm-btn adm-btn--primary me-2">Filter</button>
+                    <a asp-action="Attendance" class="adm-btn adm-btn--ghost">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model)
+                            {
+                                <tr>
+                                    <td>@a.AttendanceDate.ToString("dd MMM yyyy")</td>
+                                    <td>@a.ClassName</td>
+                                    <td>@a.SectionName</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@(a.StatusName == "Present" ? "success" : a.StatusName == "Absent" ? "danger" : a.StatusName == "Late" ? "warning" : "info")">
+                                            @a.StatusName
+                                        </span>
+                                    </td>
+                                    <td>@a.Remarks</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No attendance records in the selected date range.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

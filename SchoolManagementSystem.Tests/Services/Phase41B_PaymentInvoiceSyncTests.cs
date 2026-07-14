@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Services.Implementations.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -18,9 +19,15 @@ public class Phase41B_PaymentInvoiceSyncTests
     private readonly Mock<IBaseRepository<FeeInvoice>> _invoiceRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IBaseRepository<Payment>> _paymentBaseRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IBaseRepository<FeeLedger>> _ledgerBaseRepoMock = new(MockBehavior.Loose);
+    private readonly IAuditLogService _auditServiceMock;
 
     public Phase41B_PaymentInvoiceSyncTests()
     {
+        var auditMock = new Mock<IAuditLogService>();
+        auditMock.Setup(a => a.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _auditServiceMock = auditMock.Object;
+
         _uowMock.Setup(u => u.Repository<FeeInvoice>()).Returns(_invoiceRepoMock.Object);
         _uowMock.Setup(u => u.Repository<Payment>()).Returns(_paymentBaseRepoMock.Object);
         _uowMock.Setup(u => u.Repository<FeeLedger>()).Returns(_ledgerBaseRepoMock.Object);
@@ -44,7 +51,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ReturnsAsync(new List<Payment> { new Payment { Id = 1, FeeInvoiceId = 1, Amount = 300 } });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 300, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -63,7 +70,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ReturnsAsync(new List<Payment> { new Payment { Id = 1, FeeInvoiceId = 1, Amount = 500 } });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 500, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -89,7 +96,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .Returns(Task.CompletedTask);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 500, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -107,7 +114,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ReturnsAsync(new List<Payment> { new Payment { Id = 1, FeeInvoiceId = 1, Amount = 100 } });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 100, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -129,7 +136,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 200, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -147,7 +154,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ThrowsAsync(new InvalidOperationException("DB failure"));
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 500, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
 
@@ -162,7 +169,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ReturnsAsync((FeeInvoice?)null);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 999, Amount = 100, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
         Assert.Contains("Invoice not found", ex.Message);
@@ -182,7 +189,7 @@ public class Phase41B_PaymentInvoiceSyncTests
             .ReturnsAsync(new List<Payment> { new Payment { Id = 1, FeeInvoiceId = 1, Amount = 500 } });
 
         var dto = new FeePaymentUpsertDto { Id = 1, FeeInvoiceId = 1, Amount = 500, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.UpdateAsync(dto, "test-user");
 
@@ -203,7 +210,7 @@ public class Phase41B_PaymentInvoiceSyncTests
         _paymentBaseRepoMock.Setup(r => r.ListAsync(It.IsAny<Expression<Func<Payment, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Payment>());
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.DeleteAsync(1, "test-user");
 

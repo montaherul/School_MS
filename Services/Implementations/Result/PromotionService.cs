@@ -564,7 +564,7 @@ public class PromotionService : IPromotionService
 
     public async Task<List<object>> GetClassStudentsJsonAsync(int classId, CancellationToken ct = default)
     {
-        var students = await _uow.Repository<Student>().Query()
+        var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.ClassId == classId && !s.IsDeleted)
             .Select(s => new { s.Id, s.FullName, s.RollNumber })

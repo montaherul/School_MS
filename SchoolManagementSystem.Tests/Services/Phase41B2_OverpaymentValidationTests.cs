@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Services.Implementations.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Repositories.Interfaces;
 using System.Linq.Expressions;
 
@@ -19,9 +20,15 @@ public class Phase41B2_OverpaymentValidationTests
     private readonly Mock<IBaseRepository<Payment>> _paymentBaseRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IBaseRepository<FeeLedger>> _ledgerBaseRepoMock = new(MockBehavior.Loose);
     private readonly List<Payment> _allPayments = new();
+    private readonly IAuditLogService _auditServiceMock;
 
     public Phase41B2_OverpaymentValidationTests()
     {
+        var auditMock = new Mock<IAuditLogService>();
+        auditMock.Setup(a => a.LogAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _auditServiceMock = auditMock.Object;
+
         _uowMock.Setup(u => u.Repository<FeeInvoice>()).Returns(_invoiceRepoMock.Object);
         _uowMock.Setup(u => u.Repository<Payment>()).Returns(_paymentBaseRepoMock.Object);
         _uowMock.Setup(u => u.Repository<FeeLedger>()).Returns(_ledgerBaseRepoMock.Object);
@@ -75,7 +82,7 @@ public class Phase41B2_OverpaymentValidationTests
         });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 2000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -94,7 +101,7 @@ public class Phase41B2_OverpaymentValidationTests
         _allPayments.Add(new Payment { Id = 1, FeeInvoiceId = 1, Amount = 5000 });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
 
@@ -117,7 +124,7 @@ public class Phase41B2_OverpaymentValidationTests
         });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 5000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
         Assert.Contains("exceeds outstanding", ex.Message);
@@ -141,7 +148,7 @@ public class Phase41B2_OverpaymentValidationTests
             })
             .Returns(Task.CompletedTask);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var id1 = await svc.CreateAsync(new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow }, "user");
         var id2 = await svc.CreateAsync(new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 4000, Method = 1, PaidAt = DateTime.UtcNow }, "user");
@@ -166,7 +173,7 @@ public class Phase41B2_OverpaymentValidationTests
         });
 
         var dto = new FeePaymentUpsertDto { Id = 1, FeeInvoiceId = 1, Amount = 4000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.UpdateAsync(dto, "test-user");
 
@@ -189,7 +196,7 @@ public class Phase41B2_OverpaymentValidationTests
         });
 
         var dto = new FeePaymentUpsertDto { Id = 1, FeeInvoiceId = 1, Amount = 8000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.UpdateAsync(dto, "test-user"));
         Assert.Contains("exceeds outstanding", ex.Message);
@@ -209,7 +216,7 @@ public class Phase41B2_OverpaymentValidationTests
         _paymentBaseRepoMock.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Payment, bool>>>(e => true), It.IsAny<CancellationToken>()))
             .ReturnsAsync(payment);
 
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.DeleteAsync(1, "test-user");
 
@@ -236,7 +243,7 @@ public class Phase41B2_OverpaymentValidationTests
             .ReturnsAsync(invoice);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 500, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var id = await svc.CreateAsync(dto, "test-user");
         Assert.True(wasTransactionCalled);
@@ -256,7 +263,7 @@ public class Phase41B2_OverpaymentValidationTests
             .Returns(Task.CompletedTask);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 2000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
         Assert.False(addWasCalled);
@@ -274,7 +281,7 @@ public class Phase41B2_OverpaymentValidationTests
         _allPayments.Add(new Payment { Id = 1, FeeInvoiceId = 1, Amount = 6000 });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         await svc.CreateAsync(dto, "test-user");
         Assert.Equal(PaymentStatus.Partial, invoice.Status);
@@ -291,7 +298,7 @@ public class Phase41B2_OverpaymentValidationTests
         _allPayments.Add(new Payment { Id = 1, FeeInvoiceId = 1, Amount = 5000 });
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 100, Method = 1, PaidAt = DateTime.UtcNow };
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
         Assert.Contains("exceeds outstanding", ex.Message);
@@ -303,7 +310,7 @@ public class Phase41B2_OverpaymentValidationTests
     [Fact(DisplayName = "12. Zero payment amount is rejected")]
     public async Task ZeroPayment_Throws()
     {
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 0, Method = 1, PaidAt = DateTime.UtcNow };
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));
@@ -315,7 +322,7 @@ public class Phase41B2_OverpaymentValidationTests
     [Fact(DisplayName = "13. Negative payment amount is rejected")]
     public async Task NegativePayment_Throws()
     {
-        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object);
+        var svc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
 
         var dto = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = -500, Method = 1, PaidAt = DateTime.UtcNow };
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CreateAsync(dto, "test-user"));

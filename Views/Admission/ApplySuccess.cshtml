@@ -70,6 +70,15 @@
                         Copy Number
                     </button>
                 </div>
+                @if (ViewBag.ApplicationId != null)
+                {
+                    <div class="ws-col-auto">
+                        <a href="@Url.Action("PayOnline", "Admission", new { applicationId = ViewBag.ApplicationId })" class="ws-btn ws-btn--primary ws-btn--sm">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                            Pay Online (SSLCommerz)
+                        </a>
+                    </div>
+                }
             </div>
         </div>
 

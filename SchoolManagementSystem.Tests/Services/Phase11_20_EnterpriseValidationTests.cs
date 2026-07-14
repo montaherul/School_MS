@@ -12,6 +12,7 @@ using SchoolManagementSystem.Services.Implementations.Result;
 using SchoolManagementSystem.Services.Implementations.Exam;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Exam;
+using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Linq.Expressions;
@@ -121,7 +122,7 @@ public class Phase11_20_EnterpriseValidationTests
     [Fact(DisplayName = "P11: Create 9 grouped exams across 9 class/group combinations")]
     public async Task Create_Nine_Grouped_Exams_Across_Classes()
     {
-        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object);
+        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object, Mock.Of<ISubjectMarkStructureService>(), Mock.Of<ITeacherAssignmentService>(), null!);
 
         var combinations = new (int ClassId, int? GroupId)[]
         {
@@ -156,7 +157,7 @@ public class Phase11_20_EnterpriseValidationTests
     [Fact(DisplayName = "P11: ExamGroupKey uniquely identifies logical exam across classes")]
     public async Task ExamGroupKey_Matches_Across_Grouped_Exams()
     {
-        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object);
+        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object, Mock.Of<ISubjectMarkStructureService>(), Mock.Of<ITeacherAssignmentService>(), null!);
 
         foreach (int classId in new[] { 6, 7, 8 })
         {
@@ -175,7 +176,7 @@ public class Phase11_20_EnterpriseValidationTests
     [Fact(DisplayName = "P11: Duplicate name validation includes ClassId+StudentGroupId")]
     public async Task Duplicate_Validation_Uses_ClassId_And_GroupId()
     {
-        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object);
+        var service = new ExamService(_uowMock.Object, _examRepoMock.Object, _gradingRepoMock.Object, _validationMock.Object, Mock.Of<ISubjectMarkStructureService>(), Mock.Of<ITeacherAssignmentService>(), null!);
 
         var dto = new ExamUpsertDto
         {

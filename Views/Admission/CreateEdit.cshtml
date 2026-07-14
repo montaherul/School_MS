@@ -393,7 +393,7 @@
                             {
                                 foreach (var c in ViewBag.Classes)
                                 {
-                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" data-sort-order="@c.SortOrder">@c.Name</option>
                                 }
                             }
                         </select>
@@ -484,13 +484,27 @@
         reader.readAsDataURL(event.target.files[0]);
     }
 
+    var groupThreshold = @(ViewBag.GroupStartsFromClassId ?? 9);
+
     document.addEventListener("DOMContentLoaded", function () {
         const classDropdown = document.getElementById("AppliedClassId");
         const sectionContainer = document.getElementById("sectionContainer");
         const groupSelect = sectionContainer ? sectionContainer.querySelector('select') : null;
 
+        function classSortOrder() {
+            if (!classDropdown) return 0;
+            var opt = classDropdown.options[classDropdown.selectedIndex];
+            return parseInt(opt && opt.dataset.sortOrder) || 0;
+        }
+
         function updateGroups(classId) {
             if (!classId || !sectionContainer || !groupSelect) { if (sectionContainer) sectionContainer.style.display = "none"; return; }
+            var sortOrder = classSortOrder();
+            if (sortOrder < groupThreshold) {
+                sectionContainer.style.display = "none";
+                groupSelect.value = '';
+                return;
+            }
             sectionContainer.style.display = "block";
             groupSelect.innerHTML = '<option value="">Loading...</option>';
             fetch(`/Section/GetStudentGroupsForClass?classId=${classId}`)

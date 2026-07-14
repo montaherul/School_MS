@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "Journal Entries";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-journal-text ws-me-2"></i>Journal Entries</h4>
+            <p class="adm-header__desc">Record and post journal entries to the General Ledger</p>
+        </div>
+        <div class="adm-header__actions">
+            <a href="/Accounting/JournalEntry/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i>New Journal Entry</a>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="ws-p-3">
+            <div id="journal-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let grid;
+        function loadGrid() {
+            if (grid) { grid.replaceData(); return; }
+            grid = new Tabulator("#journal-grid", {
+                ajaxURL: "/Accounting/JournalEntry/GetList",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No journal entries found",
+                columns: [
+                    { title: "Journal No", field: "journalNo", width: 160 },
+                    { title: "Date", field: "entryDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Type", field: "entryType", width: 120 },
+                    { title: "Description", field: "description", widthGrow: 2 },
+                    { title: "Debit", field: "totalDebit", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Credit", field: "totalCredit", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Status", field: "isPosted", width: 100,
+                        formatter: function(c) {
+                            return c.getValue() ? '<span class="adm-badge adm-badge--success">Posted</span>' : '<span class="adm-badge adm-badge--warning">Draft</span>';
+                        }
+                    },
+                    { title: "Actions", width: 160, formatter: function(c) {
+                        const d = c.getData();
+                        return `<a href="/Accounting/JournalEntry/Details/${d.id}" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-eye"></i></a>
+                                ${!d.isPosted ? `<a href="/Accounting/JournalEntry/CreateEdit/${d.id}" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-pencil"></i></a>` : ''}`;
+                    }}
+                ]
+            });
+        }
+        document.addEventListener('DOMContentLoaded', loadGrid);
+    </script>
+}

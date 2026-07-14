@@ -578,7 +578,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<int> GenerateReligionExamSubjectsAsync(int examId, int classId, CancellationToken ct = default)
     {
-        var students = await _uow.Repository<Student>().Query()
+        var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.ClassId == classId && !s.IsDeleted && s.Status == StudentStatus.Active)
             .ToListAsync(ct);
@@ -628,7 +628,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<int> GenerateOptionalExamSubjectsAsync(int examId, int classId, CancellationToken ct = default)
     {
-        var students = await _uow.Repository<Student>().Query()
+        var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.ClassId == classId && !s.IsDeleted && s.Status == StudentStatus.Active)
             .ToListAsync(ct);

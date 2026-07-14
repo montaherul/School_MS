@@ -1,5 +1,6 @@
 @model IEnumerable<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>
 @using SchoolManagementSystem.Models.Entities.Fees
+@using SchoolManagementSystem.Models.DTOs.Fees
 @{
     ViewData["Title"] = "Fees";
     var childName = ViewBag.StudentName as string;
@@ -7,6 +8,7 @@
     var payments = ViewBag.Payments as List<Payment> ?? new();
     var totalDue = (decimal)(ViewBag.TotalDue ?? 0m);
     var totalPaid = (decimal)(ViewBag.TotalPaid ?? 0m);
+    var onlineRequests = ViewBag.OnlinePaymentRequests as List<OnlinePaymentRequestDto> ?? new();
 }
 
 <div class="adm-page">
@@ -69,6 +71,7 @@
                                 <th>Paid</th>
                                 <th>Due</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,6 +87,18 @@
                                         <span class="adm-badge adm-badge--@((int)inv.Status == 3 ? "success" : (int)inv.Status == 2 ? "warning" : "info")">
                                             @inv.Status
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if ((int)inv.Status != 3)
+                                        {
+                                            <a asp-action="PayFee" asp-route-invoiceId="@inv.Id" asp-route-studentId="@studentId" class="adm-btn adm-btn--primary adm-btn--sm">
+                                                <i class="bi bi-credit-card"></i> Pay Now
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -135,6 +150,71 @@
             {
                 <div class="text-center py-4">
                     <p class="text-muted">No payments yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
+            <h5 class="mb-0 fw-bold">Online Payment Requests</h5>
+        </div>
+        <div class="adm-table-card__body">
+            @if (onlineRequests.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in onlineRequests.OrderByDescending(x => x.CreatedAt))
+                            {
+                                <tr>
+                                    <td>@r.InvoiceNo</td>
+                                    <td>৳@r.Amount.ToString("N2")</td>
+                                    <td>@r.PaymentMethod</td>
+                                    <td>@(r.ReferenceNo ?? "N/A")</td>
+                                    <td>
+                                        <span class="adm-badge adm-badge--@(r.Status == "Verified" ? "success" : r.Status == "Rejected" ? "danger" : "warning")">
+                                            @r.Status
+                                        </span>
+                                    </td>
+                                    <td>@r.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                    <td>
+                                        @if (r.Status == "Rejected" || r.Status == "GatewayPending")
+                                        {
+                                            <a asp-action="PayFee" asp-route-invoiceId="@r.FeeInvoiceId" asp-route-studentId="@studentId" class="adm-btn adm-btn--primary adm-btn--sm">
+                                                <i class="bi bi-arrow-clockwise"></i> Retry
+                                            </a>
+                                        }
+                                        else if (r.Status == "Pending")
+                                        {
+                                            <span class="text-muted"><i class="bi bi-hourglass-split"></i> Awaiting verification</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success"><i class="bi bi-check-circle"></i> Done</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No online payment requests yet.</p>
                 </div>
             }
         </div>

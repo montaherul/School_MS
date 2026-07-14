@@ -500,6 +500,18 @@ public class ConversionPipelineService : IConversionPipelineService
             application.AdmissionFeePaid, className,
             application.PaymentMethod, application.TransactionDetails,
             approvedBy, ct);
+
+        // Link admission receipt to converted student
+        var receipt = await _unitOfWork.Repository<AdmissionReceipt>()
+            .FirstOrDefaultAsync(r => r.AdmissionApplicationId == applicationId && !r.IsDeleted, ct);
+        if (receipt != null && receipt.ConvertedStudentId == null)
+        {
+            receipt.ConvertedStudentId = studentId;
+            receipt.UpdatedBy = approvedBy;
+            receipt.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<AdmissionReceipt>().Update(receipt);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
     }
 
     public async Task SendEmailsAsync(int applicationId, int userId, bool portalEnabled, bool activationEnabled,

@@ -3,8 +3,8 @@ using SchoolManagementSystem.Models.DTOs.Routine;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Routine;
-using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Teachers;
+using StudentModel = SchoolManagementSystem.Models.Entities.Student.Student;
 
 namespace SchoolManagementSystem.Services.Interfaces.Routine;
 
@@ -118,7 +118,7 @@ public interface IRoutineEngineService
     Task<AcademicYear?> GetCurrentAcademicYearAsync(CancellationToken ct);
     Task<RoutineGeneration?> GetGenerationByIdAsync(int id, CancellationToken ct);
     Task<List<AcademicYearItem>> GetAcademicYearItemsAsync(CancellationToken ct);
-    Task<Student?> GetStudentByUserIdAsync(int userId, CancellationToken ct);
+    Task<StudentModel?> GetStudentByUserIdAsync(int userId, CancellationToken ct);
     Task<(ApplicationUser? User, Teacher? Teacher)> GetUserAndTeacherAsync(int userId, CancellationToken ct);
     Task<List<TeacherLookupDto>> GetTeacherLookupAsync(CancellationToken ct);
     Task<List<ClassItem>> GetClassItemsAsync(CancellationToken ct);

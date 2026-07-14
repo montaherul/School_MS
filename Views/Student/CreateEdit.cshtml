@@ -277,7 +277,7 @@
                                 {
                                     foreach (var c in ViewBag.Classes)
                                     {
-                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" data-sort-order="@c.SortOrder">@c.Name</option>
                                     }
                                 }
                             </select>
@@ -365,6 +365,8 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        var groupThreshold = @(ViewBag.GroupStartsFromClassId ?? 9);
+
         document.addEventListener("DOMContentLoaded", function () {
 
             const checkbox = document.getElementById("sameAddress");
@@ -394,8 +396,20 @@
             const groupSelect = document.getElementById('studentGroupId');
             const sectionSelect = document.getElementById('SectionId');
 
+            function classSortOrder() {
+                if (!classSelect) return 0;
+                var opt = classSelect.options[classSelect.selectedIndex];
+                return parseInt(opt && opt.dataset.sortOrder) || 0;
+            }
+
             function loadGroups(classId, selectedGroupId) {
                 if (!classId) { groupContainer.style.display = 'none'; return; }
+                if (classSortOrder() < groupThreshold) {
+                    groupContainer.style.display = 'none';
+                    groupSelect.value = '';
+                    filterSections();
+                    return;
+                }
                 groupSelect.innerHTML = '<option value="">Loading...</option>';
                 fetch('/Section/GetStudentGroupsForClass?classId=' + classId)
                     .then(r => r.json())

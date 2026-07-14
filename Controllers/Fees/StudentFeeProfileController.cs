@@ -34,7 +34,7 @@ public class StudentFeeProfileController : Controller
     [RequirePermission("StudentFeeProfile.View")]
     public IActionResult Index()
     {
-        return View();
+        return View("~/Views/Fee/StudentFeeProfile/Index.cshtml");
     }
 
     [HttpGet("{studentId}")]
@@ -48,7 +48,7 @@ public class StudentFeeProfileController : Controller
         if (profile.StudentId == 0)
             return NotFound();
 
-        return View(profile);
+        return View("~/Views/Fee/StudentFeeProfile/Profile.cshtml", profile);
     }
 
     [HttpPost("Search")]

@@ -5,8 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Routine;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
-using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Teachers;
+using StudentModel = SchoolManagementSystem.Models.Entities.Student.Student;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.Entities.Routine;
 using SchoolManagementSystem.Repositories.Interfaces.Routine;
@@ -1508,9 +1508,9 @@ public class RoutineEngineService : IRoutineEngineService
             .ToListAsync(ct);
     }
 
-    public async Task<Student?> GetStudentByUserIdAsync(int userId, CancellationToken ct)
+    public async Task<StudentModel?> GetStudentByUserIdAsync(int userId, CancellationToken ct)
     {
-        return await _unitOfWork.Repository<Student>().Query()
+        return await _unitOfWork.Repository<StudentModel>().Query()
             .AsNoTracking()
             .Include(s => s.Class)
             .Include(s => s.Section)

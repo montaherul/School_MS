@@ -1,0 +1,52 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Communication.Notice>
+@{
+    ViewData["Title"] = "Notices";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-megaphone"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Notices & Announcements</h1>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var n in Model)
+        {
+            <div class="adm-table-card mb-3">
+                <div class="p-4">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="fw-bold mb-2">@n.Title</h5>
+                        <small class="text-muted">@n.PublishAt.ToString("dd MMM yyyy")</small>
+                    </div>
+                    <span class="adm-badge adm-badge--neutral mb-2">@n.AudienceRole</span>
+                    <p class="mb-0">@n.Body</p>
+                    @if (!string.IsNullOrEmpty(n.AttachmentPath))
+                    {
+                        <a href="@n.AttachmentPath" target="_blank" class="adm-btn adm-btn--ghost adm-btn--sm mt-2">
+                            <i class="bi bi-paperclip"></i> Attachment
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="text-center py-5">
+                <i class="bi bi-megaphone fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No notices at the moment.</p>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "Chart of Accounts";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-book ws-me-2"></i>Chart of Accounts</h4>
+            <p class="adm-header__desc">Manage your enterprise chart of accounts</p>
+        </div>
+        <div class="adm-header__actions">
+            <a href="/Accounting/ChartOfAccount/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg ws-me-1"></i>New Account</a>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="ws-p-3">
+            <div id="account-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let grid;
+
+        function loadGrid() {
+            if (grid) { grid.replaceData(); return; }
+            grid = new Tabulator("#account-grid", {
+                ajaxURL: "/Accounting/ChartOfAccount/GetList",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No accounts found",
+                columns: [
+                    { title: "Code", field: "accountCode", width: 100 },
+                    { title: "Account Name", field: "accountName", widthGrow: 2 },
+                    { title: "Type", field: "accountType", width: 100,
+                        formatter: function(c) {
+                            const colors = { Asset: "primary", Liability: "warning", Income: "success", Expense: "danger", Equity: "info" };
+                            return `<span class="adm-badge adm-badge--${colors[c.getValue()] || 'secondary'}">${c.getValue()}</span>`;
+                        }
+                    },
+                    { title: "Balance", field: "openingBalance", width: 120, formatter: "money", formatterParams: { symbol: "৳", precision: 2 } },
+                    { title: "Active", field: "isActive", width: 80, formatter: "tickCross" },
+                    { title: "Actions", width: 120, formatter: function(c) {
+                        const id = c.getData().id;
+                        return `<a href="/Accounting/ChartOfAccount/CreateEdit/${id}" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-pencil"></i></a>
+                                <form method="post" action="/Accounting/ChartOfAccount/Delete" style="display:inline" onsubmit="return confirm('Delete this account?')">
+                                    <input type="hidden" name="id" value="${id}"/>
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="adm-btn adm-btn--sm adm-btn--ghost ws-text-danger"><i class="bi bi-trash"></i></button>
+                                </form>`;
+                    }}
+                ]
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadGrid);
+    </script>
+}

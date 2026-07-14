@@ -57,7 +57,7 @@ public class AdmitCardService : IAdmitCardService
         if (classIds.Count == 0)
             throw new InvalidOperationException("Cannot determine which classes take this exam. Configure exam subjects first.");
 
-        var studentsQuery = _uow.Repository<Student>().Query()
+        var studentsQuery = _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .Where(s => classIds.Contains(s.ClassId) && !s.IsDeleted && s.Status == StudentStatus.Active);
 
         if (exam.StudentGroupId.HasValue)

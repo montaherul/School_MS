@@ -292,7 +292,7 @@ public class SchoolClassService : ISchoolClassService
     {
         var sectionRepo = _unitOfWork.Repository<Section>();
         var mappingRepo = _unitOfWork.Repository<ClassSubject>();
-        var studentRepo = _unitOfWork.Repository<Student>();
+        var studentRepo = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
 
         var tasks = new Task<bool>[]
         {

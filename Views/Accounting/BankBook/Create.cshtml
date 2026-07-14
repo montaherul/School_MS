@@ -1,0 +1,73 @@
+@model BankTransactionDto
+@using SchoolManagementSystem.Models.Enums
+
+@{
+    ViewData["Title"] = "New Bank Transaction";
+}
+
+<div class="adm-page">
+    <div class="ws-mb-4">
+        <a href="/Accounting/BankBook" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left ws-me-1"></i> Back to Bank Book</a>
+    </div>
+
+    <div class="adm-card" style="max-width:640px;">
+        <div class="adm-card__header">
+            <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-plus-circle ws-me-2"></i>New Transaction</h5>
+        </div>
+        <div class="adm-card__body">
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="ws-row ws-g-3">
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Account</label>
+                        <select name="AccountId" class="adm-input" required>
+                            <option value="">Select account</option>
+                            @foreach (var a in (IEnumerable<SelectListItem>)ViewBag.Accounts)
+                            {
+                                <option value="@a.Value">@a.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Bank Type</label>
+                        <select name="BankAccountType" class="adm-input" asp-items="ViewBag.BankTypes" required></select>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Transaction Type</label>
+                        <select name="TransactionType" class="adm-input" asp-items="ViewBag.TxTypes" required></select>
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Date</label>
+                        <input name="TransactionDate" type="date" class="adm-input" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Amount</label>
+                        <input name="Amount" type="number" step="0.01" class="adm-input" required min="0.01" />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Reference No</label>
+                        <input name="ReferenceNo" class="adm-input" placeholder="Optional" />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Cheque No</label>
+                        <input name="ChequeNo" class="adm-input" placeholder="Optional" />
+                    </div>
+                    <div class="ws-col-12 ws-col-md-6">
+                        <label class="adm-form-label">Counter Party</label>
+                        <input name="CounterParty" class="adm-input" placeholder="Optional" />
+                    </div>
+                    <div class="ws-col-12">
+                        <label class="adm-form-label">Description</label>
+                        <textarea name="Description" class="adm-input" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="ws-text-end ws-mt-3 ws-pt-3 ws-border-top">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save</button>
+                    <a href="/Accounting/BankBook" class="adm-btn adm-btn--ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

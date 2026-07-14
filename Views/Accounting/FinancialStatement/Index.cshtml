@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Financial Statements";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-file-earmark-bar-graph ws-me-2"></i>Financial Statements</h4>
+            <p class="adm-header__desc">Income statement, balance sheet, and monthly summaries</p>
+        </div>
+    </div>
+
+    <div class="ws-row ws-g-4">
+        <div class="ws-col-12 ws-col-md-4">
+            <div class="adm-card ws-h-full">
+                <div class="adm-card__header">
+                    <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-cash-stack ws-me-2"></i>Income Statement</h5>
+                </div>
+                <div class="adm-card__body">
+                    <p class="ws-text-muted">View income and expense summary for a date range.</p>
+                    <form method="get" action="/Accounting/FinancialStatement/IncomeStatement" class="ws-flex-wrap ws-gap-2">
+                        <div style="min-width:100%;">
+                            <label class="adm-form-label">From</label>
+                            <input type="date" name="from" class="adm-input" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div style="min-width:100%;">
+                            <label class="adm-form-label">To</label>
+                            <input type="date" name="to" class="adm-input" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <button type="submit" class="adm-btn adm-btn--primary ws-w-full"><i class="bi bi-eye ws-me-1"></i> View</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-col-12 ws-col-md-4">
+            <div class="adm-card ws-h-full">
+                <div class="adm-card__header">
+                    <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-file-text ws-me-2"></i>Balance Sheet</h5>
+                </div>
+                <div class="adm-card__body">
+                    <p class="ws-text-muted">View assets, liabilities, and equity.</p>
+                    <form method="get" action="/Accounting/FinancialStatement/BalanceSheet" class="ws-flex-wrap ws-gap-2">
+                        <div style="min-width:100%;">
+                            <label class="adm-form-label">As of Date</label>
+                            <input type="date" name="asOfDate" class="adm-input" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <button type="submit" class="adm-btn adm-btn--primary ws-w-full"><i class="bi bi-eye ws-me-1"></i> View</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-col-12 ws-col-md-4">
+            <div class="adm-card ws-h-full">
+                <div class="adm-card__header">
+                    <h5 class="ws-fw-700 ws-mb-0"><i class="bi bi-bar-chart ws-me-2"></i>Monthly Summary</h5>
+                </div>
+                <div class="adm-card__body">
+                    <p class="ws-text-muted">Monthly income vs expense for a year.</p>
+                    <form method="get" action="/Accounting/FinancialStatement/MonthlySummary" class="ws-flex-wrap ws-gap-2">
+                        <div style="min-width:100%;">
+                            <label class="adm-form-label">Year</label>
+                            <input type="number" name="year" class="adm-input" value="@DateTime.Today.Year" min="2020" max="2099" />
+                        </div>
+                        <button type="submit" class="adm-btn adm-btn--primary ws-w-full"><i class="bi bi-eye ws-me-1"></i> View</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

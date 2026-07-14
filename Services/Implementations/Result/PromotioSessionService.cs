@@ -140,7 +140,7 @@ public class PromotioSessionService : IPromotioSessionService
         {
             var candidates = await _uow.Repository<FinalResult>().Query()
                 .Where(f => f.AcademicYearId == academicYearId && f.PromotionStatus == PromotionStatus.Pending && f.IsPassed
-                    && _uow.Repository<Student>().Query().Any(s => s.Id == f.StudentId && s.ClassId == fromClassId && !s.IsDeleted && s.Status == StudentStatus.Active))
+                    && _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query().Any(s => s.Id == f.StudentId && s.ClassId == fromClassId && !s.IsDeleted && s.Status == StudentStatus.Active))
                 .Include(f => f.Student).ThenInclude(s => s.Section)
                 .ToListAsync(ct);
 
@@ -189,7 +189,7 @@ public class PromotioSessionService : IPromotioSessionService
                         student.SectionId = newSection.Id;
                     if (newGroupId.HasValue)
                         student.StudentGroupId = newGroupId;
-                    _uow.Repository<Student>().Update(student);
+                    _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Update(student);
 
                     finalResult.PromotionStatus = PromotionStatus.Promoted;
                     finalResult.PromotioSessionId = sessionId;
@@ -287,14 +287,14 @@ public class PromotioSessionService : IPromotioSessionService
 
             foreach (var h in histories)
             {
-                var student = await _uow.Repository<Student>().GetByIdAsync(h.StudentId, ct);
+                var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(h.StudentId, ct);
                 if (student != null)
                 {
                     student.ClassId = h.FromClassId;
                     student.SectionId = h.NewSectionId ?? student.SectionId;
                     if (h.NewGroupId.HasValue)
                         student.StudentGroupId = null;
-                    _uow.Repository<Student>().Update(student);
+                    _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Update(student);
                 }
 
                 var finalResult = await _uow.Repository<FinalResult>()

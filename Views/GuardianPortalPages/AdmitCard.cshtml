@@ -1,0 +1,63 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>
+@{
+    ViewData["Title"] = "Admit Card";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-card-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Admit Card</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Exam Name</th>
+                                <th>Academic Year</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var exam in Model)
+                            {
+                                <tr>
+                                    <td class="ws-fw-600">@exam.Name</td>
+                                    <td>@exam.AcademicYearId</td>
+                                    <td>
+                                        <a href="/AdmitCard/View?examId=@exam.Id&studentId=@studentId" class="adm-btn adm-btn--primary adm-btn--sm" target="_blank">
+                                            <i class="bi bi-eye"></i> View Admit Card
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-card-text fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No exams available for admit card.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
