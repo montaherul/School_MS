@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Payment Failed";
+    Layout = "_PublicLayout";
+}
+
+<div class="ws-page-hero">
+    <div class="ws-container ws-text-center">
+        <div class="ws-flex-center ws-mb-4">
+            <div class="ws-icon-circle ws-icon-circle--danger" style="width:80px;height:80px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+        </div>
+        <h1 class="ws-title-hero ws-mb-2">Payment Failed</h1>
+        <p class="ws-text-muted ws-fs-17 ws-mb-5">@(ViewBag.Message ?? "Your payment could not be processed. Please try again.")</p>
+        <div class="ws-flex-center ws-gap-3">
+            <a href="javascript:history.back()" class="ws-btn ws-btn--primary ws-btn--lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                Try Again
+            </a>
+            <a href="@(ViewBag.PortalHome ?? "/")" class="ws-btn ws-btn--outline ws-btn--lg">
+                @(ViewBag.PortalLabel ?? "Back to Home")
+            </a>
+        </div>
+    </div>
+</div>

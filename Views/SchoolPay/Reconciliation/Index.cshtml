@@ -1,0 +1,76 @@
+@using SchoolManagementSystem.Models.Enums
+@model List<SchoolPaySettlementDto>
+@{
+    ViewData["Title"] = "Settlement Reconciliation";
+}
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title">Settlement Reconciliation</h1>
+        <div class="adm-header-actions">
+            <form asp-action="BulkReconcile" method="post" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="adm-btn adm-btn-primary">
+                    <i class="bi bi-arrow-repeat"></i> Run Bulk Reconciliation
+                </button>
+            </form>
+        </div>
+    </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="adm-alert adm-alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="adm-alert adm-alert-warning">@TempData["Warning"]</div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="adm-empty">
+            <i class="bi bi-cash-coin adm-empty-icon"></i>
+            <h3>No Settlements</h3>
+            <p>No settlement records found for reconciliation.</p>
+        </div>
+    }
+    else
+    {
+        <div class="adm-card">
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Provider</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Settlement Date</th>
+                            <th>Remarks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td>@s.SettlementReference</td>
+                                <td>@s.ProviderName</td>
+                                <td>@s.Amount.ToString("C")</td>
+                                <td>
+                                    <span class="adm-badge @(s.Status == SettlementStatus.Settled ? "adm-badge-success" : s.Status == SettlementStatus.Pending ? "adm-badge-warning" : s.Status == SettlementStatus.Disputed ? "adm-badge-danger" : "adm-badge-info")">
+                                        @s.Status
+                                    </span>
+                                </td>
+                                <td>@(s.SettlementDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                <td class="adm-text-muted">@(s.Remarks ?? "-")</td>
+                                <td class="adm-actions">
+                                    <a asp-action="Details" asp-route-id="@s.Id" class="adm-btn adm-btn-sm adm-btn-info" title="Reconcile">
+                                        <i class="bi bi-search"></i> Reconcile
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

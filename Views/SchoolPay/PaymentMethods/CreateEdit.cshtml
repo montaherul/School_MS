@@ -1,0 +1,113 @@
+@model SchoolManagementSystem.Models.DTOs.SchoolPay.SchoolPayMethodUpsertDto
+@{
+    var isEdit = ViewContext.RouteData.Values["action"]?.ToString() == "Edit";
+    ViewData["Title"] = isEdit ? "Edit Payment Method" : "Add Payment Method";
+    Layout = "_Layout";
+}
+
+<div class="adm-page-header">
+    <h1 class="adm-page-title">@ViewData["Title"]</h1>
+    <p class="adm-page-desc">Configure a branded payment option for the checkout page</p>
+</div>
+
+<div class="adm-card" style="max-width:640px;">
+    <div class="adm-card__body">
+        <form method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="adm-form-group">
+                <label class="adm-label">Code</label>
+                <input asp-for="Code" class="adm-input" required />
+                <span asp-validation-for="Code" class="adm-text-danger adm-fs-12"></span>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Name</label>
+                <input asp-for="Name" class="adm-input" required />
+                <span asp-validation-for="Name" class="adm-text-danger adm-fs-12"></span>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Provider</label>
+                <select asp-for="PaymentProviderId" class="adm-input" required>
+                    <option value="">-- Select Provider --</option>
+                    @if (ViewBag.Providers != null)
+                    {
+                        foreach (var p in ViewBag.Providers)
+                        {
+                            <option value="@p.Id">@p.Name (@p.Code)</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Logo URL</label>
+                <input asp-for="LogoUrl" class="adm-input" placeholder="https://example.com/logo.png" />
+                <span asp-validation-for="LogoUrl" class="adm-text-danger adm-fs-12"></span>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Display Order</label>
+                <input asp-for="DisplayOrder" type="number" class="adm-input" style="width:100px;" value="0" />
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Popularity Rank (1–5 stars)</label>
+                <input asp-for="PopularityRank" type="number" class="adm-input" style="width:100px;" min="0" max="5" value="0" />
+            </div>
+
+            <div class="adm-row adm-g-3 adm-mb-4">
+                <div class="adm-col-4">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Background Color</label>
+                        <input asp-for="BackgroundColor" type="text" class="adm-input" placeholder="#E2136E" />
+                    </div>
+                </div>
+                <div class="adm-col-4">
+                    <div class="adm-form-group">
+                        <label class="adm-label">Text Color</label>
+                        <input asp-for="TextColor" type="text" class="adm-input" placeholder="#FFFFFF" />
+                    </div>
+                </div>
+                <div class="adm-col-4">
+                    <div class="adm-form-group">
+                        <label class="adm-label">CSS Class</label>
+                        <input asp-for="CssClass" type="text" class="adm-input" placeholder="pm-bkash" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-label">Icon (SVG/emoji)</label>
+                <input asp-for="Icon" type="text" class="adm-input" placeholder="bi bi-phone" />
+            </div>
+
+            <div class="adm-row adm-g-4 adm-mb-4">
+                <div class="adm-col-4">
+                    <label class="adm-checkbox">
+                        <input asp-for="IsDefault" type="checkbox" />
+                        <span>Default</span>
+                    </label>
+                </div>
+                <div class="adm-col-4">
+                    <label class="adm-checkbox">
+                        <input asp-for="IsRecommended" type="checkbox" />
+                        <span>Recommended</span>
+                    </label>
+                </div>
+                <div class="adm-col-4">
+                    <label class="adm-checkbox">
+                        <input asp-for="IsPopular" type="checkbox" />
+                        <span>Popular</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="adm-flex adm-gap-2">
+                <button type="submit" class="adm-btn adm-btn--primary">@(isEdit ? "Update" : "Create")</button>
+                <a asp-action="Index" class="adm-btn adm-btn--outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -81,6 +81,12 @@ using SchoolManagementSystem.Services.Implementations.Website;
 using SchoolManagementSystem.Services.Interfaces.Accounting;
 using SchoolManagementSystem.Services.Implementations.Accounting;
 using SchoolManagementSystem.Services.Implementations.Student;
+using SchoolManagementSystem.Repositories.Interfaces.SchoolPay;
+using SchoolManagementSystem.Repositories.Implementations.SchoolPay;
+using SchoolManagementSystem.Services.Interfaces.SchoolPay;
+using SchoolManagementSystem.Services.Implementations.SchoolPay;
+using SchoolManagementSystem.BackgroundServices;
+using SchoolManagementSystem.Services.Implementations.SchoolPay;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -243,6 +249,49 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IStudentFeeProfileService, StudentFeeProfileService>();
         services.AddScoped<IOnlinePaymentService, OnlinePaymentService>();
         services.AddScoped<IPaymentGatewayService, SslCommerzGatewayService>();
+
+        // Register SchoolPay Gateway Services
+        services.AddScoped<IProviderManagementService, ProviderManagementService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IWebhookService, WebhookService>();
+        services.AddScoped<ISettlementService, SettlementService>();
+        services.AddScoped<IRefundService, RefundService>();
+        services.AddScoped<ISchoolPayRepository, SchoolPayRepository>();
+        services.AddScoped<ISchoolPayService, SchoolPayService>();
+
+        // Register Gateway Factory (singleton)
+        services.AddSingleton<GatewayFactory>();
+
+        // Register SchoolPay SP-02 Services
+        services.AddScoped<IHealthMonitorService, HealthMonitorService>();
+        services.AddScoped<IPaymentRoutingService, PaymentRoutingService>();
+        services.AddScoped<IReconciliationService, ReconciliationService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+        // Register SchoolPay SP-03 Services
+        services.AddScoped<IOperationsCenterService, OperationsCenterService>();
+        services.AddScoped<IDeadLetterQueueService, DeadLetterQueueService>();
+        services.AddScoped<IFailoverService, FailoverService>();
+
+        // Register Payment Method Management
+        services.AddScoped<IPaymentMethodManagementService, PaymentMethodManagementService>();
+
+        // Register SchoolPay SP-04 Services
+        services.AddScoped<IWebhookSignatureValidator, WebhookSignatureValidator>();
+        services.AddScoped<IMerchantSecretService, MerchantSecretService>();
+        services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+        services.AddScoped<IMonitoringService, MonitoringService>();
+
+        // Register Sandbox Simulator Provider
+        services.AddScoped<SandboxProvider>();
+
+        // Register Event Bus (singleton — in-process)
+        services.AddSingleton<IEventBus, EventBus>();
+
+        // Register Background Workers
+        services.AddHostedService<HealthCheckWorker>();
+        services.AddHostedService<WebhookQueueWorker>();
+
         services.AddScoped<IAuditService, AuditService>();
 
         // Register Accounting Services

@@ -12,6 +12,9 @@ using SchoolManagementSystem.Middleware;
 using SchoolManagementSystem.Repositories.Implementations;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Services.Implementations;
+using SchoolManagementSystem.Services.Implementations.SchoolPay;
+using SchoolManagementSystem.Repositories.Interfaces.SchoolPay;
+using SchoolManagementSystem.Services.Interfaces.SchoolPay;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Implementations.Academic;
@@ -36,6 +39,7 @@ using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Helpers;
+using SchoolManagementSystem.Services.Implementations.SchoolPay;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -150,6 +154,9 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 // All repository and service registrations are now in ServiceRegistration.AddSchoolApplicationServices()
 builder.Services.AddSchoolApplicationServices();
 
+// Register SchoolPay Gateway providers
+builder.Services.AddScoped<SslCommerzProvider>();
+
 builder.Services.Configure<SchoolManagementSystem.Models.DTOs.Fees.SslCommerzConfig>(builder.Configuration.GetSection("SslCommerz"));
 builder.Services.AddHttpClient("SslCommerz", client =>
 {
@@ -177,6 +184,14 @@ builder.Services.AddResponseCompression(options =>
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// Initialize Gateway Factory with registered providers
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<GatewayFactory>();
+    factory.RegisterProvider<SslCommerzProvider>("SSLCOMMERZ");
+    factory.RegisterProvider<SandboxProvider>("SANDBOX");
+}
 
 app.UseResponseCompression();
 
@@ -269,6 +284,20 @@ await using (var scope = app.Services.CreateAsyncScope())
 
     // RBAC: ensure Website admin permissions exist and are granted to admin roles
     await WebsiteRbacSeeder.SeedAsync(db);
+
+    // RBAC: SchoolPay Gateway permissions
+    await SchoolPayRbacSeeder.SeedAsync(db);
+
+    // Seed Sandbox provider if not exists
+    var schoolPayRepo = scope.ServiceProvider.GetRequiredService<ISchoolPayRepository>();
+    await SandboxSeeder.SeedSandboxProviderAsync(schoolPayRepo);
+
+    // Seed default payment methods (bKash, Nagad, Rocket, etc.) linked to SSLCommerz
+    await PaymentMethodSeeder.SeedAsync(db);
+
+    // Register EventBus handlers
+    var eventBus = scope.ServiceProvider.GetRequiredService<IEventBus>();
+    eventBus.RegisterPaymentHandlers(scope.ServiceProvider.GetRequiredService<IServiceScopeFactory>());
 
     // RBAC safety net: ensure Guardian role is permanently restricted to the
     // 9 portal permissions (run after all seeders so it can correct any

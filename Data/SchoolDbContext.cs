@@ -22,6 +22,7 @@ using SchoolManagementSystem.Models.Entities.Transport;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Accounting;
+using SchoolManagementSystem.Models.Entities.SchoolPay;
 
 
 namespace SchoolManagementSystem.Data;
@@ -113,7 +114,8 @@ public class SchoolDbContext : DbContext
     public DbSet<FeeLedger> FeeLedgers => Set<FeeLedger>();
     public DbSet<FeeCollectionSummary> FeeCollectionSummaries => Set<FeeCollectionSummary>();
     public DbSet<OnlinePaymentRequest> OnlinePaymentRequests => Set<OnlinePaymentRequest>();
-    public DbSet<PaymentGatewayTransaction> PaymentGatewayTransactions => Set<PaymentGatewayTransaction>();
+    public DbSet<SchoolManagementSystem.Models.Entities.Fees.PaymentGatewayTransaction> PaymentGatewayTransactions => Set<SchoolManagementSystem.Models.Entities.Fees.PaymentGatewayTransaction>();
+    public DbSet<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction> SchoolPayGatewayTransactions => Set<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction>();
     public DbSet<AdmissionReceipt> AdmissionReceipts => Set<AdmissionReceipt>();
     public DbSet<LateFeeRule> LateFeeRules => Set<LateFeeRule>();
     public DbSet<FineRule> FineRules => Set<FineRule>();
@@ -185,6 +187,18 @@ public class SchoolDbContext : DbContext
     public DbSet<EventNotificationAttachment> EventNotificationAttachments => Set<EventNotificationAttachment>();
     public DbSet<ScheduledNotification> ScheduledNotifications => Set<ScheduledNotification>();
     public DbSet<ReminderConfig> ReminderConfigs => Set<ReminderConfig>();
+
+    // SchoolPay DbSets
+    public DbSet<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProvider> PaymentProviders => Set<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProvider>();
+    public DbSet<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProviderConfiguration> PaymentProviderConfigurations => Set<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProviderConfiguration>();
+    public DbSet<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentMethod> PaymentMethods => Set<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentMethod>();
+
+    public DbSet<PaymentGatewayHealth> PaymentGatewayHealthRecords => Set<PaymentGatewayHealth>();
+    public DbSet<PaymentGatewayWebhook> PaymentGatewayWebhooks => Set<PaymentGatewayWebhook>();
+    public DbSet<PaymentGatewaySettlement> PaymentGatewaySettlements => Set<PaymentGatewaySettlement>();
+    public DbSet<PaymentGatewayRefund> PaymentGatewayRefunds => Set<PaymentGatewayRefund>();
+    public DbSet<PaymentGatewayAudit> PaymentGatewayAudits => Set<PaymentGatewayAudit>();
+    public DbSet<PaymentGatewaySecurityEvent> PaymentGatewaySecurityEvents => Set<PaymentGatewaySecurityEvent>();
 
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
     public DbSet<ClassSubjectGroup> ClassSubjectGroups => Set<ClassSubjectGroup>();
@@ -905,6 +919,135 @@ modelBuilder.Entity<AdmitCard>()
         {
             entity.HasIndex(e => e.ReceiptNo).IsUnique().HasFilter("[IsDeleted] = 0");
             entity.HasIndex(e => e.AdmissionApplicationId);
+        });
+
+        // SchoolPay: PaymentProvider
+        modelBuilder.Entity<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProvider>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+        });
+
+        // SchoolPay: PaymentProviderConfiguration
+        modelBuilder.Entity<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentProviderConfiguration>(entity =>
+        {
+            entity.HasIndex(e => new { e.PaymentProviderId, e.Key }).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Key).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Value).HasMaxLength(2000).IsRequired();
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SchoolPay: PaymentMethod
+        modelBuilder.Entity<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentMethod>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.BackgroundColor).HasMaxLength(20);
+            entity.Property(e => e.TextColor).HasMaxLength(20);
+            entity.Property(e => e.Icon).HasMaxLength(100);
+            entity.Property(e => e.CssClass).HasMaxLength(100);
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // SchoolPay: PaymentGatewaySecurityEvent
+        modelBuilder.Entity<PaymentGatewaySecurityEvent>(entity =>
+        {
+            entity.ToTable("PaymentGatewaySecurityEvents");
+            entity.HasIndex(e => e.PerformedAt);
+            entity.HasIndex(e => e.PaymentProviderId);
+            entity.HasIndex(e => e.EventType);
+            entity.HasIndex(e => e.PerformedBy);
+            entity.HasIndex(e => new { e.PaymentProviderId, e.PerformedAt });
+        });
+
+        // SchoolPay: PaymentGatewayWebhook
+        modelBuilder.Entity<PaymentGatewayWebhook>(entity =>
+        {
+            entity.ToTable("PaymentGatewayWebhooks");
+            entity.HasIndex(e => e.TransactionReference);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.PaymentProviderId, e.Status });
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.PaymentGatewayTransaction)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentGatewayTransactionId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // SchoolPay: PaymentGatewaySettlement
+        modelBuilder.Entity<PaymentGatewaySettlement>(entity =>
+        {
+            entity.ToTable("PaymentGatewaySettlements");
+            entity.HasIndex(e => e.SettlementReference).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // SchoolPay: PaymentGatewayRefund
+        modelBuilder.Entity<PaymentGatewayRefund>(entity =>
+        {
+            entity.ToTable("PaymentGatewayRefunds");
+            entity.HasIndex(e => e.RefundReference).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.PaymentGatewayTransaction)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentGatewayTransactionId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // SchoolPay: PaymentGatewayAudit
+        modelBuilder.Entity<PaymentGatewayAudit>(entity =>
+        {
+            entity.ToTable("PaymentGatewayAudits");
+            entity.HasIndex(e => e.EventType);
+            entity.HasIndex(e => e.PerformedAt);
+            entity.HasIndex(e => e.PaymentGatewayTransactionId);
+        });
+
+        // SchoolPay: PaymentGatewayHealth
+        modelBuilder.Entity<PaymentGatewayHealth>(entity =>
+        {
+            entity.ToTable("PaymentGatewayHealthRecords");
+            entity.HasIndex(e => e.PaymentProviderId);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SchoolPay: SchoolPay PaymentGatewayTransaction
+        modelBuilder.Entity<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction>(entity =>
+        {
+            entity.ToTable("SchoolPayGatewayTransactions");
+            entity.HasIndex(e => e.TransactionReference);
+            entity.HasIndex(e => e.ProviderTransactionId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => new { e.PaymentProviderId, e.Status });
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.FeeAmount).HasPrecision(18, 2);
+            entity.HasOne(e => e.PaymentProvider)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentProviderId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.PaymentMethod)
+                  .WithMany()
+                  .HasForeignKey(e => e.PaymentMethodId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
 DbInitializer.Seed(modelBuilder);

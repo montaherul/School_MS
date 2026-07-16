@@ -1,0 +1,53 @@
+@{
+    ViewData["Title"] = "Sandbox Simulator";
+}
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title"><i class="bi bi-flask"></i> Gateway Sandbox Simulator</h1>
+    </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="adm-alert adm-alert-success">@TempData["Success"]</div>
+    }
+    <div class="dash-grid dash-grid-2">
+        <div class="adm-card">
+            <h3 class="adm-card-title">Simulate Payment Scenario</h3>
+            <form asp-action="Simulate" method="post" class="adm-form">
+                @Html.AntiForgeryToken()
+                <div class="adm-form-group">
+                    <label class="adm-label">Scenario</label>
+                    <select name="Scenario" class="adm-select" required>
+                        <option value="success">Success — Payment completed</option>
+                        <option value="failure">Failure — Payment failed</option>
+                        <option value="timeout">Timeout — Payment pending (expires)</option>
+                        <option value="duplicate">Duplicate — Two identical transactions</option>
+                    </select>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-label">Amount</label>
+                    <input type="number" name="Amount" step="0.01" class="adm-input" value="1000" required />
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-label">Invoice ID (optional)</label>
+                    <input type="number" name="InvoiceId" class="adm-input" placeholder="e.g. 42" />
+                </div>
+                <button type="submit" class="adm-btn adm-btn-primary">
+                    <i class="bi bi-play-fill"></i> Run Scenario
+                </button>
+            </form>
+        </div>
+        <div class="adm-card">
+            <h3 class="adm-card-title">Test Results</h3>
+            <p>Use the sandbox to test how SchoolPay handles:</p>
+            <ul class="adm-list">
+                <li><strong>Success</strong> — Normal payment completion flow</li>
+                <li><strong>Failure</strong> — Payment rejected by gateway</li>
+                <li><strong>Timeout</strong> — Payment left pending (tests expiry handling)</li>
+                <li><strong>Duplicate</strong> — Two identical transactions (tests dedup)</li>
+            </ul>
+            <div class="adm-alert adm-alert-info">
+                <i class="bi bi-info-circle"></i> Sandbox transactions appear in the Transactions list with provider "SANDBOX".
+            </div>
+        </div>
+    </div>
+</div>

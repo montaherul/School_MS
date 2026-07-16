@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Payment Successful";
+    Layout = "_PublicLayout";
+}
+
+<div class="ws-page-hero">
+    <div class="ws-container ws-text-center">
+        <div class="ws-flex-center ws-mb-4">
+            <div class="ws-icon-circle ws-icon-circle--success" style="width:80px;height:80px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+        </div>
+        <h1 class="ws-title-hero ws-mb-2">@(ViewBag.Message ?? "Payment Successful!")</h1>
+        <p class="ws-text-muted ws-fs-17 ws-mb-5">Your payment has been processed successfully.</p>
+
+        @if (ViewBag.InvoiceNo != null)
+        {
+            <div class="ws-card ws-card--highlighted ws-mx-auto ws-max-w-400 ws-mb-5">
+                <div class="ws-card__body ws-text-center ws-p-4">
+                    <p class="ws-text-muted ws-fs-12 ws-fw-600 ws-text-uppercase ws-tracked ws-mb-1">Invoice</p>
+                    <p class="ws-fs-20 ws-fw-700">@ViewBag.InvoiceNo</p>
+                    @if (ViewBag.Amount != null)
+                    {
+                        <p class="ws-fs-24 ws-fw-800 ws-text-primary ws-mt-2">&#2547;@ViewBag.Amount.ToString("N2")</p>
+                    }
+                    @if (ViewBag.TransactionId != null)
+                    {
+                        <p class="ws-text-muted ws-fs-12 ws-mt-2">Ref: @ViewBag.TransactionId</p>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="ws-flex-center ws-gap-3">
+            <a href="@(ViewBag.PortalHome ?? "/")" class="ws-btn ws-btn--primary ws-btn--lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                @(ViewBag.PortalLabel ?? "Back to Home")
+            </a>
+        </div>
+    </div>
+</div>

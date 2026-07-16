@@ -1,0 +1,101 @@
+@model List<SchoolManagementSystem.Models.DTOs.SchoolPay.SchoolPayProviderListDto>
+@using SchoolManagementSystem.Models.Enums
+@{
+    ViewData["Title"] = "Payment Providers";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-credit-card-2-front"></i></div>
+            <div>
+                <h1 class="adm-header__title">Payment Providers</h1>
+                <p class="adm-header__sub">Manage SchoolPay gateway providers</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a asp-action="Create" class="adm-btn adm-btn--primary adm-btn--sm">
+                <i class="bi bi-plus-lg"></i> Add Provider
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-responsive">
+            <table class="adm-table">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Code</th>
+                        <th>Status</th>
+                        <th>Mode</th>
+                        <th>Priority</th>
+                        <th>Methods</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="7" class="adm-text-center adm-py-4 adm-text-muted">No providers configured yet.</td></tr>
+                    }
+                    @foreach (var provider in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="adm-flex adm-items-center adm-gap-2">
+                                    @if (!string.IsNullOrEmpty(provider.LogoUrl))
+                                    {
+                                        <img src="@provider.LogoUrl" alt="" style="width:28px;height:28px;object-fit:contain;" />
+                                    }
+                                    <span class="adm-fw-600">@provider.Name</span>
+                                </div>
+                            </td>
+                            <td><code>@provider.Code</code></td>
+                            <td>
+                                <span class="adm-badge adm-badge--@(provider.Status == ProviderStatus.Active ? "success" : provider.Status == ProviderStatus.Error ? "danger" : "warning")">
+                                    @provider.Status
+                                </span>
+                                @if (!provider.IsActive)
+                                {
+                                    <span class="adm-badge adm-badge--secondary ms-1">Disabled</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="adm-badge adm-badge--@(provider.IsSandbox ? "warning" : "info")">
+                                    @(provider.IsSandbox ? "Sandbox" : "Live")
+                                </span>
+                            </td>
+                            <td>@provider.Priority</td>
+                            <td>@provider.MethodCount</td>
+                            <td>
+                                <div class="adm-flex adm-gap-1">
+                                    <a asp-action="Edit" asp-route-id="@provider.Id" class="adm-btn adm-btn--ghost adm-btn--xs" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="post" asp-action="ToggleStatus" asp-route-id="@provider.Id" style="display:inline;">
+                                        <input type="hidden" name="isActive" value="@(provider.IsActive ? "false" : "true")" />
+                                        <button type="submit" class="adm-btn adm-btn--ghost adm-btn--xs" title="@(provider.IsActive ? "Disable" : "Enable")">
+                                            <i class="bi bi-@(provider.IsActive ? "pause-circle" : "play-circle")"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-action="ToggleSandbox" asp-route-id="@provider.Id" style="display:inline;">
+                                        <input type="hidden" name="isSandbox" value="@(provider.IsSandbox ? "false" : "true")" />
+                                        <button type="submit" class="adm-btn adm-btn--ghost adm-btn--xs" title="Toggle Sandbox/Live">
+                                            <i class="bi bi-@(provider.IsSandbox ? "cloud-check" : "cloud-haze")"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-action="Delete" asp-route-id="@provider.Id" style="display:inline;" onsubmit="return confirm('Delete this provider?');">
+                                        <button type="submit" class="adm-btn adm-btn--ghost adm-btn--xs adm-text-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

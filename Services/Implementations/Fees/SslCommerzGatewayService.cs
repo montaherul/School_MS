@@ -49,7 +49,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<SslCommerzInitResponse?> InitiatePaymentAsync(int onlinePaymentRequestId, CancellationToken ct = default)
+    public async Task<SslCommerzInitResponse?> InitiatePaymentAsync(int onlinePaymentRequestId, string? preferredCardType = null, CancellationToken ct = default)
     {
         var request = await _db.OnlinePaymentRequests
             .Include(r => r.FeeInvoice)
@@ -147,7 +147,8 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             product_profile = "general",
             value_a = request.Id.ToString(),
             value_b = request.FeeInvoiceId.ToString(),
-            value_c = request.StudentId.ToString()
+            value_c = request.StudentId.ToString(),
+            card_type = preferredCardType
         };
 
         var json = JsonSerializer.Serialize(initData);

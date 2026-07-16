@@ -40,6 +40,9 @@ public class SslCommerzInitRequest
     public string? value_b { get; set; }
     public string? value_c { get; set; }
     public string? value_d { get; set; }
+
+    [MaxLength(50)]
+    public string? card_type { get; set; }
 }
 
 public class SslCommerzInitResponse

@@ -72,7 +72,7 @@ public class PaymentGatewayController : Controller
             return RedirectToAction(nameof(Success));
         }
 
-        var result = await _gatewayService.InitiatePaymentAsync(requestId, ct);
+        var result = await _gatewayService.InitiatePaymentAsync(requestId, null, ct);
         if (result == null || result.status != "SUCCESS" || string.IsNullOrEmpty(result.GatewayPageURL))
         {
             _logger.LogError("SSLCommerz init failed for request {RequestId}: {Reason}", requestId, result?.failedreason);

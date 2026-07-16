@@ -178,3 +178,95 @@ public enum PaymentPurpose
     LibraryFine = 5,
     Other = 6
 }
+
+// SchoolPay Gateway Enums
+public enum ProviderStatus
+{
+    Active = 1,
+    Inactive = 2,
+    Maintenance = 3,
+    Error = 4
+}
+
+public enum SchoolPayTransactionStatus
+{
+    Pending = 1,
+    Processing = 2,
+    Completed = 3,
+    Failed = 4,
+    Refunded = 5,
+    PartiallyRefunded = 6,
+    Expired = 7,
+    Cancelled = 8
+}
+
+public enum PaymentSecurityEventType
+{
+    SignatureVerified = 1,
+    SignatureFailed = 2,
+    ReplayAttackDetected = 3,
+    SecretRotated = 4,
+    ApiKeyCreated = 5,
+    ApiKeyRevoked = 6,
+    WebhookReceived = 7,
+    WebhookRejected = 8,
+    UnauthorizedAttempt = 9,
+    RateLimitExceeded = 10,
+    ProviderDisabled = 11,
+    ProviderEnabled = 12,
+    ManualSettlement = 13,
+    ManualReconciliation = 14,
+    RefundApproved = 15,
+    RefundRejected = 16,
+    PaymentInitiated = 17,
+    PaymentCompleted = 18,
+    PaymentFailed = 19,
+    ProviderHealthOk = 20,
+    ProviderHealthFailure = 21,
+    DeadLetterReprocessed = 22,
+    DeadLetterIgnored = 23
+}
+
+public enum SchoolPayWebhookStatus
+{
+    Received = 1,
+    Processing = 2,
+    Processed = 3,
+    Failed = 4,
+    Ignored = 5,
+    DeadLetter = 6
+}
+
+public enum SettlementStatus
+{
+    Pending = 1,
+    Processing = 2,
+    Settled = 3,
+    Failed = 4,
+    Disputed = 5
+}
+
+public enum RefundStatus
+{
+    Requested = 1,
+    Approved = 2,
+    Processed = 3,
+    Failed = 4,
+    Rejected = 5
+}
+
+public enum PaymentRoutePriority
+{
+    Primary = 1,
+    Secondary = 2,
+    Tertiary = 3,
+    Fallback = 4
+}
+
+public enum ProviderHealthStatus
+{
+    Healthy = 1,
+    Degraded = 2,
+    Unhealthy = 3,
+    Unknown = 4
+}

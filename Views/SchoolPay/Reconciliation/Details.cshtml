@@ -1,0 +1,85 @@
+@using SchoolManagementSystem.Models.Enums
+@model SchoolPayReconciliationResultDto
+@{
+    ViewData["Title"] = "Reconciliation Details";
+}
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title">Reconciliation: @Model.SettlementReference</h1>
+        <div class="adm-header-actions">
+            <a asp-action="Index" class="adm-btn adm-btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <form asp-action="Reconcile" method="post" style="display:inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.SettlementId" />
+                <button type="submit" class="adm-btn adm-btn-primary">
+                    <i class="bi bi-check-lg"></i> Run Reconciliation
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="dash-grid dash-grid-4">
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="dash-widget-value">@Model.SettlementAmount.ToString("C")</div>
+            <div class="dash-widget-label">Settlement Amount</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="dash-widget-value">@Model.MatchedAmount.ToString("C")</div>
+            <div class="dash-widget-label">Matched Amount</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="dash-widget-value @(Math.Abs(Model.Difference) < 0.01m ? "text-success" : "text-danger")">@Model.Difference.ToString("C")</div>
+            <div class="dash-widget-label">Difference</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-arrow-left-right"></i></div>
+            <div class="dash-widget-value">@Model.MatchedTransactionCount / @(Model.MatchedTransactionCount + Model.UnmatchedTransactionCount)</div>
+            <div class="dash-widget-label">Transactions Matched</div>
+        </div>
+    </div>
+    <div class="adm-card" style="margin-top:1.5rem">
+        <h3 class="adm-card-title">Matched Transactions</h3>
+        <div class="adm-table-wrapper">
+            <table class="adm-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Completed At</th>
+                        <th>Matched</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var txn in Model.Transactions)
+                    {
+                        <tr>
+                            <td>@txn.TransactionReference</td>
+                            <td>@txn.Amount.ToString("C")</td>
+                            <td>
+                                <span class="adm-badge @(txn.Status == SchoolPayTransactionStatus.Completed ? "adm-badge-success" : "adm-badge-danger")">
+                                    @txn.Status
+                                </span>
+                            </td>
+                            <td>@(txn.CompletedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                            <td>
+                                @if (txn.IsMatched)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

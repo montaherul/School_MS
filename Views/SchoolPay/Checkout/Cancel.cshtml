@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Payment Cancelled";
+    Layout = "_PublicLayout";
+}
+
+<div class="ws-page-hero">
+    <div class="ws-container ws-text-center">
+        <div class="ws-flex-center ws-mb-4">
+            <div class="ws-icon-circle ws-icon-circle--warning" style="width:80px;height:80px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+        </div>
+        <h1 class="ws-title-hero ws-mb-2">Payment Cancelled</h1>
+        <p class="ws-text-muted ws-fs-17 ws-mb-5">@(ViewBag.Message ?? "Your payment was cancelled. No charges have been made.")</p>
+        <a href="@(ViewBag.PortalHome ?? "/")" class="ws-btn ws-btn--primary ws-btn--lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            @(ViewBag.PortalLabel ?? "Back to Home")
+        </a>
+    </div>
+</div>

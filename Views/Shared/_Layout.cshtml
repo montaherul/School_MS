@@ -518,6 +518,25 @@
                             }
                         }
 
+                        @* ── SchoolPay Gateway (Admin/Principal) ── *@
+                        @if (Can("Accounting.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">SchoolPay</span></span>
+                            <a asp-controller="ProviderManagement" asp-action="Index" data-title="Providers"><i class="bi bi-credit-card-2-front"></i><span class="nav-text">Payment Providers</span></a>
+                            <a asp-controller="SchoolPayTransaction" asp-action="Index" data-title="Transactions"><i class="bi bi-credit-card"></i><span class="nav-text">Transactions</span></a>
+                            <a asp-controller="PaymentMethod" asp-action="Index" data-title="PaymentMethods"><i class="bi bi-wallet2"></i><span class="nav-text">Payment Methods</span></a>
+                            <a asp-controller="SchoolPaySettlement" asp-action="Index" data-title="Settlements"><i class="bi bi-cash-stack"></i><span class="nav-text">Settlements</span></a>
+                            <a asp-controller="SchoolPayReconciliation" asp-action="Index" data-title="Reconciliation"><i class="bi bi-arrow-left-right"></i><span class="nav-text">Reconciliation</span></a>
+                            <a asp-controller="RoutingRules" asp-action="Index" data-title="Routing"><i class="bi bi-diagram-3"></i><span class="nav-text">Routing Rules</span></a>
+                            <a asp-controller="SchoolPayAnalytics" asp-action="Index" data-title="Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
+                            <a asp-controller="SchoolPayOperations" asp-action="Index" data-title="Operations"><i class="bi bi-speedometer2"></i><span class="nav-text">Operations</span></a>
+                            <a asp-controller="Failover" asp-action="Index" data-title="Failover"><i class="bi bi-shield-check"></i><span class="nav-text">Failover</span></a>
+                            <a asp-controller="DeadLetterQueue" asp-action="Index" data-title="DLQ"><i class="bi bi-archive"></i><span class="nav-text">Dead Letter</span></a>
+                            <a asp-controller="Monitoring" asp-action="Index" data-title="Monitoring"><i class="bi bi-activity"></i><span class="nav-text">Monitoring</span></a>
+                            <a asp-controller="SchoolPaySecurity" asp-action="Index" data-title="Security"><i class="bi bi-shield-lock"></i><span class="nav-text">Security</span></a>
+                            <a asp-controller="Sandbox" asp-action="Index" data-title="Sandbox"><i class="bi bi-flask"></i><span class="nav-text">Sandbox</span></a>
+                        }
+
                         @if (Can("Students.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">People</span></span>
@@ -743,6 +762,25 @@
                                     <a asp-controller="FinancialPeriod" asp-action="Index" data-title="Financial Periods"><i class="bi bi-calendar-lock"></i><span class="nav-text">Financial Periods</span></a>
                                 }
                             }
+                        }
+
+                        @* ── SchoolPay Gateway ── *@
+                        @if (Can("Accounting.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">SchoolPay</span></span>
+                            <a asp-controller="ProviderManagement" asp-action="Index" data-title="Providers"><i class="bi bi-credit-card-2-front"></i><span class="nav-text">Providers</span></a>
+                            <a asp-controller="SchoolPayTransaction" asp-action="Index" data-title="Transactions"><i class="bi bi-credit-card"></i><span class="nav-text">Transactions</span></a>
+                            <a asp-controller="PaymentMethod" asp-action="Index" data-title="PaymentMethods"><i class="bi bi-wallet2"></i><span class="nav-text">Payment Methods</span></a>
+                            <a asp-controller="SchoolPaySettlement" asp-action="Index" data-title="Settlements"><i class="bi bi-cash-stack"></i><span class="nav-text">Settlements</span></a>
+                            <a asp-controller="SchoolPayReconciliation" asp-action="Index" data-title="Reconciliation"><i class="bi bi-arrow-left-right"></i><span class="nav-text">Reconciliation</span></a>
+                            <a asp-controller="RoutingRules" asp-action="Index" data-title="Routing"><i class="bi bi-diagram-3"></i><span class="nav-text">Routing Rules</span></a>
+                            <a asp-controller="SchoolPayAnalytics" asp-action="Index" data-title="Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
+                            <a asp-controller="SchoolPayOperations" asp-action="Index" data-title="Operations"><i class="bi bi-speedometer2"></i><span class="nav-text">Operations</span></a>
+                            <a asp-controller="Failover" asp-action="Index" data-title="Failover"><i class="bi bi-shield-check"></i><span class="nav-text">Failover</span></a>
+                            <a asp-controller="DeadLetterQueue" asp-action="Index" data-title="DLQ"><i class="bi bi-archive"></i><span class="nav-text">Dead Letter</span></a>
+                            <a asp-controller="Monitoring" asp-action="Index" data-title="Monitoring"><i class="bi bi-activity"></i><span class="nav-text">Monitoring</span></a>
+                            <a asp-controller="SchoolPaySecurity" asp-action="Index" data-title="Security"><i class="bi bi-shield-lock"></i><span class="nav-text">Security</span></a>
+                            <a asp-controller="Sandbox" asp-action="Index" data-title="Sandbox"><i class="bi bi-flask"></i><span class="nav-text">Sandbox</span></a>
                         }
 
                         @* ── 11.5. Finance ── *@

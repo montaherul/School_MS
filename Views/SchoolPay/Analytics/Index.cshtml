@@ -1,0 +1,157 @@
+@using SchoolManagementSystem.Models.DTOs.SchoolPay
+@model SchoolPayAnalyticsDto
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+    var days = ViewBag.Days ?? 30;
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.min.css">
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title">Payment Analytics</h1>
+        <div class="adm-header-actions">
+            <div class="adm-filter-group">
+                <a asp-action="Index" asp-route-days="7" class="adm-btn adm-btn-sm @(days == 7 ? "adm-btn-primary" : "adm-btn-secondary")">7D</a>
+                <a asp-action="Index" asp-route-days="30" class="adm-btn adm-btn-sm @(days == 30 ? "adm-btn-primary" : "adm-btn-secondary")">30D</a>
+                <a asp-action="Index" asp-route-days="90" class="adm-btn adm-btn-sm @(days == 90 ? "adm-btn-primary" : "adm-btn-secondary")">90D</a>
+                <a asp-action="Index" asp-route-days="365" class="adm-btn adm-btn-sm @(days == 365 ? "adm-btn-primary" : "adm-btn-secondary")">1Y</a>
+            </div>
+        </div>
+    </div>
+    <div class="dash-grid dash-grid-4">
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-credit-card"></i></div>
+            <div class="dash-widget-value">@Model.Summary.TotalTransactions.ToString("N0")</div>
+            <div class="dash-widget-label">Total Transactions</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-check-circle text-success"></i></div>
+            <div class="dash-widget-value">@Model.Summary.SuccessfulTransactions.ToString("N0")</div>
+            <div class="dash-widget-label">Successful</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-x-circle text-danger"></i></div>
+            <div class="dash-widget-value">@Model.Summary.FailedTransactions.ToString("N0")</div>
+            <div class="dash-widget-label">Failed</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-graph-up"></i></div>
+            <div class="dash-widget-value">@Model.Summary.OverallSuccessRate.ToString("F1")%</div>
+            <div class="dash-widget-label">Success Rate</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="dash-widget-value">@Model.Summary.TotalRevenue.ToString("C0")</div>
+            <div class="dash-widget-label">Total Revenue</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-cash"></i></div>
+            <div class="dash-widget-value">@Model.Summary.AverageTransactionValue.ToString("C2")</div>
+            <div class="dash-widget-label">Avg Transaction</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-building"></i></div>
+            <div class="dash-widget-value">@Model.Summary.ActiveProviders.ToString("N0")</div>
+            <div class="dash-widget-label">Active Providers</div>
+        </div>
+        <div class="dash-widget">
+            <div class="dash-widget-icon"><i class="bi bi-check-all text-info"></i></div>
+            <div class="dash-widget-value">@((Model.Summary.SuccessfulTransactions > 0 ? (Model.Summary.TotalRevenue / Model.Summary.SuccessfulTransactions) : 0).ToString("C2"))</div>
+            <div class="dash-widget-label">Revenue/Txn</div>
+        </div>
+    </div>
+    <div class="dash-grid dash-grid-2" style="margin-top:1.5rem">
+        <div class="adm-card">
+            <h3 class="adm-card-title">Transaction Volume</h3>
+            <div class="adm-chart-container">
+                <canvas id="volumeChart" height="300"></canvas>
+            </div>
+        </div>
+        <div class="adm-card">
+            <h3 class="adm-card-title">Provider Performance</h3>
+            <div class="adm-chart-container">
+                <canvas id="providerChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    @if (Model.ProviderPerformance.Any())
+    {
+        <div class="adm-card" style="margin-top:1.5rem">
+            <h3 class="adm-card-title">Provider Breakdown</h3>
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Total</th>
+                            <th>Successful</th>
+                            <th>Failed</th>
+                            <th>Success Rate</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.ProviderPerformance)
+                        {
+                            <tr>
+                                <td>@p.ProviderName</td>
+                                <td>@p.TotalTransactions</td>
+                                <td class="text-success">@p.SuccessfulTransactions</td>
+                                <td class="text-danger">@p.FailedTransactions</td>
+                                <td>@p.SuccessRate.ToString("F1")%</td>
+                                <td>@p.TotalAmount.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    (function() {
+        var volumeCtx = document.getElementById('volumeChart');
+        if (volumeCtx) {
+            new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.VolumeByDay.Select(v => "'" + v.Date + "'")))],
+                    datasets: [{
+                        label: 'Transactions',
+                        data: [@string.Join(",", Model.VolumeByDay.Select(v => v.TransactionCount))],
+                        backgroundColor: 'rgba(99,102,241,0.7)',
+                        borderColor: 'rgba(99,102,241,1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+        var providerCtx = document.getElementById('providerChart');
+        if (providerCtx) {
+            new Chart(providerCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.ProviderPerformance.Select(p => "'" + p.ProviderName + "'")))],
+                    datasets: [{
+                        data: [@string.Join(",", Model.ProviderPerformance.Select(p => p.TotalTransactions))],
+                        backgroundColor: ['rgba(99,102,241,0.8)', 'rgba(16,185,129,0.8)', 'rgba(245,158,11,0.8)', 'rgba(239,68,68,0.8)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    })();
+</script>

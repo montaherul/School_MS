@@ -1,0 +1,54 @@
+@using SchoolManagementSystem.Models.DTOs.SchoolPay
+@model List<SchoolPaySecurityAuditEntryDto>
+@{
+    ViewData["Title"] = "Security Center";
+}
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title"><i class="bi bi-shield-lock"></i> Security Center</h1>
+    </div>
+    <div class="dash-grid dash-grid-2">
+        <div class="adm-card">
+            <h3 class="adm-card-title">Security Audit Log</h3>
+            <p class="adm-text-muted">Recent security events (last 7 days)</p>
+            @if (!Model.Any())
+            {
+                <div class="adm-empty"><p>No security events recorded.</p></div>
+            }
+            else
+            {
+                <div class="adm-table-wrapper" style="max-height:300px;overflow-y:auto">
+                    <table class="adm-table adm-table-sm">
+                        <thead><tr><th>Event</th><th>User</th><th>Time</th></tr></thead>
+                        <tbody>
+                            @foreach (var e in Model)
+                            {
+                                <tr>
+                                    <td><span class="adm-badge adm-badge-info">@e.EventType</span></td>
+                                    <td>@(e.PerformedBy ?? "System")</td>
+                                    <td>@e.PerformedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            <div style="margin-top:1rem">
+                <a asp-action="AuditLog" class="adm-btn adm-btn-sm adm-btn-outline-primary">View Full Log</a>
+            </div>
+        </div>
+        <div class="adm-card">
+            <h3 class="adm-card-title">Provider Secrets</h3>
+            <p class="adm-text-muted">Manage encrypted merchant credentials</p>
+            <form asp-action="Secrets" method="get" class="adm-form adm-form-inline">
+                <div class="adm-form-group">
+                    <label class="adm-label">Select Provider</label>
+                    <select name="providerId" asp-items="@(new SelectList(ViewBag.Providers, "Id", "Name"))" class="adm-select" required>
+                        <option value="">Choose...</option>
+                    </select>
+                </div>
+                <button type="submit" class="adm-btn adm-btn-primary">Manage Secrets</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+@using SchoolManagementSystem.Models.Enums
+@model List<SchoolPayFailoverStatusDto>
+@{
+    ViewData["Title"] = "Provider Failover Status";
+}
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-page-title">
+            <i class="bi bi-shield-check"></i> Provider Failover Status
+        </h1>
+    </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="adm-alert adm-alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="adm-alert adm-alert-warning">@TempData["Warning"]</div>
+    }
+    <div class="adm-card">
+        <h3 class="adm-card-title">Provider Health & Failover</h3>
+        <div class="adm-table-wrapper">
+            <table class="adm-table">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Role</th>
+                        <th>Health</th>
+                        <th>Status</th>
+                        <th>Last Error</th>
+                        <th>Last Checked</th>
+                        <th>Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr class="@(!p.IsHealthy ? "adm-table-row-danger" : "")">
+                            <td>@p.ProviderName</td>
+                            <td>
+                                <span class="adm-badge @(p.IsPrimary ? "adm-badge-primary" : "adm-badge-secondary")">
+                                    @(p.IsPrimary ? "Primary" : "Backup")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="adm-badge @(p.HealthStatus == ProviderHealthStatus.Healthy ? "adm-badge-success" : p.HealthStatus == ProviderHealthStatus.Degraded ? "adm-badge-warning" : "adm-badge-danger")">
+                                    @p.HealthStatus
+                                </span>
+                            </td>
+                            <td>
+                                @if (p.IsHealthy)
+                                {
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                }
+                            </td>
+                            <td class="adm-text-muted">@(p.LastError ?? "None")</td>
+                            <td>@(p.LastCheckedAt?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</td>
+                            <td>
+                                <div class="adm-status-indicator @(p.IsHealthy ? "adm-status-green" : "adm-status-red")"></div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="adm-card" style="margin-top:1.5rem">
+        <h3 class="adm-card-title">Test Failover Routing</h3>
+        <form asp-action="TestFailover" method="post" class="adm-form adm-form-inline">
+            @Html.AntiForgeryToken()
+            <div class="adm-form-row">
+                <div class="adm-form-group">
+                    <label class="adm-label">Amount</label>
+                    <input type="number" name="amount" step="0.01" class="adm-input" placeholder="e.g. 5000" required />
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-label">Fee Type (optional)</label>
+                    <input type="text" name="feeType" class="adm-input" placeholder="e.g. Tuition" />
+                </div>
+                <div class="adm-form-group" style="align-self:flex-end">
+                    <button type="submit" class="adm-btn adm-btn-primary">
+                        <i class="bi bi-shield-check"></i> Test Failover
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

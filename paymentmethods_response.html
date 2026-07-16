@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign In - SchoolMS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/schoolms-universal.css?v=fnN87V07b9oKJLZbeJAoVqI4xtnNbk1LcRwWhid7r3k" />
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            padding: 20px;
+        }
+        .auth-shell { width: 100%; max-width: 440px; }
+        .auth-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            text-decoration: none;
+        }
+        .auth-brand-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #60a5fa;
+            backdrop-filter: blur(8px);
+        }
+        .auth-brand-text {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .auth-brand-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .auth-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+            padding: 36px 32px 32px;
+        }
+        .auth-header { text-align: center; margin-bottom: 28px; }
+        .auth-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+        .auth-icon--primary { background: #eff6ff; color: #1d4ed8; }
+        .auth-icon--success { background: #ecfdf5; color: #059669; }
+        .auth-icon--warning { background: #fffbeb; color: #d97706; }
+        .auth-title { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .auth-subtitle { font-size: 13.5px; color: #64748b; line-height: 1.5; }
+        .auth-form-group { margin-bottom: 18px; }
+        .auth-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 7px;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #0f172a;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .auth-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); background: #fff; }
+        .auth-input::placeholder { color: #94a3b8; }
+        .auth-input[readonly] { background: #f1f5f9; cursor: not-allowed; opacity: 0.8; }
+        .auth-input--otp {
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 14px;
+        }
+        .auth-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+        .auth-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+        .auth-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .auth-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .auth-link:hover { color: #1d4ed8; }
+        .auth-divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+        .auth-btn {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .auth-btn--primary { background: #3b82f6; color: #fff; }
+        .auth-btn--primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .auth-btn--primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .auth-btn--success { background: #059669; color: #fff; }
+        .auth-btn--success:hover { background: #047857; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+        .auth-footer { text-align: center; margin-top: 20px; }
+        .auth-footer-text { font-size: 13px; color: #94a3b8; }
+        .auth-alert {
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .auth-alert--success { background: #ecfdf5; color: #065f46; border: 1px solid rgba(5,150,105,0.15); }
+        .auth-alert--error { background: #fef2f2; color: #991b1b; border: 1px solid rgba(220,38,38,0.15); }
+        .auth-alert i { margin-top: 1px; flex-shrink: 0; }
+        .auth-validation { color: #dc2626; font-size: 12px; margin-top: 5px; }
+        .auth-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: authSpin 0.6s linear infinite; }
+        .auth-copyright { text-align: center; margin-top: 24px; font-size: 12px; color: rgba(255,255,255,0.35); }
+        .d-none { display: none !important; }
+        @keyframes authSpin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="auth-shell">
+        <a href="/" class="auth-brand">
+            <div class="auth-brand-icon">
+                    <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div>
+                <div class="auth-brand-text">CCSC</div>
+                <div class="auth-brand-sub">Management System</div>
+            </div>
+        </a>
+
+        <div class="auth-card">
+            
+<div class="auth-header">
+    <div class="auth-icon auth-icon--primary">
+        <i class="bi bi-person-fill"></i>
+    </div>
+    <h2 class="auth-title">Welcome Back</h2>
+    <p class="auth-subtitle">Enter your credentials to access your account</p>
+</div>
+
+
+<form method="post" action="/Auth/Login">
+    
+    <input type="hidden" id="ReturnUrl" name="ReturnUrl" value="/SchoolPay/PaymentMethods/Index" />
+
+    
+
+    <div class="auth-form-group">
+        <label class="auth-label" for="UserNameOrEmail">Username or Email</label>
+        <div style="position:relative">
+            <i class="bi bi-person" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px"></i>
+            <input class="auth-input" placeholder="Enter username or email" required autocomplete="username" style="padding-left:38px" type="text" data-val="true" data-val-required="The UserNameOrEmail field is required." id="UserNameOrEmail" name="UserNameOrEmail" value="" />
+        </div>
+        <span class="auth-validation field-validation-valid" data-valmsg-for="UserNameOrEmail" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="auth-form-group">
+        <label class="auth-label" for="Password">Password</label>
+        <div style="position:relative">
+            <i class="bi bi-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px"></i>
+            <input type="password" class="auth-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:38px" data-val="true" data-val-required="The Password field is required." id="Password" name="Password" />
+        </div>
+        <span class="auth-validation field-validation-valid" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="auth-row">
+        <label class="auth-checkbox">
+            <input type="checkbox" data-val="true" data-val-required="The RememberMe field is required." id="RememberMe" name="RememberMe" value="true" />
+            <span>Remember me</span>
+        </label>
+        <a class="auth-link" href="/Auth/ForgotPassword">Forgot password?</a>
+    </div>
+
+    <button class="auth-btn auth-btn--primary" type="submit">
+        <i class="bi bi-box-arrow-in-right"></i>
+        Sign In
+    </button>
+<input name="__RequestVerificationToken" type="hidden" value="CfDJ8CJX7jzm4UdOska1bI1JxZ5etuHvsb0A-RTm_Ru_5ZZLJDSIIFxDMYUwU2ivKf68dl5G_rW_9N9XNSz-U_X-uBn9xBrVFT7Hrj0PBkWOUWJ0ZF_UDVasJknGHlCDgVJWGD7GOA5kDfhLnFjxtOGJmAg" /><input name="RememberMe" type="hidden" value="false" /></form>
+
+
+        </div>
+
+        <div class="auth-copyright">
+            &copy; 2026 School Management System
+        </div>
+    </div>
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    
+    <script src="/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+
+</body>
+</html>

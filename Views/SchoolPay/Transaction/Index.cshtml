@@ -1,0 +1,82 @@
+@model List<SchoolManagementSystem.Models.DTOs.SchoolPay.SchoolPayTransactionDto>
+@using SchoolManagementSystem.Models.Enums
+@{
+    ViewData["Title"] = "Payment Transactions";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-credit-card"></i></div>
+            <div>
+                <h1 class="adm-header__title">Payment Transactions</h1>
+                <p class="adm-header__sub">SchoolPay gateway transactions</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-filters">
+            <form method="get" class="row g-2 adm-flex adm-items-center">
+                <div class="col-auto">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        @foreach (SchoolPayTransactionStatus s in Enum.GetValues<SchoolPayTransactionStatus>())
+                        {
+                            <option value="@s" selected="@(ViewBag.StatusFilter == s.ToString())">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost adm-btn--sm">Clear</a>
+                </div>
+            </form>
+        </div>
+        <div class="adm-table-responsive">
+            <table class="adm-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Provider</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Attempts</th>
+                        <th>Initiated</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="7" class="adm-text-center adm-py-4 adm-text-muted">No transactions yet.</td></tr>
+                    }
+                    @foreach (var tx in Model)
+                    {
+                        <tr>
+                            <td><code>@tx.TransactionReference</code></td>
+                            <td>@tx.ProviderName</td>
+                            <td class="adm-fw-600">&#2547;@tx.Amount.ToString("N2")</td>
+                            <td>
+                                <span class="adm-badge adm-badge--@(tx.Status == SchoolPayTransactionStatus.Completed ? "success" : tx.Status == SchoolPayTransactionStatus.Failed ? "danger" : tx.Status == SchoolPayTransactionStatus.Pending ? "warning" : "info")">
+                                    @tx.Status
+                                </span>
+                            </td>
+                            <td>@tx.AttemptCount</td>
+                            <td class="adm-fs-12">@tx.InitiatedAt?.ToString("dd MMM yyyy HH:mm")</td>
+                            <td class="adm-fs-12">@tx.CompletedAt?.ToString("dd MMM yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="adm-pagination">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <a href="?page=@i&status=@ViewBag.StatusFilter" class="adm-pagination__item @(i == ViewBag.CurrentPage ? "active" : "")">@i</a>
+                }
+            </div>
+        }
+    </div>
+</div>
