@@ -8,7 +8,6 @@ public class AdmissionFeePaymentRequest
     public int ApplicationId { get; set; }
     public decimal Amount { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
-    public string? TransactionId { get; set; }
     public string? Remarks { get; set; }
 }
 
@@ -19,7 +18,6 @@ public class AdmissionPaymentHistoryDto
     public string ApplicationNo { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public string PaymentMethod { get; set; } = string.Empty;
-    public string? TransactionId { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime PaidAt { get; set; }
     public string? Remarks { get; set; }

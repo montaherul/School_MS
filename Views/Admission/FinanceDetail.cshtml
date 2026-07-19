@@ -71,14 +71,13 @@
                                     <th>Date</th>
                                     <th>Amount</th>
                                     <th>Method</th>
-                                    <th>Transaction ID</th>
                                     <th>Received By</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if (Model.Payments == null || Model.Payments.Count == 0)
                                 {
-                                    <tr><td colspan="6" class="empty-state--compact">No payments recorded yet.</td></tr>
+                                    <tr><td colspan="5" class="empty-state--compact">No payments recorded yet.</td></tr>
                                 }
                                 @foreach (var pmt in Model.Payments.OrderByDescending(p => p.PaidAt))
                                 {
@@ -87,7 +86,6 @@
                                         <td>@pmt.PaidAt.ToString("dd-MMM-yyyy HH:mm")</td>
                                         <td class="td--fw700" style="color:var(--adm-success);">@pmt.Amount.ToString("N2")</td>
                                         <td><span class="adm-badge adm-badge--info">@pmt.PaymentMethod</span></td>
-                                        <td><code>@(pmt.TransactionId ?? "—")</code></td>
                                         <td>@(pmt.ReceivedBy ?? "—")</td>
                                     </tr>
                                 }
@@ -114,10 +112,6 @@
                                         <option value="@((int)m)">@m</option>
                                     }
                                 </select>
-                            </div>
-                            <div class="adm-form-group">
-                                <label class="adm-form-label">Transaction ID</label>
-                                <input type="text" id="TransactionId" class="adm-input adm-input--full" placeholder="Optional" />
                             </div>
                             <div class="adm-form-group" style="grid-column:1/-1;">
                                 <label class="adm-form-label">Remarks</label>
@@ -244,7 +238,6 @@
                     applicationId: @Model.ApplicationId,
                     amount: parseFloat($('#Amount').val()),
                     paymentMethod: parseInt($('#PaymentMethod').val()),
-                    transactionId: $('#TransactionId').val() || null,
                     remarks: $('#Remarks').val() || null
                 }),
                 success: function (res) {
