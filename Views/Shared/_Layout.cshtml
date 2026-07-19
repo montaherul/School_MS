@@ -841,19 +841,23 @@
                             }
                             @if (Can("FeeLedger.Read"))
                             {
-                                <a asp-controller="FeeLedger" asp-action="Index" data-title="Fee Ledger"><i class="bi bi-journal-text"></i><span class="nav-text">Fee Ledger</span></a>
+                                <a asp-controller="FeeLedger" asp-action="Index" data-title="Fee Ledger"><i class="bi bi-journal-text"></i><span class="nav-text">Ledger</span></a>
                             }
-                            @if (Can("FinanceReports.Read"))
+                            @if (Can("FeeCollectionSummaries.Read"))
                             {
-                                <a asp-controller="FinanceReports" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Finance Reports</span></a>
+                                <a asp-controller="FeeCollectionSummary" asp-action="Index" data-title="Collection Summary"><i class="bi bi-calendar-check"></i><span class="nav-text">Summaries</span></a>
                             }
                             @if (Can("LateFeeRules.Read"))
                             {
-                                <a asp-controller="LateFeeRule" asp-action="Index" data-title="Late Fee Rules"><i class="bi bi-clock"></i><span class="nav-text">Late Fee Rules</span></a>
+                                <a asp-controller="LateFeeRule" asp-action="Index" data-title="Late Fee Rules"><i class="bi bi-clock-history"></i><span class="nav-text">Late Fee</span></a>
                             }
                             @if (Can("FineRules.Read"))
                             {
                                 <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
+                            }
+                            @if (Can("FinanceReports.Read"))
+                            {
+                                <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Reports</span></a>
                             }
                         }
 
