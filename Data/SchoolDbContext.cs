@@ -199,6 +199,7 @@ public class SchoolDbContext : DbContext
     public DbSet<PaymentGatewayRefund> PaymentGatewayRefunds => Set<PaymentGatewayRefund>();
     public DbSet<PaymentGatewayAudit> PaymentGatewayAudits => Set<PaymentGatewayAudit>();
     public DbSet<PaymentGatewaySecurityEvent> PaymentGatewaySecurityEvents => Set<PaymentGatewaySecurityEvent>();
+    public DbSet<PaymentRouteRule> PaymentRouteRules => Set<PaymentRouteRule>();
 
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
     public DbSet<ClassSubjectGroup> ClassSubjectGroups => Set<ClassSubjectGroup>();

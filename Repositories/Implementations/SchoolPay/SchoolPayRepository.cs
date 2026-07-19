@@ -231,7 +231,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<List<SchoolPayTransactionDto>> GetTransactionsPagedAsync(int page, int pageSize, string? status = null, string? providerCode = null, CancellationToken ct = default)
     {
-        var query = _db.Set<PaymentGatewayTransaction>()
+        var query = _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted)
             .AsQueryable();
 
@@ -266,7 +266,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<int> GetTransactionCountAsync(string? status = null, string? providerCode = null, CancellationToken ct = default)
     {
-        var query = _db.Set<PaymentGatewayTransaction>()
+        var query = _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted)
             .AsQueryable();
 
@@ -280,13 +280,13 @@ public class SchoolPayRepository : ISchoolPayRepository
     }
 
     public async Task<PaymentGatewayTransaction?> GetTransactionEntityByIdAsync(int id, CancellationToken ct = default)
-        => await _db.Set<PaymentGatewayTransaction>()
+        => await _db.SchoolPayGatewayTransactions
             .Include(t => t.PaymentProvider)
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct);
 
     public async Task<int> CreateTransactionAsync(PaymentGatewayTransaction entity, CancellationToken ct = default)
     {
-        _db.Set<PaymentGatewayTransaction>().Add(entity);
+        _db.SchoolPayGatewayTransactions.Add(entity);
         await _db.SaveChangesAsync(ct);
         return entity.Id;
     }
@@ -418,7 +418,7 @@ public class SchoolPayRepository : ISchoolPayRepository
             .Select(r => new SchoolPayRefundDto
             {
                 Id = r.Id,
-                TransactionReference = _db.Set<PaymentGatewayTransaction>()
+                TransactionReference = _db.SchoolPayGatewayTransactions
                     .Where(t => t.Id == r.PaymentGatewayTransactionId)
                     .Select(t => t.TransactionReference)
                     .FirstOrDefault() ?? "",
@@ -437,7 +437,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<SchoolPayDashboardDto> GetDashboardDataAsync(CancellationToken ct = default)
     {
-        var transactions = await _db.Set<PaymentGatewayTransaction>()
+        var transactions = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted)
             .ToListAsync(ct);
 
@@ -686,7 +686,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<List<PaymentGatewayTransaction>> GetTransactionsByDateRangeAsync(DateTime from, DateTime to, int? providerId, CancellationToken ct = default)
     {
-        var query = _db.Set<PaymentGatewayTransaction>()
+        var query = _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted
                 && t.CompletedAt >= from
                 && t.CompletedAt <= to);
@@ -710,7 +710,7 @@ public class SchoolPayRepository : ISchoolPayRepository
         var from = settlement.SettlementDate?.AddDays(-7) ?? DateTime.UtcNow.AddDays(-7);
         var to = settlement.SettlementDate?.AddDays(1) ?? DateTime.UtcNow;
 
-        var transactions = await _db.Set<PaymentGatewayTransaction>()
+        var transactions = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted
                 && t.PaymentProviderId == settlement.PaymentProviderId
                 && t.CompletedAt >= from
@@ -758,7 +758,7 @@ public class SchoolPayRepository : ISchoolPayRepository
     public async Task<SchoolPayAnalyticsDto> GetAnalyticsAsync(int days = 30, CancellationToken ct = default)
     {
         var since = DateTime.UtcNow.AddDays(-days);
-        var transactions = await _db.Set<PaymentGatewayTransaction>()
+        var transactions = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted && t.InitiatedAt >= since)
             .Include(t => t.PaymentProvider)
             .ToListAsync(ct);
@@ -828,7 +828,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<SchoolPayOperationsDto> GetOperationsDataAsync(CancellationToken ct = default)
     {
-        var transactions = await _db.Set<PaymentGatewayTransaction>()
+        var transactions = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted)
             .ToListAsync(ct);
 
@@ -1015,7 +1015,7 @@ public class SchoolPayRepository : ISchoolPayRepository
 
     public async Task<SchoolPayTimelineDto?> GetFullTimelineAsync(int transactionId, CancellationToken ct = default)
     {
-        var txn = await _db.Set<PaymentGatewayTransaction>()
+        var txn = await _db.SchoolPayGatewayTransactions
             .FirstOrDefaultAsync(t => t.Id == transactionId && !t.IsDeleted, ct);
 
         if (txn == null) return null;
@@ -1119,11 +1119,11 @@ public class SchoolPayRepository : ISchoolPayRepository
             .OrderBy(w => w.Date)
             .ToListAsync(ct);
 
-        var transactions24h = await _db.Set<PaymentGatewayTransaction>()
+        var transactions24h = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted && t.InitiatedAt >= since24h)
             .ToListAsync(ct);
 
-        var transactions7d = await _db.Set<PaymentGatewayTransaction>()
+        var transactions7d = await _db.SchoolPayGatewayTransactions
             .Where(t => !t.IsDeleted && t.InitiatedAt >= since7d)
             .ToListAsync(ct);
 
