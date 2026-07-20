@@ -1,0 +1,37 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.MessageViewModel
+
+<div class="ai-message @(Model.IsUser ? "ai-user-msg" : "ai-assistant-msg")" data-role="@Model.Role" data-id="@Model.Id">
+    <div class="ai-avatar">
+        @if (Model.IsUser)
+        {
+            <i class="bi bi-person-circle"></i>
+        }
+        else
+        {
+            <i class="bi bi-robot"></i>
+        }
+    </div>
+    <div class="ai-bubble">
+        <div class="ai-msg-header">
+            <span class="ai-msg-role">@(Model.IsUser ? "You" : "AI Assistant")</span>
+            <span class="ai-msg-time">@Model.CreatedAt.ToLocalTime().ToString("h:mm tt")</span>
+        </div>
+        <div class="ai-msg-content markdown-body">
+            @if (Model.IsUser)
+            {
+                @Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Content).Replace("\n", "<br/>"))
+            }
+            else
+            {
+                @Html.Raw(Model.Content)
+            }
+        </div>
+        @if (!Model.IsUser)
+        {
+            <div class="ai-msg-actions">
+                <button class="ai-copy-btn" title="Copy"><i class="bi bi-clipboard"></i></button>
+                <button class="ai-regenerate-btn" title="Regenerate"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+        }
+    </div>
+</div>

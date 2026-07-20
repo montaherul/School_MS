@@ -251,6 +251,10 @@
                                 {
                                     <a href="/AdmitCard/MyAdmitCard" data-title="My Admit Card"><i class="bi bi-card-text"></i><span class="nav-text">Admit Card</span></a>
                                 }
+                                @if (Can("AI.Chat"))
+                                {
+                                    <a href="/AI/AIChat" data-title="AI Chat"><i class="bi bi-robot"></i><span class="nav-text">AI Study Assistant</span></a>
+                                }
                             }
                             @if (Can("Fees.View"))
                             {
@@ -296,6 +300,11 @@
                         @if (Can("Students.View"))
                         {
                             <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                        }
+
+                        @if (Can("AI.Chat"))
+                        {
+                            <a href="/AI/AIChat" data-title="AI Chat"><i class="bi bi-robot"></i><span class="nav-text">AI Study Assistant</span></a>
                         }
 
                         @if (CanAny("Results.View","Routine.View","Attendance.View","Assignments.View"))
@@ -903,6 +912,28 @@
                             <a asp-controller="Report" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
                         }
 
+                        @* ── 16.5. AI Management ── *@
+                        @if (CanAny("AI.View","AI.Manage","AI.Chat","AI.Configuration","AI.Analytics"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">AI Management</span></span>
+                            @if (CanAny("AI.View","AI.Analytics"))
+                            {
+                                <a href="/AI/AIDashboard" data-title="AI Dashboard"><i class="bi bi-cpu"></i><span class="nav-text">Dashboard</span></a>
+                            }
+                            @if (CanAny("AI.Configuration","AI.Manage"))
+                            {
+                                <a href="/AI/AIConfig" data-title="AI Configuration"><i class="bi bi-gear-wide-connected"></i><span class="nav-text">Configuration</span></a>
+                            }
+                            @if (Can("AI.View"))
+                            {
+                                <a href="/AI/AIConversations" data-title="AI Conversations"><i class="bi bi-chat-square-text"></i><span class="nav-text">Conversations</span></a>
+                                <a href="/AI/AIKnowledge" data-title="Knowledge Base"><i class="bi bi-database-fill-up"></i><span class="nav-text">Knowledge Base</span></a>
+                                <a href="/AI/AIHealth" data-title="System Health"><i class="bi bi-heart-pulse"></i><span class="nav-text">System Health</span></a>
+                                <a href="/AI/AIAudit" data-title="Audit Logs"><i class="bi bi-journal-text"></i><span class="nav-text">Audit Logs</span></a>
+                            }
+                            <a href="/AI/AIChat" data-title="AI Chat"><i class="bi bi-robot"></i><span class="nav-text">AI Chat</span></a>
+                        }
+
                         @* ── 17. System Administration ── *@
                         @if (CanAny("Users.View","Roles.View","Permissions.View","AuditLogs.View","Settings.View","System.View"))
                         {
@@ -985,6 +1016,13 @@
                         {
                             <span class="nav-section-label"><span class="nav-text">Communication</span></span>
                             <a asp-controller="Communication" asp-action="Index" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                        }
+
+                        @* ── AI Chat (Teacher) ── *@
+                        @if (Can("AI.Chat"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">AI Tools</span></span>
+                            <a href="/AI/AIChat" data-title="AI Chat"><i class="bi bi-robot"></i><span class="nav-text">AI Chat</span></a>
                         }
                     }
                     @* ────────────────────────────────────────────────

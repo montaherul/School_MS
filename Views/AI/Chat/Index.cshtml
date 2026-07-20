@@ -1,0 +1,66 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIChatViewModel
+@{
+    ViewData["Title"] = "AI Chat Assistant";
+}
+
+<div class="ai-chat-container">
+    <div class="ai-sidebar">
+        <div class="ai-sidebar-header">
+            <h5><i class="bi bi-robot ws-me-2"></i>AI Chat</h5>
+            <form method="post" action="/AI/AIChat/New" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="adm-btn adm-btn--primary adm-btn--sm">
+                    <i class="bi bi-plus-lg"></i> New Chat
+                </button>
+            </form>
+        </div>
+        <div class="ai-conversation-list" id="conversation-list">
+            @await Html.PartialAsync("~/Views/AI/Chat/_ConversationList.cshtml", Model)
+        </div>
+    </div>
+
+    <div class="ai-main">
+        @if (Model.ActiveConversationId.HasValue)
+        {
+            <div class="ai-chat-window" id="chat-window">
+                @await Html.PartialAsync("~/Views/AI/Chat/_ChatWindow.cshtml", Model)
+            </div>
+            <div class="ai-input-area">
+                <div class="ai-input-wrapper">
+                    <textarea id="message-input" class="ai-input" rows="1" placeholder="Ask me anything about your studies..." data-conversation-id="@Model.ActiveConversationId"></textarea>
+                    <button id="send-btn" class="adm-btn adm-btn--primary ai-send-btn" disabled>
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+                <p class="ai-input-hint">AI may produce incorrect information. Verify important facts.</p>
+            </div>
+        }
+        else
+        {
+            <div class="ai-empty-state">
+                <div class="ai-empty-icon"><i class="bi bi-robot"></i></div>
+                <h3>How can I help you today?</h3>
+                <p>Ask me about your subjects, homework, or any academic topic.</p>
+                <form method="post" action="/AI/AIChat/New">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="adm-btn adm-btn--primary adm-btn--lg">
+                        <i class="bi bi-plus-lg ws-me-2"></i>Start a New Chat
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.1/marked.min.js"></script>
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
+}

@@ -1213,6 +1213,21 @@ body {
     background: var(--adm-converted);
 }
 
+.tab-content {
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-top: none;
+    padding: 20px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane--active {
+    display: block;
+}
+
 .adm-tab__dot--rejected {
     background: var(--adm-rejected);
 }

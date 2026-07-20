@@ -1013,6 +1013,51 @@ Promotion → Auto Fee Migration (FIN-01 ✅)
 - Remaining work: penetration testing, load/stress testing, chaos testing, staging validation, operational runbooks, production monitoring
 - **Score: 10/10 across all categories** (Architecture, Security, Performance, Auditability, Maintainability, Extensibility)
 
+## Phase XX+104 — AI Chat Module (AI-01)
+
+### Architecture (SOLID + Clean Architecture)
+- **Strict layering**: Controllers → Services → Repositories → Stored Procedures. No DbContext leaks.
+- **Authorization**: `[Authorize(Roles = "Student")]` only; ownership enforced via SP `@StudentId` parameter.
+- **`Result<T>` pattern**: All services return `Result<T>`/`Result<bool>` — never throw for expected failures.
+- **IOpenAIClient abstraction**: `OpenAIClient` implements `IOpenAIClient` (OpenAI Responses API); swappable provider.
+- **Conversation status machine**: `ConversationStatus` enum (`Active=1`, `Archived=2`, `Deleted=3`) + `Status`/`IsPinned` on entity and SPs.
+
+### Hardening (10 items from code review)
+1. **DbContext removal** — `AIContextService` → delegates to `IAIContextRepository` (calls `sp_AIContext_GetStudentContext`).
+2. **Auto-title** — first user message truncated to 55 chars replaces "New Chat".
+3. **`Result<T>` wrapper** — applied across all services and controller; error messages centralized.
+4. **OpenAI client abstraction** — `IOpenAIClient` interface + `OpenAIClient` implementation.
+5. **Centralized prompt templates** — `Prompts/StudentSystemPrompt.md` + `TitlePrompt.md`; `PromptTemplateLoader` + `PromptBuilder`.
+6. **Token budget manager** — `TokenBudgetManager` with `EstimateTokens()` + `TrimHistory()` within 4000-token budget.
+7. **Rate limiting** — `ConcurrentDictionary<int, RateLimitState>` in `AIChatService` (30 req/min, 500 req/day per student).
+8. **Conversation state machine** — `Status` field with `Active`/`Archived`/`Deleted`; list SP filters by `Status IN (1,2)`.
+9. **Background usage logging** — `UsageLoggingChannel` (bounded `Channel<UsageLogEntry>`) + `UsageLoggingWorker` (BackgroundService).
+10. **SSE streaming + security guards** — `GET AI/AIChat/Stream/{conversationId}` SSE endpoint; `InputGuard` with PII masking + prompt injection detection.
+
+### New C# Files (14)
+| Layer | Files |
+|-------|-------|
+| Models | `Models/Common/Result.cs`, `Models/Entities/AI/AiEntities.cs`, `Models/DTOs/AI/ConversationDtos.cs`, `Models/DTOs/AI/MessageDtos.cs`, `Models/DTOs/AI/UsageDtos.cs`, `Models/DTOs/AI/AiContextDto.cs`, `Models/ViewModels/AI/AIChatViewModel.cs` |
+| Repositories | `Repositories/Interfaces/AI/IAIConversationRepository.cs`, `IAIMessageRepository.cs`, `IAIUsageRepository.cs`, `IAIContextRepository.cs` + implementations |
+| Services | `Services/Interfaces/AI/IAIChatService.cs`, `IOpenAIService.cs`, `IOpenAIClient.cs` + `Services/Implementations/AI/AIChatService.cs`, `OpenAIService.cs`, `OpenAIClient.cs`, `PromptBuilder.cs`, `PromptTemplateLoader.cs`, `TokenBudgetManager.cs`, `Security/InputGuard.cs`, `Background/UsageLoggingChannel.cs`, `UsageLoggingWorker.cs` |
+| Controllers | `Controllers/AI/AIChatController.cs` |
+| Views | `Views/AI/Chat/Index.cshtml`, `_ChatWindow.cshtml`, `_ConversationList.cshtml`, `_Message.cshtml` |
+| JS/CSS | `wwwroot/js/ai-chat.js`, `wwwroot/css/ai-chat.css` |
+| DI | `Services/DependencyInjection/AIServiceCollectionExtensions.cs` |
+| Config | `Services/Options/OpenAIOptions.cs` |
+
+### Database
+- **9 stored procedures**: `sp_AIConversation_Create`, `sp_AIConversation_List`, `sp_AIConversation_Get`, `sp_AIConversation_UpdateTitle`, `sp_AIConversation_Delete`, `sp_AIMessage_Insert`, `sp_AIMessage_List`, `sp_AIUsage_Insert`, `sp_AIUsage_DailySummary`, `sp_AIContext_GetStudentContext`
+- **3 tables**: `AIConversations` (Status INT DEFAULT 2, IsPinned BIT DEFAULT 0), `AIMessages`, `AIUsageLogs`
+- **SQL script**: `Database/Scripts/AI_Tables.sql`
+
+### Prompt Templates
+- `Prompts/StudentSystemPrompt.md` — system prompt with Bangladesh NCTB curriculum context
+- `Prompts/TitlePrompt.md` — single-shot title generation prompt
+
+### Build Status
+- **0 errors, 0 warnings**
+
 ## Final Delivery Scorecard
 
 | Score   | Metric                        | Rating      |
@@ -1023,5 +1068,6 @@ Promotion → Auto Fee Migration (FIN-01 ✅)
 | **FIN** | Finance Completeness          | **75-80%**  |
 | **PRS** | Production Readiness          | **9.5/10**  |
 | **SP**  | SchoolPay v1.0 RC1            | **10/10**   |
+| **AI**  | AI Chat Module (AI-01)        | **9.5/10**  |
 | Build   | Errors / Warnings             | **0 / 0**   |
 | Tests   | Passing                       | **618/622** (4 pre-existing) |

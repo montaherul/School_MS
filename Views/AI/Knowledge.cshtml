@@ -1,0 +1,166 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIKnowledgeIndexViewModel
+@{
+    ViewData["Title"] = "AI Knowledge Base";
+}
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMsg
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-database-fill-up fs-4"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Knowledge Base</h1>
+                <p class="adm-header__sub">Manage documents and data sources used by the AI to answer questions</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card" style="margin-bottom:1.5rem">
+        <div class="adm-card__body">
+            <h3 style="margin:0 0 0.75rem 0;font-size:1rem">
+                <i class="bi bi-upload me-1"></i> Upload New Document
+            </h3>
+            <form method="post" action="@Url.Action("UploadKnowledge", "AI")" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="ws-flex ws-gap" style="align-items:flex-end">
+                    <div class="adm-form-group" style="flex:1;margin-bottom:0">
+                        <label class="adm-form-label">File</label>
+                        <input type="file" name="file" class="adm-input" required />
+                    </div>
+                    <div class="adm-form-group" style="flex:1;margin-bottom:0">
+                        <label class="adm-form-label">Name</label>
+                        <input type="text" name="name" class="adm-input" placeholder="Document name" required />
+                    </div>
+                    <div class="adm-form-group" style="flex:1;margin-bottom:0">
+                        <label class="adm-form-label">Description</label>
+                        <input type="text" name="description" class="adm-input" placeholder="Optional description" />
+                    </div>
+                    <button type="submit" class="adm-btn adm-btn--primary" style="margin-bottom:0">
+                        <i class="bi bi-cloud-upload me-1"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Items.Count != 0)
+    {
+        <div class="adm-table-card">
+            <div class="adm-table-card__body">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th class="adm-table-header">Name</th>
+                            <th class="adm-table-header">Type</th>
+                            <th class="adm-table-header">Size</th>
+                            <th class="adm-table-header">Version</th>
+                            <th class="adm-table-header">Active</th>
+                            <th class="adm-table-header">Date Added</th>
+                            <th class="adm-table-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in Model.Items)
+                        {
+                            <tr>
+                                <td class="adm-table-cell">
+                                    <div class="ws-flex ws-gap" style="align-items:center">
+                                        @if (doc.ContentType == "application/pdf")
+                                        {
+                                            <i class="bi bi-file-earmark-pdf" style="color:var(--adm-rejected);font-size:1.2rem"></i>
+                                        }
+                                        else if (doc.ContentType == "text/plain")
+                                        {
+                                            <i class="bi bi-file-earmark-text" style="color:var(--adm-primary);font-size:1.2rem"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-file-earmark" style="color:var(--adm-text-2);font-size:1.2rem"></i>
+                                        }
+                                        <div>
+                                            <span style="font-weight:500">@doc.Name</span>
+                                            @if (!string.IsNullOrEmpty(doc.Description))
+                                            {
+                                                <br /><span style="font-size:0.8rem;color:var(--adm-text-2)">@doc.Description</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="adm-table-cell">
+                                    <span class="adm-badge adm-badge--primary">@doc.ContentType</span>
+                                </td>
+                                <td class="adm-table-cell">
+                                    @if (doc.Size >= 1048576)
+                                    {
+                                        <span>@(doc.Size / 1048576.0) MB</span>
+                                    }
+                                    else if (doc.Size >= 1024)
+                                    {
+                                        <span>@(doc.Size / 1024.0) KB</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@doc.Size B</span>
+                                    }
+                                </td>
+                                <td class="adm-table-cell">v@(doc.Version)</td>
+                                <td class="adm-table-cell">
+                                    @if (doc.IsActive)
+                                    {
+                                        <span class="adm-badge adm-badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="adm-badge adm-badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td class="adm-table-cell">@doc.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td class="adm-table-cell">
+                                    <form method="post" action="@Url.Action("DeleteKnowledge", "AI", new { id = doc.Id })" style="display:inline" onsubmit="return confirm('Delete this knowledge base entry?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="adm-btn adm-btn--sm adm-btn--danger" title="Delete">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-empty-state" style="margin-top:2rem">
+            <i class="bi bi-database-fill-up" style="font-size:3rem;color:var(--adm-text-2)"></i>
+            <h3>No Knowledge Base Documents</h3>
+            <p>Upload documents above to build the AI knowledge base.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelector('input[name="file"]').addEventListener('change', function() {
+            var nameInput = document.querySelector('input[name="name"]');
+            if (!nameInput.value && this.files.length) {
+                nameInput.value = this.files[0].name.replace(/\.[^/.]+$/, '');
+            }
+        });
+    </script>
+}

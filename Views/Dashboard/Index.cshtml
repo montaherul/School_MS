@@ -302,6 +302,41 @@
             </div>
         </div>
 
+        <!-- AI Features -->
+        @if (ViewBag.AIFeatureFlags is List<SchoolManagementSystem.Models.DTOs.AI.AIFeatureFlagDto> aiFlags && aiFlags.Count > 0)
+        {
+            <div class="dash-panel">
+                <div class="dash-panel__header">
+                    <h2 class="dash-panel__title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><path d="M12 2a4 4 0 0 1 4 4c0 2-4 6-4 6s-4-4-4-6a4 4 0 0 1 4-4z"/><path d="M8 14h8"/><path d="M8 18h8"/><path d="M12 22v-4"/></svg>
+                        AI Features
+                    </h2>
+                    <a href="/AI/AIConfig" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-gear me-1"></i>Manage</a>
+                </div>
+                <div class="dash-assign-grid">
+                    @foreach (var flag in aiFlags.Where(f => f.Category == "Features"))
+                    {
+                        <div class="dash-assign-card">
+                            <div class="ws-flex ws-items-center ws-flex-between">
+                                <div>
+                                    <span class="dash-assign-card__label">@flag.DisplayName</span>
+                                    <div style="font-size:12px;color:var(--adm-text-3);margin-top:2px;">@flag.Key</div>
+                                    @if (!string.IsNullOrEmpty(flag.Description))
+                                    {
+                                        <div style="font-size:11px;color:var(--adm-text-3);margin-top:4px;">@flag.Description</div>
+                                    }
+                                </div>
+                                <label class="adm-toggle">
+                                    <input type="checkbox" @(flag.IsEnabled ? "checked" : "") onchange="toggleAI(@flag.Id, this.checked)" />
+                                    <span class="adm-toggle__slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
         <!-- Examination & Academic Results -->
         <div class="dash-panel dash-panel--wide">
             <div class="dash-panel__header">
@@ -529,5 +564,18 @@
             ],
             placeholder: "No recent activity"
         });
+
+        function toggleAI(id, enabled) {
+            fetch('/Dashboard/ToggleAIFeature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: id, enabled: enabled })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (!d.success) { alert('Failed to toggle feature'); }
+            });
+        }
     </script>
 }

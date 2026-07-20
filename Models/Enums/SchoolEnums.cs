@@ -19,6 +19,7 @@ public enum PaymentStatus
 public enum PublishStatus { Draft = 1, PendingApproval = 2, Approved = 3, Published = 4 }
 public enum NotificationChannel { InApp = 1, Email = 2, Sms = 3 }
 public enum AssignmentStatus { Open = 1, Closed = 2, Graded = 3 }
+public enum ConversationStatus { Draft = 1, Active = 2, Archived = 3, Deleted = 4 }
 public enum TeacherStatus { Active = 1, OnLeave = 2, Resigned = 3, Terminated = 4, Inactive = 5 }
 public enum ExamTerm 
 { 
@@ -269,4 +270,20 @@ public enum ProviderHealthStatus
     Degraded = 2,
     Unhealthy = 3,
     Unknown = 4
+}
+
+public enum AIProviderType
+{
+    OpenAI = 1,
+    AzureOpenAI = 2,
+    Gemini = 3,
+    Claude = 4,
+    Ollama = 5
+}
+
+public enum AIModelRole
+{
+    Student = 1,
+    Teacher = 2,
+    Admin = 3
 }

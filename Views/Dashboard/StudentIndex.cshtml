@@ -226,6 +226,12 @@
         <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
             <i class="bi bi-bell ws-me-1"></i> Notifications @if(Model.UnreadNotificationCount > 0){<span style="background:var(--clr-danger);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;" class="ws-ms-1">@Model.UnreadNotificationCount</span>}
         </button>
+        @if (ViewBag.AIChatEnabled == true)
+        {
+            <button class="adm-tab" data-tab="ai-assistant" onclick="switchTab('ai-assistant')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+                <i class="bi bi-robot ws-me-1"></i> AI Assistant
+            </button>
+        }
     </div>
 
     <!-- TAB: OVERVIEW -->
@@ -880,6 +886,28 @@
             </div>
         </div>
     </div>
+
+    @if (ViewBag.AIChatEnabled == true)
+    {
+    <!-- TAB: AI ASSISTANT -->
+    <div id="tab-ai-assistant" class="tab-panel" style="display:none;">
+        <div class="adm-table-card">
+            <div class="ws-flex ws-items-center ws-flex-between" style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;" class="ws-fw-700"><i class="bi bi-robot ws-me-2"></i>AI Study Assistant</h5>
+            </div>
+            <div class="ws-p-4 ws-text-center" style="padding:40px 20px;">
+                <i class="bi bi-robot" style="font-size:3rem;color:var(--adm-primary);display:block;margin-bottom:16px;"></i>
+                <h4 style="margin:0 0 8px;">AI-Powered Study Assistant</h4>
+                <p style="color:var(--adm-text-2);margin:0 0 24px;max-width:400px;margin-left:auto;margin-right:auto;">
+                    Ask questions about your subjects, get homework help, and explore learning resources with our AI assistant.
+                </p>
+                <a href="/AI/AIChat" class="adm-btn adm-btn--primary" style="padding:12px 32px;">
+                    <i class="bi bi-chat-dots me-2"></i> Launch AI Study Assistant
+                </a>
+            </div>
+        </div>
+    </div>
+    }
 
 </div> <!-- /adm-page -->
 

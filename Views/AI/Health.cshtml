@@ -1,0 +1,147 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIHealthIndexViewModel
+@{
+    ViewData["Title"] = "AI System Health";
+}
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMsg
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-heart-pulse fs-4"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">AI System Health</h1>
+                <p class="adm-header__sub">Monitor the health status of all AI system components</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <button type="button" class="adm-btn adm-btn--primary" onclick="refreshHealth()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (Model.Checks.Count != 0)
+    {
+        var totalHealthy = Model.Checks.Count(c => c.Status == "Healthy");
+        var totalDegraded = Model.Checks.Count(c => c.Status == "Degraded");
+        var totalUnhealthy = Model.Checks.Count(c => c.Status == "Unhealthy");
+
+        <div class="dash-stats" style="margin-bottom:1.5rem">
+            <div class="dash-stat-card dash-stat-card--mini">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Healthy</span>
+                    <span class="dash-stat-card__value">@totalHealthy</span>
+                </div>
+            </div>
+            <div class="dash-stat-card dash-stat-card--mini">
+                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Degraded</span>
+                    <span class="dash-stat-card__value">@totalDegraded</span>
+                </div>
+            </div>
+            <div class="dash-stat-card dash-stat-card--mini">
+                <div class="dash-stat-card__icon dash-stat-card__icon--danger">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Unhealthy</span>
+                    <span class="dash-stat-card__value">@totalUnhealthy</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">
+            @foreach (var check in Model.Checks)
+            {
+                <div class="adm-card">
+                    <div class="adm-card__body">
+                        <div class="ws-flex ws-flex--between ws-gap ws-mb-2">
+                            <div class="ws-flex ws-gap" style="align-items:center">
+                                @if (check.Status == "Healthy")
+                                {
+                                    <div style="width:12px;height:12px;border-radius:50%;background:var(--adm-converted)"></div>
+                                }
+                                else if (check.Status == "Degraded")
+                                {
+                                    <div style="width:12px;height:12px;border-radius:50%;background:var(--adm-pending)"></div>
+                                }
+                                else
+                                {
+                                    <div style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected)"></div>
+                                }
+                                <h3 style="margin:0;font-size:1rem">@check.Component</h3>
+                            </div>
+                            @if (check.Status == "Healthy")
+                            {
+                                <span class="adm-badge adm-badge-success">Healthy</span>
+                            }
+                            else if (check.Status == "Degraded")
+                            {
+                                <span class="adm-badge adm-badge-warning">Degraded</span>
+                            }
+                            else
+                            {
+                                <span class="adm-badge adm-badge-danger">Unhealthy</span>
+                            }
+                        </div>
+                        <div class="ws-flex ws-gap" style="font-size:0.85rem;color:var(--adm-text-2)">
+                            <div>
+                                <span style="display:block;font-weight:500">Last Checked</span>
+                                <span>@check.LastChecked.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            </div>
+                            <div>
+                                <span style="display:block;font-weight:500">Response Time</span>
+                                <span>@check.ResponseTimeMs ms</span>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(check.ErrorMessage))
+                        {
+                            <div class="adm-alert adm-alert--error ws-mt-2" style="margin-bottom:0">
+                                <i class="bi bi-exclamation-triangle me-1"></i> @check.ErrorMessage
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="adm-empty-state" style="margin-top:2rem">
+            <i class="bi bi-heart-pulse" style="font-size:3rem;color:var(--adm-text-2)"></i>
+            <h3>No Health Data Available</h3>
+            <p>Health checks have not been performed yet. Click Refresh to run checks.</p>
+            <button type="button" class="adm-btn adm-btn--primary" onclick="refreshHealth()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Run Health Check
+            </button>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function refreshHealth() {
+            window.location.reload();
+        }
+    </script>
+}

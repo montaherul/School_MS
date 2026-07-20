@@ -1,0 +1,35 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIChatViewModel
+
+@if (Model.Conversations.Count == 0)
+{
+    <div class="ai-empty-list">
+        <p>No conversations yet.</p>
+    </div>
+}
+else
+{
+    @foreach (var conv in Model.Conversations)
+    {
+        <a href="/AI/AIChat/Chat/@conv.Id"
+           class="ai-conv-item @(Model.ActiveConversationId == conv.Id ? "active" : "")"
+           data-id="@conv.Id">
+            <div class="ai-conv-icon"><i class="bi bi-chat-dots"></i></div>
+            <div class="ai-conv-info">
+                <div class="ai-conv-title">@conv.Title</div>
+                <div class="ai-conv-meta">@conv.MessageCount msgs</div>
+            </div>
+            @if (Model.ActiveConversationId == conv.Id)
+            {
+                <form method="post" action="/AI/AIChat/Delete" class="ai-delete-form" onsubmit="return confirm('Delete this conversation?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="conversationId" value="@conv.Id" />
+                    <button type="submit" class="ai-delete-btn" title="Delete"><i class="bi bi-trash3"></i></button>
+                </form>
+            }
+        </a>
+    }
+    @if (Model.TotalPages > Model.Page)
+    {
+        <button class="ai-load-more" data-page="@(Model.Page + 1)">Load more</button>
+    }
+}

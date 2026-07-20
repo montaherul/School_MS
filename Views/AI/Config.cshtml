@@ -1,0 +1,757 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AISettingsIndexViewModel
+@{
+    ViewData["Title"] = "AI Configuration";
+}
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMsg
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-gear-wide-connected fs-4"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">AI Configuration</h1>
+                <p class="adm-header__sub">Manage AI settings, providers, models, prompts, features, quotas, and security policies</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-tabs" id="configTabs" role="tablist">
+        <button class="adm-tab adm-tab--active" data-tab="settings" type="button" role="tab">
+            <i class="bi bi-sliders me-1"></i><span class="adm-tab__text">Settings</span>
+        </button>
+        <button class="adm-tab" data-tab="providers" type="button" role="tab">
+            <i class="bi bi-cloud me-1"></i><span class="adm-tab__text">Providers</span>
+        </button>
+        <button class="adm-tab" data-tab="models" type="button" role="tab">
+            <i class="bi bi-box me-1"></i><span class="adm-tab__text">Models</span>
+        </button>
+        <button class="adm-tab" data-tab="prompts" type="button" role="tab">
+            <i class="bi bi-file-text me-1"></i><span class="adm-tab__text">Prompts</span>
+        </button>
+        <button class="adm-tab" data-tab="features" type="button" role="tab">
+            <i class="bi bi-toggle-on me-1"></i><span class="adm-tab__text">Features</span>
+        </button>
+        <button class="adm-tab" data-tab="quotas" type="button" role="tab">
+            <i class="bi bi-speedometer me-1"></i><span class="adm-tab__text">Quotas</span>
+        </button>
+        <button class="adm-tab" data-tab="security" type="button" role="tab">
+            <i class="bi bi-shield-lock me-1"></i><span class="adm-tab__text">Security</span>
+        </button>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane tab-pane--active" id="tab-settings">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('setting')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Setting
+                </button>
+            </div>
+            @if (Model.Settings.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Key</th>
+                                    <th class="adm-table-header">Value</th>
+                                    <th class="adm-table-header">Description</th>
+                                    <th class="adm-table-header">Category</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Settings)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell"><code>@item.Key</code></td>
+                                        <td class="adm-table-cell">@item.Value</td>
+                                        <td class="adm-table-cell">@item.Description</td>
+                                        <td class="adm-table-cell"><span class="adm-badge adm-badge--primary">@item.Category</span></td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('setting', @item.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('setting', @item.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-sliders" style="font-size:2rem"></i>
+                    <p>No settings configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-providers">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('provider')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Provider
+                </button>
+            </div>
+            @if (Model.Providers.Count != 0)
+            {
+                <div class="ws-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+                    @foreach (var provider in Model.Providers)
+                    {
+                        <div class="adm-card">
+                            <div class="adm-card__body">
+                                <div class="ws-flex ws-flex--between ws-gap">
+                                    <div>
+                                        <h3 style="margin:0">@provider.Name</h3>
+                                        <p style="margin:0;color:var(--adm-text-2);font-size:0.85rem">@provider.ProviderType</p>
+                                    </div>
+                                    <label class="adm-toggle">
+                                        <input type="checkbox" @(provider.IsEnabled ? "checked" : "") onchange="toggleProvider(@provider.Id, this)" />
+                                        <span class="adm-toggle__slider"></span>
+                                    </label>
+                                </div>
+                                <div class="ws-flex ws-gap ws-mt-2" style="font-size:0.85rem;color:var(--adm-text-2)">
+                                    <span><i class="bi bi-link-45deg me-1"></i>@provider.BaseUrl</span>
+                                    <span><i class="bi bi-arrow-up-down me-1"></i>Priority: @provider.Priority</span>
+                                    <span><i class="bi bi-arrow-repeat me-1"></i>Retry: @provider.RetryCount</span>
+                                    <span><i class="bi bi-clock me-1"></i>Timeout: @provider.TimeoutSeconds s</span>
+                                </div>
+                                <div class="ws-flex ws-gap ws-mt-2">
+                                    <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('provider', @provider.Id)"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                    <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('provider', @provider.Id)"><i class="bi bi-trash me-1"></i>Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-cloud" style="font-size:2rem"></i>
+                    <p>No providers configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-models">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('model')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Model
+                </button>
+            </div>
+            @if (Model.Models.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Name</th>
+                                    <th class="adm-table-header">Provider</th>
+                                    <th class="adm-table-header">Role</th>
+                                    <th class="adm-table-header">Max Tokens</th>
+                                    <th class="adm-table-header">Temperature</th>
+                                    <th class="adm-table-header">Default</th>
+                                    <th class="adm-table-header">Enabled</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var mdl in Model.Models)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell">@mdl.Name</td>
+                                        <td class="adm-table-cell">@mdl.ProviderName</td>
+                                        <td class="adm-table-cell">@mdl.Role</td>
+                                        <td class="adm-table-cell">@mdl.MaxTokens</td>
+                                        <td class="adm-table-cell">@mdl.Temperature.ToString("F1")</td>
+                                        <td class="adm-table-cell">
+                                            @if (mdl.IsDefault)
+                                            {
+                                                <span class="adm-badge adm-badge-success"><i class="bi bi-check-circle me-1"></i>Default</span>
+                                            }
+                                        </td>
+                                        <td class="adm-table-cell">
+                                            <label class="adm-toggle">
+                                                <input type="checkbox" @(mdl.IsEnabled ? "checked" : "") onchange="toggleModel(@mdl.Id, this)" />
+                                                <span class="adm-toggle__slider"></span>
+                                            </label>
+                                        </td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('model', @mdl.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('model', @mdl.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-box" style="font-size:2rem"></i>
+                    <p>No models configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-prompts">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('prompt')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Prompt
+                </button>
+            </div>
+            @if (Model.Prompts.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Name</th>
+                                    <th class="adm-table-header">Role</th>
+                                    <th class="adm-table-header">Version</th>
+                                    <th class="adm-table-header">Category</th>
+                                    <th class="adm-table-header">Active</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var prompt in Model.Prompts)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell">@prompt.Name</td>
+                                        <td class="adm-table-cell">@prompt.Role</td>
+                                        <td class="adm-table-cell">v@(prompt.Version)</td>
+                                        <td class="adm-table-cell"><span class="adm-badge adm-badge--primary">@prompt.Category</span></td>
+                                        <td class="adm-table-cell">
+                                            @if (prompt.IsActive)
+                                            {
+                                                <span class="adm-badge adm-badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="adm-badge adm-badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('prompt', @prompt.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('prompt', @prompt.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-file-text" style="font-size:2rem"></i>
+                    <p>No prompts configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-features">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('feature')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Feature Flag
+                </button>
+            </div>
+            @if (Model.FeatureFlags.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Key</th>
+                                    <th class="adm-table-header">Display Name</th>
+                                    <th class="adm-table-header">Category</th>
+                                    <th class="adm-table-header">Enabled</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var flag in Model.FeatureFlags)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell"><code>@flag.Key</code></td>
+                                        <td class="adm-table-cell">@flag.DisplayName</td>
+                                        <td class="adm-table-cell"><span class="adm-badge adm-badge--primary">@flag.Category</span></td>
+                                        <td class="adm-table-cell">
+                                            <label class="adm-toggle">
+                                                <input type="checkbox" @(flag.IsEnabled ? "checked" : "") onchange="toggleFeature(@flag.Id, this)" />
+                                                <span class="adm-toggle__slider"></span>
+                                            </label>
+                                        </td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('feature', @flag.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('feature', @flag.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-toggle-on" style="font-size:2rem"></i>
+                    <p>No feature flags configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-quotas">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('quota')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Quota
+                </button>
+            </div>
+            @if (Model.Quotas.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Role</th>
+                                    <th class="adm-table-header">Daily Limit</th>
+                                    <th class="adm-table-header">Minute Limit</th>
+                                    <th class="adm-table-header">Max Tokens/Request</th>
+                                    <th class="adm-table-header">Unlimited</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var quota in Model.Quotas)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell">@quota.Role</td>
+                                        <td class="adm-table-cell">@quota.DailyLimit.ToString("N0")</td>
+                                        <td class="adm-table-cell">@quota.MinuteLimit.ToString("N0")</td>
+                                        <td class="adm-table-cell">@quota.MaxTokensPerRequest.ToString("N0")</td>
+                                        <td class="adm-table-cell">
+                                            @if (quota.IsUnlimited)
+                                            {
+                                                <span class="adm-badge adm-badge-warning">Unlimited</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="adm-badge adm-badge--primary">Limited</span>
+                                            }
+                                        </td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('quota', @quota.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('quota', @quota.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-speedometer" style="font-size:2rem"></i>
+                    <p>No quotas configured</p>
+                </div>
+            }
+        </div>
+
+        <div class="tab-pane" id="tab-security">
+            <div class="adm-filters__row" style="justify-content:flex-end;margin-bottom:1rem">
+                <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateModal('security')">
+                    <i class="bi bi-plus-lg me-1"></i> Add Policy
+                </button>
+            </div>
+            @if (Model.SecurityPolicies.Count != 0)
+            {
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th class="adm-table-header">Key</th>
+                                    <th class="adm-table-header">Value</th>
+                                    <th class="adm-table-header">Description</th>
+                                    <th class="adm-table-header">Category</th>
+                                    <th class="adm-table-header">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var policy in Model.SecurityPolicies)
+                                {
+                                    <tr>
+                                        <td class="adm-table-cell"><code>@policy.Key</code></td>
+                                        <td class="adm-table-cell">@policy.Value</td>
+                                        <td class="adm-table-cell">@policy.Description</td>
+                                        <td class="adm-table-cell"><span class="adm-badge adm-badge--primary">@policy.Category</span></td>
+                                        <td class="adm-table-cell">
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--ghost" onclick="openEditModal('security', @policy.Id)"><i class="bi bi-pencil"></i></button>
+                                            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" onclick="confirmDelete('security', @policy.Id)"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-shield-lock" style="font-size:2rem"></i>
+                    <p>No security policies configured</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="editModal" style="display:none">
+        <div class="adm-modal" role="dialog" aria-labelledby="editModalLabel">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="adm-modal__title" id="editModalLabel">Edit Item</h3>
+                        <p class="adm-modal__subtitle" id="editModalSubtitle">Update configuration values</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="closeEditModal()" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <form id="editForm" method="post" action="">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editItemId" name="Id" />
+                    <div id="editFormFields"></div>
+                    <div class="ws-flex ws-gap ws-mt-2" style="justify-content:flex-end">
+                        <button type="button" class="adm-btn adm-btn--ghost" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="adm-btn adm-btn--primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="createModal" style="display:none">
+        <div class="adm-modal" role="dialog" aria-labelledby="createModalLabel">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--success">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <div>
+                        <h3 class="adm-modal__title" id="createModalLabel">Create Item</h3>
+                        <p class="adm-modal__subtitle" id="createModalSubtitle">Add new configuration</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="closeCreateModal()" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <form id="createForm" method="post" action="">
+                    @Html.AntiForgeryToken()
+                    <div id="createFormFields"></div>
+                    <div class="ws-flex ws-gap ws-mt-2" style="justify-content:flex-end">
+                        <button type="button" class="adm-btn adm-btn--ghost" onclick="closeCreateModal()">Cancel</button>
+                        <button type="submit" class="adm-btn adm-btn--primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="confirmDeleteModal" style="display:none">
+        <div class="adm-modal" role="dialog" aria-labelledby="confirmDeleteLabel" style="max-width:400px">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h3 class="adm-modal__title" id="confirmDeleteLabel">Confirm Delete</h3>
+                        <p class="adm-modal__subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="closeConfirmDelete()" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <form id="deleteForm" method="post" action="">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteItemId" name="id" />
+                    <p id="deleteConfirmText">Are you sure you want to delete this item?</p>
+                    <div class="ws-flex ws-gap" style="justify-content:flex-end">
+                        <button type="button" class="adm-btn adm-btn--ghost" onclick="closeConfirmDelete()">Cancel</button>
+                        <button type="submit" class="adm-btn adm-btn--danger">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var initialTab = window.location.hash ? window.location.hash.substring(1) : 'settings';
+
+            function switchTab(tabId) {
+                document.querySelectorAll('.tab-pane').forEach(function(el) { el.style.display = 'none'; el.classList.remove('tab-pane--active'); });
+                document.querySelectorAll('.adm-tab').forEach(function(el) { el.classList.remove('adm-tab--active'); });
+                var pane = document.getElementById('tab-' + tabId);
+                if (pane) { pane.style.display = 'block'; pane.classList.add('tab-pane--active'); }
+                var btn = document.querySelector('.adm-tab[data-tab="' + tabId + '"]');
+                if (btn) { btn.classList.add('adm-tab--active'); }
+                window.location.hash = tabId;
+            }
+
+            document.querySelectorAll('.adm-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() { switchTab(this.getAttribute('data-tab')); });
+            });
+
+            switchTab(initialTab);
+        })();
+
+        var enumMaps = {
+            providerType: { 'OpenAI': 1, 'AzureOpenAI': 2, 'Gemini': 3, 'Claude': 4, 'Ollama': 5 },
+            modelRole: { 'Student': 1, 'Teacher': 2, 'Admin': 3 }
+        };
+
+        function getToken() {
+            var el = document.querySelector('input[name="__RequestVerificationToken"]');
+            return el ? el.value : '';
+        }
+
+        function ajaxPost(url, data) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getToken()
+                },
+                body: data ? JSON.stringify(data) : undefined
+            }).then(function(r) { return r.json(); });
+        }
+
+        function openEditModal(type, id) {
+            document.getElementById('editModal').style.display = 'flex';
+            document.getElementById('editItemId').value = id;
+            document.getElementById('editForm').action = '/AI/AIConfig/Upsert' + capitalize(type);
+            document.getElementById('editModalLabel').textContent = 'Edit ' + capitalize(type);
+            document.getElementById('editModalSubtitle').textContent = 'Update ' + type + ' configuration';
+            var fields = document.getElementById('editFormFields');
+            fields.innerHTML = '<div style="text-align:center;padding:20px;color:var(--adm-text-2)">Loading...</div>';
+            fetch('/AI/AIConfig/Get' + capitalize(type) + '/' + id)
+                .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then(function(data) {
+                    fields.innerHTML = '';
+                    if (!data) { fields.innerHTML = '<div style="text-align:center;padding:20px;color:var(--adm-text-2)">No data found</div>'; return; }
+                    fields.innerHTML += '<input type="hidden" name="Id" value="' + (data.Id || 0) + '" />';
+                    for (var key in data) {
+                        if (key === 'Id' || key === 'id' || key === 'ProviderName') continue;
+                        var val = data[key];
+                        if (key === 'ProviderType') {
+                            var numVal = enumMaps.providerType[val] || 1;
+                            fields.innerHTML += '<input type="hidden" name="ProviderType" value="' + numVal + '" />';
+                            fields.innerHTML += '<div class="adm-form-group"><label class="adm-form-label">' + key + '</label><div class="adm-input" style="padding:8px 12px;background:var(--adm-surface-2);border-radius:6px;opacity:0.7">' + val + '</div></div>';
+                        } else if (key === 'Role' && type === 'model') {
+                            var numVal = enumMaps.modelRole[val] || 1;
+                            fields.innerHTML += '<input type="hidden" name="Role" value="' + numVal + '" />';
+                            fields.innerHTML += '<div class="adm-form-group"><label class="adm-form-label">' + key + '</label><div class="adm-input" style="padding:8px 12px;background:var(--adm-surface-2);border-radius:6px;opacity:0.7">' + val + '</div></div>';
+                        } else if (key === 'IsEnabled' || key === 'IsDefault' || key === 'IsActive' || key === 'IsUnlimited') {
+                            fields.innerHTML += '<div class="adm-form-group"><label class="adm-form-label">' + key + '</label><select name="' + key + '" class="adm-input"><option value="true"' + (val ? ' selected' : '') + '>Yes</option><option value="false"' + (!val ? ' selected' : '') + '>No</option></select></div>';
+                        } else {
+                            fields.innerHTML += '<div class="adm-form-group"><label class="adm-form-label">' + key + '</label><input type="text" name="' + key + '" class="adm-input" value="' + (val != null ? val : '') + '" /></div>';
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    fields.innerHTML = '<div style="text-align:center;padding:20px;color:var(--adm-danger)">Failed to load: ' + err.message + '</div>';
+                });
+        }
+
+        function getCreateFields(type) {
+            var typeMap = { feature: 'featureflag', security: 'securitypolicy' };
+            var lookup = typeMap[type] || type;
+            var fieldDefs = {
+                setting: [
+                    { name: 'Key', label: 'Key', type: 'text' },
+                    { name: 'Value', label: 'Value', type: 'text' },
+                    { name: 'Description', label: 'Description', type: 'text' },
+                    { name: 'Category', label: 'Category', type: 'text' },
+                    { name: 'DisplayOrder', label: 'Display Order', type: 'number', val: 0 }
+                ],
+                provider: [
+                    { name: 'Name', label: 'Name', type: 'text' },
+                    { name: 'ProviderType', label: 'Provider Type', type: 'select', options: { 'OpenAI': 1, 'AzureOpenAI': 2, 'Gemini': 3, 'Claude': 4, 'Ollama': 5 }, val: 1 },
+                    { name: 'BaseUrl', label: 'Base URL', type: 'text' },
+                    { name: 'ApiKey', label: 'API Key', type: 'text' },
+                    { name: 'IsEnabled', label: 'Is Enabled', type: 'bool', val: true },
+                    { name: 'Priority', label: 'Priority', type: 'number', val: 0 },
+                    { name: 'RetryCount', label: 'Retry Count', type: 'number', val: 3 },
+                    { name: 'TimeoutSeconds', label: 'Timeout (s)', type: 'number', val: 60 }
+                ],
+                model: [
+                    { name: 'Name', label: 'Name', type: 'text' },
+                    { name: 'ProviderId', label: 'Provider ID', type: 'number', val: 1 },
+                    { name: 'Role', label: 'Role', type: 'select', options: { 'Student': 1, 'Teacher': 2, 'Admin': 3 }, val: 1 },
+                    { name: 'IsDefault', label: 'Is Default', type: 'bool', val: false },
+                    { name: 'MaxTokens', label: 'Max Tokens', type: 'number', val: 4096 },
+                    { name: 'Temperature', label: 'Temperature', type: 'number', val: 0.7 },
+                    { name: 'IsEnabled', label: 'Is Enabled', type: 'bool', val: true }
+                ],
+                prompt: [
+                    { name: 'Name', label: 'Name', type: 'text' },
+                    { name: 'Role', label: 'Role', type: 'text' },
+                    { name: 'Prompt', label: 'Prompt', type: 'text' },
+                    { name: 'IsActive', label: 'Is Active', type: 'bool', val: false },
+                    { name: 'Category', label: 'Category', type: 'text' }
+                ],
+                featureflag: [
+                    { name: 'Key', label: 'Key', type: 'text' },
+                    { name: 'DisplayName', label: 'Display Name', type: 'text' },
+                    { name: 'IsEnabled', label: 'Is Enabled', type: 'bool', val: false },
+                    { name: 'Category', label: 'Category', type: 'text' },
+                    { name: 'Description', label: 'Description', type: 'text' }
+                ],
+                quota: [
+                    { name: 'Role', label: 'Role', type: 'text' },
+                    { name: 'DailyLimit', label: 'Daily Limit', type: 'number', val: 100 },
+                    { name: 'MinuteLimit', label: 'Minute Limit', type: 'number', val: 30 },
+                    { name: 'MaxTokensPerRequest', label: 'Max Tokens/Request', type: 'number', val: 4000 },
+                    { name: 'IsUnlimited', label: 'Is Unlimited', type: 'bool', val: false }
+                ],
+                securitypolicy: [
+                    { name: 'Key', label: 'Key', type: 'text' },
+                    { name: 'Value', label: 'Value', type: 'text' },
+                    { name: 'Description', label: 'Description', type: 'text' },
+                    { name: 'Category', label: 'Category', type: 'text' }
+                ]
+            };
+            var defs = fieldDefs[lookup] || [];
+            var html = '<input type="hidden" name="Id" value="0" />';
+            for (var i = 0; i < defs.length; i++) {
+                var f = defs[i];
+                if (f.type === 'select') {
+                    html += '<div class="adm-form-group"><label class="adm-form-label">' + f.label + '</label><select name="' + f.name + '" class="adm-input">';
+                    for (var opt in f.options) {
+                        var sv = f.options[opt];
+                        html += '<option value="' + sv + '"' + (sv === f.val ? ' selected' : '') + '>' + opt + '</option>';
+                    }
+                    html += '</select></div>';
+                } else if (f.type === 'bool') {
+                    html += '<div class="adm-form-group"><label class="adm-form-label">' + f.label + '</label><select name="' + f.name + '" class="adm-input">';
+                    html += '<option value="true"' + (f.val === true ? ' selected' : '') + '>Yes</option>';
+                    html += '<option value="false"' + (f.val === false ? ' selected' : '') + '>No</option>';
+                    html += '</select></div>';
+                } else {
+                    html += '<div class="adm-form-group"><label class="adm-form-label">' + f.label + '</label><input type="' + f.type + '" name="' + f.name + '" class="adm-input" value="' + (f.val != null ? f.val : '') + '" />';
+                    html += '</div>';
+                }
+            }
+            return html;
+        }
+
+        function openCreateModal(type) {
+            document.getElementById('createModal').style.display = 'flex';
+            document.getElementById('createForm').action = '/AI/AIConfig/Upsert' + capitalize(type);
+            document.getElementById('createModalLabel').textContent = 'Create ' + capitalize(type);
+            document.getElementById('createModalSubtitle').textContent = 'Add new ' + type + ' configuration';
+            var fields = document.getElementById('createFormFields');
+            fields.innerHTML = getCreateFields(type);
+        }
+
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+        function closeCreateModal() { document.getElementById('createModal').style.display = 'none'; }
+        function closeConfirmDelete() { document.getElementById('confirmDeleteModal').style.display = 'none'; }
+
+        function confirmDelete(type, id) {
+            document.getElementById('confirmDeleteModal').style.display = 'flex';
+            document.getElementById('deleteItemId').value = id;
+            document.getElementById('deleteForm').action = '/AI/AIConfig/Delete' + capitalize(type) + '/' + id;
+            document.getElementById('deleteConfirmText').textContent = 'Are you sure you want to delete this ' + type + '?';
+        }
+
+        function buildJsonFromForm(form) {
+            var fd = new FormData(form);
+            var boolFields = ['IsEnabled', 'IsDefault', 'IsActive', 'IsUnlimited'];
+            var obj = {};
+            fd.forEach(function(v, k) {
+                if (k === '__RequestVerificationToken') return;
+                if (boolFields.indexOf(k) >= 0) { obj[k] = v === 'true'; }
+                else if (v !== '' && !isNaN(v)) obj[k] = Number(v);
+                else obj[k] = v;
+            });
+            return obj;
+        }
+
+        function reloadOnSuccess(r) {
+            if (r.success) { window.location.reload(); return; }
+            alert(r.error || 'Operation failed');
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var data = buildJsonFromForm(this);
+            ajaxPost(this.action, data).then(reloadOnSuccess);
+        });
+
+        document.getElementById('createForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var data = buildJsonFromForm(this);
+            ajaxPost(this.action, data).then(reloadOnSuccess);
+        });
+
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            ajaxPost(this.action, {}).then(reloadOnSuccess);
+        });
+
+        function toggleProvider(id) {
+            ajaxPost('/AI/AIConfig/ToggleProvider/' + id).then(reloadOnSuccess);
+        }
+
+        function toggleModel(id) {
+            ajaxPost('/AI/AIConfig/ToggleModel/' + id).then(reloadOnSuccess);
+        }
+
+        function toggleFeature(id) {
+            ajaxPost('/AI/AIConfig/ToggleFeature/' + id).then(reloadOnSuccess);
+        }
+
+        function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+    </script>
+}

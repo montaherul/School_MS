@@ -23,6 +23,7 @@ using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Accounting;
 using SchoolManagementSystem.Models.Entities.SchoolPay;
+using SchoolManagementSystem.Models.Entities.AI;
 
 
 namespace SchoolManagementSystem.Data;
@@ -249,6 +250,23 @@ public class SchoolDbContext : DbContext
     public DbSet<SchoolShift> SchoolShifts => Set<SchoolShift>();
     public DbSet<Building> Buildings => Set<Building>();
     public DbSet<SubjectCategory> SubjectCategories => Set<SubjectCategory>();
+
+    // AI Module DbSets
+    public DbSet<AIConversation> AIConversations => Set<AIConversation>();
+    public DbSet<AIMessage> AIMessages => Set<AIMessage>();
+    public DbSet<AIUsage> AIUsages => Set<AIUsage>();
+    public DbSet<AISetting> AISettings => Set<AISetting>();
+    public DbSet<AIProvider> AIProviders => Set<AIProvider>();
+    public DbSet<AIModel> AIModels => Set<AIModel>();
+    public DbSet<AIPrompt> AIPrompts => Set<AIPrompt>();
+    public DbSet<AIFeatureFlag> AIFeatureFlags => Set<AIFeatureFlag>();
+    public DbSet<AIQuota> AIQuotas => Set<AIQuota>();
+    public DbSet<AISecurityPolicy> AISecurityPolicies => Set<AISecurityPolicy>();
+    public DbSet<AIAuditLog> AIAuditLogs => Set<AIAuditLog>();
+    public DbSet<AIKnowledgeBase> AIKnowledgeBases => Set<AIKnowledgeBase>();
+    public DbSet<AIKnowledgeChunk> AIKnowledgeChunks => Set<AIKnowledgeChunk>();
+    public DbSet<AIHealthCheck> AIHealthChecks => Set<AIHealthCheck>();
+    public DbSet<AIDashboardCache> AIDashboardCaches => Set<AIDashboardCache>();
 
     // Routine Module DbSets
     public DbSet<Models.Entities.Routine.RoutinePeriod> RoutinePeriods => Set<Models.Entities.Routine.RoutinePeriod>();
@@ -1049,6 +1067,132 @@ modelBuilder.Entity<AdmitCard>()
                   .WithMany()
                   .HasForeignKey(e => e.PaymentMethodId)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+// AI Module Configurations
+        modelBuilder.Entity<AIConversation>(entity =>
+        {
+            entity.HasIndex(e => e.StudentId).HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.CreatedAt).HasFilter("[IsDeleted] = 0");
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(e => e.Messages).WithOne(m => m.Conversation).HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Status).HasConversion<int>().HasDefaultValue(Models.Enums.ConversationStatus.Active);
+            entity.Property(e => e.IsPinned).HasDefaultValue(false);
+        });
+
+        modelBuilder.Entity<AIMessage>(entity =>
+        {
+            entity.HasIndex(e => new { e.ConversationId, e.CreatedAt }).HasFilter("[IsDeleted] = 0");
+            entity.HasOne(e => e.Conversation).WithMany(c => c.Messages).HasForeignKey(e => e.ConversationId).OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.Model).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AIUsage>(entity =>
+        {
+            entity.HasIndex(e => new { e.StudentId, e.UsageDate }).HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.UsageDate).HasFilter("[IsDeleted] = 0");
+            entity.HasIndex(e => e.ConversationId).HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.EstimatedCost).HasPrecision(18, 6);
+            entity.Property(e => e.Model).HasMaxLength(100).IsRequired();
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Conversation).WithMany().HasForeignKey(e => e.ConversationId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(e => e.Message).WithMany().HasForeignKey(e => e.MessageId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<AISetting>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Key).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Value).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+        });
+
+        modelBuilder.Entity<AIProvider>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.BaseUrl).HasMaxLength(500);
+            entity.Property(e => e.ApiKeyEncrypted).HasMaxLength(500);
+            entity.Property(e => e.ProviderType).HasConversion<int>();
+        });
+
+        modelBuilder.Entity<AIModel>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Role).HasConversion<int>();
+            entity.HasOne(e => e.Provider).WithMany().HasForeignKey(e => e.ProviderId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AIPrompt>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Prompt).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AIFeatureFlag>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Key).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.DisplayName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Category).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<AIQuota>(entity =>
+        {
+            entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<AISecurityPolicy>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Key).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Value).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Category).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AIAuditLog>(entity =>
+        {
+            entity.Property(e => e.Action).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.EntityType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<AIKnowledgeBase>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.FilePath).HasMaxLength(1000);
+            entity.Property(e => e.ContentType).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<AIKnowledgeChunk>(entity =>
+        {
+            entity.Property(e => e.Content).IsRequired();
+            entity.HasOne(e => e.KnowledgeBase).WithMany().HasForeignKey(e => e.KnowledgeBaseId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AIHealthCheck>(entity =>
+        {
+            entity.Property(e => e.Component).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+            entity.HasIndex(e => e.LastChecked);
+        });
+
+        modelBuilder.Entity<AIDashboardCache>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Key).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.JsonData).IsRequired();
         });
 
 DbInitializer.Seed(modelBuilder);

@@ -1,0 +1,171 @@
+@model SchoolManagementSystem.Models.DTOs.AI.ConversationDetailDto
+@{
+    ViewData["Title"] = Model.Title;
+    var messages = ViewBag.Messages as List<SchoolManagementSystem.Models.DTOs.AI.MessageDto> ?? new();
+    var studentName = ViewBag.StudentName as string ?? "Unknown Student";
+    var updatedStr = Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm") : "";
+    var isActive = Model.Status == SchoolManagementSystem.Models.Enums.ConversationStatus.Active;
+    var isArchived = Model.Status == SchoolManagementSystem.Models.Enums.ConversationStatus.Archived;
+}
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMsg
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-chat-square-dots fs-4"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@Model.Title</h1>
+                <p class="adm-header__sub">
+                    <span style="display:inline-flex;align-items:center;gap:0.5rem">
+                        <i class="bi bi-person-circle"></i> @studentName
+                        <span style="color:var(--adm-text-3)">|</span>
+                        <i class="bi bi-calendar3"></i> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <span style="color:var(--adm-text-3)">|</span>
+                            <i class="bi bi-arrow-repeat"></i> <span>Updated: @updatedStr</span>
+                        }
+                        <span style="color:var(--adm-text-3)">|</span>
+                        @if (isActive)
+                        {
+                            <span class="adm-badge adm-badge-success">Active</span>
+                        }
+                        else if (isArchived)
+                        {
+                            <span class="adm-badge adm-badge-warning">Archived</span>
+                        }
+                        else
+                        {
+                            <span class="adm-badge adm-badge-danger">@Model.Status.ToString()</span>
+                        }
+                        @if (Model.IsPinned)
+                        {
+                            <span class="adm-badge adm-badge--primary"><i class="bi bi-pin-fill me-1"></i>Pinned</span>
+                        }
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="ws-flex ws-gap">
+            <a href="@Url.Action("Conversations", "AI")" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="exportConversation()">
+                <i class="bi bi-download me-1"></i> Export
+            </button>
+            @if (isActive)
+            {
+                <form method="post" action="@Url.Action("ArchiveConversation", "AI", new { id = Model.Id })" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-archive me-1"></i> Archive
+                    </button>
+                </form>
+            }
+            @if (isArchived)
+            {
+                <form method="post" action="@Url.Action("RestoreConversation", "AI", new { id = Model.Id })" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                    </button>
+                </form>
+            }
+            <form method="post" action="@Url.Action("DeleteConversation", "AI", new { id = Model.Id })" style="display:inline" onsubmit="return confirm('Delete this conversation permanently?')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="adm-btn adm-btn--danger">
+                    <i class="bi bi-trash me-1"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body" style="max-height:70vh;overflow-y:auto;padding:1rem">
+            @if (messages.Count != 0)
+            {
+                <div style="display:flex;flex-direction:column;gap:1rem">
+                    @foreach (var msg in messages)
+                    {
+                        var isUser = msg.Role == "user" || msg.Role == "User";
+                        var justify = isUser ? "justify-content:flex-end" : "justify-content:flex-start";
+                        var bgColor = isUser ? "background:var(--adm-primary);color:#fff" : "background:var(--adm-surface-2);color:var(--adm-text-1)";
+                        var radius = isUser ? "12px 12px 4px 12px" : "12px 12px 12px 4px";
+                        var align = isUser ? "text-align:right" : "";
+                        var roleLabel = isUser ? "Student" : "AI Assistant";
+                        <div style="display:flex;@justify">
+                            <div style="max-width:80%;@bgColor;padding:0.75rem 1rem;border-radius:@radius">
+                                <div style="font-size:0.75rem;opacity:0.7;margin-bottom:0.25rem;@align">
+                                    @roleLabel · @msg.CreatedAt.ToString("HH:mm")
+                                </div>
+                                <div style="white-space:pre-wrap;line-height:1.5;font-size:0.9rem">@msg.Content</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="adm-empty-state">
+                    <i class="bi bi-chat-dots" style="font-size:2rem"></i>
+                    <p>No messages in this conversation</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var convTitle = '@Html.Raw(Model.Title.Replace("'", "\\'"))';
+        var stuName = '@Html.Raw(studentName.Replace("'", "\\'"))';
+        var createdDate = '@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")';
+        var convStatus = '@Model.Status';
+        var msgCount = @messages.Count;
+
+        function exportConversation() {
+            var content = 'Conversation: ' + convTitle + '\n';
+            content += 'Student: ' + stuName + '\n';
+            content += 'Date: ' + createdDate + '\n';
+            content += 'Status: ' + convStatus + '\n';
+            content += 'Messages: ' + msgCount + '\n';
+            content += '----------------------------------------\n\n';
+
+            @foreach (var msg in messages)
+            {
+                <text>
+                var timeStr = '@msg.CreatedAt.ToString("HH:mm")';
+                var roleStr = '@(msg.Role == "user" || msg.Role == "User" ? "Student" : "AI")';
+                content += '[' + timeStr + '] ' + roleStr + ':\n';
+                content += '@Html.Raw(msg.Content.Replace("'", "\\'").Replace("\n", "\\n"))' + '\n\n';
+                </text>
+            }
+
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = convTitle + ' - conversation.txt';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        var chatContainer = document.querySelector('.adm-card__body');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+}

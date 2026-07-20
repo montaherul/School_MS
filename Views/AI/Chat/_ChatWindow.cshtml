@@ -1,0 +1,41 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIChatViewModel
+
+<div class="ai-chat-header">
+    <h5>@Model.ActiveConversationTitle</h5>
+</div>
+
+<div class="ai-messages" id="messages-container">
+    @if (Model.Messages.Count == 0)
+    {
+        <div class="ai-welcome-msg">
+            <div class="ai-welcome-icon"><i class="bi bi-robot"></i></div>
+            <h4>Hello! I'm your AI study assistant</h4>
+            <p>I can help you with homework, explain concepts, practice problems, and more.</p>
+            <div class="ai-suggestions">
+                <button class="ai-suggestion-chip" data-prompt="Explain the water cycle">Explain the water cycle</button>
+                <button class="ai-suggestion-chip" data-prompt="Help me solve a math problem">Help me solve a math problem</button>
+                <button class="ai-suggestion-chip" data-prompt="What is photosynthesis?">What is photosynthesis?</button>
+                <button class="ai-suggestion-chip" data-prompt="Give me a practice quiz">Give me a practice quiz</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (var msg in Model.Messages)
+        {
+            @await Html.PartialAsync("~/Views/AI/Chat/_Message.cshtml", new SchoolManagementSystem.Models.ViewModels.AI.MessageViewModel
+            {
+                Id = msg.Id,
+                Role = msg.Role,
+                Content = msg.Content,
+                CreatedAt = msg.CreatedAt
+            })
+        }
+    }
+</div>
+
+<div class="ai-typing-indicator" id="typing-indicator" style="display:none">
+    <span class="ai-typing-dot"></span>
+    <span class="ai-typing-dot"></span>
+    <span class="ai-typing-dot"></span>
+</div>

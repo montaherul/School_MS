@@ -154,6 +154,9 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 // All repository and service registrations are now in ServiceRegistration.AddSchoolApplicationServices()
 builder.Services.AddSchoolApplicationServices();
 
+// AI Module registrations
+builder.Services.AddAIModule();
+
 // Register SchoolPay Gateway providers
 builder.Services.AddScoped<SslCommerzProvider>();
 
@@ -287,6 +290,9 @@ await using (var scope = app.Services.CreateAsyncScope())
 
     // RBAC: SchoolPay Gateway permissions
     await SchoolPayRbacSeeder.SeedAsync(db);
+
+    // RBAC: AI Chat permissions (Student role)
+    await AIRbacSeeder.SeedAsync(db);
 
     // Seed Sandbox provider if not exists
     var schoolPayRepo = scope.ServiceProvider.GetRequiredService<ISchoolPayRepository>();

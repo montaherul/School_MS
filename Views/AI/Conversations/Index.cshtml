@@ -1,0 +1,202 @@
+@model SchoolManagementSystem.Models.ViewModels.AI.AIConversationAdminIndexViewModel
+@{
+    ViewData["Title"] = "AI Conversations";
+}
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMsg
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-chat-square-text fs-4"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">AI Conversations</h1>
+                <p class="adm-header__sub">Monitor and manage all AI chat conversations across the system</p>
+            </div>
+        </div>
+        <div>
+            <span class="adm-badge adm-badge--primary">@Model.TotalRecords Total</span>
+        </div>
+    </div>
+
+    <form method="get" action="@Url.Action("Conversations", "AI")">
+        <div class="adm-filters">
+            <div class="adm-filters__row">
+                <div class="adm-filters__field adm-filters__field--search">
+                    <label class="adm-label">Search</label>
+                    <div class="adm-input-wrap">
+                        <i class="bi bi-search adm-input-wrap__icon"></i>
+                        <input type="text" name="search" class="adm-input" placeholder="Search by student name or title..." value="@Model.Search" />
+                    </div>
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Status</label>
+                    <select name="statusFilter" class="adm-select">
+                        <option value="">All Statuses</option>
+                        <option value="Active" selected="@(Model.StatusFilter == "Active")">Active</option>
+                        <option value="Archived" selected="@(Model.StatusFilter == "Archived")">Archived</option>
+                        <option value="Deleted" selected="@(Model.StatusFilter == "Deleted")">Deleted</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field adm-filters__field--actions">
+                    <label class="adm-label">&nbsp;</label>
+                    <button type="submit" class="adm-btn adm-btn--primary">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                    <a href="@Url.Action("Conversations", "AI")" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Items.Count != 0)
+    {
+        <div class="adm-table-card" style="margin-top:1rem">
+            <div class="adm-table-card__body">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th class="adm-table-header">Student</th>
+                            <th class="adm-table-header">Title</th>
+                            <th class="adm-table-header">Status</th>
+                            <th class="adm-table-header">Pinned</th>
+                            <th class="adm-table-header">Messages</th>
+                            <th class="adm-table-header">Last Updated</th>
+                            <th class="adm-table-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td class="adm-table-cell">
+                                    <div class="ws-flex ws-gap" style="align-items:center">
+                                        <div style="width:32px;height:32px;border-radius:50%;background:var(--adm-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:600">
+                                            @(string.IsNullOrEmpty(item.StudentName) ? "?" : item.StudentName.Substring(0,1).ToUpper())
+                                        </div>
+                                        <span>@item.StudentName</span>
+                                    </div>
+                                </td>
+                                <td class="adm-table-cell">
+                                    <a href="@Url.Action("ConversationDetail", "AI", new { id = item.Id })" style="color:var(--adm-primary);text-decoration:none;font-weight:500">
+                                        @item.Title
+                                    </a>
+                                </td>
+                                <td class="adm-table-cell">
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="adm-badge adm-badge-success">Active</span>
+                                    }
+                                    else if (item.Status == "Archived")
+                                    {
+                                        <span class="adm-badge adm-badge-warning">Archived</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="adm-badge adm-badge-danger">@item.Status</span>
+                                    }
+                                </td>
+                                <td class="adm-table-cell">
+                                    @if (item.IsPinned)
+                                    {
+                                        <i class="bi bi-pin-fill" style="color:var(--adm-primary)"></i>
+                                    }
+                                </td>
+                                <td class="adm-table-cell">@item.MessageCount</td>
+                                <td class="adm-table-cell">@item.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="adm-table-cell">
+                                    <a href="@Url.Action("ConversationDetail", "AI", new { id = item.Id })" class="adm-btn adm-btn--sm adm-btn--ghost" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <form method="post" action="@Url.Action("ArchiveConversation", "AI", new { id = item.Id })" style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="adm-btn adm-btn--sm adm-btn--ghost" title="Archive">
+                                                <i class="bi bi-archive"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    <form method="post" action="@Url.Action("DeleteConversation", "AI", new { id = item.Id })" style="display:inline" onsubmit="return confirm('Delete this conversation?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="adm-btn adm-btn--sm adm-btn--danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="adm-pagination">
+                @if (Model.Page > 1)
+                {
+                    <a href="@Url.Action("Conversations", "AI", new { page = Model.Page - 1, search = Model.Search, statusFilter = Model.StatusFilter })" class="adm-btn adm-btn--sm adm-btn--ghost">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                }
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.Page)
+                    {
+                        <span class="adm-pagination__item adm-pagination__item--active">@i</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Conversations", "AI", new { page = i, search = Model.Search, statusFilter = Model.StatusFilter })" class="adm-pagination__item">@i</a>
+                    }
+                }
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a href="@Url.Action("Conversations", "AI", new { page = Model.Page + 1, search = Model.Search, statusFilter = Model.StatusFilter })" class="adm-btn adm-btn--sm adm-btn--ghost">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="adm-empty-state" style="margin-top:2rem">
+            <i class="bi bi-chat-square-text" style="font-size:3rem;color:var(--adm-text-2)"></i>
+            <h3>No Conversations Found</h3>
+            <p>@(string.IsNullOrEmpty(Model.Search) ? "No conversations have been started yet." : "Try adjusting your search or filters.")</p>
+            @if (!string.IsNullOrEmpty(Model.Search))
+            {
+                <a href="@Url.Action("Conversations", "AI")" class="adm-btn adm-btn--ghost">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Clear Filters
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.adm-pagination__item').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                if (this.tagName === 'SPAN') e.preventDefault();
+            });
+        });
+    </script>
+}

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
+using SchoolManagementSystem.Services.Interfaces.AI;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -10,10 +11,12 @@ namespace SchoolManagementSystem.Controllers.Dashboard;
 public class DashboardController : Controller
 {
     private readonly IDashboardService _service;
+    private readonly IAIFeatureService _aiFeature;
 
-    public DashboardController(IDashboardService service)
+    public DashboardController(IDashboardService service, IAIFeatureService aiFeature)
     {
         _service = service;
+        _aiFeature = aiFeature;
     }
 
     [RequirePermission("Dashboard.View")]
@@ -24,6 +27,7 @@ public class DashboardController : Controller
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))
             {
+                ViewBag.AIChatEnabled = await _aiFeature.IsFeatureEnabledAsync("AI.Feature.Chat");
                 var studentData = await _service.GetStudentDashboardAsync(userId);
                 return View("StudentIndex", studentData);
             }
@@ -82,6 +86,16 @@ public class DashboardController : Controller
         }
 
         var data = await _service.GetDashboardAsync();
+        ViewBag.AIFeatureFlags = await _aiFeature.GetAllFeatureFlagsAsync();
         return View(data);
+    }
+
+    [HttpPost("ToggleAIFeature")]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("Dashboard.View")]
+    public async Task<IActionResult> ToggleAIFeature(int id, bool enabled)
+    {
+        var result = await _aiFeature.ToggleFeatureAsync(id, enabled);
+        return Json(new { success = result });
     }
 }
