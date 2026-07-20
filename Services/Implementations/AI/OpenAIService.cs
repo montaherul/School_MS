@@ -86,21 +86,21 @@ public class OpenAIClient : IOpenAIClient
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-                var inputItems = new List<ResponseInputItem>
+                var messages = new List<object>
                 {
-                    new() { Role = "system", Content = systemPrompt }
+                    new { role = "system", content = systemPrompt }
                 };
 
                 foreach (var msg in conversationHistory)
-                    inputItems.Add(new ResponseInputItem { Role = msg.Role, Content = msg.Content });
+                    messages.Add(new { role = msg.Role, content = msg.Content });
 
-                inputItems.Add(new ResponseInputItem { Role = "user", Content = userMessage });
+                messages.Add(new { role = "user", content = userMessage });
 
                 var requestBody = new
                 {
                     model,
-                    input = string.Join("\n", inputItems.Select(i => $"{i.Role}: {i.Content}")),
-                    max_output_tokens = maxTokens,
+                    messages,
+                    max_tokens = maxTokens,
                     temperature
                 };
 
@@ -119,18 +119,15 @@ public class OpenAIClient : IOpenAIClient
                 using var doc = JsonDocument.Parse(responseJson);
                 var root = doc.RootElement;
 
-                var outputText = root.TryGetProperty("output", out var output)
-                    ? output.TryGetProperty("text", out var text)
-                        ? text.GetString() ?? string.Empty
-                        : output.GetString() ?? string.Empty
-                    : string.Empty;
-
-                if (string.IsNullOrEmpty(outputText) && root.TryGetProperty("choices", out var choices))
-                {
-                    outputText = choices[0].TryGetProperty("message", out var msg)
-                        ? msg.TryGetProperty("content", out var c) ? c.GetString() ?? string.Empty : string.Empty
-                        : choices[0].TryGetProperty("text", out var t) ? t.GetString() ?? string.Empty : string.Empty;
-                }
+                var outputText = root.TryGetProperty("choices", out var choices)
+                    ? choices[0].TryGetProperty("message", out var msgEl)
+                        ? msgEl.TryGetProperty("content", out var c) ? c.GetString() ?? string.Empty : string.Empty
+                        : choices[0].TryGetProperty("text", out var t) ? t.GetString() ?? string.Empty : string.Empty
+                    : root.TryGetProperty("output", out var output)
+                        ? output.TryGetProperty("text", out var text)
+                            ? text.GetString() ?? string.Empty
+                            : output.GetString() ?? string.Empty
+                        : string.Empty;
 
                 var promptTokens = 0;
                 var completionTokens = 0;
@@ -175,9 +172,4 @@ public class OpenAIClient : IOpenAIClient
         throw new InvalidOperationException($"OpenAI API request failed after {maxAttempts} attempts.");
     }
 
-    private sealed class ResponseInputItem
-    {
-        public string Role { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
-    }
 }

@@ -16,6 +16,7 @@ using SchoolManagementSystem.Services.Interfaces.Student;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Services.Interfaces.AI;
 
 namespace SchoolManagementSystem.Controllers.Student;
 
@@ -27,17 +28,20 @@ public class StudentPortalController : Controller
     private readonly ISchoolSettingRepository _settingRepo;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<StudentPortalController> _logger;
+    private readonly IAIFeatureService _aiFeature;
 
     public StudentPortalController(
         IStudentPortalService studentPortalService,
         ISchoolSettingRepository settingRepo,
         IUnitOfWork uow,
-        ILogger<StudentPortalController> logger)
+        ILogger<StudentPortalController> logger,
+        IAIFeatureService aiFeature)
     {
         _studentPortalService = studentPortalService;
         _settingRepo = settingRepo;
         _uow = uow;
         _logger = logger;
+        _aiFeature = aiFeature;
     }
 
     private async Task<bool> IsStudentPortalEnabledAsync()
@@ -64,6 +68,7 @@ public class StudentPortalController : Controller
             var userId = CurrentUserId();
             if (userId == 0) return RedirectToAction("Login", "Auth");
 
+            ViewBag.AIChatEnabled = await _aiFeature.IsFeatureEnabledAsync("AI.Feature.Chat");
             var dto = await _studentPortalService.GetDashboardAsync(userId, cancellationToken);
             var model = await HydrateDashboardViewModelAsync(userId, cancellationToken);
             model.StudentName = dto.StudentName;

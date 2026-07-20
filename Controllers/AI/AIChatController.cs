@@ -3,32 +3,37 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models.DTOs.AI;
 using SchoolManagementSystem.Models.ViewModels.AI;
 using SchoolManagementSystem.Services.Interfaces.AI;
+using SchoolManagementSystem.Services.Interfaces.Students;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.AI;
 
-[Authorize(Roles = "Student")]
+[Authorize]
 [Route("AI/[controller]")]
 public class AIChatController : Controller
 {
     private readonly IAIChatService _chatService;
     private readonly IOpenAIService _openAiService;
     private readonly IAIFeatureService _aiFeature;
+    private readonly IStudentService _studentService;
 
-    public AIChatController(IAIChatService chatService, IOpenAIService openAiService, IAIFeatureService aiFeature)
+    public AIChatController(IAIChatService chatService, IOpenAIService openAiService, IAIFeatureService aiFeature, IStudentService studentService)
     {
         _chatService = chatService;
         _openAiService = openAiService;
         _aiFeature = aiFeature;
-    }
-
-    private int GetStudentId()
-    {
-        var claim = User.FindFirstValue("StudentId");
-        return int.TryParse(claim, out var id) ? id : 0;
+        _studentService = studentService;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Student";
+
+    private async Task<int> GetStudentIdAsync(CancellationToken ct)
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(raw, out var userId) || userId == 0) return 0;
+        var id = await _studentService.GetStudentIdByUserIdAsync(userId, ct);
+        return id ?? 0;
+    }
 
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken ct)
@@ -39,8 +44,12 @@ public class AIChatController : Controller
             return View("~/Views/AI/Chat/Index.cshtml", new AIChatViewModel());
         }
 
-        var studentId = GetStudentId();
-        if (studentId == 0) return Forbid();
+        var studentId = await GetStudentIdAsync(ct);
+        if (studentId == 0)
+        {
+            TempData["ErrorMessage"] = "AI Chat is only available for students.";
+            return RedirectToAction("Index", "Dashboard");
+        }
 
         var result = await _chatService.GetConversationsAsync(studentId, 1, 20, ct);
         if (result.IsFailure)
@@ -61,8 +70,12 @@ public class AIChatController : Controller
     [HttpGet("Chat/{conversationId}")]
     public async Task<IActionResult> Chat(int conversationId, CancellationToken ct)
     {
-        var studentId = GetStudentId();
-        if (studentId == 0) return Forbid();
+        var studentId = await GetStudentIdAsync(ct);
+        if (studentId == 0)
+        {
+            TempData["ErrorMessage"] = "AI Chat is only available for students.";
+            return RedirectToAction(nameof(Index));
+        }
 
         var convResult = await _chatService.GetConversationAsync(conversationId, studentId, ct);
         if (convResult.IsFailure) return NotFound();
@@ -88,8 +101,12 @@ public class AIChatController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> New(CancellationToken ct)
     {
-        var studentId = GetStudentId();
-        if (studentId == 0) return Forbid();
+        var studentId = await GetStudentIdAsync(ct);
+        if (studentId == 0)
+        {
+            TempData["ErrorMessage"] = "AI Chat is only available for students.";
+            return RedirectToAction(nameof(Index));
+        }
 
         var result = await _chatService.CreateConversationAsync(studentId, GetUserId(), ct);
         if (result.IsFailure)
@@ -105,7 +122,7 @@ public class AIChatController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Send(int conversationId, string message, CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = await GetStudentIdAsync(ct);
         if (studentId == 0) return Json(new { success = false, error = "Unauthorized." });
 
         var result = await _chatService.SendMessageAsync(conversationId, studentId, message, GetUserId(), ct);
@@ -119,8 +136,12 @@ public class AIChatController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int conversationId, CancellationToken ct)
     {
-        var studentId = GetStudentId();
-        if (studentId == 0) return Forbid();
+        var studentId = await GetStudentIdAsync(ct);
+        if (studentId == 0)
+        {
+            TempData["ErrorMessage"] = "AI Chat is only available for students.";
+            return RedirectToAction(nameof(Index));
+        }
 
         var result = await _chatService.DeleteConversationAsync(conversationId, studentId, GetUserId(), ct);
         if (result.IsFailure)
@@ -134,7 +155,7 @@ public class AIChatController : Controller
     [HttpGet("List")]
     public async Task<IActionResult> List(int page = 1, CancellationToken ct = default)
     {
-        var studentId = GetStudentId();
+        var studentId = await GetStudentIdAsync(ct);
         if (studentId == 0) return Json(new { data = new List<object>(), totalPages = 0 });
 
         var result = await _chatService.GetConversationsAsync(studentId, page, 20, ct);
@@ -148,7 +169,7 @@ public class AIChatController : Controller
     [HttpGet("Messages/{conversationId}")]
     public async Task<IActionResult> Messages(int conversationId, CancellationToken ct = default)
     {
-        var studentId = GetStudentId();
+        var studentId = await GetStudentIdAsync(ct);
         if (studentId == 0) return Json(new { data = new List<object>() });
 
         var result = await _chatService.GetMessagesAsync(conversationId, studentId, ct);
@@ -158,7 +179,7 @@ public class AIChatController : Controller
     [HttpGet("Stream/{conversationId}")]
     public async Task Stream(int conversationId, string message, CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = await GetStudentIdAsync(ct);
         if (studentId == 0) return;
 
         Response.Headers["Content-Type"] = "text/event-stream";

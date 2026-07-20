@@ -34,7 +34,7 @@ public class AISettingsCache : IAISettingsCache, IDisposable
     public async Task<string> GetEndpointAsync()
     {
         var provider = await GetActiveProviderAsync();
-        return provider?.BaseUrl ?? "https://api.openai.com/v1/responses";
+        return provider?.BaseUrl ?? "https://api.openai.com/v1/chat/completions";
     }
 
     public async Task<string> GetModelAsync() => await GetSettingAsync("AI.DefaultModel", "gpt-4o-mini");

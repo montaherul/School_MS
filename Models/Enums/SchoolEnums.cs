@@ -278,7 +278,8 @@ public enum AIProviderType
     AzureOpenAI = 2,
     Gemini = 3,
     Claude = 4,
-    Ollama = 5
+    Ollama = 5,
+    Groq = 6
 }
 
 public enum AIModelRole
