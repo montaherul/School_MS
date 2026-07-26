@@ -88,9 +88,9 @@ public class SslCommerzProvider : IPaymentGatewayProvider
         {
             return new SchoolPayIpnResult { Success = false, ErrorMessage = "Missing transaction ID" };
         }
-        var success = await _sslCommerzGatewayService.ProcessIpnAsync(
+        var paymentId = await _sslCommerzGatewayService.ProcessIpnAsync(
             bankTransactionId, providerTransactionId, validationId, status, ct);
-        return new SchoolPayIpnResult { Success = success };
+        return new SchoolPayIpnResult { Success = paymentId > 0 };
     }
 
     public Task<bool> ProcessRefundAsync(string providerTransactionId, decimal amount, string? reason, CancellationToken ct = default)

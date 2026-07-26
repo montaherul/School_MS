@@ -151,8 +151,33 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             card_type = preferredCardType
         };
 
+        var formData = new Dictionary<string, string>
+        {
+            ["store_id"] = initData.store_id,
+            ["store_passwd"] = initData.store_passwd,
+            ["total_amount"] = initData.total_amount.ToString("F2"),
+            ["currency"] = initData.currency,
+            ["tran_id"] = initData.tran_id,
+            ["success_url"] = initData.success_url,
+            ["fail_url"] = initData.fail_url,
+            ["cancel_url"] = initData.cancel_url,
+            ["ipn_url"] = initData.ipn_url,
+            ["cus_name"] = initData.cus_name,
+            ["cus_email"] = initData.cus_email,
+            ["cus_phone"] = initData.cus_phone,
+            ["cus_add1"] = initData.cus_add1,
+            ["cus_city"] = initData.cus_city,
+            ["cus_country"] = initData.cus_country,
+            ["product_name"] = initData.product_name,
+            ["product_category"] = initData.product_category,
+            ["product_profile"] = initData.product_profile,
+            ["value_a"] = initData.value_a ?? "",
+            ["value_b"] = initData.value_b ?? "",
+            ["value_c"] = initData.value_c ?? "",
+            ["card_type"] = initData.card_type ?? ""
+        };
+        var content = new FormUrlEncodedContent(formData);
         var json = JsonSerializer.Serialize(initData);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var client = _httpClientFactory.CreateClient("SslCommerz");
         HttpResponseMessage response;
@@ -170,6 +195,8 @@ public class SslCommerzGatewayService : IPaymentGatewayService
 
         var responseBody = await response.Content.ReadAsStringAsync(ct);
 
+        _logger.LogInformation("SSLCommerz init response ({StatusCode}): {Body}", (int)response.StatusCode, responseBody);
+
         SslCommerzInitResponse? result;
         try
         {
@@ -177,7 +204,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Failed to parse SSLCommerz init response");
+            _logger.LogError(ex, "Failed to parse SSLCommerz init response. Body: {Body}", responseBody);
             return null;
         }
 
@@ -231,12 +258,12 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         }
     }
 
-    public async Task<bool> ProcessIpnAsync(string? bankTranId, string? tranId, string? valId, string status, CancellationToken ct = default)
+    public async Task<int> ProcessIpnAsync(string? bankTranId, string? tranId, string? valId, string status, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(tranId))
         {
             _logger.LogWarning("IPN received without tran_id");
-            return false;
+            return 0;
         }
 
         var request = await _db.OnlinePaymentRequests
@@ -245,13 +272,17 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         if (request == null)
         {
             _logger.LogWarning("No OnlinePaymentRequest found for transaction {TranId}", tranId);
-            return false;
+            return 0;
         }
 
         if (request.Status == OnlinePaymentRequestStatus.Verified)
         {
             _logger.LogInformation("Transaction {TranId} already verified — skipping duplicate IPN", tranId);
-            return true;
+            var existingPayment = await _db.Payments
+                .Where(p => p.FeeInvoiceId == request.FeeInvoiceId && p.ReferenceNo == (bankTranId ?? tranId))
+                .Select(p => p.Id)
+                .FirstOrDefaultAsync(ct);
+            return existingPayment;
         }
 
         if (request.FeeInvoice != null && request.FeeInvoice.Status == PaymentStatus.Paid)
@@ -261,7 +292,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             request.GatewayResponse = $"Rejected: Invoice already paid. IPN tran_id={tranId}";
             request.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
-            return false;
+            return 0;
         }
 
         if (status != "VALID" && status != "VALIDATED")
@@ -271,7 +302,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             request.GatewayResponse = $"IPN Status: {status}";
             request.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
-            return false;
+            return 0;
         }
 
         SslCommerzValidationResponse? validation = null;
@@ -305,7 +336,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             }
 
             await _db.SaveChangesAsync(ct);
-            return false;
+            return 0;
         }
 
         if (validation.amount.HasValue && validation.amount.Value != request.Amount)
@@ -325,7 +356,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             await _db.SaveChangesAsync(ct);
             await _auditService.LogAsync(null, "Payment", "AmountMismatch",
                 $"TranId={tranId}, Expected={request.Amount}, Gateway={validation.amount}, Invoice={request.FeeInvoice?.InvoiceNo}", ct);
-            return false;
+            return 0;
         }
 
         if (!string.IsNullOrEmpty(validation.currency) && validation.currency != "BDT")
@@ -342,7 +373,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             }
 
             await _db.SaveChangesAsync(ct);
-            return false;
+            return 0;
         }
 
         if (validation.risk_level == "1" || validation.risk_title == "Suspicious")
@@ -451,7 +482,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
 
         await SendPaymentNotificationsAsync(request.StudentId, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
 
-        return true;
+        return payment.Id;
     }
 
     private async Task SendPaymentNotificationsAsync(int studentId, string? invoiceNo, decimal amount, string tranId, CancellationToken ct)

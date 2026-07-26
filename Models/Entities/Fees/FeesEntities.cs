@@ -269,7 +269,7 @@ public class OnlinePaymentRequest : BaseEntity
     [MaxLength(255)]
     public string? GatewaySessionKey { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(4000)]
     public string? GatewayResponse { get; set; }
 
     public DateTime? PaymentExpiryAt { get; set; }

@@ -13,17 +13,20 @@ public class PaymentGatewayController : Controller
 {
     private readonly IPaymentGatewayService _gatewayService;
     private readonly IOnlinePaymentService _onlinePaymentService;
+    private readonly IFeeReceiptService _receiptService;
     private readonly IAuditService _auditService;
     private readonly ILogger<PaymentGatewayController> _logger;
 
     public PaymentGatewayController(
         IPaymentGatewayService gatewayService,
         IOnlinePaymentService onlinePaymentService,
+        IFeeReceiptService receiptService,
         IAuditService auditService,
         ILogger<PaymentGatewayController> logger)
     {
         _gatewayService = gatewayService;
         _onlinePaymentService = onlinePaymentService;
+        _receiptService = receiptService;
         _auditService = auditService;
         _logger = logger;
     }
@@ -38,7 +41,7 @@ public class PaymentGatewayController : Controller
             ViewBag.PortalLabel = "Home";
             return;
         }
-        var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+        var roles = User?.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList() ?? [];
         if (roles.Contains("Student"))
         {
             ViewBag.PortalHome = "/Student/Portal/Dashboard";
@@ -128,6 +131,8 @@ public class PaymentGatewayController : Controller
             return View("~/Views/Fees/PaymentGateway/Success.cshtml");
         }
 
+        var paymentId = 0;
+
         if (request.Status == OnlinePaymentRequestStatus.Verified)
         {
             ViewBag.Message = "Payment already verified successfully.";
@@ -137,18 +142,18 @@ public class PaymentGatewayController : Controller
             return View("~/Views/Fees/PaymentGateway/Success.cshtml");
         }
 
-        bool processed = false;
         if (!string.IsNullOrEmpty(val_id))
         {
-            processed = await _gatewayService.ProcessIpnAsync(bank_tran_id, tran_id, val_id, status ?? "VALID", ct);
+            paymentId = await _gatewayService.ProcessIpnAsync(bank_tran_id, tran_id, val_id, status ?? "VALID", ct);
         }
 
-        if (processed)
+        if (paymentId > 0)
         {
             ViewBag.Message = "Payment successful and verified!";
             ViewBag.InvoiceNo = request.FeeInvoice?.InvoiceNo;
             ViewBag.Amount = request.Amount;
             ViewBag.TransactionId = bank_tran_id ?? tran_id;
+            ViewBag.PaymentId = paymentId;
         }
         else
         {
@@ -159,6 +164,22 @@ public class PaymentGatewayController : Controller
         }
 
         return View("~/Views/Fees/PaymentGateway/Success.cshtml");
+    }
+
+    [HttpGet("Receipt/{paymentId:int}")]
+    public async Task<IActionResult> Receipt(int paymentId, CancellationToken ct)
+    {
+        var data = await _receiptService.GetReceiptDataAsync(paymentId, ct);
+        if (data is null) return NotFound();
+        return View("~/Views/Fee/FeePayment/Receipt.cshtml", data);
+    }
+
+    [HttpGet("DownloadReceipt/{paymentId:int}")]
+    public async Task<IActionResult> DownloadReceipt(int paymentId, CancellationToken ct)
+    {
+        var pdf = await _receiptService.GenerateReceiptPdfAsync(paymentId, ct);
+        if (pdf.Length == 0) return NotFound();
+        return File(pdf, "application/pdf", $"receipt-{paymentId:D6}.pdf");
     }
 
     [HttpGet("Cancel")]
@@ -194,7 +215,7 @@ public class PaymentGatewayController : Controller
             return Ok("FAILED");
         }
 
-        var success = await _gatewayService.ProcessIpnAsync(bankTranId, tranId, valId, status ?? "VALID", ct);
-        return Ok(success ? "SUCCESS" : "FAILED");
+        var paymentId = await _gatewayService.ProcessIpnAsync(bankTranId, tranId, valId, status ?? "VALID", ct);
+        return Ok(paymentId > 0 ? "SUCCESS" : "FAILED");
     }
 }

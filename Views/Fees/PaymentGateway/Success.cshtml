@@ -4,6 +4,7 @@
     var invoiceNo = ViewBag.InvoiceNo as string;
     var amount = (decimal)(ViewBag.Amount ?? 0m);
     var transactionId = ViewBag.TransactionId as string;
+    var paymentId = ViewBag.PaymentId as int?;
 }
 
 <div class="adm-page">
@@ -34,6 +35,15 @@
                                 <span class="fw-bold">@transactionId</span>
                             </div>
                         }
+                    </div>
+                }
+
+                @if (paymentId.HasValue && paymentId.Value > 0)
+                {
+                    <div class="mt-3">
+                        <a href="@Url.Action("DownloadReceipt", new { paymentId = paymentId.Value })" class="adm-btn adm-btn--primary adm-btn--lg w-100">
+                            <i class="bi bi-download"></i> Download Payment Receipt
+                        </a>
                     </div>
                 }
 
