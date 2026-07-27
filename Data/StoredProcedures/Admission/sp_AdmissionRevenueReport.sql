@@ -13,7 +13,7 @@ BEGIN
     SELECT
         ISNULL(SUM(fi.TotalAmount), 0) AS TotalInvoiceAmount,
         ISNULL(SUM(fi.PaidAmount), 0) AS TotalPaidAmount,
-        ISNULL(SUM(fi.DueAmount), 0) AS TotalDueAmount,
+        ISNULL(SUM(fi.TotalAmount - fi.PaidAmount), 0) AS TotalDueAmount,
         COUNT(*) AS TotalInvoices,
         SUM(CASE WHEN fi.Status = 3 THEN 1 ELSE 0 END) AS PaidInvoices,
         SUM(CASE WHEN fi.Status IN (1, 2) THEN 1 ELSE 0 END) AS PendingInvoices,
@@ -65,8 +65,8 @@ BEGIN
     -- Scholarship/Waiver summary
     SELECT
         COUNT(*) AS TotalWaivers,
-        ISNULL(SUM(fw.Amount), 0) AS TotalWaiverAmount,
-        ISNULL(AVG(fw.Percentage), 0) AS AvgWaiverPercentage
+        ISNULL(SUM(fw.WaiverAmount), 0) AS TotalWaiverAmount,
+        ISNULL(AVG(fw.WaiverValue), 0) AS AvgWaiverPercentage
     FROM FeeWaivers fw WITH(NOLOCK)
     INNER JOIN FeeInvoices fi WITH(NOLOCK) ON fw.FeeInvoiceId = fi.Id
     WHERE fw.IsDeleted = 0

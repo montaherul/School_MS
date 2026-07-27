@@ -118,20 +118,12 @@
     <script>
         (function() {
             'use strict';
-            var trendChart, classDemandChart, revenueTrendChart;
 
-            function getDates() {
-                return {
-                    dateFrom: document.getElementById('dateFrom').value || null,
-                    dateTo: document.getElementById('dateTo').value || null,
-                    groupBy: document.getElementById('groupBy').value || 'Month'
-                };
-            }
-
-            function destroyCharts() {
-                if (trendChart) { trendChart.destroy(); trendChart = null; }
-                if (classDemandChart) { classDemandChart.destroy(); classDemandChart = null; }
-                if (revenueTrendChart) { revenueTrendChart.destroy(); revenueTrendChart = null; }
+            function escHtml(str) {
+                if (!str) return '\u2014';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
             }
 
             function fmtCurr(n) {
@@ -142,13 +134,6 @@
             function fmt(n) {
                 if (n == null) return '\u2014';
                 return n.toLocaleString();
-            }
-
-            function escHtml(str) {
-                if (!str) return '\u2014';
-                var d = document.createElement('div');
-                d.textContent = str;
-                return d.innerHTML;
             }
 
             function renderFunnelBar(label, value, max, color) {
@@ -164,143 +149,181 @@
                 if (el) el.innerHTML = '<div class="adm-alert adm-alert--error">Failed to load ' + label + '.</div>';
             }
 
+            function getCanvasCtx(id) {
+                var el = document.getElementById(id);
+                return el ? el.getContext('2d') : null;
+            }
+
+            function getVal(id) {
+                var el = document.getElementById(id);
+                return el ? el.value : null;
+            }
+
+            var trendChart = null, classDemandChart = null, revenueTrendChart = null;
+
+            function getDates() {
+                return {
+                    dateFrom: getVal('dateFrom'),
+                    dateTo: getVal('dateTo'),
+                    groupBy: getVal('groupBy') || 'Month'
+                };
+            }
+
+            function destroyCharts() {
+                if (trendChart) { trendChart.destroy(); trendChart = null; }
+                if (classDemandChart) { classDemandChart.destroy(); classDemandChart = null; }
+                if (revenueTrendChart) { revenueTrendChart.destroy(); revenueTrendChart = null; }
+            }
+
             function loadFunnel() {
                 var d = getDates();
-                $.get('/Admission/GetConversionFunnel', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
-                    if (!res || !res.success) { ajaxError('funnelContainer', 'funnel'); return; }
-                    var f = res.data;
-                    var container = document.getElementById('funnelContainer');
-                    var maxVal = f.totalApplications || 1;
-                    container.innerHTML =
-                        renderFunnelBar('Total Applications', f.totalApplications, maxVal, '#0F766E') +
-                        renderFunnelBar('Documents Verified', f.documentVerified, maxVal, '#2563EB') +
-                        renderFunnelBar('Interview Completed', f.interviewCompleted, maxVal, '#7C3AED') +
-                        renderFunnelBar('Fee Paid', f.feePaid, maxVal, '#D97706') +
-                        renderFunnelBar('Approved', f.approved, maxVal, '#059669') +
-                        renderFunnelBar('Converted', f.converted, maxVal, '#16A34A') +
-                        '<div class="funnel-rate"><span class="funnel-rate__label">Conversion Rate</span>' +
-                        '<span class="funnel-rate__value">' + (f.conversionRate || 0).toFixed(1) + '%</span></div>';
-                }).fail(function() { ajaxError('funnelContainer', 'funnel'); });
+                $.get('/Admission/GetConversionFunnel', { dateFrom: d.dateFrom, dateTo: d.dateTo })
+                    .done(function(res) {
+                        if (!res || !res.success) { ajaxError('funnelContainer', 'funnel'); return; }
+                        var f = res.data;
+                        var container = document.getElementById('funnelContainer');
+                        if (!container) return;
+                        var maxVal = f.totalApplications || 1;
+                        container.innerHTML =
+                            renderFunnelBar('Total Applications', f.totalApplications, maxVal, '#0F766E') +
+                            renderFunnelBar('Documents Verified', f.documentVerified, maxVal, '#2563EB') +
+                            renderFunnelBar('Interview Completed', f.interviewCompleted, maxVal, '#7C3AED') +
+                            renderFunnelBar('Fee Paid', f.feePaid, maxVal, '#D97706') +
+                            renderFunnelBar('Approved', f.approved, maxVal, '#059669') +
+                            renderFunnelBar('Converted', f.converted, maxVal, '#16A34A') +
+                            '<div class="funnel-rate"><span class="funnel-rate__label">Conversion Rate</span>' +
+                            '<span class="funnel-rate__value">' + (f.conversionRate || 0).toFixed(1) + '%</span></div>';
+                    })
+                    .fail(function() { ajaxError('funnelContainer', 'funnel'); });
             }
 
             function loadTrend() {
                 var d = getDates();
-                $.get('/Admission/GetTrendAnalysis', { dateFrom: d.dateFrom, dateTo: d.dateTo, groupBy: d.groupBy }, function(res) {
-                    if (!res || !res.success) { ajaxError('trendChart', 'trend'); return; }
-                    var data = res.data || [];
-                    var labels = data.map(function(r) { return r.periodLabel; });
-                    var ctx = document.getElementById('trendChart').getContext('2d');
-                    if (trendChart) trendChart.destroy();
-                    trendChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 },
-                                { label: 'Approved', data: data.map(function(r) { return r.approvedCount; }), backgroundColor: '#3b82f6', borderRadius: 4 },
-                                { label: 'Rejected', data: data.map(function(r) { return r.rejectedCount; }), backgroundColor: '#ef4444', borderRadius: 4 },
-                                { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
-                            scales: {
-                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+                $.get('/Admission/GetTrendAnalysis', { dateFrom: d.dateFrom, dateTo: d.dateTo, groupBy: d.groupBy })
+                    .done(function(res) {
+                        if (!res || !res.success) { ajaxError('trendChart', 'trend'); return; }
+                        var data = res.data || [];
+                        var ctx = getCanvasCtx('trendChart');
+                        if (!ctx) return;
+                        var labels = data.map(function(r) { return r.periodLabel; });
+                        if (trendChart) trendChart.destroy();
+                        trendChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 },
+                                    { label: 'Approved', data: data.map(function(r) { return r.approvedCount; }), backgroundColor: '#3b82f6', borderRadius: 4 },
+                                    { label: 'Rejected', data: data.map(function(r) { return r.rejectedCount; }), backgroundColor: '#ef4444', borderRadius: 4 },
+                                    { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+                                }
                             }
-                        }
-                    });
-                }).fail(function() { ajaxError('trendChart', 'trend'); });
+                        });
+                    })
+                    .fail(function() { ajaxError('trendChart', 'trend'); });
             }
 
             function loadClassDemand() {
                 var d = getDates();
-                $.get('/Admission/GetClassDemand', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
-                    if (!res || !res.success) { ajaxError('classDemandChart', 'class demand'); return; }
-                    var data = res.data || [];
-                    var labels = data.map(function(r) { return r.className; });
-                    var ctx = document.getElementById('classDemandChart').getContext('2d');
-                    if (classDemandChart) classDemandChart.destroy();
-                    classDemandChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                { label: 'Applied', data: data.map(function(r) { return r.totalApplications; }), backgroundColor: '#3b82f6', borderRadius: 4 },
-                                { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 },
-                                { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
-                            scales: {
-                                x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
-                                y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                $.get('/Admission/GetClassDemand', { dateFrom: d.dateFrom, dateTo: d.dateTo })
+                    .done(function(res) {
+                        if (!res || !res.success) { ajaxError('classDemandChart', 'class demand'); return; }
+                        var data = res.data || [];
+                        var ctx = getCanvasCtx('classDemandChart');
+                        if (!ctx) return;
+                        var labels = data.map(function(r) { return r.className; });
+                        if (classDemandChart) classDemandChart.destroy();
+                        classDemandChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [
+                                    { label: 'Applied', data: data.map(function(r) { return r.totalApplications; }), backgroundColor: '#3b82f6', borderRadius: 4 },
+                                    { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 },
+                                    { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 }
+                                ]
+                            },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                indexAxis: 'y',
+                                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                                scales: {
+                                    x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                                    y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                                }
                             }
-                        }
-                    });
-                }).fail(function() { ajaxError('classDemandChart', 'class demand'); });
+                        });
+                    })
+                    .fail(function() { ajaxError('classDemandChart', 'class demand'); });
             }
 
             function loadRevenue() {
                 var d = getDates();
-                $.get('/Admission/GetRevenueReport', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
-                    if (!res || !res.success) { ajaxError('revenueContainer', 'revenue'); return; }
-                    var r = res.data;
+                $.get('/Admission/GetRevenueReport', { dateFrom: d.dateFrom, dateTo: d.dateTo })
+                    .done(function(res) {
+                        if (!res || !res.success) { ajaxError('revenueContainer', 'revenue'); return; }
+                        var r = res.data;
 
-                    var container = document.getElementById('revenueContainer');
-                    container.innerHTML =
-                        '<div class="dash-grid--rev-2">' +
-                        '<div class="rev-card rev-card--success"><div class="rev-card__title">Total Invoiced</div><div class="rev-card__value">' + fmtCurr(r.totalInvoiceAmount) + '</div></div>' +
-                        '<div class="rev-card rev-card--info"><div class="rev-card__title">Total Collected</div><div class="rev-card__value">' + fmtCurr(r.totalPaidAmount) + '</div></div>' +
-                        '</div>' +
-                        '<div class="dash-grid--rev-2">' +
-                        '<div class="rev-card rev-card--warning"><div class="rev-card__title">Total Due</div><div class="rev-card__value">' + fmtCurr(r.totalDueAmount) + '</div></div>' +
-                        '<div class="rev-card rev-card--success"><div class="rev-card__title">Collection Rate</div><div class="rev-card__value">' + (r.collectionRate || 0).toFixed(1) + '%</div></div>' +
-                        '</div>' +
-                        '<div class="dash-grid--rev-2">' +
-                        '<div class="rev-card rev-card--muted"><span class="rev-card__title">Invoices: </span><strong>' + fmt(r.totalInvoices) + '</strong> <span class="rev-card__title">(' + fmt(r.paidInvoices) + ' paid)</span></div>' +
-                        '<div class="rev-card rev-card--muted"><span class="rev-card__title">Waivers: </span><strong>' + fmt((r.waiverSummary || {}).totalWaivers) + '</strong> <span class="rev-card__title">(' + fmtCurr((r.waiverSummary || {}).totalWaiverAmount) + ')</span></div>' +
-                        '</div>';
-
-                    var tbody = document.getElementById('revenueByClassBody');
-                    tbody.innerHTML = '';
-                    (r.byClass || []).forEach(function(item) {
-                        var tr = document.createElement('tr');
-                        tr.className = 'js-row';
-                        tr.innerHTML = '<td class="js-table">' + escHtml(item.className) + '</td>' +
-                            '<td class="js-table td--right">' + fmtCurr(item.totalInvoiceAmount) + '</td>' +
-                            '<td class="js-table td--right" style="color:var(--adm-success);">' + fmtCurr(item.totalPaidAmount) + '</td>' +
-                            '<td class="js-table td--right">' + fmt(item.invoiceCount) + '</td>' +
-                            '<td class="js-table td--right">' + fmt(item.paidCount) + '</td>';
-                        tbody.appendChild(tr);
-                    });
-
-                    var labels = (r.monthlyTrend || []).map(function(m) { return m.periodLabel; });
-                    var ctx = document.getElementById('revenueTrendChart').getContext('2d');
-                    if (revenueTrendChart) revenueTrendChart.destroy();
-                    revenueTrendChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                { label: 'Invoiced', data: (r.monthlyTrend || []).map(function(m) { return m.totalInvoiceAmount; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
-                                { label: 'Collected', data: (r.monthlyTrend || []).map(function(m) { return m.totalPaidAmount; }), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
-                            scales: {
-                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: function(v) { return v.toLocaleString(); } } }
-                            }
+                        var container = document.getElementById('revenueContainer');
+                        if (container) {
+                            container.innerHTML =
+                                '<div class="row mb-3 g-3">' +
+                                '<div class="col-6"><div class="rev-card rev-card--success p-3 rounded border"><div class="rev-card__title small text-muted">Total Invoiced</div><div class="rev-card__value h5 mb-0">' + fmtCurr(r.totalInvoiceAmount) + '</div></div></div>' +
+                                '<div class="col-6"><div class="rev-card rev-card--info p-3 rounded border"><div class="rev-card__title small text-muted">Total Collected</div><div class="rev-card__value h5 mb-0">' + fmtCurr(r.totalPaidAmount) + '</div></div></div>' +
+                                '<div class="col-6"><div class="rev-card rev-card--warning p-3 rounded border"><div class="rev-card__title small text-muted">Total Due</div><div class="rev-card__value h5 mb-0">' + fmtCurr(r.totalDueAmount) + '</div></div></div>' +
+                                '<div class="col-6"><div class="rev-card rev-card--success p-3 rounded border"><div class="rev-card__title small text-muted">Collection Rate</div><div class="rev-card__value h5 mb-0">' + (r.collectionRate || 0).toFixed(1) + '%</div></div></div>' +
+                                '<div class="col-6"><div class="rev-card rev-card--muted p-3 rounded border"><div class="rev-card__title small text-muted">Invoices</div><div class="rev-card__value h5 mb-0">' + fmt(r.totalInvoices) + ' (' + fmt(r.paidInvoices) + ' paid)</div></div></div>' +
+                                '<div class="col-6"><div class="rev-card rev-card--muted p-3 rounded border"><div class="rev-card__title small text-muted">Waivers</div><div class="rev-card__value h5 mb-0">' + fmt((r.waiverSummary || {}).totalWaivers) + ' (' + fmtCurr((r.waiverSummary || {}).totalWaiverAmount) + ')</div></div></div>' +
+                                '</div>';
                         }
-                    });
-                }).fail(function() { ajaxError('revenueContainer', 'revenue'); });
+
+                        var tbody = document.getElementById('revenueByClassBody');
+                        if (tbody) {
+                            tbody.innerHTML = '';
+                            (r.byClass || []).forEach(function(item) {
+                                var tr = document.createElement('tr');
+                                tr.innerHTML = '<td>' + escHtml(item.className) + '</td>' +
+                                    '<td class="td--right">' + fmtCurr(item.totalInvoiceAmount) + '</td>' +
+                                    '<td class="td--right" style="color:var(--adm-success);">' + fmtCurr(item.totalPaidAmount) + '</td>' +
+                                    '<td class="td--right">' + fmt(item.invoiceCount) + '</td>' +
+                                    '<td class="td--right">' + fmt(item.paidCount) + '</td>';
+                                tbody.appendChild(tr);
+                            });
+                        }
+
+                        var ctx = getCanvasCtx('revenueTrendChart');
+                        if (ctx) {
+                            var labels = (r.monthlyTrend || []).map(function(m) { return m.periodLabel; });
+                            if (revenueTrendChart) revenueTrendChart.destroy();
+                            revenueTrendChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: 'Invoiced', data: (r.monthlyTrend || []).map(function(m) { return m.totalInvoiceAmount; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
+                                        { label: 'Collected', data: (r.monthlyTrend || []).map(function(m) { return m.totalPaidAmount; }), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true, maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                                    scales: {
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: function(v) { return v.toLocaleString(); } } }
+                                    }
+                                }
+                            });
+                        }
+                    })
+                    .fail(function() { ajaxError('revenueContainer', 'revenue'); });
             }
 
             function refreshAll() {

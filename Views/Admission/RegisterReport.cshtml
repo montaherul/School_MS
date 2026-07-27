@@ -100,6 +100,35 @@
     <script>
         (function() {
             'use strict';
+
+            function escHtml(str) {
+                if (!str) return '\u2014';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            function statusClass(s) {
+                switch ((s || '').toLowerCase()) {
+                    case 'pending': return 'warning';
+                    case 'approved': return 'info';
+                    case 'rejected': return 'danger';
+                    case 'converted': return 'success';
+                    default: return 'neutral';
+                }
+            }
+
+            function getRequest() {
+                return {
+                    dateFrom: document.getElementById('dateFrom').value || null,
+                    dateTo: document.getElementById('dateTo').value || null,
+                    classId: parseInt(document.getElementById('classFilter').value) || null,
+                    status: parseInt(document.getElementById('statusFilter').value) || null,
+                    gender: document.getElementById('genderFilter').value || null,
+                    religion: document.getElementById('religionFilter').value || null
+                };
+            }
+
             var tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
             var csrfToken = tokenEl ? tokenEl.value : '';
 
@@ -120,17 +149,6 @@
                 }
             });
 
-            function getRequest() {
-                return {
-                    dateFrom: document.getElementById('dateFrom').value || null,
-                    dateTo: document.getElementById('dateTo').value || null,
-                    classId: parseInt(document.getElementById('classFilter').value) || null,
-                    status: parseInt(document.getElementById('statusFilter').value) || null,
-                    gender: document.getElementById('genderFilter').value || null,
-                    religion: document.getElementById('religionFilter').value || null
-                };
-            }
-
             function loadRegister() {
                 var container = document.getElementById('registerContainer');
                 $.ajax({
@@ -138,12 +156,12 @@
                     headers: ajaxHeaders(),
                     data: JSON.stringify(getRequest()),
                     success: function(res) {
-                        if (!res.success) {
-                            container.innerHTML = '<div class="adm-alert adm-alert--error">' + res.message + '</div>';
+                        if (!res || !res.success) {
+                            container.innerHTML = '<div class="adm-alert adm-alert--error">' + (res ? res.message : 'Invalid response.') + '</div>';
                             return;
                         }
                         var data = res.data;
-                        if (!data.rows || !data.rows.length) {
+                        if (!data || !data.rows || !data.rows.length) {
                             container.innerHTML = '<div class="adm-card"><div class="adm-card__body" style="text-align:center;padding:40px;"><p>No records found for the selected filters.</p></div></div>';
                             return;
                         }
@@ -160,37 +178,33 @@
                 });
             }
 
-            function statusClass(s) {
-                switch ((s || '').toLowerCase()) {
-                    case 'pending': return 'warning';
-                    case 'approved': return 'info';
-                    case 'rejected': return 'error';
-                    case 'converted': return 'success';
-                    default: return 'neutral';
-                }
-            }
-
-            function escHtml(str) {
-                if (!str) return '—';
-                var d = document.createElement('div');
-                d.textContent = str;
-                return d.innerHTML;
-            }
-
             function exportExcel() {
-                $.ajax({
-                    url: '/Admission/ExportReportExcel', type: 'POST', contentType: 'application/json',
-                    headers: ajaxHeaders(),
-                    data: JSON.stringify(getRequest()),
-                    xhrFields: { responseType: 'blob' },
-                    success: function(blob) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/Admission/ExportReportExcel', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('RequestVerificationToken', csrfToken);
+                xhr.responseType = 'blob';
+                xhr.onload = function() {
+                    if (xhr.status !== 200) { alert('Export failed.'); return; }
+                    var contentType = xhr.getResponseHeader('Content-Type') || '';
+                    if (contentType.indexOf('json') !== -1) {
+                        var reader = new FileReader();
+                        reader.onload = function() {
+                            try {
+                                var err = JSON.parse(reader.result);
+                                alert(err.message || 'Export failed.');
+                            } catch(e) { alert('Export failed.'); }
+                        };
+                        reader.readAsText(xhr.response);
+                    } else {
                         var link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
+                        link.href = URL.createObjectURL(xhr.response);
                         link.download = 'admission_register_' + Date.now() + '.xlsx';
                         link.click();
-                    },
-                    error: function() { alert('Export failed.'); }
-                });
+                    }
+                };
+                xhr.onerror = function() { alert('Export failed.'); };
+                xhr.send(JSON.stringify(getRequest()));
             }
 
             window.loadRegister = loadRegister;
