@@ -26,22 +26,18 @@
 
     <div asp-validation-summary="ModelOnly" class="auth-alert auth-alert--error"></div>
 
-    <div class="auth-form-group">
-        <label asp-for="UserNameOrEmail" class="auth-label">Username or Email</label>
-        <div style="position:relative">
-            <i class="bi bi-person" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px"></i>
-            <input asp-for="UserNameOrEmail" class="auth-input" placeholder="Enter username or email" required autocomplete="username" style="padding-left:38px" />
-        </div>
-        <span asp-validation-for="UserNameOrEmail" class="auth-validation"></span>
+    <div class="sms-floating-group">
+        <i class="bi bi-person" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--adm-text-3);font-size:15px;z-index:1;pointer-events:none;"></i>
+        <input asp-for="UserNameOrEmail" class="sms-floating-input" placeholder="Username or Email" required autocomplete="username" style="padding-left:36px" />
+        <label asp-for="UserNameOrEmail" class="sms-floating-label" style="left:36px">Username or Email</label>
+        <span asp-validation-for="UserNameOrEmail" class="sms-floating-error sms-floating-error--visible"></span>
     </div>
 
-    <div class="auth-form-group">
-        <label asp-for="Password" class="auth-label">Password</label>
-        <div style="position:relative">
-            <i class="bi bi-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px"></i>
-            <input asp-for="Password" type="password" class="auth-input" placeholder="Enter your password" required autocomplete="current-password" style="padding-left:38px" />
-        </div>
-        <span asp-validation-for="Password" class="auth-validation"></span>
+    <div class="sms-floating-group">
+        <i class="bi bi-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--adm-text-3);font-size:15px;z-index:1;pointer-events:none;"></i>
+        <input asp-for="Password" type="password" class="sms-floating-input" placeholder="Password" required autocomplete="current-password" style="padding-left:36px" />
+        <label asp-for="Password" class="sms-floating-label" style="left:36px">Password</label>
+        <span asp-validation-for="Password" class="sms-floating-error sms-floating-error--visible"></span>
     </div>
 
     <div class="auth-row">

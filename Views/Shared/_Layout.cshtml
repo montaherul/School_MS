@@ -1152,23 +1152,88 @@
                             <i class="bi bi-search"></i>
                             <input type="text" placeholder="Search anything..." aria-label="Search">
                         </div>
+
+                        @* ── Theme Toggle ── *@
+                        <button class="sms-theme-toggle" title="Toggle theme">
+                            <i class="fas fa-moon"></i>
+                        </button>
+
+                        @* ── Notification Dropdown ── *@
                         @if (Can("Notifications.View") || (isGuardian && guardianPortalEnabled) || isStudent || isTeacherLike || isAccountant)
                         {
-                            <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : isStudent && studentPortalEnabled ? "/Student/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
-                                <i class="bi bi-bell"></i>
-                                <span class="notif-dot"></span>
-                            </a>
+                            <div class="sms-dropdown" id="notifDropdown">
+                                <button class="topbar-icon-btn" id="notifToggle" title="Notifications" aria-label="Notifications">
+                                    <i class="bi bi-bell"></i>
+                                    <span class="notif-dot"></span>
+                                </button>
+                                <div class="sms-notif-panel">
+                                    <div class="sms-notif-panel__header">
+                                        <h3 class="sms-notif-panel__title">Notifications</h3>
+                                        <button class="sms-notif-panel__mark-read" onclick="event.stopPropagation()">Mark all read</button>
+                                    </div>
+                                    <div class="sms-notif-panel__list">
+                                        <div class="sms-notif-panel__empty">
+                                            <i class="bi bi-bell-slash"></i>
+                                            <span>No new notifications</span>
+                                        </div>
+                                    </div>
+                                    <div class="sms-notif-panel__footer">
+                                        <a class="sms-notif-panel__view-all" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : isStudent && studentPortalEnabled ? "/Student/Portal/Notifications" : Url.Action("Index", "Notification"))">View all notifications</a>
+                                    </div>
+                                </div>
+                            </div>
                         }
-                        <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Profile" : isStudent && studentPortalEnabled ? "/Student/Portal/Profile" : "/Details")" title="My Profile">
-                            @if (!string.IsNullOrEmpty(profilePicture))
-                            {
-                                <img src="@profilePicture" alt="@userName" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-person-circle"></i>
-                            }
-                        </a>
+
+                        @* ── User Menu Dropdown ── *@
+                        <div class="sms-dropdown" id="userMenuDropdown">
+                            <button class="topbar-icon-btn" id="userMenuToggle" title="@userName" aria-label="User menu">
+                                @if (!string.IsNullOrEmpty(profilePicture))
+                                {
+                                    <img src="@profilePicture" alt="@userName" style="border-radius:50%; width:100%; height:100%; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-person-circle"></i>
+                                }
+                            </button>
+                            <div class="sms-user-menu">
+                                <div class="sms-user-menu__header">
+                                    <div class="sms-user-menu__avatar">
+                                        @if (!string.IsNullOrEmpty(profilePicture))
+                                        {
+                                            <img src="@profilePicture" alt="@userName" style="border-radius:50%; width:100%; height:100%; object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            @initials
+                                        }
+                                    </div>
+                                    <div class="sms-user-menu__info">
+                                        <div class="sms-user-menu__name">@userName</div>
+                                        <div class="sms-user-menu__role">@roleLabel</div>
+                                    </div>
+                                </div>
+                                <a class="sms-dropdown__item" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Profile" : isStudent && studentPortalEnabled ? "/Student/Portal/Profile" : "/Details")">
+                                    <i class="bi bi-person-circle"></i>
+                                    My Profile
+                                </a>
+                                @if (IsElevated())
+                                {
+                                    <a class="sms-dropdown__item" asp-controller="SystemSettings" asp-action="Index">
+                                        <i class="bi bi-gear"></i>
+                                        Settings
+                                    </a>
+                                }
+                                <div class="sms-dropdown__divider"></div>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" style="margin:0">
+                                    @Html.AntiForgeryToken()
+                                    <button class="sms-dropdown__item sms-dropdown__item--danger" type="submit">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        Sign Out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     }
                     else
                     {
@@ -1182,6 +1247,32 @@
             }
 
             <main role="main" class="content">
+                @* ── Breadcrumbs ── *@
+                @if (ViewBag.Breadcrumbs != null && ((IEnumerable<dynamic>)ViewBag.Breadcrumbs).Any())
+                {
+                    <ol class="sms-breadcrumb">
+                        @foreach (var crumb in ViewBag.Breadcrumbs)
+                        {
+                            <li>
+                                @if (!string.IsNullOrEmpty(crumb.Url))
+                                {
+                                    <a href="@crumb.Url">@crumb.Label</a>
+                                }
+                                else
+                                {
+                                    @crumb.Label
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+                else if (!string.IsNullOrEmpty(ViewData["Title"]?.ToString()))
+                {
+                    <ol class="sms-breadcrumb">
+                        <li><a href="/">Dashboard</a></li>
+                        <li>@ViewData["Title"]</li>
+                    </ol>
+                }
                 @RenderBody()
             </main>
         </div>
@@ -1195,6 +1286,8 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/schoolms-theme.js" asp-append-version="true"></script>
+    <script src="~/js/schoolms-forms.js" asp-append-version="true"></script>
     <script src="~/js/people-grid.js" asp-append-version="true"></script>
     <script src="~/js/routine-grid.js" asp-append-version="true"></script>
     <script src="~/js/schoolms-grid.js" asp-append-version="true"></script>
@@ -1352,6 +1445,34 @@
         window.closeSidebar = closeMobile;
         window.toggleSidebar = function () { _mobileOpen ? closeMobile() : openMobile(); };
 
+        })();
+
+        // ── Dropdown menu toggles ────────────────
+        (function () {
+            document.addEventListener('click', function (e) {
+                // notification dropdown
+                var notifToggle = document.getElementById('notifToggle');
+                var notifDropdown = document.getElementById('notifDropdown');
+                if (notifToggle && notifDropdown) {
+                    if (notifToggle.contains(e.target)) {
+                        e.preventDefault();
+                        notifDropdown.classList.toggle('sms-dropdown--open');
+                    } else if (!notifDropdown.contains(e.target)) {
+                        notifDropdown.classList.remove('sms-dropdown--open');
+                    }
+                }
+                // user menu dropdown
+                var userToggle = document.getElementById('userMenuToggle');
+                var userDropdown = document.getElementById('userMenuDropdown');
+                if (userToggle && userDropdown) {
+                    if (userToggle.contains(e.target)) {
+                        e.preventDefault();
+                        userDropdown.classList.toggle('sms-dropdown--open');
+                    } else if (!userDropdown.contains(e.target)) {
+                        userDropdown.classList.remove('sms-dropdown--open');
+                    }
+                }
+            });
         })();
     </script>
 

@@ -4785,3 +4785,1099 @@ tr:hover .action-group {
         font-size: 18px;
     }
 }
+
+/* ═══════════════════════════════════════════
+   DARK MODE — Complete Theme Override
+   ═══════════════════════════════════════════ */
+[data-theme="dark"] {
+    --sidebar-w: 260px;
+    --sidebar-collapsed-w: 72px;
+    --sidebar-mobile-w: 284px;
+    --clr-sidebar: #0a0f1e;
+    --clr-sidebar-surface: rgba(255,255,255,0.03);
+    --clr-sidebar-hover: rgba(255,255,255,0.06);
+    --clr-sidebar-active-bg: rgba(30,64,175,0.25);
+    --clr-sidebar-active-border: #60a5fa;
+    --clr-sidebar-text: #64748b;
+    --clr-sidebar-heading: #94a3b8;
+
+    --clr-accent: #fb923c;
+    --clr-primary: #3b82f6;
+    --clr-primary-hover: #2563eb;
+    --clr-primary-soft: #1e3a5f;
+
+    --clr-topbar: #1e293b;
+    --clr-canvas: #0f172a;
+    --clr-card: #1e293b;
+    --clr-border: #334155;
+
+    --clr-text: #f1f5f9;
+    --clr-text-muted: #94a3b8;
+
+    --role-admin: #a78bfa;
+    --role-admin-bg: rgba(124,58,237,0.15);
+    --role-teacher: #67e8f9;
+    --role-teacher-bg: rgba(8,145,178,0.15);
+    --role-student: #6ee7b7;
+    --role-student-bg: rgba(5,150,105,0.15);
+    --role-staff: #fcd34d;
+    --role-staff-bg: rgba(217,119,6,0.15);
+
+    --adm-primary: #14b8a6;
+    --adm-primary-h: #0d9488;
+    --adm-primary-l: #2dd4bf;
+    --adm-primary-bg: #0f2d2a;
+    --adm-accent: #f87171;
+    --adm-bg: #0f172a;
+    --adm-surface: #1e293b;
+    --adm-surface-2: #1a2332;
+    --adm-border: #334155;
+    --adm-border-h: #475569;
+    --adm-text: #f1f5f9;
+    --adm-text-2: #94a3b8;
+    --adm-text-3: #64748b;
+    --adm-pending: #fbbf24;
+    --adm-pending-bg: #2d2810;
+    --adm-converted: #38bdf8;
+    --adm-converted-bg: #0f2938;
+    --adm-rejected: #f87171;
+    --adm-rejected-bg: #2d1414;
+    --adm-success: #34d399;
+    --adm-success-bg: #0f2d1a;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+    --adm-shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --adm-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --adm-shadow-lg: 0 4px 8px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.3);
+
+    --er-primary: #14b8a6;
+    --er-primary-h: #0d9488;
+    --er-primary-l: #2dd4bf;
+    --er-primary-bg: #0f2d2a;
+    --er-success: #34d399;
+    --er-success-bg: #0f2d1a;
+    --er-danger: #f87171;
+    --er-danger-bg: #2d1414;
+    --er-info: #38bdf8;
+    --er-info-bg: #0f2938;
+    --er-warning: #fbbf24;
+    --er-warning-bg: #2d2810;
+    --er-text: #f1f5f9;
+    --er-text-2: #94a3b8;
+    --er-text-3: #64748b;
+    --er-border: #334155;
+    --er-border-h: #475569;
+    --er-surface: #1e293b;
+    --er-surface-2: #1a2332;
+    --er-surface-3: #1f2a3a;
+    --er-shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --er-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+    --er-shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+    --er-shadow-xl: 0 16px 48px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] body {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] .topbar-search input:focus {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .adm-input:focus,
+[data-theme="dark"] .adm-select:focus,
+[data-theme="dark"] .adm-textarea:focus,
+[data-theme="dark"] .er-input:focus,
+[data-theme="dark"] .er-select:focus,
+[data-theme="dark"] .er-textarea:focus,
+[data-theme="dark"] .er-filters__input:focus,
+[data-theme="dark"] .er-filters__select:focus,
+[data-theme="dark"] .er-search__input:focus {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .adm-loading {
+    background: rgba(15,23,42,0.9);
+}
+
+[data-theme="dark"] .dash-stat-card--gradient {
+    color: #fff;
+}
+
+[data-theme="dark"] .rev-card--success { background: #0f2d1a; }
+[data-theme="dark"] .rev-card--warning { background: #2d2810; }
+[data-theme="dark"] .rev-card--info { background: #0f2938; }
+[data-theme="dark"] .rev-card--muted { background: #1a2332; }
+
+[data-theme="dark"] .funnel-rate { background: #0f2d1a; }
+[data-theme="dark"] .funnel-rate__value { color: #34d399; }
+[data-theme="dark"] .funnel-bar__track { background: #334155; }
+
+[data-theme="dark"] .dash-stat-card--status.dash-stat-card--border-warning .dash-stat-card__value { color: #fbbf24; }
+[data-theme="dark"] .dash-stat-card--status.dash-stat-card--border-info .dash-stat-card__value { color: #38bdf8; }
+[data-theme="dark"] .dash-stat-card--status.dash-stat-card--border-danger .dash-stat-card__value { color: #f87171; }
+[data-theme="dark"] .dash-stat-card--status.dash-stat-card--border-success .dash-stat-card__value { color: #34d399; }
+
+[data-theme="dark"] .adm-modal-backdrop {
+    background: rgba(0,0,0,0.6);
+}
+
+[data-theme="dark"] .er-modal-backdrop {
+    background: rgba(0,0,0,0.6);
+}
+
+[data-theme="dark"] .er-modal {
+    background: rgba(30,41,59,0.95);
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   27. BREADCRUMBS
+   ───────────────────────────────────────────────────────────────── */
+.sms-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    margin: 0 0 16px;
+    list-style: none;
+    flex-wrap: wrap;
+}
+
+.sms-breadcrumb li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--adm-text-3);
+}
+
+.sms-breadcrumb li + li::before {
+    content: '/';
+    color: var(--adm-border);
+    font-size: 11px;
+    margin-right: 2px;
+}
+
+.sms-breadcrumb a {
+    color: var(--adm-text-3);
+    text-decoration: none;
+    transition: color var(--adm-transition);
+}
+
+.sms-breadcrumb a:hover {
+    color: var(--adm-primary);
+}
+
+.sms-breadcrumb li:last-child {
+    color: var(--adm-text);
+    font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   28. DROPDOWN MENU
+   ───────────────────────────────────────────────────────────────── */
+.sms-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.sms-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 200px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-lg);
+    box-shadow: var(--adm-shadow-lg);
+    padding: 6px;
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--adm-transition), visibility var(--adm-transition), transform var(--adm-transition);
+}
+
+.sms-dropdown--open .sms-dropdown__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.sms-dropdown__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--adm-text-2);
+    text-decoration: none;
+    border-radius: var(--adm-radius-sm);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    font-family: inherit;
+    transition: all var(--adm-transition);
+}
+
+.sms-dropdown__item:hover {
+    background: var(--adm-surface-2);
+    color: var(--adm-text);
+}
+
+.sms-dropdown__item i {
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.sms-dropdown__divider {
+    height: 1px;
+    background: var(--adm-border);
+    margin: 4px 0;
+}
+
+.sms-dropdown__item--danger {
+    color: var(--adm-rejected);
+}
+
+.sms-dropdown__item--danger:hover {
+    background: var(--adm-rejected-bg);
+    color: var(--adm-rejected);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   29. NOTIFICATION CENTER
+   ───────────────────────────────────────────────────────────────── */
+.sms-notif-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: -10px;
+    width: 360px;
+    max-height: 480px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-lg);
+    box-shadow: var(--adm-shadow-lg);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--adm-transition), visibility var(--adm-transition), transform var(--adm-transition);
+}
+
+.sms-dropdown--open .sms-notif-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.sms-notif-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--adm-border);
+}
+
+.sms-notif-panel__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--adm-text);
+    margin: 0;
+}
+
+.sms-notif-panel__mark-read {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--adm-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.sms-notif-panel__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.sms-notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: background var(--adm-transition);
+}
+
+.sms-notif-item:hover {
+    background: var(--adm-surface-2);
+}
+
+.sms-notif-item--unread {
+    background: var(--adm-primary-bg);
+}
+
+.sms-notif-item__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.sms-notif-item__icon--info { background: var(--adm-converted-bg); color: var(--adm-converted); }
+.sms-notif-item__icon--success { background: var(--adm-success-bg); color: var(--adm-success); }
+.sms-notif-item__icon--warning { background: var(--adm-pending-bg); color: var(--adm-pending); }
+.sms-notif-item__icon--danger { background: var(--adm-rejected-bg); color: var(--adm-rejected); }
+
+.sms-notif-item__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.sms-notif-item__message {
+    font-size: 13px;
+    color: var(--adm-text);
+    line-height: 1.4;
+    margin: 0 0 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.sms-notif-item__time {
+    font-size: 11px;
+    color: var(--adm-text-3);
+}
+
+.sms-notif-panel__footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--adm-border);
+    text-align: center;
+}
+
+.sms-notif-panel__view-all {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--adm-primary);
+    text-decoration: none;
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.sms-notif-panel__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 8px;
+    color: var(--adm-text-3);
+}
+
+.sms-notif-panel__empty i {
+    font-size: 32px;
+    opacity: 0.4;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   30. USER MENU (topbar avatar dropdown)
+   ───────────────────────────────────────────────────────────────── */
+.sms-user-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 240px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius-lg);
+    box-shadow: var(--adm-shadow-lg);
+    z-index: 300;
+    padding: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity var(--adm-transition), visibility var(--adm-transition), transform var(--adm-transition);
+}
+
+.sms-dropdown--open .sms-user-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.sms-user-menu__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--adm-border);
+    margin-bottom: 4px;
+}
+
+.sms-user-menu__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sms-user-menu__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sms-user-menu__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--adm-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sms-user-menu__role {
+    font-size: 11.5px;
+    color: var(--adm-text-3);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   31. AVATAR WITH STATUS
+   ───────────────────────────────────────────────────────────────── */
+.sms-avatar {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.sms-avatar__img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.sms-avatar--36 { width: 36px; height: 36px; }
+.sms-avatar--40 { width: 40px; height: 40px; }
+.sms-avatar--48 { width: 48px; height: 48px; }
+.sms-avatar--56 { width: 56px; height: 56px; }
+.sms-avatar--80 { width: 80px; height: 80px; }
+
+.sms-avatar__initials {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
+}
+
+.sms-avatar__status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--adm-surface);
+}
+
+.sms-avatar__status--online { background: var(--adm-success); }
+.sms-avatar__status--offline { background: var(--adm-text-3); }
+.sms-avatar__status--busy { background: var(--adm-rejected); }
+.sms-avatar__status--away { background: var(--adm-pending); }
+
+/* ─────────────────────────────────────────────────────────────────
+   32. PROGRESS BAR (enhanced)
+   ───────────────────────────────────────────────────────────────── */
+.sms-progress {
+    width: 100%;
+}
+
+.sms-progress__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.sms-progress__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--adm-text-2);
+}
+
+.sms-progress__value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--adm-text);
+}
+
+.sms-progress__track {
+    height: 8px;
+    background: var(--adm-surface-2);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.sms-progress__fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sms-progress__fill--primary { background: var(--adm-primary); }
+.sms-progress__fill--success { background: var(--adm-success); }
+.sms-progress__fill--warning { background: var(--adm-pending); }
+.sms-progress__fill--danger { background: var(--adm-rejected); }
+.sms-progress__fill--info { background: var(--adm-converted); }
+
+.sms-progress--sm .sms-progress__track { height: 4px; }
+.sms-progress--lg .sms-progress__track { height: 12px; }
+
+/* ─────────────────────────────────────────────────────────────────
+   33. DESCRIPTION LIST
+   ───────────────────────────────────────────────────────────────── */
+.sms-description-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 767px) {
+    .sms-description-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sms-description-list--single {
+    grid-template-columns: 1fr;
+}
+
+.sms-dl-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sms-dl-item__label {
+    font-size: 11.5px;
+    font-weight: 650;
+    color: var(--adm-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sms-dl-item__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adm-text);
+}
+
+.sms-dl-item__sub {
+    font-size: 12.5px;
+    color: var(--adm-text-2);
+    margin-top: 1px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   34. LOADING SPINNER (standalone)
+   ───────────────────────────────────────────────────────────────── */
+.sms-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--adm-border);
+    border-top-color: var(--adm-primary);
+    border-radius: 50%;
+    animation: adm-spin 0.7s linear infinite;
+}
+
+.sms-spinner--sm { width: 14px; height: 14px; border-width: 2px; }
+.sms-spinner--lg { width: 32px; height: 32px; border-width: 3px; }
+.sms-spinner--xl { width: 48px; height: 48px; border-width: 4px; }
+
+/* ─────────────────────────────────────────────────────────────────
+   35. BUTTON GROUP
+   ───────────────────────────────────────────────────────────────── */
+.sms-btn-group {
+    display: inline-flex;
+    gap: 0;
+}
+
+.sms-btn-group .adm-btn,
+.sms-btn-group .er-btn {
+    border-radius: 0;
+}
+
+.sms-btn-group .adm-btn:first-child,
+.sms-btn-group .er-btn:first-child {
+    border-radius: var(--adm-radius) 0 0 var(--adm-radius);
+}
+
+.sms-btn-group .adm-btn:last-child,
+.sms-btn-group .er-btn:last-child {
+    border-radius: 0 var(--adm-radius) var(--adm-radius) 0;
+}
+
+.sms-btn-group .adm-btn:only-child,
+.sms-btn-group .er-btn:only-child {
+    border-radius: var(--adm-radius);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   36. THEME TOGGLE BUTTON
+   ───────────────────────────────────────────────────────────────── */
+.sms-theme-toggle {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--adm-radius-md);
+    border: 1px solid var(--clr-border);
+    background: transparent;
+    color: var(--clr-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all var(--adm-transition);
+}
+
+.sms-theme-toggle:hover {
+    background: var(--clr-canvas);
+    color: var(--clr-text);
+    border-color: #cbd5e1;
+}
+
+.sms-theme-toggle .fa-sun { display: none; }
+.sms-theme-toggle .fa-moon { display: inline-block; }
+
+[data-theme="dark"] .sms-theme-toggle .fa-sun { display: inline-block; }
+[data-theme="dark"] .sms-theme-toggle .fa-moon { display: none; }
+
+/* ═══════════════════════════════════════════
+   37. FLOATING LABEL FORM CONTROLS
+   ═══════════════════════════════════════════ */
+.sms-floating-group {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.sms-floating-group .sms-floating-input,
+.sms-floating-group .sms-floating-select {
+    width: 100%;
+    padding: 18px 13px 6px;
+    font-size: 13.5px;
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    background: var(--adm-surface);
+    color: var(--adm-text);
+    transition: all var(--adm-transition);
+    outline: none;
+    font-family: inherit;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+    height: 48px;
+}
+
+.sms-floating-group .sms-floating-input:focus,
+.sms-floating-group .sms-floating-select:focus {
+    border-color: var(--adm-primary);
+    box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+}
+
+.sms-floating-group .sms-floating-input::placeholder,
+.sms-floating-group .sms-floating-select::placeholder {
+    color: transparent;
+}
+
+.sms-floating-group .sms-floating-label {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13.5px;
+    color: var(--adm-text-3);
+    background: var(--adm-surface);
+    padding: 0 4px;
+    pointer-events: none;
+    transition: all var(--adm-transition);
+    line-height: 1;
+    transform-origin: left center;
+}
+
+.sms-floating-group .sms-floating-input:focus + .sms-floating-label,
+.sms-floating-group .sms-floating-select:focus + .sms-floating-label,
+.sms-floating-group .sms-floating-input:not(:placeholder-shown) + .sms-floating-label,
+.sms-floating-group .sms-floating-select:has(option:checked:not([value=""])) + .sms-floating-label,
+.sms-floating-group .sms-floating-input--filled + .sms-floating-label,
+.sms-floating-group .sms-floating-select--filled + .sms-floating-label {
+    top: 0;
+    transform: translateY(0);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--adm-primary);
+}
+
+.sms-floating-group .sms-floating-input--error {
+    border-color: var(--adm-rejected);
+}
+
+.sms-floating-group .sms-floating-input--error:focus {
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+}
+
+.sms-floating-group .sms-floating-error {
+    font-size: 11.5px;
+    color: var(--adm-rejected);
+    margin-top: 4px;
+    display: none;
+}
+
+.sms-floating-group .sms-floating-error--visible {
+    display: block;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   38. FILE UPLOAD PREVIEW (enhanced)
+   ───────────────────────────────────────────────────────────────── */
+.sms-file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sms-file-upload__dropzone {
+    border: 2px dashed var(--adm-border);
+    border-radius: var(--adm-radius-lg);
+    padding: 12px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--adm-transition);
+    background: var(--adm-surface-2);
+    position: relative;
+}
+
+.sms-file-upload__dropzone:hover,
+.sms-file-upload__dropzone--active {
+    border-color: var(--adm-primary);
+    background: var(--adm-primary-bg);
+}
+
+.sms-file-upload__dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.sms-file-upload__icon {
+    font-size: 32px;
+    color: var(--adm-text-3);
+    margin-bottom: 8px;
+    transition: color var(--adm-transition);
+}
+
+.sms-file-upload__dropzone:hover .sms-file-upload__icon {
+    color: var(--adm-primary);
+}
+
+.sms-file-upload__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--adm-text);
+}
+
+.sms-file-upload__subtitle {
+    font-size: 12px;
+    color: var(--adm-text-3);
+    margin-top: 2px;
+}
+
+.sms-file-upload__previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.sms-file-upload__preview {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--adm-radius);
+    overflow: hidden;
+    border: 1px solid var(--adm-border);
+    background: var(--adm-surface);
+}
+
+.sms-file-upload__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sms-file-upload__preview-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    transition: background var(--adm-transition);
+}
+
+.sms-file-upload__preview-remove:hover {
+    background: rgba(220,38,38,0.8);
+}
+
+.sms-file-upload__file-name {
+    font-size: 10px;
+    color: var(--adm-text-3);
+    text-align: center;
+    padding: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   39. ACTION BAR (consistent page action toolbar)
+   ───────────────────────────────────────────────────────────────── */
+.sms-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    flex-wrap: wrap;
+}
+
+.sms-action-bar--bordered {
+    border-bottom: 1px solid var(--adm-border);
+    margin-bottom: 20px;
+}
+
+.sms-action-bar--top {
+    padding-top: 0;
+}
+
+.sms-action-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sms-action-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sms-action-bar__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--adm-text);
+    margin: 0;
+}
+
+.sms-action-bar__sub {
+    font-size: 12.5px;
+    color: var(--adm-text-3);
+}
+
+@media (max-width: 767px) {
+    .sms-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sms-action-bar__left,
+    .sms-action-bar__right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   40. PAGE TRANSITIONS & MICRO-INTERACTIONS
+   ═══════════════════════════════════════════ */
+.sms-page-enter {
+    animation: smsFadeIn 0.35s ease-out;
+}
+
+@keyframes smsFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.sms-stagger > * {
+    opacity: 0;
+    animation: smsFadeIn 0.35s ease-out forwards;
+}
+
+.sms-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+.sms-stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+.sms-stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+.sms-stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+.sms-stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+.sms-stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+.sms-stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+.sms-stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+.sms-stagger > *:nth-child(9)  { animation-delay: 0.34s; }
+.sms-stagger > *:nth-child(10) { animation-delay: 0.38s; }
+
+/* Card hover lift */
+.adm-card,
+.er-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adm-card:hover,
+.er-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--adm-shadow-lg);
+}
+
+/* Button ripple effect on click */
+.adm-btn,
+.er-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.adm-btn::after,
+.er-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.adm-btn:active::after,
+.er-btn:active::after {
+    opacity: 1;
+    transition: opacity 0s;
+}
+
+/* Input focus subtle ring animation */
+.adm-input:focus,
+.auth-input:focus,
+.sms-floating-input:focus {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Skeleton loading placeholder */
+.sms-skeleton {
+    background: linear-gradient(90deg, var(--adm-surface-2) 25%, var(--adm-surface) 50%, var(--adm-surface-2) 75%);
+    background-size: 200% 100%;
+    animation: smsShimmer 1.5s ease-in-out infinite;
+    border-radius: var(--adm-radius);
+}
+
+@keyframes smsShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.sms-skeleton--text { height: 14px; width: 60%; margin-bottom: 8px; }
+.sms-skeleton--title { height: 22px; width: 40%; margin-bottom: 12px; }
+.sms-skeleton--avatar { width: 40px; height: 40px; border-radius: 50%; }
+.sms-skeleton--card { height: 100px; }
+
+/* ═══════════════════════════════════════════
+   41. ACCESSIBILITY
+   ═══════════════════════════════════════════ */
+/* Focus-visible for keyboard users */
+:focus-visible {
+    outline: 2px solid var(--adm-primary);
+    outline-offset: 2px;
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Screen reader only */
+.sms-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Reduced motion — respect user preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    .ws-stagger > *,
+    .sms-stagger > * {
+        opacity: 1 !important;
+        animation: none !important;
+    }
+
+    .adm-card:hover,
+    .er-card:hover {
+        transform: none !important;
+    }
+}
+
+/* Minimum contrast for links */
+a { color: var(--adm-primary); }
+a:hover { color: var(--adm-primary-hover); }
+a:focus-visible { outline: 2px solid var(--adm-primary); outline-offset: 2px; }
