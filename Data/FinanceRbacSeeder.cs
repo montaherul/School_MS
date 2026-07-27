@@ -9,6 +9,7 @@ public static class FinanceRbacSeeder
     [
         "FeeDashboard",
         "FeeCategories",
+        "FeeTypes",
         "FeeStructures",
         "StudentFeeAssignments",
         "FeeInvoices",
@@ -33,7 +34,12 @@ public static class FinanceRbacSeeder
         "FinanceDashboard",
         "Receipts",
         "StudentFeeProfile",
-        "OnlinePayments"
+        "OnlinePayments",
+        "FeeSettings",
+        "PaymentAllocations",
+        "InventoryBilling",
+        "CertificateBilling",
+        "OtherChargeBilling"
     ];
 
     private static readonly string[] FinanceActions =

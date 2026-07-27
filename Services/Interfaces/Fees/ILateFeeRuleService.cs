@@ -11,4 +11,5 @@ public interface ILateFeeRuleService
     Task UpdateAsync(LateFeeRuleUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task<bool> ToggleActiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
 }

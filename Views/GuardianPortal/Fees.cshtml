@@ -84,7 +84,7 @@
                                     <td>৳@inv.PaidAmount.ToString("N2")</td>
                                     <td>৳@((inv.TotalAmount - inv.PaidAmount).ToString("N2"))</td>
                                     <td>
-                                        <span class="adm-badge adm-badge--@((int)inv.Status == 3 ? "success" : (int)inv.Status == 2 ? "warning" : "info")">
+                                        <span class="adm-badge adm-badge--@((int)inv.Status == 3 ? "success" : (int)inv.Status == 2 ? "warning" : (int)inv.Status == 4 ? "secondary" : (int)inv.Status == 6 ? "danger" : (int)inv.Status == 7 ? "secondary" : "info")">
                                             @inv.Status
                                         </span>
                                     </td>

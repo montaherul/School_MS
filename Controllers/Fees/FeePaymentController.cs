@@ -19,7 +19,9 @@ public class FeePaymentController : Controller
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     private readonly IFinancePostingService _postingService;
-    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; }
+    private readonly IFeeInvoiceService _invoiceService;
+    private readonly IFeeReceiptService _receiptService;
+    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService, IFeeInvoiceService invoiceService, IFeeReceiptService receiptService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; _invoiceService = invoiceService; _receiptService = receiptService; }
 
     [RequirePermission("FeePayments.Read")]
     public IActionResult Index() { return View(); }
@@ -92,12 +94,12 @@ public class FeePaymentController : Controller
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Payment updated."; }
         else
         {
+            var ct = HttpContext.RequestAborted;
             var paymentId = await _service.CreateAsync(vm, userId);
-            var invoiceService = HttpContext.RequestServices.GetRequiredService<IFeeInvoiceService>();
-            var invoice = await invoiceService.GetByIdAsync(vm.FeeInvoiceId);
+            var invoice = await _invoiceService.GetByIdAsync(vm.FeeInvoiceId, ct);
             if (invoice != null)
             {
-                await _postingService.PostFeeCollectionAsync(invoice.StudentId, vm.Amount, vm.FeeInvoiceId, userId);
+                await _postingService.PostFeeCollectionAsync(invoice.StudentId, vm.Amount, vm.FeeInvoiceId, userId, ct);
             }
             TempData["SuccessMessage"] = "Payment recorded and posted to General Ledger.";
         }
@@ -143,31 +145,34 @@ public class FeePaymentController : Controller
 
     [HttpGet]
     [RequirePermission("FeeReceipts.Read")]
-    public async Task<IActionResult> Receipt(int id)
+    public async Task<IActionResult> Receipt(int id, CancellationToken ct)
     {
-        var receiptService = HttpContext.RequestServices.GetRequiredService<IFeeReceiptService>();
-        var data = await receiptService.GetReceiptDataAsync(id);
+        var data = await _receiptService.GetReceiptDataAsync(id, ct);
         if (data is null) return NotFound();
         return View(data);
     }
 
     [HttpGet]
     [RequirePermission("FeeReceipts.Read")]
-    public async Task<IActionResult> DownloadReceipt(int id)
+    public async Task<IActionResult> DownloadReceipt(int id, CancellationToken ct)
     {
-        var receiptService = HttpContext.RequestServices.GetRequiredService<IFeeReceiptService>();
-        var pdf = await receiptService.GenerateReceiptPdfAsync(id);
+        var pdf = await _receiptService.GenerateReceiptPdfAsync(id, ct);
         if (pdf.Length == 0) return NotFound();
         return File(pdf, "application/pdf", $"receipt-{id:D6}.pdf");
     }
 
     [HttpGet]
     [RequirePermission("FeeReceipts.Read")]
-    public async Task<IActionResult> VerifyReceipt(string code)
+    public async Task<IActionResult> VerifyReceipt(string code, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(code) || code.Length != 12)
             return Json(new { valid = false, message = "Invalid verification code." });
-        return Json(new { valid = true, message = "Receipt verified." });
+        var (paymentId, paidAt) = await _service.VerifyReceiptCodeAsync(code, ct);
+        if (paymentId <= 0)
+            return Json(new { valid = false, message = "Invalid or expired receipt verification code." });
+        var expectedCode = _receiptService.GenerateVerificationCode(paymentId, paidAt);
+        var isValid = string.Equals(code, expectedCode, StringComparison.OrdinalIgnoreCase);
+        return Json(new { valid = isValid, message = isValid ? "Receipt verified." : "Verification code mismatch." });
     }
 
     [HttpPost]

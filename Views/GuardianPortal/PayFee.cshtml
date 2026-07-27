@@ -32,7 +32,7 @@
                     <tr><th>Total Amount</th><td>৳@Model.TotalAmount.ToString("N2")</td></tr>
                     <tr><th>Paid Amount</th><td>৳@Model.PaidAmount.ToString("N2")</td></tr>
                     <tr><th>Due Amount</th><td class="text-danger fw-bold">৳@((Model.TotalAmount - Model.PaidAmount).ToString("N2"))</td></tr>
-                    <tr><th>Status</th><td><span class="adm-badge adm-badge--@((int)Model.Status == 3 ? "success" : (int)Model.Status == 2 ? "warning" : "info")">@Model.Status</span></td></tr>
+                    <tr><th>Status</th><td><span class="adm-badge adm-badge--@((int)Model.Status == 3 ? "success" : (int)Model.Status == 2 ? "warning" : (int)Model.Status == 4 ? "secondary" : (int)Model.Status == 6 ? "danger" : (int)Model.Status == 7 ? "secondary" : "info")">@Model.Status</span></td></tr>
                 </table>
             </div>
         </div>
@@ -54,9 +54,10 @@
                         <label class="form-label fw-semibold">Payment Method</label>
                         <select name="PaymentMethod" class="form-select" required>
                             <option value="">-- Select Method --</option>
-                            <option value="2">Bank Deposit</option>
-                            <option value="4">bKash / Nagad / Rocket</option>
                             <option value="1">Cash (School Office)</option>
+                            <option value="2">Bank Deposit</option>
+                            <option value="3">Card</option>
+                            <option value="4">bKash / Nagad / Rocket</option>
                             <option value="5">Online</option>
                         </select>
                     </div>

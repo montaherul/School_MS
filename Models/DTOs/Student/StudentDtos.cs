@@ -124,7 +124,7 @@ public class StudentListItemDto
     public string MotherName { get; set; } = string.Empty;
     public string? GuardianName { get; set; }
     public string? ProfilePicturePath { get; set; }
-    public bool IsActive { get; set; }
+    public string Status { get; set; } = string.Empty;
     public int TotalRecords { get; set; }
 }
 

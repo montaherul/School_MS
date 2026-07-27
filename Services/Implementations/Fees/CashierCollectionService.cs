@@ -20,7 +20,7 @@ public class CashierCollectionService : ICashierCollectionService
         _receiptService = receiptService;
     }
 
-    public async Task<List<StudentSearchResultDto>> SearchStudentsAsync(string searchTerm)
+    public async Task<List<StudentSearchResultDto>> SearchStudentsAsync(string searchTerm, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(searchTerm)) return [];
 
@@ -41,15 +41,15 @@ public class CashierCollectionService : ICashierCollectionService
                 StudentCode = s.StudentNo,
                 ClassName = s.Class.Name
             })
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 
-    public async Task<CashierCollectionDto> GetStudentCollectionDataAsync(int studentId)
+    public async Task<CashierCollectionDto> GetStudentCollectionDataAsync(int studentId, CancellationToken ct = default)
     {
         var student = await _uow.Repository<StudentEntity>().Query()
             .Where(s => s.Id == studentId && !s.IsDeleted)
             .Select(s => new { s.Id, s.FullName, s.StudentNo, ClassName = s.Class.Name })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
 
         if (student is null) return null!;
 
@@ -91,7 +91,7 @@ public class CashierCollectionService : ICashierCollectionService
         };
     }
 
-    public async Task<CashierPaymentResultDto> ProcessPaymentAsync(int studentId, List<int> invoiceIds, CashierPaymentDto payment, string createdBy)
+    public async Task<CashierPaymentResultDto> ProcessPaymentAsync(int studentId, List<int> invoiceIds, CashierPaymentDto payment, string createdBy, CancellationToken ct = default)
     {
         if (invoiceIds == null || invoiceIds.Count == 0)
             return new CashierPaymentResultDto { Success = false, ErrorMessage = "No invoices selected." };
@@ -106,7 +106,7 @@ public class CashierCollectionService : ICashierCollectionService
             foreach (var invoiceId in invoiceIds)
             {
                 var invoice = await _uow.Repository<FeeInvoice>()
-                    .FirstOrDefaultAsync(x => x.Id == invoiceId && !x.IsDeleted)
+                    .FirstOrDefaultAsync(x => x.Id == invoiceId && !x.IsDeleted, ct)
                     ?? throw new InvalidOperationException($"Invoice #{invoiceId} not found.");
 
                 if (invoice.StudentId != studentId)
@@ -129,8 +129,8 @@ public class CashierCollectionService : ICashierCollectionService
                     PaidAt = DateTime.UtcNow,
                     Remarks = payment.Remarks
                 };
-                await _uow.Repository<Payment>().AddAsync(pay);
-                await _uow.SaveChangesAsync();
+                await _uow.Repository<Payment>().AddAsync(pay, ct);
+                await _uow.SaveChangesAsync(ct);
 
                 invoice.PaidAmount += allocAmount;
                 invoice.UpdatedAt = DateTime.UtcNow;
@@ -142,7 +142,7 @@ public class CashierCollectionService : ICashierCollectionService
                     invoice.Status = PaymentStatus.Partial;
 
                 _uow.Repository<FeeInvoice>().Update(invoice);
-                await _uow.SaveChangesAsync();
+                await _uow.SaveChangesAsync(ct);
 
                 var ledger = new FeeLedger
                 {
@@ -158,12 +158,13 @@ public class CashierCollectionService : ICashierCollectionService
                     CreatedBy = createdBy,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _uow.Repository<FeeLedger>().AddAsync(ledger);
+                await _uow.Repository<FeeLedger>().AddAsync(ledger, ct);
+                await _uow.SaveChangesAsync(ct);
 
                 payment.Amount -= allocAmount;
                 if (paymentId == 0) paymentId = pay.Id;
             }
-        });
+        }, ct);
 
         return new CashierPaymentResultDto
         {

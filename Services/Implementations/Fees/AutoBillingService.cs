@@ -20,6 +20,16 @@ public class AutoBillingService : IAutoBillingService
         return await _autoBillingRepo.GenerateMonthlyInvoicesAsync(academicYearId, dueDay, ct: ct);
     }
 
+    public async Task<AutoBillingResultDto> GenerateOneTimeFeeInvoicesAsync(int academicYearId, int dueDay = 30, CancellationToken ct = default)
+    {
+        return await _autoBillingRepo.GenerateOneTimeFeeInvoicesAsync(academicYearId, dueDay, ct: ct);
+    }
+
+    public async Task<AutoBillingResultDto> GenerateExamFeeInvoicesAsync(int academicYearId, string examName = "Term Exam", int dueDay = 15, CancellationToken ct = default)
+    {
+        return await _autoBillingRepo.GenerateExamFeeInvoicesAsync(academicYearId, examName, dueDay, ct: ct);
+    }
+
     public async Task<AutoAssignmentResultDto> AssignFeeStructureAsync(int studentId, int academicYearId, CancellationToken ct = default)
     {
         return await _assignmentRepo.AssignFeeStructureAsync(studentId, academicYearId, ct);

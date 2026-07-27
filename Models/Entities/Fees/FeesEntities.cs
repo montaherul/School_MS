@@ -5,6 +5,18 @@ using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.Entities.Fees;
 
+public class FeeType : BaseEntity
+{
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? Description { get; set; }
+
+    public int DisplayOrder { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
 public class FeeCategory : BaseEntity
 {
     [MaxLength(100)]
@@ -200,6 +212,31 @@ public class FeeLedger : BaseEntity
     public FeeRefund? FeeRefund { get; set; }
 }
 
+public class PaymentAllocation : BaseEntity
+{
+    public int PaymentId { get; set; }
+    public int FeeInvoiceId { get; set; }
+    public decimal AllocatedAmount { get; set; }
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}
+
+public class Scholarship : BaseEntity
+{
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+    [MaxLength(500)]
+    public string? Description { get; set; }
+    public FeeDiscountType DiscountType { get; set; } = FeeDiscountType.Percentage;
+    public decimal Value { get; set; }
+    public int? SchoolClassId { get; set; }
+    public int? FeeCategoryId { get; set; }
+    public int? FeeTypeId { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateOnly? ValidFrom { get; set; }
+    public DateOnly? ValidTo { get; set; }
+}
+
 public class FeeCollectionSummary : BaseEntity
 {
     public DateOnly CollectionDate { get; set; }
@@ -232,6 +269,20 @@ public class FineRule : BaseEntity
 
     public int GraceDays { get; set; }
     public decimal FinePerDay { get; set; }
+}
+
+public class BillingRun : BaseEntity
+{
+    [MaxLength(50)]
+    public string RunType { get; set; } = string.Empty;
+    public int AcademicYearId { get; set; }
+    public int InvoicesGenerated { get; set; }
+    public int StudentsProcessed { get; set; }
+    public decimal TotalAmount { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    [MaxLength(50)]
+    public string Status { get; set; } = "Completed";
+    public string? ErrorMessage { get; set; }
 }
 
 [Index(nameof(GatewayTransactionId), IsUnique = true, Name = "IX_OnlinePaymentRequests_GatewayTransactionId")]

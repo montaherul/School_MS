@@ -11,4 +11,5 @@ public interface IFeePaymentService
     Task UpdateAsync(FeePaymentUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task<(int PaymentId, DateTime PaidAt)> VerifyReceiptCodeAsync(string code, CancellationToken cancellationToken = default);
 }

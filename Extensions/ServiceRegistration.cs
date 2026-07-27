@@ -107,6 +107,7 @@ public static class ServiceRegistration
         services.AddScoped<IAdmissionDashboardRepository, AdmissionDashboardRepository>();
         services.AddScoped<IWorkflowRepository, WorkflowRepository>();
         services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+        services.AddScoped<IFeeTypeRepository, FeeTypeRepository>();
         services.AddScoped<IFeeCategoryRepository, FeeCategoryRepository>();
         services.AddScoped<IFeeStructureRepository, FeeStructureRepository>();
         services.AddScoped<IFeeInvoiceRepository, FeeInvoiceRepository>();
@@ -114,6 +115,7 @@ public static class ServiceRegistration
         services.AddScoped<IFeeInvoiceItemRepository, FeeInvoiceItemRepository>();
         services.AddScoped<IFeePaymentRepository, FeePaymentRepository>();
         services.AddScoped<IFeeDiscountRepository, FeeDiscountRepository>();
+        services.AddScoped<IScholarshipRepository, ScholarshipRepository>();
         services.AddScoped<IFeeWaiverRepository, FeeWaiverRepository>();
         services.AddScoped<IFeeRefundRepository, FeeRefundRepository>();
         services.AddScoped<IFeeLedgerRepository, FeeLedgerRepository>();
@@ -125,6 +127,7 @@ public static class ServiceRegistration
         services.AddScoped<IStudentFinanceRepository, StudentFinanceRepository>();
         services.AddScoped<IAutoBillingRepository, AutoBillingRepository>();
         services.AddScoped<IAutoFeeAssignmentRepository, AutoFeeAssignmentRepository>();
+        services.AddScoped<IPaymentAllocationRepository, PaymentAllocationRepository>();
 
         // Register Accounting Repositories
         services.AddScoped<IChartOfAccountRepository, ChartOfAccountRepository>();
@@ -223,6 +226,7 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IWorkflowService, WorkflowService>();
         services.AddScoped<IGuardianService, GuardianService>();
         services.AddScoped<IStudentPortalService, StudentPortalService>();
+        services.AddScoped<IFeeTypeService, FeeTypeService>();
         services.AddScoped<IFeeCategoryService, FeeCategoryService>();
         services.AddScoped<IFeeStructureService, FeeStructureService>();
         services.AddScoped<IFeeInvoiceService, FeeInvoiceService>();
@@ -230,6 +234,7 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IFeeInvoiceItemService, FeeInvoiceItemService>();
         services.AddScoped<IFeePaymentService, FeePaymentService>();
         services.AddScoped<IFeeDiscountService, FeeDiscountService>();
+        services.AddScoped<IScholarshipService, ScholarshipService>();
         services.AddScoped<IFeeWaiverService, FeeWaiverService>();
         services.AddScoped<IFeeRefundService, FeeRefundService>();
         services.AddScoped<IFeeLedgerService, FeeLedgerService>();
@@ -241,6 +246,7 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IFeeReportService, FeeReportService>();
         services.AddScoped<ILateFeeEngineService, LateFeeEngineService>();
         services.AddScoped<IAutoBillingService, AutoBillingService>();
+        services.AddScoped<IPaymentAllocationService, PaymentAllocationService>();
         services.AddScoped<IFeeReceiptService, FeeReceiptService>();
         services.AddScoped<IFeeSecurityService, FeeSecurityService>();
         services.AddScoped<ICashierCollectionService, CashierCollectionService>();
@@ -439,6 +445,15 @@ services.AddScoped<IExamValidationService, ExamValidationService>();
 
         // Finance — automatic monthly invoice generation
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.AutoBillingScheduler>();
+
+        // Finance — automatic late fee calculation (runs every 6h, once per day)
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.LateFeeScheduler>();
+
+        // Finance — automatic one-time fee generation (runs every 12h)
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.OneTimeFeeScheduler>();
+
+        // Finance — automatic exam fee generation (runs every 12h)
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.ExamFeeScheduler>();
 
         // Finance — expire stale gateway-pending payments after 24h
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.PaymentExpiryWorker>();

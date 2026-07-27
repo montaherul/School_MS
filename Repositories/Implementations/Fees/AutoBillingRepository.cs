@@ -16,15 +16,14 @@ public class AutoBillingRepository : IAutoBillingRepository
         _db = db;
     }
 
-    public async Task<AutoBillingResultDto> GenerateMonthlyInvoicesAsync(int academicYearId, int dueDay = 10, int batchSize = 500, CancellationToken ct = default)
+    private async Task<AutoBillingResultDto> ExecuteBillingSpAsync(string spName, Dictionary<string, object> parameters, CancellationToken ct)
     {
         var result = new AutoBillingResultDto();
         using var command = _db.Database.GetDbConnection().CreateCommand();
-        command.CommandText = "sp_GenerateMonthlyInvoices";
+        command.CommandText = spName;
         command.CommandType = CommandType.StoredProcedure;
-        command.Parameters.Add(new SqlParameter("@AcademicYearId", academicYearId));
-        command.Parameters.Add(new SqlParameter("@DueDay", dueDay));
-        command.Parameters.Add(new SqlParameter("@BatchSize", batchSize));
+        foreach (var p in parameters)
+            command.Parameters.Add(new SqlParameter(p.Key, p.Value));
 
         await _db.Database.OpenConnectionAsync(ct);
         try
@@ -33,7 +32,8 @@ public class AutoBillingRepository : IAutoBillingRepository
             if (await reader.ReadAsync(ct))
             {
                 result.InvoicesGenerated = reader.IsDBNull(reader.GetOrdinal("GeneratedCount")) ? 0 : Convert.ToInt32(reader["GeneratedCount"]);
-                result.StudentsBilled = result.InvoicesGenerated;
+                result.StudentsBilled = reader.IsDBNull(reader.GetOrdinal("StudentsProcessed")) ? 0 : Convert.ToInt32(reader["StudentsProcessed"]);
+                result.TotalAmount = reader.IsDBNull(reader.GetOrdinal("TotalAmount")) ? 0 : Convert.ToDecimal(reader["TotalAmount"]);
             }
         }
         finally
@@ -41,5 +41,36 @@ public class AutoBillingRepository : IAutoBillingRepository
             await _db.Database.CloseConnectionAsync();
         }
         return result;
+    }
+
+    public async Task<AutoBillingResultDto> GenerateMonthlyInvoicesAsync(int academicYearId, int dueDay = 10, int batchSize = 500, CancellationToken ct = default)
+    {
+        return await ExecuteBillingSpAsync("sp_GenerateMonthlyInvoices", new()
+        {
+            ["@AcademicYearId"] = academicYearId,
+            ["@DueDay"] = dueDay,
+            ["@BatchSize"] = batchSize
+        }, ct);
+    }
+
+    public async Task<AutoBillingResultDto> GenerateOneTimeFeeInvoicesAsync(int academicYearId, int dueDay = 30, int batchSize = 500, CancellationToken ct = default)
+    {
+        return await ExecuteBillingSpAsync("sp_GenerateOneTimeFeeInvoices", new()
+        {
+            ["@AcademicYearId"] = academicYearId,
+            ["@DueDay"] = dueDay,
+            ["@BatchSize"] = batchSize
+        }, ct);
+    }
+
+    public async Task<AutoBillingResultDto> GenerateExamFeeInvoicesAsync(int academicYearId, string examName = "Term Exam", int dueDay = 15, int batchSize = 500, CancellationToken ct = default)
+    {
+        return await ExecuteBillingSpAsync("sp_GenerateExamFeeInvoices", new()
+        {
+            ["@AcademicYearId"] = academicYearId,
+            ["@ExamName"] = examName,
+            ["@DueDay"] = dueDay,
+            ["@BatchSize"] = batchSize
+        }, ct);
     }
 }

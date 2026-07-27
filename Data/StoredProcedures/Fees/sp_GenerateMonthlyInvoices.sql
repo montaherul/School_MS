@@ -2,7 +2,8 @@
 -- Stored Procedure: sp_GenerateMonthlyInvoices
 -- Purpose: Auto-generate monthly invoices for all active students
 -- who have fee assignments with Monthly/Quarterly/HalfYearly/Yearly frequency.
--- Called by scheduler or manually.
+-- Set-based processing (no cursors). Configurable due days per fee structure.
+-- Logs billing run to BillingRuns table.
 -- ============================================================================
 
 CREATE OR ALTER PROCEDURE sp_GenerateMonthlyInvoices
@@ -17,26 +18,32 @@ BEGIN
     DECLARE @Today DATE = CAST(@Now AS DATE);
     DECLARE @Year INT = YEAR(@Today);
     DECLARE @Month INT = MONTH(@Today);
-    DECLARE @DueDate DATE = DATEFROMPARTS(@Year, @Month, @DueDay);
+    DECLARE @RunId INT;
+    DECLARE @GeneratedCount INT = 0;
+    DECLARE @StudentCount INT = 0;
+    DECLARE @TotalAmount DECIMAL(18,2) = 0;
 
-    -- If due day already passed this month, use next month
-    IF @Today > @DueDate
-        SET @DueDate = DATEADD(MONTH, 1, @DueDate);
+    -- Insert billing run log
+    INSERT INTO BillingRuns (RunType, AcademicYearId, InvoicesGenerated, StudentsProcessed, TotalAmount, Status, CreatedBy, CreatedAt, IsDeleted)
+    VALUES ('Monthly', @AcademicYearId, 0, 0, 0, 'Running', 'auto-billing-system', @Now, 0);
+
+    SET @RunId = SCOPE_IDENTITY();
 
     -- Temp table for students who qualify this month
     CREATE TABLE #BillingBatch (
+        RowId INT IDENTITY(1,1) PRIMARY KEY,
         StudentId INT,
         FeeStructureId INT,
         FeeCategoryId INT,
         FeeName NVARCHAR(100),
         Amount DECIMAL(18,2),
         Frequency INT,
-        AcademicYearId INT,
+        DueDay INT,
         SchoolClassId INT
     );
 
     -- Insert students whose fee frequency says "bill now"
-    INSERT INTO #BillingBatch (StudentId, FeeStructureId, FeeCategoryId, FeeName, Amount, Frequency, AcademicYearId, SchoolClassId)
+    INSERT INTO #BillingBatch (StudentId, FeeStructureId, FeeCategoryId, FeeName, Amount, Frequency, DueDay, SchoolClassId)
     SELECT
         s.Id,
         fs.Id,
@@ -44,7 +51,7 @@ BEGIN
         fs.FeeName,
         ISNULL(sfa.CustomAmount, fs.Amount),
         fs.Frequency,
-        @AcademicYearId,
+        ISNULL(fs.DueDay, @DueDay),
         s.ClassId
     FROM Students s WITH(NOLOCK)
     JOIN StudentFeeAssignments sfa WITH(NOLOCK) ON sfa.StudentId = s.Id AND sfa.IsActive = 1 AND sfa.IsDeleted = 0
@@ -68,81 +75,117 @@ BEGIN
                 AND YEAR(fi.CreatedAt) = @Year
         );
 
-    DECLARE @GeneratedCount INT = 0;
-    DECLARE @Count INT = (SELECT COUNT(*) FROM #BillingBatch);
-
-    IF @Count = 0 RETURN;
+    IF @@ROWCOUNT = 0
+    BEGIN
+        UPDATE BillingRuns SET Status = 'Skipped', CompletedAt = @Now WHERE Id = @RunId;
+        DROP TABLE #BillingBatch;
+        SELECT 0 AS GeneratedCount;
+        RETURN;
+    END;
 
     BEGIN TRANSACTION;
     BEGIN TRY
-        -- Generate invoices grouped by student
-        DECLARE @StudentId INT, @FeeStructureId INT, @FeeCategoryId INT,
-                @FeeName NVARCHAR(100), @Amount DECIMAL(18,2),
-                @InvoiceId INT, @InvoiceNo NVARCHAR(40);
+        -- Set-based invoice creation grouped by student
+        DECLARE @Invoices TABLE (
+            StudentId INT,
+            InvoiceId INT,
+            DueDay INT
+        );
 
-        DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
-            SELECT DISTINCT StudentId FROM #BillingBatch;
+        -- Generate unique invoice numbers and create invoices in batch
+        INSERT INTO FeeInvoices (InvoiceNo, StudentId, AcademicYearId, DueDate, TotalAmount, PaidAmount, DiscountAmount, LateFee, Status, Remarks, CreatedBy, CreatedAt, IsDeleted)
+        OUTPUT INSERTED.StudentId, INSERTED.Id, INSERTED.DueDate
+        INTO @Invoices (StudentId, InvoiceId, DueDay)
+        SELECT
+            'INV-' + FORMAT(@Today, 'yyyyMMdd') + '-' + FORMAT(bb.StudentId, 'D6') + '-' + FORMAT(@Month, 'D2') + '-' + FORMAT(ROW_NUMBER() OVER (ORDER BY bb.StudentId), 'D2'),
+            bb.StudentId,
+            @AcademicYearId,
+            -- Calculate due date based on fee structure's DueDay
+            CASE
+                WHEN CAST(DATEFROMPARTS(@Year, @Month, MIN(bb.DueDay)) AS DATE) >= @Today
+                THEN DATEFROMPARTS(@Year, @Month, MIN(bb.DueDay))
+                ELSE DATEADD(MONTH, 1, DATEFROMPARTS(@Year, @Month, MIN(bb.DueDay)))
+            END,
+            0, 0, 0, 0, 5, 'Auto-generated monthly bill', 'auto-billing-system', @Now, 0
+        FROM #BillingBatch bb
+        GROUP BY bb.StudentId;
 
-        OPEN cur;
-        FETCH NEXT FROM cur INTO @StudentId;
+        -- Set-based invoice item creation
+        INSERT INTO FeeInvoiceItems (FeeInvoiceId, FeeStructureId, FeeCategoryId, Description, Amount, DiscountAmount, NetAmount, CreatedBy, CreatedAt, IsDeleted)
+        SELECT
+            inv.InvoiceId,
+            bb.FeeStructureId,
+            bb.FeeCategoryId,
+            bb.FeeName,
+            bb.Amount,
+            0,
+            bb.Amount,
+            'auto-billing-system',
+            @Now,
+            0
+        FROM #BillingBatch bb
+        JOIN @Invoices inv ON inv.StudentId = bb.StudentId;
 
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            -- Generate invoice number
-            SET @InvoiceNo = 'INV-' + FORMAT(@Today, 'yyyyMMdd') + '-' + FORMAT(@StudentId, 'D6') + '-' + FORMAT(@Month, 'D2');
+        -- Update invoice totals in batch
+        UPDATE fi
+        SET fi.TotalAmount = item_sum.Total
+        FROM FeeInvoices fi
+        JOIN (
+            SELECT fii.FeeInvoiceId, SUM(fii.NetAmount) AS Total
+            FROM FeeInvoiceItems fii
+            JOIN @Invoices inv ON inv.InvoiceId = fii.FeeInvoiceId
+            GROUP BY fii.FeeInvoiceId
+        ) item_sum ON item_sum.FeeInvoiceId = fi.Id;
 
-            -- Create invoice
-            INSERT INTO FeeInvoices (InvoiceNo, StudentId, AcademicYearId, DueDate, TotalAmount, PaidAmount, DiscountAmount, LateFee, Status, Remarks, CreatedBy, CreatedAt, IsDeleted)
-            VALUES (@InvoiceNo, @StudentId, @AcademicYearId, @DueDate, 0, 0, 0, 0, 5, 'Auto-generated monthly bill', 'auto-billing-system', @Now, 0);
+        -- Create ledger entries in batch
+        INSERT INTO FeeLedger (StudentId, FeeInvoiceId, FeePaymentId, TransactionType, Debit, Credit, Balance, Description, TransactionDate, CreatedBy, CreatedAt, IsDeleted)
+        SELECT
+            fi.StudentId,
+            fi.Id,
+            NULL,
+            1,
+            fi.TotalAmount,
+            0,
+            fi.TotalAmount,
+            'Invoice generated: ' + fi.InvoiceNo,
+            @Now,
+            'auto-billing-system',
+            @Now,
+            0
+        FROM FeeInvoices fi
+        JOIN @Invoices inv ON inv.InvoiceId = fi.Id;
 
-            SET @InvoiceId = SCOPE_IDENTITY();
+        -- Count results
+        SELECT @GeneratedCount = COUNT(*), @StudentCount = COUNT(DISTINCT StudentId), @TotalAmount = ISNULL(SUM(TotalAmount), 0)
+        FROM FeeInvoices WHERE Id IN (SELECT InvoiceId FROM @Invoices);
 
-            -- Add invoice items for each fee structure assigned to this student
-            DECLARE item_cursor CURSOR LOCAL FAST_FORWARD FOR
-                SELECT FeeStructureId, FeeCategoryId, FeeName, Amount
-                FROM #BillingBatch
-                WHERE StudentId = @StudentId;
-
-            OPEN item_cursor;
-            FETCH NEXT FROM item_cursor INTO @FeeStructureId, @FeeCategoryId, @FeeName, @Amount;
-
-            WHILE @@FETCH_STATUS = 0
-            BEGIN
-                INSERT INTO FeeInvoiceItems (FeeInvoiceId, FeeStructureId, FeeCategoryId, Description, Amount, DiscountAmount, NetAmount, CreatedBy, CreatedAt, IsDeleted)
-                VALUES (@InvoiceId, @FeeStructureId, @FeeCategoryId, @FeeName, @Amount, 0, @Amount, 'auto-billing-system', @Now, 0);
-
-                -- Update invoice total
-                UPDATE FeeInvoices SET TotalAmount = TotalAmount + @Amount WHERE Id = @InvoiceId;
-
-                FETCH NEXT FROM item_cursor INTO @FeeStructureId, @FeeCategoryId, @FeeName, @Amount;
-            END;
-
-            CLOSE item_cursor;
-            DEALLOCATE item_cursor;
-
-            -- Create ledger entry for invoice
-            INSERT INTO FeeLedger (StudentId, FeeInvoiceId, FeePaymentId, TransactionType, Debit, Credit, Balance, Description, TransactionDate, CreatedBy, CreatedAt, IsDeleted)
-            SELECT @StudentId, @InvoiceId, NULL, 1, fi.TotalAmount, 0, fi.TotalAmount, 'Invoice generated: ' + fi.InvoiceNo, @Now, 'auto-billing-system', @Now, 0
-            FROM FeeInvoices fi WHERE fi.Id = @InvoiceId;
-
-            SET @GeneratedCount = @GeneratedCount + 1;
-
-            FETCH NEXT FROM cur INTO @StudentId;
-        END;
-
-        CLOSE cur;
-        DEALLOCATE cur;
+        -- Update billing run log
+        UPDATE BillingRuns
+        SET InvoicesGenerated = @GeneratedCount,
+            StudentsProcessed = @StudentCount,
+            TotalAmount = @TotalAmount,
+            Status = 'Completed',
+            CompletedAt = @Now
+        WHERE Id = @RunId;
 
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+
+        UPDATE BillingRuns
+        SET Status = 'Failed',
+            ErrorMessage = ERROR_MESSAGE(),
+            CompletedAt = @Now
+        WHERE Id = @RunId;
+
+        DROP TABLE IF EXISTS #BillingBatch;
         THROW;
     END CATCH;
 
     DROP TABLE #BillingBatch;
 
     -- Return result set
-    SELECT @GeneratedCount AS GeneratedCount;
+    SELECT @GeneratedCount AS GeneratedCount, @StudentCount AS StudentsProcessed, @TotalAmount AS TotalAmount;
 END;
 GO

@@ -433,7 +433,7 @@
                             <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                         }
 
-                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read"))
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeTypes.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FeeSettings.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read","InventoryBilling.Read","CertificateBilling.Read","OtherChargeBilling.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
                             @if (Can("FeeDashboard.Read"))
@@ -443,6 +443,10 @@
                             @if (Can("FeeCategories.Read"))
                             {
                                 <a asp-controller="FeeCategory" asp-action="Index" data-title="Fee Categories"><i class="bi bi-tags"></i><span class="nav-text">Categories</span></a>
+                            }
+                            @if (Can("FeeTypes.Read"))
+                            {
+                                <a asp-controller="FeeType" asp-action="Index" data-title="Fee Types"><i class="bi bi-list"></i><span class="nav-text">Fee Types</span></a>
                             }
                             @if (Can("FeeStructures.Read"))
                             {
@@ -503,6 +507,22 @@
                             @if (Can("FineRules.Read"))
                             {
                                 <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
+                            }
+                            @if (Can("FeeSettings.Read"))
+                            {
+                                <a asp-controller="FeeSettings" asp-action="Index" data-title="Fee Settings"><i class="bi bi-gear"></i><span class="nav-text">Fee Settings</span></a>
+                            }
+                            @if (Can("InventoryBilling.Read"))
+                            {
+                                <a asp-controller="InventoryBilling" asp-action="Index" data-title="Inventory Billing"><i class="bi bi-box-seam"></i><span class="nav-text">Inventory Billing</span></a>
+                            }
+                            @if (Can("CertificateBilling.Read"))
+                            {
+                                <a asp-controller="CertificateBilling" asp-action="Index" data-title="Certificate Billing"><i class="bi bi-award"></i><span class="nav-text">Certificate Billing</span></a>
+                            }
+                            @if (Can("OtherChargeBilling.Read"))
+                            {
+                                <a asp-controller="OtherChargeBilling" asp-action="Index" data-title="Other Charges"><i class="bi bi-plus-circle"></i><span class="nav-text">Other Charges</span></a>
                             }
                             @if (Can("FinanceReports.Read"))
                             {
@@ -794,7 +814,7 @@
                         }
 
                         @* ── 11.5. Finance ── *@
-                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read"))
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeTypes.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FeeSettings.Read","FinanceReports.Read","CashierCollection.View","StudentFeeProfile.View","OnlinePayments.Read","InventoryBilling.Read","CertificateBilling.Read","OtherChargeBilling.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
                             @if (Can("FeeDashboard.Read"))
@@ -804,6 +824,10 @@
                             @if (Can("FeeCategories.Read"))
                             {
                                 <a asp-controller="FeeCategory" asp-action="Index" data-title="Fee Categories"><i class="bi bi-tags"></i><span class="nav-text">Categories</span></a>
+                            }
+                            @if (Can("FeeTypes.Read"))
+                            {
+                                <a asp-controller="FeeType" asp-action="Index" data-title="Fee Types"><i class="bi bi-list"></i><span class="nav-text">Fee Types</span></a>
                             }
                             @if (Can("FeeStructures.Read"))
                             {
@@ -864,6 +888,22 @@
                             @if (Can("FineRules.Read"))
                             {
                                 <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
+                            }
+                            @if (Can("FeeSettings.Read"))
+                            {
+                                <a asp-controller="FeeSettings" asp-action="Index" data-title="Fee Settings"><i class="bi bi-gear"></i><span class="nav-text">Fee Settings</span></a>
+                            }
+                            @if (Can("InventoryBilling.Read"))
+                            {
+                                <a asp-controller="InventoryBilling" asp-action="Index" data-title="Inventory Billing"><i class="bi bi-box-seam"></i><span class="nav-text">Inventory Billing</span></a>
+                            }
+                            @if (Can("CertificateBilling.Read"))
+                            {
+                                <a asp-controller="CertificateBilling" asp-action="Index" data-title="Certificate Billing"><i class="bi bi-award"></i><span class="nav-text">Certificate Billing</span></a>
+                            }
+                            @if (Can("OtherChargeBilling.Read"))
+                            {
+                                <a asp-controller="OtherChargeBilling" asp-action="Index" data-title="Other Charges"><i class="bi bi-plus-circle"></i><span class="nav-text">Other Charges</span></a>
                             }
                             @if (Can("FinanceReports.Read"))
                             {

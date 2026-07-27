@@ -108,6 +108,8 @@ public class PaymentGatewayController : Controller
     }
 
     [HttpGet("Success")]
+    [HttpPost("Success")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Success(
         string? tran_id,
         string? bank_tran_id,
@@ -131,37 +133,32 @@ public class PaymentGatewayController : Controller
             return View("~/Views/Fees/PaymentGateway/Success.cshtml");
         }
 
-        var paymentId = 0;
-
         if (request.Status == OnlinePaymentRequestStatus.Verified)
         {
             ViewBag.Message = "Payment already verified successfully.";
             ViewBag.InvoiceNo = request.FeeInvoice?.InvoiceNo;
             ViewBag.Amount = request.Amount;
             ViewBag.TransactionId = bank_tran_id ?? tran_id;
+            var existingPaymentId = await _onlinePaymentService.GetPaymentIdByInvoiceIdAsync(request.FeeInvoiceId, ct);
+            ViewBag.PaymentId = existingPaymentId;
             return View("~/Views/Fees/PaymentGateway/Success.cshtml");
         }
 
-        if (!string.IsNullOrEmpty(val_id))
-        {
-            paymentId = await _gatewayService.ProcessIpnAsync(bank_tran_id, tran_id, val_id, status ?? "VALID", ct);
-        }
-
-        if (paymentId > 0)
+        var payment = await _onlinePaymentService.GetPaymentByInvoiceIdAsync(request.FeeInvoiceId, ct);
+        if (payment != null)
         {
             ViewBag.Message = "Payment successful and verified!";
             ViewBag.InvoiceNo = request.FeeInvoice?.InvoiceNo;
             ViewBag.Amount = request.Amount;
             ViewBag.TransactionId = bank_tran_id ?? tran_id;
-            ViewBag.PaymentId = paymentId;
+            ViewBag.PaymentId = payment.Id;
+            return View("~/Views/Fees/PaymentGateway/Success.cshtml");
         }
-        else
-        {
-            ViewBag.Message = "Payment received but verification is pending. Admin will verify shortly.";
-            ViewBag.InvoiceNo = request.FeeInvoice?.InvoiceNo;
-            ViewBag.Amount = request.Amount;
-            ViewBag.TransactionId = bank_tran_id ?? tran_id;
-        }
+
+        ViewBag.Message = "Payment received. Your payment is being processed and will be confirmed shortly.";
+        ViewBag.InvoiceNo = request.FeeInvoice?.InvoiceNo;
+        ViewBag.Amount = request.Amount;
+        ViewBag.TransactionId = bank_tran_id ?? tran_id;
 
         return View("~/Views/Fees/PaymentGateway/Success.cshtml");
     }

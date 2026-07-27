@@ -1,0 +1,167 @@
+@{
+    ViewData["Title"] = "New Certificate Invoice";
+    var feeTypes = (List<SchoolManagementSystem.Models.Entities.Fees.FeeType>)ViewBag.FeeTypes;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/CertificateBilling/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">New Certificate Invoice</h1>
+                <p class="adm-header__sub">Generate invoices for certificates, transcripts, TC, and other document fees</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--danger">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div style="max-width:700px;">
+        <form method="post" action="/CertificateBilling/Create" id="invoiceForm">
+            @Html.AntiForgeryToken()
+
+            <div class="adm-form-group">
+                <label class="adm-form-label">Student <span class="adm-required">*</span></label>
+                <select id="studentSelect" name="studentId" class="adm-select" style="padding-left:12px;" required>
+                    <option value="">— Search & Select Student —</option>
+                </select>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-form-label">Due Date <span class="adm-required">*</span></label>
+                <input type="date" name="dueDate" class="adm-input" style="padding-left:12px;max-width:250px;" value="@DateOnly.FromDateTime(DateTime.UtcNow.AddDays(15)).ToString("yyyy-MM-dd")" required />
+            </div>
+
+            <div class="adm-card" style="margin-bottom:20px;">
+                <div class="adm-card__header" style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                    <h3 style="margin:0;font-size:15px;font-weight:600;">Certificate Items</h3>
+                </div>
+                <div class="adm-card__body" style="padding:16px 20px;">
+                    <table class="adm-table" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--adm-border);">
+                                <th style="text-align:left;padding:8px 12px;font-size:13px;font-weight:600;">Certificate Type</th>
+                                <th style="text-align:right;padding:8px 12px;font-size:13px;font-weight:600;width:200px;">Amount (৳)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (feeTypes != null)
+                            {
+                                var idx = 0;
+                                foreach (var ft in feeTypes)
+                                {
+                                    <tr>
+                                        <td style="padding:8px 12px;">
+                                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                                <input type="checkbox" class="item-checkbox" data-name="@ft.Name" />
+                                                <span>@ft.Name</span>
+                                            </label>
+                                        </td>
+                                        <td style="padding:8px 12px;">
+                                            <input type="number" step="0.01" min="0" class="adm-input item-amount" style="width:100%;padding-left:12px;text-align:right;" disabled placeholder="0.00" />
+                                            <input type="hidden" class="item-desc" value="@ft.Name" />
+                                        </td>
+                                    </tr>
+                                    idx++;
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr style="border-top:2px solid var(--adm-border);">
+                                <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;">Total:</td>
+                                <td style="padding:12px;text-align:right;font-weight:700;font-size:15px;" id="totalDisplay">৳ 0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-form-label">Remarks</label>
+                <textarea name="remarks" class="adm-input" style="padding-left:12px;" rows="2" placeholder="Optional remarks..."></textarea>
+            </div>
+
+            <div class="adm-btn-group" style="margin-top:28px;">
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                        <polyline points="7,3 7,8 15,8"></polyline>
+                    </svg>
+                    Create Invoice
+                </button>
+                <a href="/CertificateBilling/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('#studentSelect').select2({
+            ajax: {
+                url: '@Url.Action("GetStudents", "CertificateBilling")',
+                dataType: 'json',
+                delay: 300,
+                data: function(params) { return { term: params.term }; },
+                processResults: function(data) {
+                    return { results: data.map(function(s) { return { id: s.id, text: s.name + ' (' + s.studentNo + ')' }; }) };
+                }
+            },
+            placeholder: 'Search & select a student...',
+            minimumInputLength: 1,
+            width: '100%'
+        });
+
+        var idx = @((feeTypes?.Count ?? 0));
+
+        function recalcTotal() {
+            var total = 0;
+            document.querySelectorAll('.item-amount:not(:disabled)').forEach(function(el) {
+                total += parseFloat(el.value) || 0;
+            });
+            document.getElementById('totalDisplay').textContent = '৳ ' + total.toFixed(2);
+        }
+
+        document.querySelectorAll('.item-checkbox').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var row = this.closest('tr');
+                var amt = row.querySelector('.item-amount');
+                var desc = row.querySelector('.item-desc');
+                amt.disabled = !this.checked;
+                if (!this.checked) amt.value = '';
+                amt.name = 'items[' + idx + '].Amount';
+                desc.name = 'items[' + idx + '].Description';
+                if (this.checked) idx++;
+                recalcTotal();
+            });
+        });
+
+        document.querySelectorAll('.item-amount').forEach(function(el) {
+            el.addEventListener('input', recalcTotal);
+        });
+
+        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+            if (!document.getElementById('studentSelect').value) { e.preventDefault(); alert('Please select a student.'); return; }
+            var hasItems = false;
+            document.querySelectorAll('.item-amount').forEach(function(el) {
+                if (!el.disabled && parseFloat(el.value) > 0) hasItems = true;
+            });
+            if (!hasItems) { e.preventDefault(); alert('Select at least one certificate with an amount.'); return; }
+        });
+    </script>
+}

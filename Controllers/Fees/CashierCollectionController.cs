@@ -55,7 +55,7 @@ public class CashierCollectionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Pay(int studentId, [FromBody] CashierPayRequest request)
+    public async Task<IActionResult> Pay(int studentId, [FromBody] CashierPayRequest request, CancellationToken ct)
     {
         if (!_security.CanAccessStudentData(User, studentId))
             return Forbid();
@@ -74,8 +74,10 @@ public class CashierCollectionController : Controller
         var result = await _service.ProcessPaymentAsync(studentId, request.InvoiceIds, paymentDto, userId);
         if (result.Success && result.PaymentId > 0)
         {
-            await _postingService.PostFeeCollectionAsync(
-                studentId, request.Amount, request.InvoiceIds.FirstOrDefault(), userId);
+            foreach (var invoiceId in request.InvoiceIds)
+            {
+                await _postingService.PostFeeCollectionAsync(studentId, request.Amount, invoiceId, userId, ct);
+            }
         }
         return Json(result);
     }

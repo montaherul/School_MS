@@ -451,6 +451,8 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                     app.UpdatedAt = DateTime.UtcNow;
                     _db.Admissions.Update(app);
                     await _db.SaveChangesAsync(ct);
+
+                    await SendAdmissionPaymentNotificationAsync(app, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
                 }
 
                 await _financePostingService.PostAdmissionFeeAsync(
@@ -470,6 +472,8 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                     request.FeeInvoiceId,
                     "sslcOM~Auto");
                 _logger.LogInformation("Finance posting completed for transaction {TranId}", tranId);
+
+                await SendPaymentNotificationsAsync(request.StudentId, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
             }
         }
         catch (Exception ex)
@@ -480,12 +484,33 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         await _auditService.LogAsync(null, "Payment", "GatewaySuccess",
             $"TranId={tranId}, BankTranId={bankTranId}, Invoice={request.FeeInvoice?.InvoiceNo}, Amount={request.Amount}, StudentId={request.StudentId}", ct);
 
-        await SendPaymentNotificationsAsync(request.StudentId, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
-
         return payment.Id;
     }
 
-    private async Task SendPaymentNotificationsAsync(int studentId, string? invoiceNo, decimal amount, string tranId, CancellationToken ct)
+        private async Task SendAdmissionPaymentNotificationAsync(SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication app, string? invoiceNo, decimal amount, string tranId, CancellationToken ct)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(app.ApplicantEmail))
+                {
+                    var subject = "Admission Fee Payment Received — School Management System";
+                    var body = $"Dear {app.ApplicantName},<br><br>" +
+                               $"Your admission fee payment of BDT {amount:N2} for Invoice #{invoiceNo} has been received successfully.<br>" +
+                               $"Transaction Reference: {tranId}<br><br>" +
+                               "Your application is now being processed. You will be notified once the admission is confirmed.<br><br>" +
+                               "Thank you.<br>School Management System";
+
+                    await _emailSender.SendAsync(app.ApplicantEmail, subject, body, ct);
+                    _logger.LogInformation("Admission payment notification sent to {Email} for app #{AppId}", app.ApplicantEmail, app.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send admission payment notification for app #{AppId}", app.Id);
+            }
+        }
+
+        private async Task SendPaymentNotificationsAsync(int studentId, string? invoiceNo, decimal amount, string tranId, CancellationToken ct)
     {
         try
         {

@@ -1,0 +1,142 @@
+@{
+    ViewData["Title"] = "Other Charges Billing";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 12h8"></path>
+                    <path d="M12 8v8"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Other Charges Billing</h1>
+                <p class="adm-header__sub">Generate invoices for events, study tours, clubs, donations, and miscellaneous charges</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a href="/OtherChargeBilling/Create" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Other Charge Invoice
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14 8,10"></polyline>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Search by invoice no or student name...">
+                    <button type="button" class="adm-input-wrap__btn" id="searchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Actions</label>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1-2.12,6.32A9,9,0,0,1,4.64,6.32"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="invoice-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = new Tabulator("#invoice-table", {
+            height: "calc(100vh - 300px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: '@Url.Action("GetList", "OtherChargeBilling")',
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
+            ajaxResponse: function(url, params, response) {
+                const rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, data: rows };
+            },
+            columns: [
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5, formatter: function(cell) {
+                    return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                }},
+                { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
+                    return `<span class="fw-semibold">${cell.getValue()}</span>`;
+                }},
+                { title: "Due Date", field: "dueDate", width: 130, hozAlign: "center", formatter: function(cell) {
+                    return cell.getValue() || '<span class="text-muted">—</span>';
+                }},
+                { title: "Total", field: "totalAmount", width: 130, hozAlign: "right", formatter: function(cell) {
+                    return `<div class="fw-bold" style="color:var(--adm-success);">${Number(cell.getValue()).toFixed(2)}</div>`;
+                }},
+                { title: "Paid", field: "paidAmount", width: 120, hozAlign: "right", formatter: function(cell) {
+                    return `<div class="fw-bold">${Number(cell.getValue()).toFixed(2)}</div>`;
+                }},
+                { title: "Status", field: "status", width: 110, hozAlign: "center", formatter: function(cell) {
+                    var s = parseInt(cell.getValue());
+                    if (s === 2) return `<span class="adm-badge adm-badge--warning">Partial</span>`;
+                    if (s === 3) return `<span class="adm-badge adm-badge--success">Paid</span>`;
+                    if (s === 4) return `<span class="adm-badge adm-badge--danger">Waived</span>`;
+                    return `<span class="adm-badge adm-badge--neutral">Unpaid</span>`;
+                }},
+                { title: "Actions", field: "id", hozAlign: "right", headerSort: false, width: 100,
+                    formatter: function(cell) {
+                        var id = cell.getValue();
+                        return `<div class="adm-actions">
+                            <a href="/FeeInvoice/Details/${id}" class="adm-action" title="View">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </a>
+                            <a href="/FeePayment/CreateEdit?feeInvoiceId=${id}" class="adm-action adm-action--edit" title="Collect Payment">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </a>
+                        </div>`;
+                    }
+                }
+            ],
+            placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading other charge invoices...</div></div>"
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            table.setData('@Url.Action("GetList", "OtherChargeBilling")', { search: document.getElementById('searchInput').value });
+        });
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('searchBtn').click();
+        });
+        document.getElementById('refreshBtn').addEventListener('click', function() { table.setData(); });
+    </script>
+}

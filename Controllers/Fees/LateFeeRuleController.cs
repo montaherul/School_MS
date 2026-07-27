@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
 
@@ -16,7 +17,8 @@ public class LateFeeRuleController : Controller
     private readonly ILateFeeRuleService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
-    public LateFeeRuleController(ILateFeeRuleService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
+    private readonly IFeeInvoiceService _invoiceService;
+    public LateFeeRuleController(ILateFeeRuleService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFeeInvoiceService invoiceService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _invoiceService = invoiceService; }
 
     [RequirePermission("LateFeeRules.Read")]
     public IActionResult Index() { return View(); }
@@ -73,8 +75,7 @@ public class LateFeeRuleController : Controller
     [RequirePermission("LateFeeRules.Update")]
     public async Task<IActionResult> ApplyLateFees()
     {
-        var invoiceService = HttpContext.RequestServices.GetRequiredService<IFeeInvoiceService>();
-        var result = await invoiceService.ApplyLateFeesAsync();
+        var result = await _invoiceService.ApplyLateFeesAsync();
         TempData["SuccessMessage"] = $"Late fees applied: {result.InvoicesProcessed} invoice(s) processed, total ৳{result.TotalLateFeeApplied:N2}.";
         if (result.Errors.Count > 0)
             TempData["ErrorMessage"] = string.Join(" | ", result.Errors);
@@ -108,6 +109,15 @@ public class LateFeeRuleController : Controller
         await _service.DeleteAsync(id, userId);
         TempData["SuccessMessage"] = "Rule deleted.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleActive(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        var isActive = await _service.ToggleActiveAsync(id, userId);
+        return Json(new { success = true, isActive });
     }
 
     [HttpPost]

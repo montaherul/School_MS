@@ -11,7 +11,28 @@ public static class PaymentMethodSeeder
         var sslProvider = await db.Set<PaymentProvider>()
             .FirstOrDefaultAsync(p => p.Code == "SSLCOMMERZ" && !p.IsDeleted);
 
-        if (sslProvider == null) return;
+        if (sslProvider == null)
+        {
+            sslProvider = new PaymentProvider
+            {
+                Code = "SSLCOMMERZ",
+                Name = "SSLCommerz",
+                Description = "SSLCommerz payment gateway for Bangladesh",
+                Status = Models.Enums.ProviderStatus.Active,
+                IsActive = true,
+                IsSandbox = false,
+                Priority = 1,
+                SupportsRefund = true,
+                SupportsSettlement = true,
+                MaxRetryAttempts = 3,
+                SupportedCurrencies = "BDT",
+                ClassName = "SslCommerzProvider",
+                CreatedBy = "System",
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Set<PaymentProvider>().Add(sslProvider);
+            await db.SaveChangesAsync();
+        }
 
         var existingCodes = await db.Set<PaymentMethod>()
             .Where(m => m.PaymentProviderId == sslProvider.Id && !m.IsDeleted)

@@ -134,7 +134,6 @@ public class OnlinePaymentService : IOnlinePaymentService
             CreatedAt = DateTime.UtcNow
         };
         _db.Payments.Add(payment);
-        await _db.SaveChangesAsync(ct);
 
         invoice.PaidAmount += allocAmount;
         invoice.UpdatedAt = DateTime.UtcNow;
@@ -237,6 +236,25 @@ public class OnlinePaymentService : IOnlinePaymentService
         return await _db.OnlinePaymentRequests
             .Include(r => r.FeeInvoice)
             .FirstOrDefaultAsync(r => r.GatewayTransactionId == tranId && !r.IsDeleted, ct);
+    }
+
+    public async Task<int> GetPaymentIdByInvoiceIdAsync(int feeInvoiceId, CancellationToken ct = default)
+    {
+        return await _db.Payments
+            .AsNoTracking()
+            .Where(p => p.FeeInvoiceId == feeInvoiceId)
+            .OrderByDescending(p => p.Id)
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<Payment?> GetPaymentByInvoiceIdAsync(int feeInvoiceId, CancellationToken ct = default)
+    {
+        return await _db.Payments
+            .AsNoTracking()
+            .Where(p => p.FeeInvoiceId == feeInvoiceId)
+            .OrderByDescending(p => p.Id)
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task ExpireStaleRequestsAsync(CancellationToken ct = default)

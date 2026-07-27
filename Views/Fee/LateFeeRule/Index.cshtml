@@ -215,10 +215,13 @@
                             ? `<span class="adm-badge adm-badge--primary px-3 rounded-pill">${cell.getValue()}</span>`
                             : `<span class="text-muted">All</span>`;
                     }},
-                    { title: "Active", field: "isActive", width: 90, hozAlign: "center", formatter: function(cell) {
-                        return cell.getValue()
-                            ? `<span class="text-success"><i class="bi bi-check-circle-fill"></i></span>`
-                            : `<span class="text-danger"><i class="bi bi-x-circle-fill"></i></span>`;
+                    { title: "Active", field: "isActive", width: 100, hozAlign: "center", headerSort: false, formatter: function(cell) {
+                        var id = cell.getRow().getData().id;
+                        var checked = cell.getValue() ? 'checked' : '';
+                        return `<label class="adm-toggle" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="toggle-active" data-id="${id}" ${checked}>
+                            <span class="adm-toggle__slider"></span>
+                        </label>`;
                     }},
                     {
                         title: "Actions",
@@ -276,6 +279,19 @@
                     method: 'POST',
                     headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
                 }).then(res => { deleteModal.hide(); table.setData(); });
+            });
+
+            document.getElementById('rule-table').addEventListener('change', function(e) {
+                if (e.target.classList.contains('toggle-active')) {
+                    var id = e.target.dataset.id;
+                    var csrf = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    fetch('/LateFeeRule/ToggleActive/' + id, {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': csrf }
+                    }).then(function(r) { return r.json(); }).then(function(data) {
+                        if (!data.success) table.setData();
+                    }).catch(function() { table.setData(); });
+                }
             });
         </script>
     }

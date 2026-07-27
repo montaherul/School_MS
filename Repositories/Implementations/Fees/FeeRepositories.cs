@@ -498,6 +498,114 @@ public class LateFeeRuleRepository : BaseRepository<LateFeeRule>, ILateFeeRuleRe
     }
 }
 
+    public class FeeTypeRepository : BaseRepository<FeeType>, IFeeTypeRepository
+    {
+        public FeeTypeRepository(SchoolDbContext db) : base(db) { }
+
+        public async Task<(List<FeeTypeListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+            int pageNumber, int pageSize, string? searchTerm, CancellationToken ct)
+        {
+            using var command = _db.Database.GetDbConnection().CreateCommand();
+            command.CommandText = "sp_GetFeeTypesPaged";
+            command.CommandType = CommandType.StoredProcedure;
+            AddParameter(command, "@PageNumber", pageNumber);
+            AddParameter(command, "@PageSize", pageSize);
+            AddParameter(command, "@SearchTerm", searchTerm);
+
+            await using var lease = await OpenConnectionAsync(command.Connection!, ct);
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var items = new List<FeeTypeListItemDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                items.Add(new FeeTypeListItemDto
+                {
+                    Id = GetInt32(reader, "Id"),
+                    Name = GetString(reader, "Name"),
+                    Description = GetNullableString(reader, "Description"),
+                    DisplayOrder = GetInt32(reader, "DisplayOrder"),
+                    IsActive = GetBoolean(reader, "IsActive"),
+                    TotalRecords = GetInt32(reader, "TotalRecords")
+                });
+            }
+            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+        }
+    }
+
+    public class PaymentAllocationRepository : BaseRepository<PaymentAllocation>, IPaymentAllocationRepository
+{
+    public PaymentAllocationRepository(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<PaymentAllocationListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int? paymentId, int? feeInvoiceId, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetPaymentAllocationsPaged";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@PageNumber", pageNumber);
+        AddParameter(command, "@PageSize", pageSize);
+        AddParameter(command, "@SearchTerm", searchTerm);
+        AddParameter(command, "@PaymentId", paymentId ?? 0);
+        AddParameter(command, "@FeeInvoiceId", feeInvoiceId ?? 0);
+
+        await using var lease = await OpenConnectionAsync(command.Connection!, ct);
+        using var reader = await command.ExecuteReaderAsync(ct);
+        var items = new List<PaymentAllocationListItemDto>();
+        while (await reader.ReadAsync(ct))
+        {
+            items.Add(new PaymentAllocationListItemDto
+            {
+                Id = GetInt32(reader, "Id"),
+                PaymentId = GetInt32(reader, "PaymentId"),
+                PaymentReference = GetNullableString(reader, "PaymentReference"),
+                FeeInvoiceId = GetInt32(reader, "FeeInvoiceId"),
+                InvoiceNo = GetNullableString(reader, "InvoiceNo"),
+                AllocatedAmount = GetDecimal(reader, "AllocatedAmount"),
+                Remarks = GetNullableString(reader, "Remarks"),
+                TotalRecords = GetInt32(reader, "TotalRecords")
+            });
+        }
+        return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+    }
+}
+
+public class ScholarshipRepository : BaseRepository<Scholarship>, IScholarshipRepository
+{
+    public ScholarshipRepository(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<ScholarshipListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetScholarshipsPaged";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@PageNumber", pageNumber);
+        AddParameter(command, "@PageSize", pageSize);
+        AddParameter(command, "@SearchTerm", searchTerm);
+
+        await using var lease = await OpenConnectionAsync(command.Connection!, ct);
+        using var reader = await command.ExecuteReaderAsync(ct);
+        var items = new List<ScholarshipListItemDto>();
+        while (await reader.ReadAsync(ct))
+        {
+            items.Add(new ScholarshipListItemDto
+            {
+                Id = GetInt32(reader, "Id"),
+                Name = GetString(reader, "Name"),
+                Description = GetNullableString(reader, "Description"),
+                DiscountType = GetInt32(reader, "DiscountType") == 0 ? "Percentage" : "Fixed",
+                Value = GetDecimal(reader, "Value"),
+                SchoolClassId = GetNullableInt32(reader, "SchoolClassId"),
+                ClassName = GetNullableString(reader, "ClassName"),
+                FeeCategoryId = GetNullableInt32(reader, "FeeCategoryId"),
+                FeeCategoryName = GetNullableString(reader, "FeeCategoryName"),
+                IsActive = GetBoolean(reader, "IsActive"),
+                TotalRecords = GetInt32(reader, "TotalRecords")
+            });
+        }
+        return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+    }
+}
+
 public class FineRuleRepository : BaseRepository<FineRule>, IFineRuleRepository
 {
     public FineRuleRepository(SchoolDbContext db) : base(db) { }

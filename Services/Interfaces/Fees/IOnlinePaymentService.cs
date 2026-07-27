@@ -14,4 +14,6 @@ public interface IOnlinePaymentService
     Task<bool> VerifyAsync(int id, string verifiedBy, string? adminNotes, CancellationToken ct = default);
     Task<bool> RejectAsync(int id, string rejectedBy, string? adminNotes, CancellationToken ct = default);
     Task ExpireStaleRequestsAsync(CancellationToken ct = default);
+    Task<int> GetPaymentIdByInvoiceIdAsync(int feeInvoiceId, CancellationToken ct = default);
+    Task<Payment?> GetPaymentByInvoiceIdAsync(int feeInvoiceId, CancellationToken ct = default);
 }

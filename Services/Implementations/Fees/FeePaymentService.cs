@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Fees;
@@ -123,6 +125,21 @@ public class FeePaymentService : IFeePaymentService
         await _audit.LogAsync("FeePayments", "Delete", $"Payment {id} deleted for invoice {invoiceId}, amount {entity.Amount}", updatedBy, cancellationToken: cancellationToken);
     }
 
+    public async Task<(int PaymentId, DateTime PaidAt)> VerifyReceiptCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var recent = await _unitOfWork.Repository<Payment>()
+            .ListAsync(x => x.CreatedAt >= DateTime.UtcNow.AddDays(-90) && !x.IsDeleted, cancellationToken);
+        foreach (var payment in recent)
+        {
+            var input = $"{payment.Id}|{payment.PaidAt:yyyyMMddHHmm}|SCHOOL-SECRET-KEY";
+            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+            var expected = Convert.ToHexString(hash)[..12];
+            if (string.Equals(code, expected, StringComparison.OrdinalIgnoreCase))
+                return (payment.Id, payment.PaidAt);
+        }
+        return (0, DateTime.MinValue);
+    }
+
     public async Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Repository<Payment>().FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted, cancellationToken)
@@ -151,6 +168,7 @@ public class FeePaymentService : IFeePaymentService
             CreatedAt = DateTime.UtcNow
         };
         await _unitOfWork.Repository<FeeLedger>().AddAsync(entry, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     private async Task RecalculateInvoiceAsync(int invoiceId, CancellationToken cancellationToken)

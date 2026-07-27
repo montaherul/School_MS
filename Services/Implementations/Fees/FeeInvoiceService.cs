@@ -59,7 +59,8 @@ public class FeeInvoiceService : IFeeInvoiceService
         await _uow.Repository<FeeLedger>().AddAsync(ledger, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
-        await _audit.LogAsync("FeeInvoices", "Create", $"Invoice {invoice.InvoiceNo} created for student {invoice.StudentId}, amount {invoice.TotalAmount}", createdBy, cancellationToken: cancellationToken);
+        var studentLabel = invoice.StudentId > 0 ? $"student {invoice.StudentId}" : "admission applicant";
+        await _audit.LogAsync("FeeInvoices", "Create", $"Invoice {invoice.InvoiceNo} created for {studentLabel}, amount {invoice.TotalAmount}", createdBy, cancellationToken: cancellationToken);
 
         return invoice.Id;
     }

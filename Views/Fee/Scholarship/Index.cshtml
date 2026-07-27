@@ -1,0 +1,247 @@
+@{
+    ViewData["Title"] = "Scholarships";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                    <line x1="8" y1="12" x2="8" y2="22"></line>
+                    <line x1="16" y1="12" x2="16" y2="22"></line>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Scholarships</h1>
+                <p class="adm-header__sub">Manage scholarship and discount programs</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a href="/Scholarship/CreateEdit" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Scholarship
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14 8,10"></polyline>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search Scholarships</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Search scholarships...">
+                    <button type="button" class="adm-input-wrap__btn" id="searchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Actions</label>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1-2.12,6.32A9,9,0,0,1,4.64,6.32"></path>
+                    </svg>
+                    Refresh
+                </button>
+                <a href="@Url.Action("ExportExcel", "Scholarship")" class="adm-btn adm-btn--ghost" title="Export to Excel">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                    Excel
+                </a>
+                <a href="@Url.Action("ExportPdf", "Scholarship")" class="adm-btn adm-btn--ghost" title="Export to PDF">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                    PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="deleteModal" style="display: none;">
+        <div class="adm-modal">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M10.29,13.29,16.59,7"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="2" x2="12" y2="4"></line>
+                            <line x1="20" y1="12" x2="18" y2="12"></line>
+                            <line x1="12" y1="20" x2="12" y2="22"></line>
+                            <line x1="4" y1="12" x2="2" y2="12"></line>
+                            <line x1="17" y1="17" x2="7" y2="7"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="adm-modal__title">Confirm Delete</h6>
+                        <p class="adm-modal__subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="deleteModal.hide()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <p>Are you sure you want to delete <strong id="deleteName"></strong>? This will permanently remove the scholarship.</p>
+            </div>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--ghost" onclick="deleteModal.hide()">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete Scholarship</button>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            var pendingDeleteId = null;
+            var deleteModal = {
+                show: function() {
+                    document.getElementById('deleteModal').style.display = 'flex';
+                    document.getElementById('deleteModal').classList.add('adm-loading--visible');
+                },
+                hide: function() {
+                    document.getElementById('deleteModal').style.display = 'none';
+                    document.getElementById('deleteModal').classList.remove('adm-loading--visible');
+                }
+            };
+
+            var table = new Tabulator("#data-table", {
+                height: "calc(100vh - 300px)",
+                layout: "fitColumns",
+                pagination: true,
+                paginationMode: "remote",
+                ajaxURL: '@Url.Action("GetList", "Scholarship")',
+                paginationSize: 15,
+                paginationSizeSelector: [15,25,50,100],
+                ajaxResponse: function(url, params, response) {
+                    const rows = Array.isArray(response.data) ? response.data : [];
+                    return { last_page: response.last_page || 1, data: rows };
+                },
+                ajaxError: function(xhr, textStatus, errorThrown) {
+                    console.error('Tabulator AJAX error:', textStatus, errorThrown, xhr);
+                    document.getElementById('data-table').innerHTML =
+                        '<div style="padding:40px;text-align:center;color:var(--adm-rejected);">' +
+                        '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-bottom:12px;">' +
+                        '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>' +
+                        '</svg><br/><strong>Failed to load data</strong><br/>' +
+                        (xhr.status ? 'HTTP ' + xhr.status + ': ' + xhr.statusText : textStatus) +
+                        '</div>';
+                },
+                columns: [
+                    { title: "Name", field: "name", widthGrow: 2, formatter: function(cell) {
+                        return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Description", field: "description", widthGrow: 3, formatter: function(cell) {
+                        return cell.getValue() ? `<div class="text-muted small">${cell.getValue()}</div>` : '<div class="text-muted small">—</div>';
+                    }},
+                    { title: "Type", field: "discountType", width: 110, hozAlign: "center", formatter: function(cell) {
+                        var t = cell.getValue();
+                        return t === "Percentage"
+                            ? `<span class="adm-badge adm-badge--primary">%</span>`
+                            : `<span class="adm-badge adm-badge--neutral">Fixed</span>`;
+                    }},
+                    { title: "Value", field: "value", width: 100, hozAlign: "center", formatter: function(cell) {
+                        return `<span class="adm-badge adm-badge--neutral">${cell.getValue()}</span>`;
+                    }},
+                    { title: "Class", field: "className", width: 150, formatter: function(cell) {
+                        return cell.getValue() ? `<span class="adm-badge adm-badge--info">${cell.getValue()}</span>` : '<span class="text-muted small">All</span>';
+                    }},
+                    { title: "Category", field: "feeCategoryName", width: 150, formatter: function(cell) {
+                        return cell.getValue() ? `<span class="adm-badge adm-badge--info">${cell.getValue()}</span>` : '<span class="text-muted small">All</span>';
+                    }},
+                    { title: "Active", field: "isActive", width: 90, hozAlign: "center", formatter: function(cell) {
+                        return cell.getValue()
+                            ? `<span class="adm-badge adm-badge--primary">Active</span>`
+                            : `<span class="adm-badge" style="background: var(--adm-surface-2); color: var(--adm-text-3); border: 1px solid var(--adm-border);">Inactive</span>`;
+                    }},
+                    { title: "Actions", field: "id", hozAlign: "right", headerSort: false, width: 140, formatter: function(cell) {
+                        var id = cell.getValue();
+                        return `
+                            <div class="adm-actions">
+                                <a href="/Scholarship/Edit/${id}" class="adm-action adm-action--edit" title="Edit">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15l-4,1,1-4Z"></path>
+                                    </svg>
+                                </a>
+                                <button class="adm-action adm-action--delete delete-btn" title="Delete" data-id="${id}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                        <polyline points="3,6 5,6 21,6"></polyline>
+                                        <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    }}
+                ],
+                cellClick: function(e, cell) {
+                    if (e.target.closest('.delete-btn')) {
+                        pendingDeleteId = cell.getValue();
+                        document.getElementById('deleteName').textContent = cell.getRow().getData().name;
+                        deleteModal.show();
+                    }
+                },
+                placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading scholarships...</div></div>"
+            });
+
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                table.setData('@Url.Action("GetList", "Scholarship")', { search: document.getElementById('searchInput').value });
+            });
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') document.getElementById('searchBtn').click();
+            });
+            document.getElementById('refreshBtn').addEventListener('click', function() { table.setData(); });
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                if (!pendingDeleteId) return;
+                fetch(`/Scholarship/DeleteConfirmed/${pendingDeleteId}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+                }).then(res => { deleteModal.hide(); table.setData(); });
+            });
+        </script>
+    }
+</div>

@@ -389,8 +389,20 @@ public class AdmissionFinanceService : IAdmissionFinanceService
     {
         var invoiceKey = $"AdmissionApp_{applicationId}";
 
-        if (await _unitOfWork.Repository<FeeInvoice>().AnyAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct))
-            return 0;
+        var existingInvoice = await _unitOfWork.Repository<FeeInvoice>()
+            .FirstOrDefaultAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct);
+        if (existingInvoice != null)
+        {
+            if (existingInvoice.StudentId == 0 && studentId > 0)
+            {
+                existingInvoice.StudentId = studentId;
+                existingInvoice.UpdatedBy = createdBy;
+                existingInvoice.UpdatedAt = DateTime.UtcNow;
+                _unitOfWork.Repository<FeeInvoice>().Update(existingInvoice);
+                await _unitOfWork.SaveChangesAsync(ct);
+            }
+            return existingInvoice.Id;
+        }
 
         var invoiceNo = $"INV-ADM-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999):D4}";
 

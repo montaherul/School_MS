@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "Fee Settings";
+    var rules = ViewBag.LateFeeRules as System.Collections.Generic.IEnumerable<SchoolManagementSystem.Models.DTOs.Fees.LateFeeRuleListItemDto> ?? [];
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Fee Settings</h1>
+                <p class="adm-header__sub">Manage fee configuration, late fee rules, and fine policies</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <form asp-action="ApplyLateFees" method="post" style="display:inline-block;margin-right:12px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="adm-btn adm-btn--warning">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12,6 12,12 16,14"></polyline></svg>
+                    Apply Late Fees
+                </button>
+            </form>
+            <a href="/LateFeeRule/CreateEdit" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Late Fee Rule
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h5 class="adm-table-card__title">Late Fee Rules</h5>
+                    <div>
+                        <a href="/LateFeeRule" class="adm-btn adm-btn--sm adm-btn--ghost">View All</a>
+                    </div>
+                </div>
+                <div class="adm-table-card__body p-0">
+                    <table class="adm-table adm-table--striped">
+                        <thead>
+                            <tr>
+                                <th>Rule Name</th>
+                                <th>Grace Days</th>
+                                <th>Fee</th>
+                                <th>Max Fee</th>
+                                <th>Class</th>
+                                <th style="width:100px;text-align:center">Active</th>
+                                <th style="width:100px;text-align:center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!rules.Any())
+                            {
+                                <tr><td colspan="7" class="text-center text-muted py-4">No late fee rules configured.</td></tr>
+                            }
+                            @foreach (var rule in rules)
+                            {
+                                <tr>
+                                    <td><span class="fw-semibold">@rule.Name</span></td>
+                                    <td><span class="adm-badge adm-badge--warning">@rule.GraceDays day@(rule.GraceDays != 1 ? "s" : "")</span></td>
+                                    <td>
+                                        @if (rule.FeeType == 0)
+                                        {
+                                            <span>@rule.FeeValue.ToString("F2")%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">@rule.FeeValue.ToString("F2")</span>
+                                        }
+                                    </td>
+                                    <td>@(rule.MaxFee > 0 ? rule.MaxFee.ToString("F2") : "No limit")</td>
+                                    <td>@(rule.ClassName ?? "All")</td>
+                                    <td style="text-align:center">
+                                        <label class="adm-toggle" onclick="event.stopPropagation()">
+                                            <input type="checkbox" class="toggle-rule" data-id="@rule.Id" @(rule.IsActive ? "checked" : "")>
+                                            <span class="adm-toggle__slider"></span>
+                                        </label>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <a href="/LateFeeRule/Edit/@rule.Id" class="adm-action adm-action--edit" title="Edit">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15l-4,1,1-4Z"></path></svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__body text-center py-4">
+                    <i class="bi bi-tag" style="font-size:2rem;color:var(--adm-primary);"></i>
+                    <h6 class="mt-2">Fee Categories</h6>
+                    <p class="text-muted small">Manage fee categories (Tuition, Transport, etc.)</p>
+                    <a href="/FeeCategories" class="adm-btn adm-btn--sm adm-btn--outline">Manage</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__body text-center py-4">
+                    <i class="bi bi-layers" style="font-size:2rem;color:var(--adm-primary);"></i>
+                    <h6 class="mt-2">Fee Structures</h6>
+                    <p class="text-muted small">Define fee amounts per class and category</p>
+                    <a href="/FeeStructures" class="adm-btn adm-btn--sm adm-btn--outline">Manage</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__body text-center py-4">
+                    <i class="bi bi-exclamation-triangle" style="font-size:2rem;color:var(--adm-warning);"></i>
+                    <h6 class="mt-2">Fine Rules</h6>
+                    <p class="text-muted small">Configure penalty fines for violations</p>
+                    <a href="/FineRule" class="adm-btn adm-btn--sm adm-btn--outline">Manage</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__body text-center py-4">
+                    <i class="bi bi-percent" style="font-size:2rem;color:var(--adm-success);"></i>
+                    <h6 class="mt-2">Discounts & Waivers</h6>
+                    <p class="text-muted small">Manage fee discounts and waiver policies</p>
+                    <a href="/FeeDiscounts" class="adm-btn adm-btn--sm adm-btn--outline">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelector('.adm-page').addEventListener('change', function(e) {
+            if (e.target.classList.contains('toggle-rule')) {
+                var id = e.target.dataset.id;
+                var csrf = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                fetch('/FeeSettings/ToggleLateFee/' + id, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': csrf }
+                }).then(function(r) { return r.json(); }).catch(function() {
+                    location.reload();
+                });
+            }
+        });
+    </script>
+}

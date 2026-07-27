@@ -62,6 +62,18 @@ public class LateFeeRuleService : ILateFeeRuleService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<bool> ToggleActiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default)
+    {
+        var entity = await _unitOfWork.Repository<LateFeeRule>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        if (entity is null) return false;
+        entity.IsActive = !entity.IsActive;
+        entity.UpdatedBy = updatedBy;
+        entity.UpdatedAt = DateTime.UtcNow;
+        _unitOfWork.Repository<LateFeeRule>().Update(entity);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        return entity.IsActive;
+    }
+
     public async Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default)
     {
         var entity = await _unitOfWork.Repository<LateFeeRule>().FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted, cancellationToken)

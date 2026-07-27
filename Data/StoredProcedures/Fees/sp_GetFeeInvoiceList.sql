@@ -20,7 +20,7 @@ BEGIN
             fi.Id,
             fi.InvoiceNo,
             fi.StudentId,
-            s.FullName AS StudentName,
+            COALESCE(s.FullName, 'Admission Applicant') AS StudentName,
             fi.AcademicYearId,
             ay.Name AS AcademicYearName,
             fi.DueDate,
@@ -34,7 +34,7 @@ BEGIN
             COUNT(*) OVER () AS TotalRecords
         FROM 
 FeeInvoices fi WITH(NOLOCK)
-        JOIN 
+        LEFT JOIN 
 Students s WITH(NOLOCK) ON fi.StudentId = s.Id
         LEFT JOIN 
 AcademicYears ay WITH(NOLOCK) ON fi.AcademicYearId = ay.Id

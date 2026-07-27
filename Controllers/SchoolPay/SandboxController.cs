@@ -24,7 +24,7 @@ public class SandboxController : Controller
     [RequirePermission("SchoolPay.Manage")]
     public IActionResult Index()
     {
-        return View();
+        return View("~/Views/SchoolPay/Sandbox/Index.cshtml");
     }
 
     [HttpPost]
@@ -32,11 +32,13 @@ public class SandboxController : Controller
     [RequirePermission("SchoolPay.Manage")]
     public async Task<IActionResult> Simulate(SchoolPaySandboxTestRequest request, CancellationToken ct)
     {
+        var sandboxProvider = await _repo.GetProviderEntityByCodeAsync("SANDBOX", ct);
+        var sandboxProviderId = sandboxProvider?.Id ?? 0;
         var txnRef = $"SANDBOX_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid().ToString("N")[..6]}";
 
         var txn = new SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction
         {
-            PaymentProviderId = 0,
+            PaymentProviderId = sandboxProviderId,
             TransactionReference = txnRef,
             Amount = request.Amount,
             Currency = "BDT",
@@ -69,7 +71,7 @@ public class SandboxController : Controller
                 txn.CompletedAt = DateTime.UtcNow;
                 var dup = new SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction
                 {
-                    PaymentProviderId = 0,
+                    PaymentProviderId = sandboxProviderId,
                     TransactionReference = txnRef,
                     Amount = request.Amount,
                     Currency = "BDT",
@@ -102,7 +104,7 @@ public class SandboxController : Controller
         ViewBag.TxnRef = txnRef;
         ViewBag.Amount = amount;
         ViewBag.ReturnUrl = returnUrl;
-        return View();
+        return View("~/Views/SchoolPay/Sandbox/Gateway.cshtml");
     }
 
     [HttpPost("Callback")]

@@ -54,6 +54,11 @@ FROM StudentGuardians sg WITH(NOLOCK)
 INNER JOIN Guardians g WITH(NOLOCK) ON sg.GuardianId = g.Id 
              WHERE sg.StudentId = s.Id AND sg.IsPrimaryGuardian = 1
             ) AS FatherOrGuardianMobileNo,
+            (SELECT TOP 1 g.FullName 
+FROM StudentGuardians sg WITH(NOLOCK) 
+INNER JOIN Guardians g WITH(NOLOCK) ON sg.GuardianId = g.Id 
+             WHERE sg.StudentId = s.Id AND sg.IsPrimaryGuardian = 1
+            ) AS GuardianName,
             s.MotherName,
             s.MotherOccupation,
             s.Religion,

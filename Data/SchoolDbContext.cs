@@ -103,6 +103,7 @@ public class SchoolDbContext : DbContext
     public DbSet<ReEvaluationRequest> ReEvaluationRequests => Set<ReEvaluationRequest>();
     public DbSet<AssignmentTask> Assignments => Set<AssignmentTask>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+    public DbSet<FeeType> FeeTypes => Set<FeeType>();
     public DbSet<FeeCategory> FeeCategories => Set<FeeCategory>();
     public DbSet<FeeStructure> FeeStructures => Set<FeeStructure>();
     public DbSet<StudentFeeAssignment> StudentFeeAssignments => Set<StudentFeeAssignment>();
@@ -113,13 +114,16 @@ public class SchoolDbContext : DbContext
     public DbSet<FeeWaiver> FeeWaivers => Set<FeeWaiver>();
     public DbSet<FeeRefund> FeeRefunds => Set<FeeRefund>();
     public DbSet<FeeLedger> FeeLedgers => Set<FeeLedger>();
+    public DbSet<Scholarship> Scholarships => Set<Scholarship>();
     public DbSet<FeeCollectionSummary> FeeCollectionSummaries => Set<FeeCollectionSummary>();
+    public DbSet<PaymentAllocation> PaymentAllocations => Set<PaymentAllocation>();
     public DbSet<OnlinePaymentRequest> OnlinePaymentRequests => Set<OnlinePaymentRequest>();
     public DbSet<SchoolManagementSystem.Models.Entities.Fees.PaymentGatewayTransaction> PaymentGatewayTransactions => Set<SchoolManagementSystem.Models.Entities.Fees.PaymentGatewayTransaction>();
     public DbSet<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction> SchoolPayGatewayTransactions => Set<SchoolManagementSystem.Models.Entities.SchoolPay.PaymentGatewayTransaction>();
     public DbSet<AdmissionReceipt> AdmissionReceipts => Set<AdmissionReceipt>();
     public DbSet<LateFeeRule> LateFeeRules => Set<LateFeeRule>();
     public DbSet<FineRule> FineRules => Set<FineRule>();
+    public DbSet<BillingRun> BillingRuns => Set<BillingRun>();
     public DbSet<Notice> Notices => Set<Notice>();
     public DbSet<MessageThread> MessageThreads => Set<MessageThread>();
     public DbSet<MessageItem> MessageItems => Set<MessageItem>();
@@ -322,6 +326,7 @@ public class SchoolDbContext : DbContext
             .HasFilter("[IsDeleted] = 0 AND [EmployeeId] IS NOT NULL");
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();
+        modelBuilder.Entity<FeeType>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<FeeCategory>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<FeeStructure>().HasIndex(x => new { x.SchoolClassId, x.FeeCategoryId, x.FeeName }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
@@ -331,6 +336,7 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<FeeCollectionSummary>().HasIndex(x => new { x.CollectionDate, x.PaymentMethod }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<LateFeeRule>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<Book>().HasIndex(x => x.AccessionNo).IsUnique();
+        modelBuilder.Entity<Payment>().HasIndex(x => new { x.FeeInvoiceId, x.ReferenceNo }).IsUnique().HasFilter("[IsDeleted] = 0 AND [ReferenceNo] IS NOT NULL");
         modelBuilder.Entity<AdmissionFeeStructure>().HasIndex(x => x.SchoolClassId).IsUnique();
 
         // Employee Indexes
