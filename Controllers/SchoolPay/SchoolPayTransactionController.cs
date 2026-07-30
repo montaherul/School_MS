@@ -9,16 +9,13 @@ namespace SchoolManagementSystem.Controllers.SchoolPay;
 public class SchoolPayTransactionController : Controller
 {
     private readonly ISchoolPayService _schoolPayService;
-    private readonly IRefundService _refundService;
     private readonly ILogger<SchoolPayTransactionController> _logger;
 
     public SchoolPayTransactionController(
         ISchoolPayService schoolPayService,
-        IRefundService refundService,
         ILogger<SchoolPayTransactionController> logger)
     {
         _schoolPayService = schoolPayService;
-        _refundService = refundService;
         _logger = logger;
     }
 
@@ -34,21 +31,5 @@ public class SchoolPayTransactionController : Controller
         ViewBag.ProviderCode = providerCode;
 
         return View("~/Views/SchoolPay/Transaction/Index.cshtml", transactions);
-    }
-
-    [HttpGet("Refund/{transactionId:int}")]
-    public async Task<IActionResult> Refund(int transactionId, decimal amount, string? reason, CancellationToken ct)
-    {
-        var user = User.Identity?.Name ?? "System";
-        var result = await _refundService.ProcessRefundAsync(transactionId, amount, reason, user, ct);
-        if (result == null)
-        {
-            TempData["ErrorMessage"] = "Refund failed. The transaction may not be eligible for refund.";
-        }
-        else
-        {
-            TempData["SuccessMessage"] = $"Refund #{result.RefundReference} processed successfully.";
-        }
-        return RedirectToAction(nameof(Index));
     }
 }

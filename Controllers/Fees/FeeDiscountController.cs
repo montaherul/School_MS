@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeDiscountController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeDiscount";
     private readonly IFeeDiscountService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public FeeDiscountController(IFeeDiscountService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeDiscounts.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeDiscounts.Create")]
@@ -31,9 +32,9 @@ public class FeeDiscountController : Controller
 
     [HttpGet]
     [RequirePermission("FeeDiscounts.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, pageSize, search);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -46,9 +47,9 @@ public class FeeDiscountController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
         }
-        return View(new FeeDiscountViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeDiscountViewModel());
     }
 
     [HttpPost]
@@ -57,7 +58,7 @@ public class FeeDiscountController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeDiscounts.Update" : "FeeDiscounts.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Discount updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Discount created."; }
@@ -74,7 +75,7 @@ public class FeeDiscountController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Details.cshtml", new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpGet]
@@ -83,7 +84,7 @@ public class FeeDiscountController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Delete.cshtml", new FeeDiscountViewModel { Id = dto.Id, Name = dto.Name, Description = dto.Description, DiscountType = dto.DiscountType, Value = dto.Value, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpPost]

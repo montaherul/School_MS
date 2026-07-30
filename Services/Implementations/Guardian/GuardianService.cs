@@ -121,6 +121,12 @@ public class GuardianService : IGuardianService
             PresentAddress = dto.PresentAddress,
             PermanentAddress = dto.PermanentAddress,
             PortalAccessEnabled = dto.PortalAccessEnabled,
+            ReceiveEmailNotifications = dto.ReceiveEmailNotifications,
+            ReceiveSMSNotifications = dto.ReceiveSMSNotifications,
+            ReceiveEventNotifications = dto.ReceiveEventNotifications,
+            ReceiveFeeNotifications = dto.ReceiveFeeNotifications,
+            ReceiveExamNotifications = dto.ReceiveExamNotifications,
+            ReceiveAttendanceNotifications = dto.ReceiveAttendanceNotifications,
             Status = GuardianStatus.Active
         };
 
@@ -149,6 +155,12 @@ public class GuardianService : IGuardianService
         guardian.PresentAddress = dto.PresentAddress;
         guardian.PermanentAddress = dto.PermanentAddress;
         guardian.PortalAccessEnabled = dto.PortalAccessEnabled;
+        guardian.ReceiveEmailNotifications = dto.ReceiveEmailNotifications;
+        guardian.ReceiveSMSNotifications = dto.ReceiveSMSNotifications;
+        guardian.ReceiveEventNotifications = dto.ReceiveEventNotifications;
+        guardian.ReceiveFeeNotifications = dto.ReceiveFeeNotifications;
+        guardian.ReceiveExamNotifications = dto.ReceiveExamNotifications;
+        guardian.ReceiveAttendanceNotifications = dto.ReceiveAttendanceNotifications;
 
         _guardianRepo.Update(guardian);
         await _uow.SaveChangesAsync();

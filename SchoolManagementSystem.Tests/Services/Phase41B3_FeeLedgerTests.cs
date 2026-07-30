@@ -93,9 +93,9 @@ public class Phase41B3_FeeLedgerTests
     public async Task InvoiceCreation_CreatesLedger()
     {
         var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
-        var invoice = new FeeInvoice { Id = 1, StudentId = 10, InvoiceNo = "INV-001", TotalAmount = 5000 };
+        var dto = new FeeInvoiceUpsertDto { Id = 1, StudentId = 10, InvoiceNo = "INV-001", TotalAmount = 5000 };
 
-        await svc.CreateAsync(invoice, "test-user");
+        await svc.CreateAsync(dto, "test-user");
 
         Assert.Single(_ledgerEntries);
         var entry = _ledgerEntries[0];
@@ -329,9 +329,9 @@ public class Phase41B3_FeeLedgerTests
     public async Task InvoiceLedger_HasInvoiceNo()
     {
         var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
-        var invoice = new FeeInvoice { Id = 1, StudentId = 10, InvoiceNo = "INV-2024-001", TotalAmount = 7500 };
+        var dto = new FeeInvoiceUpsertDto { Id = 1, StudentId = 10, InvoiceNo = "INV-2024-001", TotalAmount = 7500 };
 
-        await svc.CreateAsync(invoice, "test-user");
+        await svc.CreateAsync(dto, "test-user");
 
         var entry = _ledgerEntries.Single();
         Assert.Contains("INV-2024-001", entry.Description);
@@ -365,7 +365,7 @@ public class Phase41B3_FeeLedgerTests
             .ReturnsAsync(invoice);
 
         var svc = new FeeInvoiceService(_uowMock.Object, _invoiceRepoMock.Object, _auditServiceMock);
-        await svc.CreateAsync(invoice, "test-user");
+        await svc.CreateAsync(new FeeInvoiceUpsertDto { Id = 1, StudentId = 10, InvoiceNo = "INV-001", TotalAmount = 5000 }, "test-user");
 
         var paymentSvc = new FeePaymentService(_uowMock.Object, _paymentRepoMock.Object, _auditServiceMock);
         var dto1 = new FeePaymentUpsertDto { FeeInvoiceId = 1, Amount = 3000, Method = 1, PaidAt = DateTime.UtcNow, ReferenceNo = "P1" };

@@ -5,7 +5,6 @@ using SchoolManagementSystem.Models.DTOs.Accounting;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Accounting;
 using SchoolManagementSystem.Filters;
-using SchoolManagementSystem.Repositories.Interfaces.Accounting;
 using SchoolManagementSystem.Services.Interfaces.Accounting;
 using System.Security.Claims;
 
@@ -18,15 +17,13 @@ public class JournalEntryController : Controller
     private readonly IJournalEntryService _service;
     private readonly IChartOfAccountService _accountService;
     private readonly IFinancialPeriodService _periodService;
-    private readonly IJournalEntryRepository _journalRepo;
 
     public JournalEntryController(IJournalEntryService service, IChartOfAccountService accountService,
-        IFinancialPeriodService periodService, IJournalEntryRepository journalRepo)
+        IFinancialPeriodService periodService)
     {
         _service = service;
         _accountService = accountService;
         _periodService = periodService;
-        _journalRepo = journalRepo;
     }
 
     [HttpGet("")]
@@ -71,7 +68,7 @@ public class JournalEntryController : Controller
             });
         }
 
-        var journalNo = await _journalRepo.GenerateJournalNoAsync(DateTime.Today, default);
+        var journalNo = await _service.GenerateJournalNoAsync(DateTime.Today, default);
         return View("~/Views/Accounting/JournalEntry/CreateEdit.cshtml", new JournalEntryViewModel { JournalNo = journalNo, EntryDate = DateTime.Today, EntryType = JournalEntryType.Manual });
     }
 

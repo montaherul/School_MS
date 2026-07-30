@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolManagementSystem.Models.DTOs.SchoolPay;
-using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Services.Interfaces.SchoolPay;
 using SchoolManagementSystem.Services.Interfaces.Audit;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
@@ -13,24 +10,18 @@ namespace SchoolManagementSystem.Controllers.SchoolPay;
 [Route("SchoolPay/Checkout")]
 public class SchoolPayCheckoutController : Controller
 {
-    private readonly ICheckoutService _checkoutService;
-    private readonly IProviderManagementService _providerManagement;
-    private readonly IFeeInvoiceService _feeInvoiceService;
+    private readonly IPaymentGatewayService _gatewayService;
     private readonly IOnlinePaymentService _onlinePaymentService;
     private readonly IAuditService _auditService;
     private readonly ILogger<SchoolPayCheckoutController> _logger;
 
     public SchoolPayCheckoutController(
-        ICheckoutService checkoutService,
-        IProviderManagementService providerManagement,
-        IFeeInvoiceService feeInvoiceService,
+        IPaymentGatewayService gatewayService,
         IOnlinePaymentService onlinePaymentService,
         IAuditService auditService,
         ILogger<SchoolPayCheckoutController> logger)
     {
-        _checkoutService = checkoutService;
-        _providerManagement = providerManagement;
-        _feeInvoiceService = feeInvoiceService;
+        _gatewayService = gatewayService;
         _onlinePaymentService = onlinePaymentService;
         _auditService = auditService;
         _logger = logger;
@@ -40,33 +31,15 @@ public class SchoolPayCheckoutController : Controller
     public async Task<IActionResult> Index(int invoiceId, int? studentId, CancellationToken ct)
     {
         var studentIdVal = studentId ?? 0;
-        var invoice = await _feeInvoiceService.GetByIdAsync(invoiceId, ct);
-        if (invoice == null) return NotFound("Invoice not found");
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
-        var dueAmount = invoice.TotalAmount - invoice.PaidAmount;
-        if (dueAmount <= 0)
-        {
-            TempData["InfoMessage"] = "This invoice is already paid.";
-            return RedirectToAction(nameof(Success));
-        }
-
-        var providers = await _checkoutService.GetAvailableProvidersAsync(dueAmount, ct: ct);
-        if (providers.Count == 0)
-        {
-            TempData["ErrorMessage"] = "No payment providers are currently available.";
-            return View("~/Views/SchoolPay/Checkout/Index.cshtml", new SchoolPayCheckoutModel());
-        }
-
-        var paymentMethods = await _checkoutService.GetAvailablePaymentMethodsAsync(ct);
-
-        var model = new SchoolPayCheckoutModel
+        var model = new SslCommerzCheckoutModel
         {
             InvoiceId = invoiceId,
-            InvoiceNo = invoice.InvoiceNo,
             StudentId = studentIdVal,
-            Amount = dueAmount,
-            Providers = providers,
-            PaymentMethods = paymentMethods
+            Amount = 0,
+            ReturnUrl = $"{baseUrl}/SchoolPay/Checkout/Success",
+            CancelUrl = $"{baseUrl}/SchoolPay/Checkout/Cancel"
         };
 
         return View("~/Views/SchoolPay/Checkout/Index.cshtml", model);
@@ -74,38 +47,41 @@ public class SchoolPayCheckoutController : Controller
 
     [HttpPost("Pay/{invoiceId:int}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Pay(int invoiceId, int studentId, string providerCode, string? methodCode, string? returnUrl, string? cancelUrl, CancellationToken ct)
+    public async Task<IActionResult> Pay(int invoiceId, int studentId, string? returnUrl, string? cancelUrl, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(providerCode))
+        try
         {
-            TempData["ErrorMessage"] = "Please select a payment method.";
-            return RedirectToAction(nameof(Index), new { invoiceId, studentId });
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            returnUrl ??= $"{baseUrl}/SchoolPay/Checkout/Success";
+            cancelUrl ??= $"{baseUrl}/SchoolPay/Checkout/Cancel";
+
+            var request = await _onlinePaymentService.CreateGatewayPendingAsync(studentId, invoiceId, "SslCommerz", ct);
+            var result = await _gatewayService.InitiatePaymentAsync(request.Id, null, ct);
+
+            if (result == null || result.status != "SUCCESS")
+            {
+                _logger.LogError("SslCommerz init failed for invoice {InvoiceId}: {Error}", invoiceId, result?.failedreason);
+                TempData["ErrorMessage"] = result?.failedreason ?? "Payment initialization failed.";
+                return RedirectToAction(nameof(Fail));
+            }
+
+            await _auditService.LogAsync(null, "SchoolPay", "CheckoutInit",
+                $"InvoiceId={invoiceId}, StudentId={studentId}, Provider=SslCommerz, Ref={result.tran_id}", ct);
+
+            if (!string.IsNullOrEmpty(result.GatewayPageURL))
+            {
+                return Redirect(result.GatewayPageURL);
+            }
+
+            TempData["SuccessMessage"] = "Payment initialized successfully.";
+            return RedirectToAction(nameof(Success));
         }
-
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        returnUrl ??= $"{baseUrl}/SchoolPay/Checkout/Success";
-        cancelUrl ??= $"{baseUrl}/SchoolPay/Checkout/Cancel";
-
-        var result = await _checkoutService.InitiateDirectCheckoutAsync(
-            invoiceId, studentId, providerCode, methodCode, returnUrl, cancelUrl, ct);
-
-        if (!result.Success)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError("Checkout failed for invoice {InvoiceId}: {Error}", invoiceId, result.ErrorMessage);
-            TempData["ErrorMessage"] = result.ErrorMessage ?? "Payment initialization failed. Please try again.";
+            _logger.LogError("Checkout failed for invoice {InvoiceId}: {Error}", invoiceId, ex.Message);
+            TempData["ErrorMessage"] = ex.Message;
             return RedirectToAction(nameof(Fail));
         }
-
-        await _auditService.LogAsync(null, "SchoolPay", "CheckoutInit",
-            $"InvoiceId={invoiceId}, StudentId={studentId}, Provider={providerCode}, Ref={result.TransactionReference}", ct);
-
-        if (!string.IsNullOrEmpty(result.CheckoutUrl))
-        {
-            return Redirect(result.CheckoutUrl);
-        }
-
-        TempData["SuccessMessage"] = "Payment initialized successfully.";
-        return RedirectToAction(nameof(Success));
     }
 
     [HttpGet("Success")]
@@ -129,6 +105,15 @@ public class SchoolPayCheckoutController : Controller
         SetPortalNavigation();
         ViewBag.Message = TempData["ErrorMessage"] as string ?? "Payment failed. Please try again.";
         return View("~/Views/SchoolPay/Checkout/Fail.cshtml");
+    }
+
+    public class SslCommerzCheckoutModel
+    {
+        public int InvoiceId { get; set; }
+        public int StudentId { get; set; }
+        public decimal Amount { get; set; }
+        public string ReturnUrl { get; set; } = string.Empty;
+        public string CancelUrl { get; set; } = string.Empty;
     }
 
     private void SetPortalNavigation()

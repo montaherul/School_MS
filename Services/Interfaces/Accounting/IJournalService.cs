@@ -12,4 +12,5 @@ public interface IJournalEntryService
     Task UpdateAsync(JournalEntryUpsertDto dto, string updatedBy, CancellationToken ct = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
     Task PostAsync(int id, string postedBy, CancellationToken ct = default);
+    Task<string> GenerateJournalNoAsync(DateTime entryDate, CancellationToken ct = default);
 }

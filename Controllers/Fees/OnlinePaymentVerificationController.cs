@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -19,10 +20,28 @@ public class OnlinePaymentVerificationController : Controller
 
     [HttpGet]
     [RequirePermission("OnlinePayments.View")]
-    public async Task<IActionResult> Index(CancellationToken ct)
+    public IActionResult Index()
     {
-        var requests = await _onlinePaymentService.GetPendingAsync(ct);
-        return View("~/Views/Fees/OnlinePaymentVerification/Index.cshtml", requests);
+        return View("~/Views/Fees/OnlinePaymentVerification/Index.cshtml");
+    }
+
+    [HttpGet("All")]
+    [RequirePermission("OnlinePayments.View")]
+    public IActionResult AllTransactions()
+    {
+        return View("~/Views/Fees/OnlinePaymentVerification/AllTransactions.cshtml");
+    }
+
+    [HttpGet("List")]
+    [RequirePermission("OnlinePayments.View")]
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? statusFilter = null)
+    {
+        var result = await _onlinePaymentService.GetPagedAsync(page, pageSize, search, statusFilter);
+        return Json(new
+        {
+            data = result.Items,
+            last_page = Math.Ceiling((double)result.TotalItems / result.PageSize)
+        });
     }
 
     [HttpPost("Verify/{id:int}")]

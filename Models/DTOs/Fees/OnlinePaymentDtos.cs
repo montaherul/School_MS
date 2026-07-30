@@ -20,6 +20,27 @@ public class OnlinePaymentRequestDto
     public DateTime? VerifiedAt { get; set; }
 }
 
+public class OnlinePaymentRequestListItemDto
+{
+    public int Id { get; set; }
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int FeeInvoiceId { get; set; }
+    public string InvoiceNo { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public int PaymentMethod { get; set; }
+    public string? ReferenceNo { get; set; }
+    public int Status { get; set; }
+    public string? Remarks { get; set; }
+    public string? AdminNotes { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? VerifiedAt { get; set; }
+    public string? VerifiedBy { get; set; }
+    public DateTime? RejectedAt { get; set; }
+    public string? RejectedBy { get; set; }
+    public int TotalRecords { get; set; }
+}
+
 public class OnlinePaymentSubmitDto
 {
     public int FeeInvoiceId { get; set; }

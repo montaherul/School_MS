@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class ScholarshipController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/Scholarship";
     private readonly IScholarshipService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public ScholarshipController(IScholarshipService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("Scholarships.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("Scholarships.Create")]
@@ -31,9 +32,9 @@ public class ScholarshipController : Controller
 
     [HttpGet]
     [RequirePermission("Scholarships.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, pageSize, search);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -47,7 +48,7 @@ public class ScholarshipController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new ScholarshipViewModel
+            return View($"{ViewPath}/CreateEdit.cshtml", new ScholarshipViewModel
             {
                 Id = dto.Id,
                 Name = dto.Name,
@@ -62,7 +63,7 @@ public class ScholarshipController : Controller
                 ValidTo = dto.ValidTo
             });
         }
-        return View(new ScholarshipViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new ScholarshipViewModel());
     }
 
     [HttpPost]
@@ -71,7 +72,7 @@ public class ScholarshipController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "Scholarships.Update" : "Scholarships.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Scholarship updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Scholarship created."; }
@@ -88,7 +89,7 @@ public class ScholarshipController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new ScholarshipViewModel
+        return View($"{ViewPath}/Details.cshtml", new ScholarshipViewModel
         {
             Id = dto.Id,
             Name = dto.Name,
@@ -110,7 +111,7 @@ public class ScholarshipController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new ScholarshipViewModel
+        return View($"{ViewPath}/Delete.cshtml", new ScholarshipViewModel
         {
             Id = dto.Id,
             Name = dto.Name,

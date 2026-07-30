@@ -306,6 +306,25 @@ public class EmailService : IEmailService
         await SendWorkflowEmailAsync("WelcomeEmail", toEmail, $"Welcome to {schoolName}!", htmlBody, cancellationToken);
     }
 
+    public async Task SendPaymentReceiptAsync(string toEmail, string studentName, string receiptNo, decimal amount, DateTime paidAt, string paymentMethod, string schoolName, CancellationToken cancellationToken = default)
+    {
+        var htmlBody = $@"
+<div style=""max-width:600px;margin:0 auto;font-family:Arial,sans-serif;"">
+    <h2 style=""color:#1a56db;"">Payment Receipt</h2>
+    <p>Dear <strong>{studentName}</strong>,</p>
+    <p>Your payment has been received successfully.</p>
+    <table style=""width:100%;border-collapse:collapse;margin:20px 0;"">
+        <tr><td style=""padding:8px 12px;background:#f3f4f6;font-weight:bold;"">Receipt No</td><td style=""padding:8px 12px;"">{receiptNo}</td></tr>
+        <tr><td style=""padding:8px 12px;background:#f3f4f6;font-weight:bold;"">Amount</td><td style=""padding:8px 12px;"">${amount:N2}</td></tr>
+        <tr><td style=""padding:8px 12px;background:#f3f4f6;font-weight:bold;"">Date</td><td style=""padding:8px 12px;"">{paidAt:dd-MMM-yyyy HH:mm}</td></tr>
+        <tr><td style=""padding:8px 12px;background:#f3f4f6;font-weight:bold;"">Payment Method</td><td style=""padding:8px 12px;"">{paymentMethod}</td></tr>
+    </table>
+    <hr style=""border:0;border-top:1px solid #eee;margin:20px 0"" />
+    <p>Regards,<br/>{schoolName}</p>
+</div>";
+        await SendWorkflowEmailAsync("PaymentReceipt", toEmail, $"Payment Receipt - {receiptNo}", htmlBody, cancellationToken);
+    }
+
     private async Task<string> ResolveSchoolNameAsync()
     {
         try

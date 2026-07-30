@@ -1,4 +1,3 @@
-@model List<SchoolManagementSystem.Models.DTOs.Fees.OnlinePaymentRequestDto>
 @{
     ViewData["Title"] = "Online Payment Verification";
 }
@@ -14,77 +13,109 @@
                 <p class="adm-header__sub">Verify pending online payment requests</p>
             </div>
         </div>
-        <a asp-controller="FeeDashboard" asp-action="Index" class="adm-btn adm-btn--ghost adm-btn--sm">
-            <i class="bi bi-arrow-left me-1"></i>Fee Dashboard
-        </a>
+        <div class="adm-header__right ws-flex ws-gap-2">
+            <a asp-action="AllTransactions" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <i class="bi bi-credit-card ws-me-1"></i>All Transactions
+            </a>
+            <a asp-controller="FeeDashboard" asp-action="Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <i class="bi bi-arrow-left ws-me-1"></i>Fee Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Search by student, invoice, reference...">
+                </div>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Actions</label>
+                <div class="ws-flex ws-gap-2">
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" id="refreshBtn"><i class="bi bi-arrow-clockwise ws-me-1"></i>Refresh</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="adm-table-card">
         <div class="adm-table-card__body">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-            }
-
-            @if (Model != null && Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student</th>
-                                <th>Invoice</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Reference</th>
-                                <th>Submitted</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (var i = 0; i < Model.Count; i++)
-                            {
-                                var req = Model[i];
-                                <tr>
-                                    <td>@(i + 1)</td>
-                                    <td>@req.StudentName</td>
-                                    <td>@req.InvoiceNo</td>
-                                    <td>৳@req.Amount.ToString("N2")</td>
-                                    <td>@req.PaymentMethod</td>
-                                    <td>@(req.ReferenceNo ?? "N/A")</td>
-                                    <td>@req.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
-                                    <td>
-                                        <form asp-action="Verify" asp-route-id="@req.Id" method="post" style="display:inline" class="verify-form">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="adm-btn adm-btn--success adm-btn--sm" onclick="return confirm('Verify this payment?')">
-                                                <i class="bi bi-check-lg"></i> Verify
-                                            </button>
-                                        </form>
-                                        <form asp-action="Reject" asp-route-id="@req.Id" method="post" style="display:inline" class="reject-form">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm" onclick="return confirm('Reject this payment?')">
-                                                <i class="bi bi-x-lg"></i> Reject
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <i class="bi bi-check-circle text-success" style="font-size:3rem;"></i>
-                    <p class="text-muted mt-3">No pending payment requests.</p>
-                </div>
-            }
+            <div id="payment-table"></div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        var pendingTable = new Tabulator("#payment-table", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15, 25, 50, 100],
+            ajaxURL: '@Url.Action("GetList", "OnlinePaymentVerification")',
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxParams: function() {
+                return { search: document.getElementById('searchInput').value, statusFilter: 1 };
+            },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data || [], last_page: response.last_page || 1 };
+            },
+            placeholder: "<div class='dash-empty'>No pending payment requests.</div>",
+            columns: [
+                { title: "#", field: "id", width: 60, hozAlign: "center", headerSort: false },
+                { title: "Student", field: "studentName", widthGrow: 2,
+                    formatter: function(cell) {
+                        return '<span class="ws-fw-600">' + cell.getValue() + '</span>';
+                    }
+                },
+                { title: "Invoice", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Amount", field: "amount", width: 130, hozAlign: "right",
+                    formatter: function(cell) {
+                        return '৳' + parseFloat(cell.getValue()).toFixed(2);
+                    }
+                },
+                { title: "Method", field: "paymentMethod", width: 100, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = parseInt(cell.getValue());
+                        return v === 1 ? 'Cash' : v === 2 ? 'Bank' : v === 3 ? 'Online' : v === 4 ? 'Cheque' : 'Other';
+                    }
+                },
+                { title: "Reference", field: "referenceNo", width: 140 },
+                { title: "Submitted", field: "createdAt", width: 150, hozAlign: "center",
+                    formatter: function(cell) {
+                        var d = new Date(cell.getValue());
+                        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
+                },
+                { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 180,
+                    formatter: function(cell) {
+                        var id = cell.getValue();
+                        return '<div class="ws-flex ws-gap-1 ws-justify-center">'
+                            + '<form method="post" action="@Url.Action("Verify", "OnlinePaymentVerification")/' + id + '" style="display:inline" class="verify-form">'
+                            + '@Html.AntiForgeryToken()'
+                            + '<button type="submit" class="adm-btn adm-btn--success adm-btn--sm" onclick="return confirm(\'Verify this payment?\')"><i class="bi bi-check-lg"></i> Verify</button>'
+                            + '</form>'
+                            + '<form method="post" action="@Url.Action("Reject", "OnlinePaymentVerification")/' + id + '" style="display:inline" class="reject-form">'
+                            + '@Html.AntiForgeryToken()'
+                            + '<button type="submit" class="adm-btn adm-btn--danger adm-btn--sm" onclick="return confirm(\'Reject this payment?\')"><i class="bi bi-x-lg"></i> Reject</button>'
+                            + '</form>'
+                            + '</div>';
+                    }
+                }
+            ]
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === "Enter") pendingTable.setData();
+        });
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            pendingTable.setData();
+        });
+    </script>
+}

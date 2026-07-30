@@ -37,40 +37,6 @@ namespace SchoolManagementSystem.Migrations
                 type: "datetime2",
                 nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "OnboardedAt",
-                table: "EmployeeInvitations",
-                type: "datetime2",
-                nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "CreatedEmployeeId",
-                table: "EmployeeInvitations",
-                type: "int",
-                nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsUsed",
-                table: "EmployeeInvitations",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsApproved",
-                table: "EmployeeInvitations",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<string>(
-                name: "InvitationStatus",
-                table: "EmployeeInvitations",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: false,
-                defaultValue: "Started");
-
             migrationBuilder.CreateIndex(
                 name: "IX_EmployeeInvitations_InvitationCode",
                 table: "EmployeeInvitations",
@@ -109,26 +75,6 @@ namespace SchoolManagementSystem.Migrations
 
             migrationBuilder.DropColumn(
                 name: "SentAt",
-                table: "EmployeeInvitations");
-
-            migrationBuilder.DropColumn(
-                name: "OnboardedAt",
-                table: "EmployeeInvitations");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedEmployeeId",
-                table: "EmployeeInvitations");
-
-            migrationBuilder.DropColumn(
-                name: "IsUsed",
-                table: "EmployeeInvitations");
-
-            migrationBuilder.DropColumn(
-                name: "IsApproved",
-                table: "EmployeeInvitations");
-
-            migrationBuilder.DropColumn(
-                name: "InvitationStatus",
                 table: "EmployeeInvitations");
         }
     }

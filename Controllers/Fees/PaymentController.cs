@@ -8,12 +8,29 @@ namespace SchoolManagementSystem.Controllers.Fees;
 
 public class PaymentController : GenericCrudController<Payment>
 {
+    private const string ViewPath = "~/Views/Fee/Payment";
     public PaymentController(IPaymentService service) : base(service, "Payment") { }
 
     [RequirePermission("Payments.Read")]
-    public override Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
+    public override async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
     {
-        return base.Index(page, pageSize, search, cancellationToken);
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 5, 100);
+
+        var result = await _service.GetPagedAsync(page, pageSize, search, User, cancellationToken);
+
+        var model = new SchoolManagementSystem.Models.ViewModels.Shared.CrudListViewModel
+        {
+            ModuleName = _moduleName,
+            ControllerName = "Payment",
+            Columns = new System.Collections.Generic.List<string>(),
+            Rows = result.Items.Select(x => new System.Collections.Generic.Dictionary<string, string?> { ["Id"] = x.Id.ToString() }).ToList(),
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = result.TotalItems,
+            Search = search
+        };
+        return View($"{ViewPath}/Index.cshtml", model);
     }
 
     [RequirePermission("Payments.Create")]
@@ -28,37 +45,48 @@ public class PaymentController : GenericCrudController<Payment>
         return base.Edit(id, cancellationToken);
     }
 
-    public override Task<IActionResult> CreateEdit(int? id = null, CancellationToken cancellationToken = default)
+    public override async Task<IActionResult> CreateEdit(int? id = null, CancellationToken cancellationToken = default)
     {
         if (!Can(id is > 0 ? "Payments.Update" : "Payments.Create"))
         {
-            return Task.FromResult<IActionResult>(Forbid());
+            return Forbid();
         }
 
-        return base.CreateEdit(id, cancellationToken);
+        var entity = id is > 0
+            ? await _service.GetByIdAsync(id.Value, cancellationToken)
+            : new Payment();
+
+        if (entity is null)
+        {
+            return NotFound();
+        }
+
+        return View($"{ViewPath}/CreateEdit.cshtml", entity);
     }
 
-    public override Task<IActionResult> Save(IFormCollection form, CancellationToken cancellationToken = default)
+    public override async Task<IActionResult> Save(IFormCollection form, CancellationToken cancellationToken = default)
     {
         var isUpdate = int.TryParse(form["Id"], out var id) && id > 0;
         if (!Can(isUpdate ? "Payments.Update" : "Payments.Create"))
         {
-            return Task.FromResult<IActionResult>(Forbid());
+            return Forbid();
         }
 
-        return base.Save(form, cancellationToken);
+        return await base.Save(form, cancellationToken);
     }
 
     [RequirePermission("Payments.Read")]
-    public override Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
+    public override async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
-        return base.Details(id, cancellationToken);
+        var entity = await _service.GetByIdAsync(id, cancellationToken);
+        return entity is null ? NotFound() : View($"{ViewPath}/Details.cshtml", entity);
     }
 
     [RequirePermission("Payments.Delete")]
-    public override Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    public override async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
-        return base.Delete(id, cancellationToken);
+        var entity = await _service.GetByIdAsync(id, cancellationToken);
+        return entity is null ? NotFound() : View($"{ViewPath}/Delete.cshtml", entity);
     }
 
     [RequirePermission("Payments.Delete")]

@@ -13,17 +13,15 @@ namespace SchoolManagementSystem.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData(
-                table: "Permissions",
-                columns: new[] { "Id", "Action", "CanCreate", "CanDelete", "CanRead", "CanUpdate", "Code", "CreatedAt", "CreatedBy", "IsDeleted", "Module", "ModuleName", "UpdatedAt", "UpdatedBy" },
-                values: new object[,]
-                {
-                    { 599, "Issue", false, false, true, true, "Library.Issue", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Library", "Library", null, null },
-                    { 600, "Return", false, false, true, true, "Library.Return", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Library", "Library", null, null },
-                    { 601, "View", false, false, true, false, "Laboratory.View", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Laboratory", "Laboratory", null, null },
-                    { 602, "Manage", true, true, true, true, "Laboratory.Manage", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Laboratory", "Laboratory", null, null }
-                });
-
+migrationBuilder.Sql(@"
+SET IDENTITY_INSERT [Permissions] ON;
+INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy]) VALUES
+(599, 'Issue', 0, 0, 1, 1, 'Library.Issue', '2026-01-01', 'system', 0, 'Library', 'Library', NULL, NULL),
+(600, 'Return', 0, 0, 1, 1, 'Library.Return', '2026-01-01', 'system', 0, 'Library', 'Library', NULL, NULL),
+(601, 'View', 0, 0, 1, 0, 'Laboratory.View', '2026-01-01', 'system', 0, 'Laboratory', 'Laboratory', NULL, NULL),
+(602, 'Manage', 1, 1, 1, 1, 'Laboratory.Manage', '2026-01-01', 'system', 0, 'Laboratory', 'Laboratory', NULL, NULL);
+SET IDENTITY_INSERT [Permissions] OFF;
+");
             migrationBuilder.InsertData(
                 table: "RolePermissions",
                 columns: new[] { "PermissionId", "RoleId" },

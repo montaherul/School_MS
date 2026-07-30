@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class StudentFeeAssignmentController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/StudentFeeAssignment";
     private readonly IStudentFeeAssignmentService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public StudentFeeAssignmentController(IStudentFeeAssignmentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("StudentFeeAssignments.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("StudentFeeAssignments.Create")]
@@ -31,10 +32,10 @@ public class StudentFeeAssignmentController : Controller
 
     [HttpGet]
     [RequirePermission("StudentFeeAssignments.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? studentId = null, int? feeStructureId = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? studentId = null, int? feeStructureId = null)
     {
         if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
-        var result = await _service.GetPagedAsync(page, size, search, studentId, feeStructureId);
+        var result = await _service.GetPagedAsync(page, pageSize, search, studentId, feeStructureId);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -48,9 +49,9 @@ public class StudentFeeAssignmentController : Controller
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
             if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-            return View(new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+            return View($"{ViewPath}/CreateEdit.cshtml", new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
         }
-        return View(new StudentFeeAssignmentViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new StudentFeeAssignmentViewModel());
     }
 
     [HttpPost]
@@ -59,7 +60,7 @@ public class StudentFeeAssignmentController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "StudentFeeAssignments.Update" : "StudentFeeAssignments.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Assignment updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Assignment created."; }
@@ -77,7 +78,7 @@ public class StudentFeeAssignmentController : Controller
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
         if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-        return View(new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Details.cshtml", new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpGet]
@@ -87,7 +88,7 @@ public class StudentFeeAssignmentController : Controller
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
         if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-        return View(new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Delete.cshtml", new StudentFeeAssignmentViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeStructureId = dto.FeeStructureId, AcademicYearId = dto.AcademicYearId, CustomAmount = dto.CustomAmount, IsActive = dto.IsActive, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpPost]

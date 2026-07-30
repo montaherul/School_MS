@@ -229,6 +229,8 @@ public class SchoolDbContext : DbContext
     public DbSet<GeneralLedgerEntry> GeneralLedgerEntries => Set<GeneralLedgerEntry>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<FinancialPeriod> FinancialPeriods => Set<FinancialPeriod>();
+    public DbSet<FinanceSetting> FinanceSettings => Set<FinanceSetting>();
+    public DbSet<AccountMapping> AccountMappings => Set<AccountMapping>();
 
     // Phase 5: Dynamic Result Policy & Promotion Engine DbSets
     public DbSet<ResultPolicy> ResultPolicies => Set<ResultPolicy>();
@@ -935,6 +937,17 @@ modelBuilder.Entity<AdmitCard>()
             entity.HasIndex(e => e.Name).IsUnique().HasFilter("[IsDeleted] = 0");
         });
 
+        modelBuilder.Entity<FinanceSetting>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique().HasFilter("[IsDeleted] = 0");
+            entity.Property(e => e.Value).HasMaxLength(2000);
+        });
+
+        modelBuilder.Entity<AccountMapping>(entity =>
+        {
+            entity.HasIndex(e => e.TransactionType).IsUnique().HasFilter("[IsDeleted] = 0");
+        });
+
         modelBuilder.Entity<OnlinePaymentRequest>(entity =>
         {
             entity.HasIndex(e => e.AdmissionApplicationId).HasFilter("[AdmissionApplicationId] IS NOT NULL");
@@ -1201,7 +1214,7 @@ modelBuilder.Entity<AdmitCard>()
             entity.Property(e => e.JsonData).IsRequired();
         });
 
-DbInitializer.Seed(modelBuilder);
+        DbInitializer.Seed(modelBuilder);
     }
 }
  

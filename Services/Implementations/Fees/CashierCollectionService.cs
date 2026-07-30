@@ -127,7 +127,8 @@ public class CashierCollectionService : ICashierCollectionService
                     Method = (PaymentMethod)payment.Method,
                     ReferenceNo = payment.ReferenceNo,
                     PaidAt = DateTime.UtcNow,
-                    Remarks = payment.Remarks
+                    Remarks = payment.Remarks,
+                    PostingStatus = PostingStatus.Pending
                 };
                 await _uow.Repository<Payment>().AddAsync(pay, ct);
                 await _uow.SaveChangesAsync(ct);

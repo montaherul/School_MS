@@ -1,13 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
-using SchoolManagementSystem.Models.Entities.Fees;
-using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -15,41 +10,28 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class OtherChargeBillingController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/OtherChargeBilling";
+    private readonly IBillingService _billing;
     private readonly IFeeInvoiceService _invoiceService;
-    private readonly IFeeInvoiceItemService _itemService;
     private readonly IFeeSecurityService _security;
-    private readonly IUnitOfWork _uow;
-    private readonly IAuditLogService _audit;
-    private const string OtherCategoryName = "Other Charges";
+    private const string CategoryName = "Other Charges";
 
-    public OtherChargeBillingController(
-        IFeeInvoiceService invoiceService,
-        IFeeInvoiceItemService itemService,
-        IFeeSecurityService security,
-        IUnitOfWork uow,
-        IAuditLogService audit)
+    public OtherChargeBillingController(IBillingService billing, IFeeInvoiceService invoiceService, IFeeSecurityService security)
     {
+        _billing = billing;
         _invoiceService = invoiceService;
-        _itemService = itemService;
         _security = security;
-        _uow = uow;
-        _audit = audit;
     }
 
     [RequirePermission("OtherChargeBilling.Read")]
-    public IActionResult Index() => View();
+    public IActionResult Index() => View($"{ViewPath}/Index.cshtml");
 
     [HttpGet]
     [RequirePermission("OtherChargeBilling.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var cat = await _uow.Repository<FeeCategory>().FirstOrDefaultAsync(x => x.Name == OtherCategoryName && !x.IsDeleted);
-        var result = await _invoiceService.GetPagedAsync(page, size, search);
-        var invoiceIds = result.Items.Select(x => x.Id).ToList();
-        var items = await _uow.Repository<FeeInvoiceItem>().ListAsync(i =>
-            invoiceIds.Contains(i.FeeInvoiceId) && !i.IsDeleted);
-        var catItems = items.Where(i => i.FeeCategoryId == cat?.Id).Select(i => i.FeeInvoiceId).Distinct().ToHashSet();
-        var filtered = result.Items.Where(x => catItems.Contains(x.Id)).ToList();
+        var result = await _invoiceService.GetPagedAsync(page, pageSize, search);
+        var filtered = result.Items.Where(x => x.Remarks?.StartsWith("Other Charges billing") == true).ToList();
         return Json(new { data = filtered, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -57,93 +39,38 @@ public class OtherChargeBillingController : Controller
     [RequirePermission("OtherChargeBilling.Create")]
     public async Task<IActionResult> Create()
     {
-        var cat = await _uow.Repository<FeeCategory>().FirstOrDefaultAsync(x => x.Name == OtherCategoryName && !x.IsDeleted);
-        ViewBag.CategoryId = cat?.Id;
-        var types = await _uow.Repository<FeeType>().ListAsync(x =>
-            cat != null && x.Name != null && !x.IsDeleted && x.IsActive);
-        ViewBag.FeeTypes = types.OrderBy(t => t.DisplayOrder).ToList();
-        return View();
+        var catInfo = await _billing.GetCategoryInfoAsync(CategoryName);
+        ViewBag.CategoryId = catInfo.CategoryId;
+        ViewBag.FeeTypes = catInfo.FeeTypes;
+        return View($"{ViewPath}/Create.cshtml");
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequirePermission("OtherChargeBilling.Create")]
-    public async Task<IActionResult> Create(int studentId, List<OtherChargeItemDto> items, DateOnly dueDate, string? remarks)
+    public async Task<IActionResult> Create(int studentId, List<BillingItemDto> items, DateOnly dueDate, string? remarks)
     {
         if (!_security.Can(User, "OtherChargeBilling.Create"))
             return Forbid();
 
-        if (studentId <= 0 || items == null || items.Count == 0 || !items.Any(i => i.Amount > 0))
-        {
-            TempData["ErrorMessage"] = "Select a student and at least one charge with a valid amount.";
-            return RedirectToAction(nameof(Create));
-        }
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
-        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
-            .FirstOrDefaultAsync(x => x.Id == studentId && !x.IsDeleted);
-        if (student == null) return NotFound();
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var invoiceNo = $"INV-OTH-{today:yyyyMMdd}-{studentId:D6}-{DateTime.UtcNow:HHmmss}";
-        var cat = await _uow.Repository<FeeCategory>().FirstOrDefaultAsync(x => x.Name == OtherCategoryName && !x.IsDeleted);
-        var total = items.Where(i => i.Amount > 0).Sum(i => i.Amount);
-
-        var invoice = new FeeInvoice
+        try
         {
-            InvoiceNo = invoiceNo,
-            StudentId = studentId,
-            DueDate = dueDate,
-            TotalAmount = total,
-            PaidAmount = 0,
-            DiscountAmount = 0,
-            LateFee = 0,
-            Status = PaymentStatus.Issued,
-            Remarks = remarks ?? $"Other charges — {items.Count(i => i.Amount > 0)} item(s)"
-        };
-
-        var invoiceId = await _invoiceService.CreateAsync(invoice, userId);
-
-        foreach (var item in items.Where(i => i.Amount > 0))
-        {
-            var itemDto = new FeeInvoiceItemUpsertDto
-            {
-                FeeInvoiceId = invoiceId,
-                FeeCategoryId = cat?.Id,
-                Description = item.Description,
-                Amount = item.Amount,
-                DiscountAmount = 0,
-                NetAmount = item.Amount
-            };
-            await _itemService.CreateAsync(itemDto, userId);
+            var invoiceNo = await _billing.CreateBillingInvoiceAsync(studentId, CategoryName, items, dueDate, remarks, userId);
+            TempData["SuccessMessage"] = $"Other charge invoice {invoiceNo} created successfully.";
         }
-
-        await _audit.LogAsync("OtherChargeBilling", "Create",
-            $"Other charge invoice {invoiceNo} created for student {studentId}, total {total}", userId);
-
-        TempData["SuccessMessage"] = $"Other charge invoice {invoiceNo} created successfully.";
-        return RedirectToAction(nameof(Index));
+        catch (InvalidOperationException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+        return RedirectToAction(nameof(Create));
     }
 
     [HttpGet]
     [RequirePermission("OtherChargeBilling.Read")]
     public async Task<IActionResult> GetStudents(string? term)
     {
-        var query = _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
-            .Where(x => !x.IsDeleted);
-        if (!string.IsNullOrWhiteSpace(term))
-        {
-            var lower = term.ToLower();
-            query = query.Where(x => x.FullName.ToLower().Contains(lower)
-                || x.StudentNo.ToLower().Contains(lower));
-        }
-        var list = await query.Take(20).Select(x => new { x.Id, Name = x.FullName, StudentNo = x.StudentNo }).ToListAsync();
-        return Json(list);
+        var students = await _billing.SearchStudentsAsync(term);
+        return Json(students);
     }
-}
-
-public class OtherChargeItemDto
-{
-    public string Description { get; set; } = string.Empty;
-    public decimal Amount { get; set; }
 }

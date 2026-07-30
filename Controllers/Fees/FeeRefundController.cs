@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -14,13 +15,15 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeRefundController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeRefund";
     private readonly IFeeRefundService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
-    public FeeRefundController(IFeeRefundService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
+    private readonly IFinancePostingService _postingService;
+    public FeeRefundController(IFeeRefundService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; }
 
     [RequirePermission("FeeRefunds.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeRefunds.Create")]
@@ -32,9 +35,9 @@ public class FeeRefundController : Controller
 
     [HttpGet]
     [RequirePermission("FeeRefunds.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, pageSize, search);
         if (_security.HasStudentRole(User))
         {
             var myId = _security.GetCurrentStudentId(User);
@@ -55,9 +58,9 @@ public class FeeRefundController : Controller
             if (dto == null) return NotFound();
             if (_security.HasStudentRole(User) && !await _security.CanAccessRefundAsync(User, id.Value))
                 return Forbid();
-            return View(new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
         }
-        return View(new FeeRefundViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeRefundViewModel());
     }
 
     [HttpPost]
@@ -66,7 +69,7 @@ public class FeeRefundController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeRefunds.Update" : "FeeRefunds.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Refund updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Refund recorded."; }
@@ -85,7 +88,7 @@ public class FeeRefundController : Controller
         if (dto == null) return NotFound();
         if (_security.HasStudentRole(User) && !await _security.CanAccessRefundAsync(User, id))
             return Forbid();
-        return View(new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
+        return View($"{ViewPath}/Details.cshtml", new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
     }
 
     [HttpGet]
@@ -96,7 +99,7 @@ public class FeeRefundController : Controller
         if (dto == null) return NotFound();
         if (_security.HasStudentRole(User) && !await _security.CanAccessRefundAsync(User, id))
             return Forbid();
-        return View(new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
+        return View($"{ViewPath}/Delete.cshtml", new FeeRefundViewModel { Id = dto.Id, FeePaymentId = dto.FeePaymentId, RefundAmount = dto.RefundAmount, RefundMethod = dto.RefundMethod, ReferenceNo = dto.ReferenceNo, Reason = dto.Reason, IsApproved = dto.IsApproved, RefundDate = dto.RefundDate });
     }
 
     [HttpPost]
@@ -106,7 +109,8 @@ public class FeeRefundController : Controller
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         await _service.ApproveAsync(id, userId);
-        TempData["SuccessMessage"] = "Refund approved.";
+        await _postingService.PostFeeRefundAsync(id, userId);
+        TempData["SuccessMessage"] = "Refund approved and posted to General Ledger.";
         return RedirectToAction(nameof(Index));
     }
 

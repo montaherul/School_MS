@@ -1,27 +1,24 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
-using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Fees;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
 [Authorize]
 public class FeeReportController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeReport";
     private readonly IFeeReportService _service;
     private readonly IFeeSecurityService _security;
-    private readonly IUnitOfWork _unitOfWork;
-    public FeeReportController(IFeeReportService service, IFeeSecurityService security, IUnitOfWork unitOfWork) { _service = service; _security = security; _unitOfWork = unitOfWork; }
+    public FeeReportController(IFeeReportService service, IFeeSecurityService security) { _service = service; _security = security; }
 
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult Index() => View();
+    public IActionResult Index() => View($"{ViewPath}/Index.cshtml");
 
     // ── Student Ledger ──────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult StudentLedgerView() => View();
+    public IActionResult StudentLedgerView() => View($"{ViewPath}/StudentLedgerView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> StudentLedger(int studentId, int page = 1, int size = 50)
@@ -46,7 +43,7 @@ public class FeeReportController : Controller
 
     // ── Daily Collection ────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult DailyCollectionView() => View();
+    public IActionResult DailyCollectionView() => View($"{ViewPath}/DailyCollectionView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> DailyCollection(DateOnly date, int page = 1, int size = 50)
@@ -74,7 +71,7 @@ public class FeeReportController : Controller
 
     // ── Monthly Collection ──────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult MonthlyCollectionView() => View();
+    public IActionResult MonthlyCollectionView() => View($"{ViewPath}/MonthlyCollectionView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> MonthlyCollection(int year, int page = 1, int size = 50)
@@ -102,7 +99,7 @@ public class FeeReportController : Controller
 
     // ── Due Report ──────────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult DueView() => View();
+    public IActionResult DueView() => View($"{ViewPath}/DueView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> Due(int page = 1, int size = 50, int classId = 0)
@@ -127,7 +124,7 @@ public class FeeReportController : Controller
 
     // ── Discount Report ─────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult DiscountView() => View();
+    public IActionResult DiscountView() => View($"{ViewPath}/DiscountView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> Discount(int page = 1, int size = 50)
@@ -152,7 +149,7 @@ public class FeeReportController : Controller
 
     // ── Waiver Report ───────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult WaiverView() => View();
+    public IActionResult WaiverView() => View($"{ViewPath}/WaiverView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> Waiver(int page = 1, int size = 50)
@@ -177,7 +174,7 @@ public class FeeReportController : Controller
 
     // ── Refund Report ───────────────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult RefundView() => View();
+    public IActionResult RefundView() => View($"{ViewPath}/RefundView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> Refund(int page = 1, int size = 50)
@@ -202,7 +199,7 @@ public class FeeReportController : Controller
 
     // ── Class Collection Summary ────────────────────────────────────
     [RequirePermission("FinanceReports.Read")]
-    public IActionResult ClassSummaryView() => View();
+    public IActionResult ClassSummaryView() => View($"{ViewPath}/ClassSummaryView.cshtml");
 
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> ClassSummary(int academicYearId = 0, int page = 1, int size = 50)
@@ -229,12 +226,8 @@ public class FeeReportController : Controller
     [RequirePermission("FinanceReports.Read")]
     public async Task<IActionResult> CashBookView()
     {
-        var years = await _unitOfWork.Repository<AcademicYear>().Query().AsNoTracking()
-            .Where(y => !y.IsDeleted)
-            .OrderByDescending(y => y.StartsOn)
-            .ToListAsync();
-        ViewBag.AcademicYears = years;
-        return View();
+        ViewBag.AcademicYears = await _service.GetAcademicYearOptionsAsync();
+        return View($"{ViewPath}/CashBookView.cshtml");
     }
 
     [RequirePermission("FinanceReports.Read")]

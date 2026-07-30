@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FineRuleController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FineRule";
     private readonly IFineRuleService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public FineRuleController(IFineRuleService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FineRules.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FineRules.Create")]
@@ -31,9 +32,9 @@ public class FineRuleController : Controller
 
     [HttpGet]
     [RequirePermission("FineRules.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, pageSize, search);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -46,9 +47,9 @@ public class FineRuleController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
         }
-        return View(new FineRuleViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FineRuleViewModel());
     }
 
     [HttpPost]
@@ -57,7 +58,7 @@ public class FineRuleController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FineRules.Update" : "FineRules.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Fine rule updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Fine rule created."; }
@@ -74,7 +75,7 @@ public class FineRuleController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
+        return View($"{ViewPath}/Details.cshtml", new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
     }
 
     [HttpGet]
@@ -83,7 +84,7 @@ public class FineRuleController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
+        return View($"{ViewPath}/Delete.cshtml", new FineRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FinePerDay = dto.FinePerDay });
     }
 
     [HttpPost]

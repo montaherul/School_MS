@@ -1,9 +1,12 @@
 using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Services.Implementations.Fees;
 
@@ -11,11 +14,13 @@ public class FeeReportService : IFeeReportService
 {
     private readonly IFeeReportRepository _repository;
     private readonly IPdfGenerator _pdfGenerator;
+    private readonly IUnitOfWork _uow;
 
-    public FeeReportService(IFeeReportRepository repository, IPdfGenerator pdfGenerator)
+    public FeeReportService(IFeeReportRepository repository, IPdfGenerator pdfGenerator, IUnitOfWork uow)
     {
         _repository = repository;
         _pdfGenerator = pdfGenerator;
+        _uow = uow;
     }
 
     public async Task<PagedResult<StudentLedgerReportDto>> GetStudentLedgerReportAsync(int studentId, int page, int pageSize)
@@ -69,6 +74,20 @@ public class FeeReportService : IFeeReportService
     public async Task<CashBookResultDto> GetCashBookAsync(DateOnly fromDate, DateOnly toDate, int? academicYearId = null)
     {
         return await _repository.GetCashBookAsync(fromDate, toDate, academicYearId);
+    }
+
+    public async Task<List<AcademicYearOptionDto>> GetAcademicYearOptionsAsync()
+    {
+        return await _uow.Repository<AcademicYear>().Query()
+            .Where(y => !y.IsDeleted)
+            .OrderByDescending(y => y.StartsOn)
+            .Select(y => new AcademicYearOptionDto
+            {
+                Id = y.Id,
+                Name = y.Name,
+                StartsOn = DateOnly.FromDateTime(y.StartsOn)
+            })
+            .ToListAsync();
     }
 
     public async Task<byte[]> ExportToExcelAsync<T>(List<T> data, string reportName)

@@ -47,10 +47,15 @@ public class JournalEntry : BaseEntity
 
     public bool IsPosted { get; set; }
 
+    public PostingStatus PostingStatus { get; set; } = PostingStatus.Pending;
+
     public DateTime? PostedAt { get; set; }
 
     [MaxLength(64)]
     public string? PostedBy { get; set; }
+
+    [MaxLength(500)]
+    public string? PostingError { get; set; }
 }
 
 public class JournalEntryLine : BaseEntity
@@ -143,4 +148,36 @@ public class FinancialPeriod : BaseEntity
 
     [MaxLength(64)]
     public string? ClosedBy { get; set; }
+}
+
+public class FinanceSetting : BaseEntity
+{
+    [MaxLength(100)]
+    public string Key { get; set; } = string.Empty;
+
+    [MaxLength(2000)]
+    public string Value { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    [MaxLength(50)]
+    public string Category { get; set; } = "General";
+}
+
+public class AccountMapping : BaseEntity
+{
+    [MaxLength(100)]
+    public string TransactionType { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string DebitAccountCode { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string CreditAccountCode { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    public bool IsActive { get; set; } = true;
 }

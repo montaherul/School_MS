@@ -554,44 +554,7 @@
                     </div>
                 </div>
 
-                <!-- Guardian Portal Settings -->
-                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
-                    <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-shield-check ws-me-1 ws-text-primary"></i> Guardian Portal Settings</h6>
-                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Enable or disable guardian/parent portal features. When disabled, guardians are not created during admission, guardian menus are hidden, and guardian URLs are blocked.</p>
-                        <div class="ws-flex-wrap ws-gap-3">
-                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="ws-form-check">
-                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianPortal" value="true" @(Model.EnableGuardianPortal ? "checked" : "") id="chkEnableGuardianPortal"/>
-                                    <input type="hidden" name="EnableGuardianPortal" value="false"/>
-                                    <label class="ws-fw-700" for="chkEnableGuardianPortal">Enable Guardian Portal</label>
-                                </div>
-                            </div>
-                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="ws-form-check">
-                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianActivation" value="true" @(Model.EnableGuardianActivation ? "checked" : "") id="chkEnableGuardianActivation"/>
-                                    <input type="hidden" name="EnableGuardianActivation" value="false"/>
-                                    <label class="ws-fw-700" for="chkEnableGuardianActivation">Enable Guardian Activation</label>
-                                </div>
-                            </div>
-                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="ws-form-check">
-                                    <input class="ws-form-check-input" type="checkbox" name="RequireGuardianForAdmission" value="true" @(Model.RequireGuardianForAdmission ? "checked" : "") id="chkRequireGuardianForAdmission"/>
-                                    <input type="hidden" name="RequireGuardianForAdmission" value="false"/>
-                                    <label class="ws-fw-700" for="chkRequireGuardianForAdmission">Require Guardian During Admission</label>
-                                </div>
-                            </div>
-                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="ws-form-check">
-                                    <input class="ws-form-check-input" type="checkbox" name="EnableGuardianNotifications" value="true" @(Model.EnableGuardianNotifications ? "checked" : "") id="chkEnableGuardianNotifications"/>
-                                    <input type="hidden" name="EnableGuardianNotifications" value="false"/>
-                                    <label class="ws-fw-700" for="chkEnableGuardianNotifications">Enable Guardian Notifications</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Guardian portal settings moved to Admin/GuardianSettings -->
                 <!-- Admission Information Settings -->
                 <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
                     <div style="flex:1 1 100%;min-width:280px;">
@@ -764,22 +727,7 @@
                     </div>
                 </div>
 
-                <!-- Student Portal Settings -->
-                <div class="ws-flex-wrap ws-gap-4 ws-mt-2">
-                    <div style="flex:1 1 100%;min-width:280px;">
-                        <h6 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2"><i class="bi bi-mortarboard-fill ws-me-1 ws-text-primary"></i> Student Portal Settings</h6>
-                        <p class="ws-text-muted ws-fs-14 ws-mb-3">Enable or disable student self-service portal. When disabled, student portal menus are hidden and URLs are blocked.</p>
-                        <div class="ws-flex-wrap ws-gap-3">
-                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
-                                <div class="ws-form-check">
-                                    <input class="ws-form-check-input" type="checkbox" name="EnableStudentPortal" value="true" @(Model.EnableStudentPortal ? "checked" : "") id="chkEnableStudentPortal"/>
-                                    <input type="hidden" name="EnableStudentPortal" value="false"/>
-                                    <label class="ws-fw-700" for="chkEnableStudentPortal">Enable Student Portal</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Portal settings moved to Admin/PortalSettings -->
 
                 <!-- Submit -->
                 <div class="ws-text-end ws-pt-4 ws-mt-3 ws-border-top ws-w-full">

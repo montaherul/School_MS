@@ -1,0 +1,151 @@
+@{
+    ViewData["Title"] = "All Online Payments";
+    var statusMap = new Dictionary<int, string> {
+        { 1, "Pending" }, { 2, "Verified" }, { 3, "Rejected" }, { 4, "GatewayPending" }
+    };
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">All Online Payments</h1>
+                <p class="adm-header__sub">View all online payment transactions — success, pending, and failed</p>
+            </div>
+        </div>
+        <div class="adm-header__right ws-flex ws-gap-2">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <i class="bi bi-shield-check ws-me-1"></i>Pending
+            </a>
+            <a asp-controller="FeeDashboard" asp-action="Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <i class="bi bi-arrow-left ws-me-1"></i>Fee Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Search by student, invoice, reference...">
+                </div>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="statusFilter" class="adm-input ws-max-w-200">
+                    <option value="0">All Statuses</option>
+                    <option value="1">Pending</option>
+                    <option value="2">Verified</option>
+                    <option value="3">Rejected</option>
+                    <option value="4">Gateway Pending</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Actions</label>
+                <div class="ws-flex ws-gap-2">
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" id="refreshBtn"><i class="bi bi-arrow-clockwise ws-me-1"></i>Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="all-payments-table"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var statusBadge = function(status) {
+            switch (status) {
+                case 2: return '<span class="adm-badge adm-badge--success">Verified</span>';
+                case 1: return '<span class="adm-badge adm-badge--warning">Pending</span>';
+                case 4: return '<span class="adm-badge adm-badge--info">Gateway Pending</span>';
+                case 3: return '<span class="adm-badge adm-badge--danger">Rejected</span>';
+                default: return '<span class="adm-badge adm-badge--secondary">' + status + '</span>';
+            }
+        };
+
+        var allTable = new Tabulator("#all-payments-table", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15, 25, 50, 100],
+            ajaxURL: '@Url.Action("GetList", "OnlinePaymentVerification")',
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxParams: function() {
+                return {
+                    search: document.getElementById('searchInput').value,
+                    statusFilter: parseInt(document.getElementById('statusFilter').value) || 0
+                };
+            },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data || [], last_page: response.last_page || 1 };
+            },
+            placeholder: "<div class='dash-empty'>No transactions found.</div>",
+            columns: [
+                { title: "#", field: "id", width: 60, hozAlign: "center", headerSort: false },
+                { title: "Student", field: "studentName", widthGrow: 2,
+                    formatter: function(cell) {
+                        return '<span class="ws-fw-600">' + cell.getValue() + '</span>';
+                    }
+                },
+                { title: "Invoice", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Amount", field: "amount", width: 120, hozAlign: "right",
+                    formatter: function(cell) {
+                        return '৳' + parseFloat(cell.getValue()).toFixed(2);
+                    }
+                },
+                { title: "Method", field: "paymentMethod", width: 90, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = parseInt(cell.getValue());
+                        return v === 1 ? 'Cash' : v === 2 ? 'Bank' : v === 3 ? 'Online' : v === 4 ? 'Cheque' : 'Other';
+                    }
+                },
+                { title: "Reference", field: "referenceNo", width: 130 },
+                { title: "Status", field: "status", width: 130, hozAlign: "center",
+                    formatter: function(cell) { return statusBadge(parseInt(cell.getValue())); }
+                },
+                { title: "Date", field: "createdAt", width: 150, hozAlign: "center",
+                    formatter: function(cell) {
+                        var d = new Date(cell.getValue());
+                        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
+                },
+                { title: "Verified", field: "verifiedAt", width: 150, hozAlign: "center",
+                    formatter: function(cell) {
+                        if (!cell.getValue()) return '<span class="ws-text-muted">—</span>';
+                        var d = new Date(cell.getValue());
+                        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }
+                },
+                { title: "Verified By", field: "verifiedBy", width: 120, hozAlign: "center",
+                    formatter: function(cell) { return cell.getValue() || '<span class="ws-text-muted">—</span>'; }
+                },
+                { title: "Notes", field: "adminNotes", widthGrow: 1,
+                    formatter: function(cell) { return cell.getValue() || '<span class="ws-text-muted">—</span>'; }
+                }
+            ]
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === "Enter") allTable.setData();
+        });
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            allTable.setData();
+        });
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            allTable.setData();
+        });
+    </script>
+}

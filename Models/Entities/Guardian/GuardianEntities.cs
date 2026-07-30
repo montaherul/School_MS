@@ -89,6 +89,18 @@ public class Guardian : BaseEntity
 
     public bool PortalAccessEnabled { get; set; } = false;
 
+    public bool ReceiveEmailNotifications { get; set; } = true;
+
+    public bool ReceiveSMSNotifications { get; set; } = true;
+
+    public bool ReceiveEventNotifications { get; set; } = true;
+
+    public bool ReceiveFeeNotifications { get; set; } = true;
+
+    public bool ReceiveExamNotifications { get; set; } = true;
+
+    public bool ReceiveAttendanceNotifications { get; set; } = true;
+
     public bool IsPrimaryGuardian { get; set; } = false;
 
     public GuardianStatus Status { get; set; } = GuardianStatus.PendingActivation;

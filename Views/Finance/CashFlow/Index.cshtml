@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Cash Flow Statement";
+}
+<div class="adm-page">
+    <div class="adm-header">
+        <div>
+            <h4 class="adm-header__title"><i class="bi bi-graph-up-arrow ws-me-2"></i>Cash Flow Statement</h4>
+            <p class="adm-header__desc">View cash inflows and outflows</p>
+        </div>
+    </div>
+    <div class="adm-card">
+        <div class="adm-card__body">
+            <div class="ws-row ws-g-2 ws-mb-3 ws-d-flex ws-align-items-end">
+                <div class="ws-col-4 ws-col-md-2">
+                    <label class="ws-form-label">Year</label>
+                    <select id="cf-year" class="ws-form-control">
+                        <option value="2026">2026</option>
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="ws-col-4 ws-col-md-2">
+                    <label class="ws-form-label">Period</label>
+                    <select id="cf-period" class="ws-form-control" onchange="toggleMonth()">
+                        <option value="3">Yearly</option>
+                        <option value="1">Monthly</option>
+                        <option value="2">Quarterly</option>
+                    </select>
+                </div>
+                <div class="ws-col-4 ws-col-md-2" id="month-group" style="display:none">
+                    <label class="ws-form-label">Month</label>
+                    <select id="cf-month" class="ws-form-control">
+                        <option value="1">January</option><option value="2">February</option>
+                        <option value="3">March</option><option value="4">April</option>
+                        <option value="5">May</option><option value="6">June</option>
+                        <option value="7">July</option><option value="8">August</option>
+                        <option value="9">September</option><option value="10">October</option>
+                        <option value="11">November</option><option value="12">December</option>
+                    </select>
+                </div>
+                <div class="ws-col-12 ws-col-md-2">
+                    <button class="adm-btn adm-btn--primary" onclick="loadStatement()"><i class="bi bi-search ws-me-1"></i>Show</button>
+                </div>
+            </div>
+            <div id="statement-container"></div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function toggleMonth() {
+            document.getElementById('month-group').style.display = document.getElementById('cf-period').value === '1' ? '' : 'none';
+        }
+        async function loadStatement() {
+            const year = document.getElementById('cf-year').value;
+            const period = document.getElementById('cf-period').value;
+            const month = document.getElementById('cf-month')?.value || 0;
+            const r = await fetch(`/Finance/CashFlow/GetStatement?year=${year}&periodType=${period}&month=${month}`);
+            const data = await r.json();
+            const container = document.getElementById('statement-container');
+            if (!data.operatingActivities) { container.innerHTML = '<div class="ws-alert ws-alert--info">No data available</div>'; return; }
+            let html = `<div class="ws-row ws-g-2 ws-mb-3">
+                <div class="ws-col-4"><div class="ws-stat-card"><div class="ws-stat-card__label">Opening Balance</div><div class="ws-stat-card__value">৳ ${Number(data.openingBalance).toLocaleString()}</div></div></div>
+                <div class="ws-col-4"><div class="ws-stat-card"><div class="ws-stat-card__label">Net Cash Flow</div><div class="ws-stat-card__value">৳ ${Number(data.netCashFlow).toLocaleString()}</div></div></div>
+                <div class="ws-col-4"><div class="ws-stat-card"><div class="ws-stat-card__label">Closing Balance</div><div class="ws-stat-card__value ws-fw-bold">৳ ${Number(data.closingBalance).toLocaleString()}</div></div></div>
+            </div>`;
+            for (const section of [data.operatingActivities, data.investingActivities, data.financingActivities]) {
+                html += `<div class="ws-card ws-mb-2"><div class="ws-card__header"><h5 class="ws-mb-0">${section.sectionName}</h5></div><div class="ws-card__body ws-p-0"><table class="ws-table ws-table--striped ws-mb-0">`;
+                for (const line of section.lines) {
+                    const cls = line.isTotal ? 'ws-fw-bold ws-bg-soft-primary' : '';
+                    html += `<tr class="${cls}"><td>${line.label}</td><td class="ws-text-end">৳ ${Number(line.amount).toLocaleString()}</td></tr>`;
+                }
+                html += `</table></div></div>`;
+            }
+            container.innerHTML = html;
+        }
+        document.addEventListener("DOMContentLoaded", function() { toggleMonth(); loadStatement(); });
+    </script>
+}

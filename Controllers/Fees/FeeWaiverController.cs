@@ -14,6 +14,7 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeWaiverController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeWaiver";
     private readonly IFeeWaiverService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
@@ -21,7 +22,7 @@ public class FeeWaiverController : Controller
     public FeeWaiverController(IFeeWaiverService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFinancePostingService postingService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _postingService = postingService; }
 
     [RequirePermission("FeeWaivers.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeWaivers.Create")]
@@ -33,10 +34,10 @@ public class FeeWaiverController : Controller
 
     [HttpGet]
     [RequirePermission("FeeWaivers.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? studentId = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? studentId = null)
     {
         if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
-        var result = await _service.GetPagedAsync(page, size, search, studentId);
+        var result = await _service.GetPagedAsync(page, pageSize, search, studentId);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -50,9 +51,9 @@ public class FeeWaiverController : Controller
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
             if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-            return View(new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
         }
-        return View(new FeeWaiverViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeWaiverViewModel());
     }
 
     [HttpPost]
@@ -61,7 +62,7 @@ public class FeeWaiverController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeWaivers.Update" : "FeeWaivers.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Waiver updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Waiver created."; }
@@ -79,7 +80,7 @@ public class FeeWaiverController : Controller
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
         if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-        return View(new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Details.cshtml", new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpGet]
@@ -89,7 +90,7 @@ public class FeeWaiverController : Controller
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
         if (!_security.IsStudentScope(User, dto.StudentId)) return Forbid();
-        return View(new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
+        return View($"{ViewPath}/Delete.cshtml", new FeeWaiverViewModel { Id = dto.Id, StudentId = dto.StudentId, FeeInvoiceId = dto.FeeInvoiceId, FeeCategoryId = dto.FeeCategoryId, FeeStructureId = dto.FeeStructureId, WaiverType = dto.WaiverType, WaiverValue = dto.WaiverValue, WaiverAmount = dto.WaiverAmount, Reason = dto.Reason, IsApproved = dto.IsApproved, ValidFrom = dto.ValidFrom, ValidTo = dto.ValidTo });
     }
 
     [HttpPost]

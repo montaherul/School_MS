@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
 
@@ -9,7 +10,9 @@ public interface IOnlinePaymentService
     Task<OnlinePaymentRequest> CreateGatewayPendingAsync(int studentId, int invoiceId, string createdBy, CancellationToken ct = default);
     Task<OnlinePaymentRequest?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<OnlinePaymentRequest?> GetByGatewayTransactionIdAsync(string tranId, CancellationToken ct = default);
+    Task<PagedResult<OnlinePaymentRequestListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? statusFilter = null, CancellationToken ct = default);
     Task<List<OnlinePaymentRequestDto>> GetPendingAsync(CancellationToken ct = default);
+    Task<List<OnlinePaymentRequestDto>> GetAllAsync(CancellationToken ct = default);
     Task<List<OnlinePaymentRequestDto>> GetByStudentAsync(int studentId, CancellationToken ct = default);
     Task<bool> VerifyAsync(int id, string verifiedBy, string? adminNotes, CancellationToken ct = default);
     Task<bool> RejectAsync(int id, string rejectedBy, string? adminNotes, CancellationToken ct = default);

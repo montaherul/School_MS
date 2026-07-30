@@ -36,10 +36,23 @@ public class FeeInvoiceService : IFeeInvoiceService
         return await _invoiceRepository.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
     }
 
-    public async Task<int> CreateAsync(FeeInvoice invoice, string createdBy, CancellationToken cancellationToken = default)
+    public async Task<int> CreateAsync(FeeInvoiceUpsertDto dto, string createdBy, CancellationToken cancellationToken = default)
     {
-        invoice.CreatedBy = createdBy;
-        invoice.CreatedAt = DateTime.UtcNow;
+        var invoice = new FeeInvoice
+        {
+            CreatedBy = createdBy,
+            CreatedAt = DateTime.UtcNow,
+            InvoiceNo = dto.InvoiceNo,
+            StudentId = dto.StudentId,
+            AcademicYearId = dto.AcademicYearId,
+            DueDate = dto.DueDate,
+            TotalAmount = dto.TotalAmount,
+            PaidAmount = dto.PaidAmount,
+            DiscountAmount = dto.DiscountAmount,
+            LateFee = dto.LateFee,
+            Status = (PaymentStatus)dto.Status,
+            Remarks = dto.Remarks
+        };
         await _invoiceRepository.AddAsync(invoice, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
@@ -65,15 +78,15 @@ public class FeeInvoiceService : IFeeInvoiceService
         return invoice.Id;
     }
 
-    public async Task UpdateAsync(FeeInvoice invoice, string updatedBy, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(FeeInvoiceUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default)
     {
-        var existing = await _invoiceRepository.FirstOrDefaultAsync(x => x.Id == invoice.Id && !x.IsDeleted, cancellationToken)
+        var existing = await _invoiceRepository.FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted, cancellationToken)
             ?? throw new Exception("Invoice not found");
 
-        existing.InvoiceNo = invoice.InvoiceNo; existing.StudentId = invoice.StudentId; existing.AcademicYearId = invoice.AcademicYearId;
-        existing.DueDate = invoice.DueDate; existing.TotalAmount = invoice.TotalAmount; existing.PaidAmount = invoice.PaidAmount;
-        existing.DiscountAmount = invoice.DiscountAmount; existing.LateFee = invoice.LateFee; existing.Status = invoice.Status;
-        existing.Remarks = invoice.Remarks;
+        existing.InvoiceNo = dto.InvoiceNo; existing.StudentId = dto.StudentId; existing.AcademicYearId = dto.AcademicYearId;
+        existing.DueDate = dto.DueDate; existing.TotalAmount = dto.TotalAmount; existing.PaidAmount = dto.PaidAmount;
+        existing.DiscountAmount = dto.DiscountAmount; existing.LateFee = dto.LateFee; existing.Status = (PaymentStatus)dto.Status;
+        existing.Remarks = dto.Remarks;
         existing.UpdatedBy = updatedBy; existing.UpdatedAt = DateTime.UtcNow;
 
         _invoiceRepository.Update(existing);

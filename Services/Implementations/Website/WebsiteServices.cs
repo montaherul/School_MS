@@ -161,10 +161,6 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             existing.AllowResultWithDue = settings.AllowResultWithDue;
 
             // Portal Feature Toggles
-            existing.EnableGuardianPortal = settings.EnableGuardianPortal;
-            existing.EnableGuardianActivation = settings.EnableGuardianActivation;
-            existing.RequireGuardianForAdmission = settings.RequireGuardianForAdmission;
-            existing.EnableGuardianNotifications = settings.EnableGuardianNotifications;
             existing.EnableStudentPortal = settings.EnableStudentPortal;
 
             // Event Notification Settings

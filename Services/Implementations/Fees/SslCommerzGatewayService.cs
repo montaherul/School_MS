@@ -3,22 +3,25 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Guardian;
+using SchoolManagementSystem.Models.Entities.Notification;
 using SchoolManagementSystem.Models.Enums;
+using StudentEntity = SchoolManagementSystem.Models.Entities.Student.Student;
 using SchoolManagementSystem.Services.Interfaces.Accounting;
 using SchoolManagementSystem.Services.Interfaces.Audit;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Services.Implementations.Fees;
 
 public class SslCommerzGatewayService : IPaymentGatewayService
 {
     private readonly SslCommerzConfig _config;
-    private readonly SchoolDbContext _db;
+    private readonly IUnitOfWork _uow;
     private readonly IOnlinePaymentService _onlinePaymentService;
     private readonly IFinancePostingService _financePostingService;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -29,7 +32,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
 
     public SslCommerzGatewayService(
         IOptions<SslCommerzConfig> config,
-        SchoolDbContext db,
+        IUnitOfWork uow,
         IOnlinePaymentService onlinePaymentService,
         IFinancePostingService financePostingService,
         IHttpClientFactory httpClientFactory,
@@ -39,7 +42,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         IHttpContextAccessor httpContextAccessor)
     {
         _config = config.Value;
-        _db = db;
+        _uow = uow;
         _onlinePaymentService = onlinePaymentService;
         _financePostingService = financePostingService;
         _httpClientFactory = httpClientFactory;
@@ -51,7 +54,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
 
     public async Task<SslCommerzInitResponse?> InitiatePaymentAsync(int onlinePaymentRequestId, string? preferredCardType = null, CancellationToken ct = default)
     {
-        var request = await _db.OnlinePaymentRequests
+        var request = await _uow.Repository<OnlinePaymentRequest>().Query()
             .Include(r => r.FeeInvoice)
             .FirstOrDefaultAsync(r => r.Id == onlinePaymentRequestId && !r.IsDeleted, ct);
         if (request == null || request.FeeInvoice == null)
@@ -82,13 +85,13 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         PaymentGatewayTransaction? existingTx = null;
         if (!string.IsNullOrEmpty(request.GatewaySessionKey))
         {
-            existingTx = await _db.PaymentGatewayTransactions
+            existingTx = await _uow.Repository<PaymentGatewayTransaction>().Query()
                 .Where(t => t.OnlinePaymentRequestId == request.Id && t.GatewayName == "SSLCommerz")
                 .OrderByDescending(t => t.Id)
                 .FirstOrDefaultAsync(ct);
         }
 
-        var student = await _db.Students.AsNoTracking()
+        var student = await _uow.Repository<StudentEntity>().Query().AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == request.StudentId, ct);
 
         var isAdmissionPayment = request.StudentId == 0 || student == null;
@@ -102,7 +105,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             var remarks = request.FeeInvoice?.Remarks ?? "";
             if (remarks.StartsWith("AdmissionApp_") && int.TryParse(remarks["AdmissionApp_".Length..], out var appId))
             {
-                var app = await _db.Set<SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication>()
+                var app = await _uow.Repository<AdmissionApplication>().Query()
                     .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.Id == appId, ct);
                 if (app != null)
@@ -221,7 +224,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             InitResponsePayload = responseBody,
             InitiatedAt = DateTime.UtcNow
         };
-        _db.PaymentGatewayTransactions.Add(gatewayTx);
+        await _uow.Repository<PaymentGatewayTransaction>().AddAsync(gatewayTx, ct);
 
         if (result != null && result.status == "SUCCESS")
         {
@@ -236,7 +239,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                 $"RequestId={request.Id}, Invoice={request.FeeInvoice.InvoiceNo}, TranId={tranId}, Amount={request.Amount}", ct);
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
         return result;
     }
 
@@ -266,7 +269,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             return 0;
         }
 
-        var request = await _db.OnlinePaymentRequests
+        var request = await _uow.Repository<OnlinePaymentRequest>().Query()
             .Include(r => r.FeeInvoice)
             .FirstOrDefaultAsync(r => r.GatewayTransactionId == tranId && !r.IsDeleted, ct);
         if (request == null)
@@ -278,7 +281,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
         if (request.Status == OnlinePaymentRequestStatus.Verified)
         {
             _logger.LogInformation("Transaction {TranId} already verified — skipping duplicate IPN", tranId);
-            var existingPayment = await _db.Payments
+            var existingPayment = await _uow.Repository<Payment>().Query()
                 .Where(p => p.FeeInvoiceId == request.FeeInvoiceId && p.ReferenceNo == (bankTranId ?? tranId))
                 .Select(p => p.Id)
                 .FirstOrDefaultAsync(ct);
@@ -291,7 +294,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             request.Status = OnlinePaymentRequestStatus.Rejected;
             request.GatewayResponse = $"Rejected: Invoice already paid. IPN tran_id={tranId}";
             request.UpdatedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
             return 0;
         }
 
@@ -301,7 +304,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             request.Status = OnlinePaymentRequestStatus.Rejected;
             request.GatewayResponse = $"IPN Status: {status}";
             request.UpdatedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
             return 0;
         }
 
@@ -311,7 +314,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             validation = await ValidateTransactionAsync(valId, ct);
         }
 
-        var gatewayTx = await _db.PaymentGatewayTransactions
+        var gatewayTx = await _uow.Repository<PaymentGatewayTransaction>().Query()
             .Where(t => t.GatewayTransactionId == tranId && t.GatewayName == "SSLCommerz")
             .FirstOrDefaultAsync(ct);
         if (gatewayTx != null)
@@ -335,7 +338,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                 gatewayTx.ValidationPayload = JsonSerializer.Serialize(validation);
             }
 
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
             return 0;
         }
 
@@ -353,7 +356,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                 gatewayTx.ValidationPayload = JsonSerializer.Serialize(validation);
             }
 
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
             await _auditService.LogAsync(null, "Payment", "AmountMismatch",
                 $"TranId={tranId}, Expected={request.Amount}, Gateway={validation.amount}, Invoice={request.FeeInvoice?.InvoiceNo}", ct);
             return 0;
@@ -372,7 +375,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                 gatewayTx.ValidationPayload = JsonSerializer.Serialize(validation);
             }
 
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
             return 0;
         }
 
@@ -407,9 +410,10 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             PaidAt = DateTime.UtcNow,
             Remarks = $"SSLCommerz auto-verified. RequestId: {request.Id}, ValId: {valId}",
             CreatedBy = "sslcOM~Auto",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            PostingStatus = PostingStatus.Pending
         };
-        _db.Payments.Add(payment);
+        await _uow.Repository<Payment>().AddAsync(payment, ct);
 
         if (request.FeeInvoice != null)
         {
@@ -417,7 +421,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             request.FeeInvoice.UpdatedAt = DateTime.UtcNow;
             var remaining = request.FeeInvoice.TotalAmount - request.FeeInvoice.PaidAmount;
             request.FeeInvoice.Status = remaining <= 0 ? PaymentStatus.Paid : PaymentStatus.Partial;
-            _db.FeeInvoices.Update(request.FeeInvoice);
+            _uow.Repository<FeeInvoice>().Update(request.FeeInvoice);
         }
 
         var ledger = new FeeLedger
@@ -434,52 +438,53 @@ public class SslCommerzGatewayService : IPaymentGatewayService
             CreatedBy = "sslcOM~Auto",
             CreatedAt = DateTime.UtcNow
         };
-        _db.FeeLedgers.Add(ledger);
+        await _uow.Repository<FeeLedger>().AddAsync(ledger, ct);
 
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
-        try
+        if (request.PaymentPurpose == PaymentPurpose.AdmissionFee && request.AdmissionApplicationId.HasValue)
         {
-            if (request.PaymentPurpose == PaymentPurpose.AdmissionFee && request.AdmissionApplicationId.HasValue)
+            var app = await _uow.Repository<AdmissionApplication>().Query()
+                .FirstOrDefaultAsync(a => a.Id == request.AdmissionApplicationId.Value, ct);
+            if (app != null)
             {
-                var app = await _db.Set<SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication>()
-                    .FirstOrDefaultAsync(a => a.Id == request.AdmissionApplicationId.Value, ct);
-                if (app != null)
-                {
-                    app.AdmissionFeePaid = true;
-                    app.UpdatedBy = "sslcOM~Auto";
-                    app.UpdatedAt = DateTime.UtcNow;
-                    _db.Admissions.Update(app);
-                    await _db.SaveChangesAsync(ct);
+                app.AdmissionFeePaid = true;
+                app.UpdatedBy = "sslcOM~Auto";
+                app.UpdatedAt = DateTime.UtcNow;
+                _uow.Repository<AdmissionApplication>().Update(app);
+                await _uow.SaveChangesAsync(ct);
 
-                    await SendAdmissionPaymentNotificationAsync(app, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
-                }
-
-                await _financePostingService.PostAdmissionFeeAsync(
-                    request.AdmissionApplicationId.Value,
-                    request.Amount,
-                    "SSLCommerz",
-                    bankTranId ?? tranId,
-                    "sslcOM~Auto",
-                    ct);
-                _logger.LogInformation("Admission finance posting completed for transaction {TranId}, App #{AdmissionId}", tranId, request.AdmissionApplicationId);
+                await SendAdmissionPaymentNotificationAsync(app, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
             }
-            else
-            {
-                await _financePostingService.PostFeeCollectionAsync(
-                    request.StudentId,
-                    request.Amount,
-                    request.FeeInvoiceId,
-                    "sslcOM~Auto");
-                _logger.LogInformation("Finance posting completed for transaction {TranId}", tranId);
 
-                await SendPaymentNotificationsAsync(request.StudentId, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
-            }
+            await _financePostingService.PostAdmissionFeeAsync(
+                request.AdmissionApplicationId.Value,
+                request.Amount,
+                "SSLCommerz",
+                bankTranId ?? tranId,
+                "sslcOM~Auto",
+                ct);
+            _logger.LogInformation("Admission finance posting completed for transaction {TranId}, App #{AdmissionId}", tranId, request.AdmissionApplicationId);
         }
-        catch (Exception ex)
+        else
         {
-            _logger.LogError(ex, "Finance posting failed for transaction {TranId} — payment recorded but accounting pending manual fix", tranId);
+            await _financePostingService.PostFeeCollectionAsync(
+                request.StudentId,
+                request.Amount,
+                request.FeeInvoiceId,
+                "SSLCommerz",
+                "sslcOM~Auto",
+                ct);
+            _logger.LogInformation("Finance posting completed for transaction {TranId}", tranId);
+
+            await SendPaymentNotificationsAsync(request.StudentId, request.FeeInvoice?.InvoiceNo, request.Amount, tranId, ct);
         }
+
+        // Mark payment as posted
+        payment.PostingStatus = PostingStatus.Posted;
+        payment.PostedAt = DateTime.UtcNow;
+        _uow.Repository<Payment>().Update(payment);
+        await _uow.SaveChangesAsync(ct);
 
         await _auditService.LogAsync(null, "Payment", "GatewaySuccess",
             $"TranId={tranId}, BankTranId={bankTranId}, Invoice={request.FeeInvoice?.InvoiceNo}, Amount={request.Amount}, StudentId={request.StudentId}", ct);
@@ -514,7 +519,7 @@ public class SslCommerzGatewayService : IPaymentGatewayService
     {
         try
         {
-            var guardians = await _db.StudentGuardians
+            var guardians = await _uow.Repository<StudentGuardian>().Query()
                 .AsNoTracking()
                 .Include(sg => sg.Guardian)
                 .Where(sg => sg.StudentId == studentId && !sg.IsDeleted)
@@ -522,20 +527,36 @@ public class SslCommerzGatewayService : IPaymentGatewayService
 
             foreach (var sg in guardians)
             {
-                if (sg.Guardian?.UserId == null) continue;
+                if (sg.Guardian == null) continue;
 
-                var notification = new GuardianNotification
+                // Always create in-app notification if guardian has a user account
+                if (sg.Guardian.UserId != null)
                 {
-                    GuardianId = sg.GuardianId,
-                    Title = "Payment Successful",
-                    Message = $"BDT {amount:N2} paid for Invoice #{invoiceNo}. Ref: {tranId}",
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _db.GuardianNotifications.Add(notification);
+                    var notification = new GuardianNotification
+                    {
+                        GuardianId = sg.GuardianId,
+                        Title = "Payment Successful",
+                        Message = $"BDT {amount:N2} paid for Invoice #{invoiceNo}. Ref: {tranId}",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _uow.Repository<GuardianNotification>().AddAsync(notification, ct);
+                }
+
+                // Send email if guardian has opted in for email notifications
+                if (sg.Guardian.ReceiveEmailNotifications && !string.IsNullOrWhiteSpace(sg.Guardian.Email))
+                {
+                    var subject = "Payment Successful — School Management System";
+                    var body = $"Dear {sg.Guardian.FullName},<br><br>" +
+                               $"A payment of BDT {amount:N2} for Invoice #{invoiceNo} has been received and verified successfully.<br>" +
+                               $"Transaction Reference: {tranId}<br><br>" +
+                               "Thank you.<br>School Management System";
+
+                    await _emailSender.SendAsync(sg.Guardian.Email, subject, body, ct);
+                }
             }
 
-            var studentUser = await _db.Students.AsNoTracking()
+            var studentUser = await _uow.Repository<StudentEntity>().Query().AsNoTracking()
                 .Where(s => s.Id == studentId)
                 .Select(s => s.UserId)
                 .FirstOrDefaultAsync(ct);
@@ -550,12 +571,12 @@ public class SslCommerzGatewayService : IPaymentGatewayService
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
                 };
-                _db.Notifications.Add(studentNotif);
+                await _uow.Repository<NotificationMessage>().AddAsync(studentNotif, ct);
             }
 
-            await _db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
 
-            var student = await _db.Students.AsNoTracking()
+            var student = await _uow.Repository<StudentEntity>().Query().AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == studentId, ct);
 
             if (student != null && !string.IsNullOrEmpty(student.EmailAddress))

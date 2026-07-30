@@ -8,16 +8,7 @@ public static class SchoolPayRbacSeeder
 {
     private static readonly (string Code, string Action)[] Permissions = new[]
     {
-        ("SchoolPay.Manage", "Manage"),
-        ("SchoolPay.ViewTransactions", "Read"),
-        ("SchoolPay.ProcessRefund", "Update"),
-        ("SchoolPay.ViewSettlements", "Read"),
-        ("SchoolPay.Reconcile", "Update"),
-        ("SchoolPay.Analytics", "Read"),
-        ("SchoolPay.Operations", "Read"),
-        ("SchoolPay.Failover", "Read"),
-        ("SchoolPay.Monitoring", "Read"),
-        ("SchoolPay.Security", "Manage")
+        ("SchoolPay.ViewTransactions", "Read")
     };
 
     public static async Task SeedAsync(SchoolDbContext db)
@@ -32,13 +23,13 @@ public static class SchoolPayRbacSeeder
             .Select(p => new Permission
             {
                 Module = "SchoolPay",
-                ModuleName = "SchoolPay Gateway",
+                ModuleName = "SSLCommerz Gateway",
                 Action = p.Action,
                 Code = p.Code,
-                CanCreate = p.Action == "Manage",
+                CanCreate = false,
                 CanRead = true,
-                CanUpdate = p.Action == "Manage" || p.Action == "Update",
-                CanDelete = p.Action == "Manage"
+                CanUpdate = false,
+                CanDelete = false
             })
             .ToList();
 
@@ -48,8 +39,8 @@ public static class SchoolPayRbacSeeder
             await db.SaveChangesAsync();
         }
 
-        var allSchoolPayPerms = await db.Permissions
-            .Where(p => p.Module == "SchoolPay")
+        var permIds = await db.Permissions
+            .Where(p => p.Module == "SchoolPay" && p.Code == "SchoolPay.ViewTransactions")
             .Select(p => p.Id)
             .ToListAsync();
 
@@ -71,7 +62,7 @@ public static class SchoolPayRbacSeeder
                 .Select(rp => rp.PermissionId)
                 .ToListAsync();
 
-            var toAssign = allSchoolPayPerms
+            var toAssign = permIds
                 .Where(p => !existingRolePerms.Contains(p))
                 .Select(p => new RolePermission
                 {

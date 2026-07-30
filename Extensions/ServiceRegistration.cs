@@ -19,6 +19,7 @@ using SchoolManagementSystem.Repositories.Implementations.Students;
 using SchoolManagementSystem.Repositories.Implementations.Teachers;
 using SchoolManagementSystem.Repositories.Implementations.Website;
 using SchoolManagementSystem.Repositories.Implementations.Routine;
+using SchoolManagementSystem.Repositories.Implementations.Finance;
 using SchoolManagementSystem.Repositories.Interfaces.Routine;
 using SchoolManagementSystem.Repositories.Interfaces.Accounting;
 using SchoolManagementSystem.Repositories.Implementations.Accounting;
@@ -27,6 +28,7 @@ using SchoolManagementSystem.Services.Implementations.Exam;
 using SchoolManagementSystem.Services.Interfaces.Routine;
 using SchoolManagementSystem.Services.Implementations.Routine;
 using SchoolManagementSystem.Services.Interfaces.Exam;
+using SchoolManagementSystem.Services.Interfaces.Finance;
 using SchoolManagementSystem.Services.Interfaces.Audit;
 using SchoolManagementSystem.Services.Implementations.Audit;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
@@ -40,6 +42,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
 using SchoolManagementSystem.Repositories.Interfaces.Teachers;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
+using SchoolManagementSystem.Repositories.Interfaces.Finance;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
@@ -60,6 +63,7 @@ using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.Services.Implementations.Email;
 using SchoolManagementSystem.Services.Implementations.Employee;
 using SchoolManagementSystem.Services.Implementations.Fees;
+using SchoolManagementSystem.Services.Implementations.Finance;
 using SchoolManagementSystem.Services.Implementations.Guardian;
 using SchoolManagementSystem.Services.Implementations.Result;
 using SchoolManagementSystem.Services.Implementations.Students;
@@ -84,8 +88,6 @@ using SchoolManagementSystem.Services.Implementations.Student;
 using SchoolManagementSystem.Repositories.Interfaces.SchoolPay;
 using SchoolManagementSystem.Repositories.Implementations.SchoolPay;
 using SchoolManagementSystem.Services.Interfaces.SchoolPay;
-using SchoolManagementSystem.Services.Implementations.SchoolPay;
-using SchoolManagementSystem.BackgroundServices;
 using SchoolManagementSystem.Services.Implementations.SchoolPay;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -127,7 +129,14 @@ public static class ServiceRegistration
         services.AddScoped<IStudentFinanceRepository, StudentFinanceRepository>();
         services.AddScoped<IAutoBillingRepository, AutoBillingRepository>();
         services.AddScoped<IAutoFeeAssignmentRepository, AutoFeeAssignmentRepository>();
+        services.AddScoped<IFinanceAnalyticsRepository, FinanceAnalyticsRepository>();
+        services.AddScoped<IScholarshipBatchRepository, ScholarshipBatchRepository>();
+        services.AddScoped<IAllocationBatchRepository, AllocationBatchRepository>();
         services.AddScoped<IPaymentAllocationRepository, PaymentAllocationRepository>();
+        services.AddScoped<IOnlinePaymentRepository, OnlinePaymentRepository>();
+
+        // Register Finance Repository (Cash Flow)
+        services.AddScoped<ICashFlowRepository, CashFlowRepository>();
 
         // Register Accounting Repositories
         services.AddScoped<IChartOfAccountRepository, ChartOfAccountRepository>();
@@ -255,48 +264,20 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IStudentFeeProfileService, StudentFeeProfileService>();
         services.AddScoped<IOnlinePaymentService, OnlinePaymentService>();
         services.AddScoped<IPaymentGatewayService, SslCommerzGatewayService>();
+        services.AddScoped<IScholarshipEngineService, ScholarshipEngineService>();
+        services.AddScoped<IAllocationEngineService, AllocationEngineService>();
+        services.AddScoped<IAutoWriteOffService, AutoWriteOffService>();
+        services.AddScoped<IBadDebtService, BadDebtService>();
+        services.AddScoped<IFinanceAnalyticsService, FinanceAnalyticsService>();
+        services.AddScoped<IBillingService, BillingService>();
 
-        // Register SchoolPay Gateway Services
-        services.AddScoped<IProviderManagementService, ProviderManagementService>();
-        services.AddScoped<ICheckoutService, CheckoutService>();
-        services.AddScoped<IWebhookService, WebhookService>();
-        services.AddScoped<ISettlementService, SettlementService>();
-        services.AddScoped<IRefundService, RefundService>();
+        // Register SSLCommerz SchoolPay Services
         services.AddScoped<ISchoolPayRepository, SchoolPayRepository>();
         services.AddScoped<ISchoolPayService, SchoolPayService>();
-
-        // Register Gateway Factory (singleton)
-        services.AddSingleton<GatewayFactory>();
-
-        // Register SchoolPay SP-02 Services
-        services.AddScoped<IHealthMonitorService, HealthMonitorService>();
-        services.AddScoped<IPaymentRoutingService, PaymentRoutingService>();
-        services.AddScoped<IReconciliationService, ReconciliationService>();
-        services.AddScoped<IAnalyticsService, AnalyticsService>();
-
-        // Register SchoolPay SP-03 Services
-        services.AddScoped<IOperationsCenterService, OperationsCenterService>();
-        services.AddScoped<IDeadLetterQueueService, DeadLetterQueueService>();
-        services.AddScoped<IFailoverService, FailoverService>();
-
-        // Register Payment Method Management
-        services.AddScoped<IPaymentMethodManagementService, PaymentMethodManagementService>();
-
-        // Register SchoolPay SP-04 Services
-        services.AddScoped<IWebhookSignatureValidator, WebhookSignatureValidator>();
-        services.AddScoped<IMerchantSecretService, MerchantSecretService>();
         services.AddScoped<ISecurityAuditService, SecurityAuditService>();
-        services.AddScoped<IMonitoringService, MonitoringService>();
-
-        // Register Sandbox Simulator Provider
-        services.AddScoped<SandboxProvider>();
 
         // Register Event Bus (singleton — in-process)
         services.AddSingleton<IEventBus, EventBus>();
-
-        // Register Background Workers
-        services.AddHostedService<HealthCheckWorker>();
-        services.AddHostedService<WebhookQueueWorker>();
 
         services.AddScoped<IAuditService, AuditService>();
 
@@ -307,6 +288,10 @@ services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IBankService, BankService>();
         services.AddScoped<IFinancialPeriodService, FinancialPeriodService>();
         services.AddScoped<IFinancePostingService, FinancePostingService>();
+        services.AddScoped<IFinanceConfigurationService, FinanceConfigurationService>();
+
+        // Register Finance Service (Cash Flow)
+        services.AddScoped<ICashFlowService, CashFlowService>();
 
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<ITeacherSynchronizationService, TeacherSynchronizationService>();
@@ -457,6 +442,12 @@ services.AddScoped<IExamValidationService, ExamValidationService>();
 
         // Finance — expire stale gateway-pending payments after 24h
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.PaymentExpiryWorker>();
+
+        // Finance — automatic scholarship application (runs every 12h)
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.ScholarshipScheduler>();
+
+        // Finance — auto write-off small balances (runs daily)
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Fees.AutoWriteOffScheduler>();
 
         // Routine Module
         services.AddScoped<IRoutinePeriodRepository, RoutinePeriodRepository>();

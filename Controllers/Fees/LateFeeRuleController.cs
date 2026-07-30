@@ -14,6 +14,7 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class LateFeeRuleController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/LateFeeRule";
     private readonly ILateFeeRuleService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
@@ -21,7 +22,7 @@ public class LateFeeRuleController : Controller
     public LateFeeRuleController(ILateFeeRuleService service, IFeeSecurityService security, IPdfGenerator pdfGenerator, IFeeInvoiceService invoiceService) { _service = service; _security = security; _pdfGenerator = pdfGenerator; _invoiceService = invoiceService; }
 
     [RequirePermission("LateFeeRules.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("LateFeeRules.Create")]
@@ -33,9 +34,9 @@ public class LateFeeRuleController : Controller
 
     [HttpGet]
     [RequirePermission("LateFeeRules.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, pageSize, search);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -48,9 +49,9 @@ public class LateFeeRuleController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+            return View($"{ViewPath}/CreateEdit.cshtml", new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
         }
-        return View(new LateFeeRuleViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new LateFeeRuleViewModel());
     }
 
     [HttpPost]
@@ -59,7 +60,7 @@ public class LateFeeRuleController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "LateFeeRules.Update" : "LateFeeRules.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Rule updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Rule created."; }
@@ -88,7 +89,7 @@ public class LateFeeRuleController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+        return View($"{ViewPath}/Details.cshtml", new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
     }
 
     [HttpGet]
@@ -97,7 +98,7 @@ public class LateFeeRuleController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+        return View($"{ViewPath}/Delete.cshtml", new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
     }
 
     [HttpPost]

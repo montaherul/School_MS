@@ -80,11 +80,13 @@ namespace SchoolManagementSystem.Migrations
                 values: new object[] { true, "Christian", "Religion" });
 
             migrationBuilder.Sql(@"
+                SET IDENTITY_INSERT [Subjects] ON;
                 IF NOT EXISTS (SELECT 1 FROM [Subjects] WHERE [Id] = 34)
                 BEGIN
                     INSERT INTO [Subjects] ([Id], [Code], [CreatedAt], [CreatedBy], [DefaultFullMarks], [DefaultPassMarks], [DisplayOrder], [HasAssignment], [HasCQ], [HasContinuousAssessment], [HasLab], [HasMCQ], [HasOral], [HasPractical], [HasViva], [HasWritten], [IsActive], [IsDeleted], [IsMandatory], [IsOptional], [IsPractical], [IsReligionSubject], [Name], [NameBn], [ReligionType], [SubjectGroup], [UpdatedAt], [UpdatedBy])
                     VALUES (34, N'MUS', '2026-01-01T00:00:00.0000000Z', N'system', 100, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, N'Music', N'সঙ্গীত', NULL, N'Common', NULL, NULL);
                 END
+                SET IDENTITY_INSERT [Subjects] OFF;
             ");
 
             migrationBuilder.CreateIndex(

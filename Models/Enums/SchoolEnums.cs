@@ -288,3 +288,27 @@ public enum AIModelRole
     Teacher = 2,
     Admin = 3
 }
+
+public enum PostingStatus
+{
+    Pending = 1,
+    Posted = 2,
+    Failed = 3,
+    Retrying = 4
+}
+
+// Cash Flow Statement Enums
+public enum CashFlowCategory
+{
+    Operating = 1,
+    Investing = 2,
+    Financing = 3
+}
+
+public enum CashFlowPeriodType
+{
+    Monthly = 1,
+    Quarterly = 2,
+    Yearly = 3,
+    Custom = 4
+}

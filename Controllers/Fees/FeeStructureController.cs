@@ -14,6 +14,7 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeStructureController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeStructure";
     private readonly IFeeStructureService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
@@ -40,7 +41,7 @@ public class FeeStructureController : Controller
     }
 
     [RequirePermission("FeeStructures.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeStructures.Create")]
@@ -52,9 +53,9 @@ public class FeeStructureController : Controller
 
     [HttpGet]
     [RequirePermission("FeeStructures.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? schoolClassId = null, int? feeCategoryId = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? schoolClassId = null, int? feeCategoryId = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search, schoolClassId, feeCategoryId);
+        var result = await _service.GetPagedAsync(page, pageSize, search, schoolClassId, feeCategoryId);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -77,9 +78,9 @@ public class FeeStructureController : Controller
                 Amount = dto.Amount, IsRecurring = dto.IsRecurring, Frequency = dto.Frequency,
                 DueDay = dto.DueDay, IsActive = dto.IsActive
             };
-            return View(vm);
+            return View($"{ViewPath}/CreateEdit.cshtml", vm);
         }
-        return View(new FeeStructureViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeStructureViewModel());
     }
 
     [HttpPost]
@@ -91,7 +92,7 @@ public class FeeStructureController : Controller
             return Forbid();
         }
 
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "FeeStructure updated successfully."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "FeeStructure created successfully."; }
@@ -108,7 +109,7 @@ public class FeeStructureController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeStructureViewModel
+        return View($"{ViewPath}/Details.cshtml", new FeeStructureViewModel
         {
             Id = dto.Id, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId,
             AcademicYearId = dto.AcademicYearId, FeeName = dto.FeeName, Description = dto.Description,
@@ -123,7 +124,7 @@ public class FeeStructureController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeStructureViewModel
+        return View($"{ViewPath}/Delete.cshtml", new FeeStructureViewModel
         {
             Id = dto.Id, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId,
             AcademicYearId = dto.AcademicYearId, FeeName = dto.FeeName, Description = dto.Description,
@@ -179,7 +180,7 @@ public class FeeStructureController : Controller
     {
         ClearWizardState();
         var vm = await _wizardService.GetWizardDataAsync(new FeeStructureWizardDto { Step = 1 });
-        return View(vm);
+        return View($"{ViewPath}/Wizard.cshtml", vm);
     }
 
     [HttpPost]

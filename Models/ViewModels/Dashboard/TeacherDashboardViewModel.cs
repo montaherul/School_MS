@@ -63,6 +63,5 @@ public class PrincipalStats
     public int TotalStaff { get; set; }
     public int TotalStudents { get; set; }
     public decimal MonthlyRevenue { get; set; }
-    public decimal ExpensePercentage { get; set; }
     public List<ChartPoint> DepartmentPerformance { get; set; } = new();
 }

@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Cash Flow Statement";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-cash-coin"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Cash Flow Statement</h1>
+                <p class="adm-header__sub">View cash inflows and outflows by operating, investing, and financing activities</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Year</label>
+                <select id="yearFilter" class="adm-select ws-w-140">
+                    @for (var y = DateTime.Today.Year; y >= 2020; y--)
+                    {
+                        <option value="@y" selected="@(y == DateTime.Today.Year ? true : null)">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Period</label>
+                <select id="periodFilter" class="adm-select ws-w-200">
+                    <option value="3">Full Year</option>
+                    <option value="1">Monthly</option>
+                    <option value="2">Quarterly</option>
+                    <option value="6">Half-Yearly</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Month</label>
+                <select id="monthFilter" class="adm-select ws-w-140" disabled>
+                    <option value="">All Months</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m">@(new DateTime(2000, m, 1).ToString("MMMM"))</option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button id="viewBtn" class="adm-btn adm-btn--primary"><i class="bi bi-search ws-me-1"></i>View Statement</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statementContainer" class="ws-d-none">
+        <div class="adm-card ws-mb-4">
+            <div class="adm-card__body">
+                <div class="ws-flex-between ws-mb-4">
+                    <div>
+                        <h3 id="periodName" class="ws-fw-700 ws-mb-1"></h3>
+                        <p id="asOfDate" class="ws-text-muted ws-fs-14 ws-mb-0"></p>
+                    </div>
+                    <div class="ws-text-end">
+                        <div class="ws-fs-13 ws-text-muted">Opening Balance</div>
+                        <div id="openingBalance" class="ws-fw-700 ws-fs-20"></div>
+                    </div>
+                </div>
+
+                <div id="operatingSection" class="ws-mb-4"></div>
+                <div id="investingSection" class="ws-mb-4"></div>
+                <div id="financingSection" class="ws-mb-4"></div>
+
+                <div class="ws-border-top ws-pt-4 ws-mt-4">
+                    <div class="ws-row">
+                        <div class="ws-col-6">
+                            <div class="ws-fs-13 ws-text-muted">Net Cash Flow</div>
+                            <div id="netCashFlow" class="ws-fw-700 ws-fs-22"></div>
+                        </div>
+                        <div class="ws-col-6 ws-text-end">
+                            <div class="ws-fs-13 ws-text-muted">Closing Balance</div>
+                            <div id="closingBalance" class="ws-fw-700 ws-fs-22"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="emptyState" class="ws-flex-center ws-py-8 ws-flex-col ws-gap-3">
+        <i class="bi bi-cash-coin ws-text-muted" style="font-size:3rem;"></i>
+        <p class="ws-text-muted ws-fs-16">Select a year and period, then click "View Statement"</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function renderSection(containerId, section) {
+            if (!section || !section.lines || section.lines.length === 0) return;
+            var html = '<div class="adm-card ws-mb-3"><div class="adm-card__header"><h5 class="ws-fw-700 ws-mb-0">' + section.sectionName + '</h5></div><div class="adm-card__body adm-card__body--flush"><table class="adm-table ws-w-full">';
+            section.lines.forEach(function(line) {
+                var cls = line.isTotal ? 'ws-border-top ws-fw-700' : '';
+                html += '<tr class="' + cls + '"><td class="ws-py-2 ws-px-4">' + line.label + '</td>'
+                    + '<td class="ws-py-2 ws-px-4 ws-text-end ws-fw-' + (line.isTotal ? '700' : '500') + '">'
+                    + (line.isTotal ? '' : '৳') + parseFloat(line.amount).toLocaleString('en-BD', { minimumFractionDigits: 2 }) + '</td></tr>';
+            });
+            html += '</table></div></div>';
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        document.getElementById('periodFilter').addEventListener('change', function() {
+            document.getElementById('monthFilter').disabled = this.value !== '1';
+        });
+
+        document.getElementById('viewBtn').addEventListener('click', async function() {
+            var year = document.getElementById('yearFilter').value;
+            var period = document.getElementById('periodFilter').value;
+            var month = document.getElementById('monthFilter').value || null;
+            var url = '@Url.Action("GetStatement", "CashFlow")?year=' + year + '&periodType=' + period;
+            if (month) url += '&month=' + month;
+
+            document.getElementById('viewBtn').disabled = true;
+            document.getElementById('viewBtn').innerHTML = '<span class="adm-btn__spinner"></span> Loading...';
+
+            try {
+                var res = await fetch(url);
+                var data = await res.json();
+
+                document.getElementById('emptyState').classList.add('ws-d-none');
+                document.getElementById('statementContainer').classList.remove('ws-d-none');
+
+                document.getElementById('periodName').textContent = data.periodName || 'Cash Flow Statement';
+                document.getElementById('asOfDate').textContent = data.asOfDate ? 'As of ' + new Date(data.asOfDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+                document.getElementById('openingBalance').textContent = '৳' + parseFloat(data.openingBalance || 0).toLocaleString('en-BD', { minimumFractionDigits: 2 });
+                document.getElementById('closingBalance').textContent = '৳' + parseFloat(data.closingBalance || 0).toLocaleString('en-BD', { minimumFractionDigits: 2 });
+                document.getElementById('netCashFlow').textContent = '৳' + parseFloat(data.netCashFlow || 0).toLocaleString('en-BD', { minimumFractionDigits: 2 });
+
+                renderSection('operatingSection', data.operatingActivities);
+                renderSection('investingSection', data.investingActivities);
+                renderSection('financingSection', data.financingActivities);
+            } catch (e) {
+                console.error('Failed to load cash flow statement:', e);
+                document.getElementById('emptyState').classList.remove('ws-d-none');
+                document.getElementById('statementContainer').classList.add('ws-d-none');
+            } finally {
+                document.getElementById('viewBtn').disabled = false;
+                document.getElementById('viewBtn').innerHTML = '<i class="bi bi-search ws-me-1"></i>View Statement';
+            }
+        });
+    </script>
+}

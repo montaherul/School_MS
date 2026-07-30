@@ -174,4 +174,9 @@ public class JournalEntryService : IJournalEntryService
     {
         await _repo.PostJournalEntryAsync(id, postedBy, ct);
     }
+
+    public async Task<string> GenerateJournalNoAsync(DateTime entryDate, CancellationToken ct)
+    {
+        return await _repo.GenerateJournalNoAsync(entryDate, ct);
+    }
 }

@@ -39,7 +39,8 @@ public static class FinanceRbacSeeder
         "PaymentAllocations",
         "InventoryBilling",
         "CertificateBilling",
-        "OtherChargeBilling"
+        "OtherChargeBilling",
+        "CashFlow"
     ];
 
     private static readonly string[] FinanceActions =

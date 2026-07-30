@@ -406,20 +406,18 @@ public class AdmissionFinanceService : IAdmissionFinanceService
 
         var invoiceNo = $"INV-ADM-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999):D4}";
 
-        var invoice = new FeeInvoice
+        var dto = new FeeInvoiceUpsertDto
         {
             InvoiceNo = invoiceNo,
             StudentId = studentId,
             DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
             TotalAmount = admissionFee,
             PaidAmount = isPaid ? admissionFee : 0,
-            Status = isPaid ? PaymentStatus.Paid : PaymentStatus.Draft,
-            Remarks = invoiceKey,
-            CreatedBy = createdBy,
-            CreatedAt = DateTime.UtcNow
+            Status = isPaid ? (int)PaymentStatus.Paid : (int)PaymentStatus.Draft,
+            Remarks = invoiceKey
         };
 
-        var invoiceId = await _feeInvoiceService.CreateAsync(invoice, createdBy, ct);
+        var invoiceId = await _feeInvoiceService.CreateAsync(dto, createdBy, ct);
 
         var displayClass = className ?? $"Class-{studentId}";
 

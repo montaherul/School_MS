@@ -1,0 +1,86 @@
+@using SchoolManagementSystem.Models.Entities.Website
+@model SchoolSetting
+@{
+    ViewData["Title"] = "Portal Settings";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-laptop"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Portal Settings</h1>
+                <p class="adm-header__sub">Configure student and guardian portal access, activation, and notification settings</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">@successMsg</div>
+    }
+
+    <div class="ws-row ws-justify-center">
+        <div class="ws-col-lg-10">
+            <div class="adm-card ws-mb-6">
+                <div class="adm-card__body">
+                    <form asp-action="Index" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <h5 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2">
+                            <i class="bi bi-mortarboard-fill ws-me-2 ws-text-primary"></i>Student Portal
+                        </h5>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-4">Enable or disable student self-service portal. When disabled, student portal menus are hidden and URLs are blocked. Individual student access is managed separately.</p>
+                        <div class="ws-flex-wrap ws-gap-4 ws-mb-6">
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="EnableStudentPortal" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="EnableStudentPortal">Enable Student Portal</label>
+                            </div>
+                        </div>
+
+                        <h5 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2 ws-mt-6">
+                            <i class="bi bi-shield-check ws-me-2 ws-text-primary"></i>Guardian Portal
+                        </h5>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-4">Enable or disable guardian portal features. When disabled, guardian menus are hidden and guardian URLs are blocked.</p>
+                        <div class="ws-flex-wrap ws-gap-4 ws-mb-6">
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="EnableGuardianPortal" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="EnableGuardianPortal">Enable Guardian Portal</label>
+                            </div>
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="EnableGuardianActivation" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="EnableGuardianActivation">Enable Guardian Activation</label>
+                            </div>
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="RequireGuardianForAdmission" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="RequireGuardianForAdmission">Require Guardian During Admission</label>
+                            </div>
+                        </div>
+
+                        <h5 class="ws-fw-700 ws-mb-3 ws-border-bottom ws-pb-2 ws-mt-6">
+                            <i class="bi bi-bell ws-me-2 ws-text-primary"></i>Notification Settings
+                        </h5>
+                        <p class="ws-text-muted ws-fs-14 ws-mb-4">Control whether students and guardians receive email and in-app notifications. Individual preferences are managed per record.</p>
+                        <div class="ws-flex-wrap ws-gap-4 ws-mb-6">
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="EnableGuardianNotifications" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="EnableGuardianNotifications">Enable Guardian Notifications</label>
+                            </div>
+                            <div class="ws-form-check">
+                                <input class="ws-form-check-input" type="checkbox" asp-for="EnableStudentNotifications" />
+                                <label class="ws-fw-700 ws-form-check-label" asp-for="EnableStudentNotifications">Enable Student Notifications</label>
+                            </div>
+                        </div>
+
+                        <div class="ws-mt-6 ws-border-top ws-pt-4 ws-flex ws-gap-3">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save ws-me-1"></i> Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

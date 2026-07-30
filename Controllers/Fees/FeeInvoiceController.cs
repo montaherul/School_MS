@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
-using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Reports;
@@ -14,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeInvoiceController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeInvoice";
     private readonly IFeeInvoiceService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public FeeInvoiceController(IFeeInvoiceService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeInvoices.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeInvoices.Create")]
@@ -32,10 +32,10 @@ public class FeeInvoiceController : Controller
 
     [HttpGet]
     [RequirePermission("FeeInvoices.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? studentId = null, int? status = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? studentId = null, int? status = null)
     {
         if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
-        var result = await _service.GetPagedAsync(page, size, search, studentId, status);
+        var result = await _service.GetPagedAsync(page, pageSize, search, studentId, status);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -79,9 +79,9 @@ public class FeeInvoiceController : Controller
                 DiscountAmount = entity.DiscountAmount, LateFee = entity.LateFee,
                 Status = (int)entity.Status, Remarks = entity.Remarks
             };
-            return View(vm);
+            return View($"{ViewPath}/CreateEdit.cshtml", vm);
         }
-        return View(new FeeInvoiceViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeInvoiceViewModel());
     }
 
     [HttpPost]
@@ -90,33 +90,25 @@ public class FeeInvoiceController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeInvoices.Update" : "FeeInvoices.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
 
+        var dto = new FeeInvoiceUpsertDto
+        {
+            Id = vm.Id, InvoiceNo = vm.InvoiceNo, StudentId = vm.StudentId,
+            AcademicYearId = vm.AcademicYearId, DueDate = vm.DueDate,
+            TotalAmount = vm.TotalAmount, PaidAmount = vm.PaidAmount,
+            DiscountAmount = vm.DiscountAmount, LateFee = vm.LateFee,
+            Status = vm.Status, Remarks = vm.Remarks
+        };
         if (vm.IsEditMode)
         {
-            var entity = new FeeInvoice
-            {
-                Id = vm.Id, InvoiceNo = vm.InvoiceNo, StudentId = vm.StudentId,
-                AcademicYearId = vm.AcademicYearId, DueDate = vm.DueDate,
-                TotalAmount = vm.TotalAmount, PaidAmount = vm.PaidAmount,
-                DiscountAmount = vm.DiscountAmount, LateFee = vm.LateFee,
-                Status = (Models.Enums.PaymentStatus)vm.Status, Remarks = vm.Remarks
-            };
-            await _service.UpdateAsync(entity, userId);
+            await _service.UpdateAsync(dto, userId);
             TempData["SuccessMessage"] = "Invoice updated.";
         }
         else
         {
-            var entity = new FeeInvoice
-            {
-                InvoiceNo = vm.InvoiceNo, StudentId = vm.StudentId,
-                AcademicYearId = vm.AcademicYearId, DueDate = vm.DueDate,
-                TotalAmount = vm.TotalAmount, PaidAmount = vm.PaidAmount,
-                DiscountAmount = vm.DiscountAmount, LateFee = vm.LateFee,
-                Status = (Models.Enums.PaymentStatus)vm.Status, Remarks = vm.Remarks
-            };
-            await _service.CreateAsync(entity, userId);
+            await _service.CreateAsync(dto, userId);
             TempData["SuccessMessage"] = "Invoice created.";
         }
         return RedirectToAction(nameof(Index));
@@ -133,7 +125,7 @@ public class FeeInvoiceController : Controller
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         if (!_security.IsStudentScope(User, entity.StudentId)) return Forbid();
-        return View(new FeeInvoiceViewModel
+        return View($"{ViewPath}/Details.cshtml", new FeeInvoiceViewModel
         {
             Id = entity.Id, InvoiceNo = entity.InvoiceNo, StudentId = entity.StudentId,
             AcademicYearId = entity.AcademicYearId, DueDate = entity.DueDate,
@@ -150,7 +142,7 @@ public class FeeInvoiceController : Controller
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         if (!_security.IsStudentScope(User, entity.StudentId)) return Forbid();
-        return View(new FeeInvoiceViewModel
+        return View($"{ViewPath}/Delete.cshtml", new FeeInvoiceViewModel
         {
             Id = entity.Id, InvoiceNo = entity.InvoiceNo, StudentId = entity.StudentId,
             AcademicYearId = entity.AcademicYearId, DueDate = entity.DueDate,
@@ -197,7 +189,7 @@ public class FeeInvoiceController : Controller
             TempData["ErrorMessage"] = "Cannot cancel a fully paid invoice. Process a refund instead.";
             return RedirectToAction(nameof(Details), new { id });
         }
-        return View(new FeeInvoiceViewModel
+        return View($"{ViewPath}/Cancel.cshtml", new FeeInvoiceViewModel
         {
             Id = entity.Id, InvoiceNo = entity.InvoiceNo, StudentId = entity.StudentId,
             AcademicYearId = entity.AcademicYearId, DueDate = entity.DueDate,

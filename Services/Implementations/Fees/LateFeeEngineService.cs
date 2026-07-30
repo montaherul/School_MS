@@ -2,6 +2,7 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Accounting;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -12,11 +13,13 @@ public class LateFeeEngineService : ILateFeeEngineService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditLogService _audit;
+    private readonly IFinancePostingService _postingService;
 
-    public LateFeeEngineService(IUnitOfWork unitOfWork, IAuditLogService audit)
+    public LateFeeEngineService(IUnitOfWork unitOfWork, IAuditLogService audit, IFinancePostingService postingService)
     {
         _unitOfWork = unitOfWork;
         _audit = audit;
+        _postingService = postingService;
     }
 
     public async Task<LateFeeEngineResultDto> RunAsync(CancellationToken cancellationToken = default)
@@ -84,6 +87,11 @@ public class LateFeeEngineService : ILateFeeEngineService
                     CreatedAt = DateTime.UtcNow
                 };
                 await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, cancellationToken);
+
+                await _postingService.PostLateFeeAsync(
+                    invoice.StudentId, lateFeeAmount, invoice.Id,
+                    $"Late fee: {overdueDays} day(s) overdue — {matchingRule.Name}",
+                    "system", cancellationToken);
 
                 result.InvoicesProcessed++;
                 result.TotalLateFeeApplied += lateFeeAmount;

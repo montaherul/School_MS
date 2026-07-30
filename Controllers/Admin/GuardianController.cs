@@ -94,7 +94,13 @@ public class GuardianController : Controller
             Occupation = guardian.Occupation,
             PresentAddress = guardian.PresentAddress,
             PermanentAddress = guardian.PermanentAddress,
-            PortalAccessEnabled = guardian.PortalAccessEnabled
+            PortalAccessEnabled = guardian.PortalAccessEnabled,
+            ReceiveEmailNotifications = guardian.ReceiveEmailNotifications,
+            ReceiveSMSNotifications = guardian.ReceiveSMSNotifications,
+            ReceiveEventNotifications = guardian.ReceiveEventNotifications,
+            ReceiveFeeNotifications = guardian.ReceiveFeeNotifications,
+            ReceiveExamNotifications = guardian.ReceiveExamNotifications,
+            ReceiveAttendanceNotifications = guardian.ReceiveAttendanceNotifications
         };
         return View(dto);
     }

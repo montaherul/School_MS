@@ -1,0 +1,75 @@
+@using SchoolManagementSystem.Models.Entities.Website
+@model SchoolSetting
+@{
+    ViewData["Title"] = "Guardian Settings";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Guardian Settings</h1>
+                <p class="adm-header__sub">Configure guardian/parent portal and notification settings</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="adm-alert adm-alert--success">@successMsg</div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Index" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Portal Access</h5>
+                        <p class="text-muted small mb-3">Enable or disable guardian portal features. When disabled, guardian menus are hidden and guardian URLs are blocked.</p>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="EnableGuardianPortal" />
+                                    <label class="form-check-label fw-medium" asp-for="EnableGuardianPortal">Enable Guardian Portal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="EnableGuardianActivation" />
+                                    <label class="form-check-label fw-medium" asp-for="EnableGuardianActivation">Enable Guardian Activation</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="RequireGuardianForAdmission" />
+                                    <label class="form-check-label fw-medium" asp-for="RequireGuardianForAdmission">Require Guardian During Admission</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3"><i class="bi bi-bell me-2"></i>Notification Settings</h5>
+                        <p class="text-muted small mb-3">Control whether guardians receive email and in-app notifications. Individual guardian preferences are managed per guardian record.</p>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="EnableGuardianNotifications" />
+                                    <label class="form-check-label fw-medium" asp-for="EnableGuardianNotifications">Enable Guardian Notifications</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

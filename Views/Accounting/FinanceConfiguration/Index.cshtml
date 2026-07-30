@@ -1,0 +1,323 @@
+@{
+    ViewData["Title"] = "Finance Configuration";
+}
+
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-title">Finance Configuration</h1>
+    </div>
+
+    <div class="ws-card">
+        <div class="ws-card-header">
+            <ul class="ws-tabs" role="tablist">
+                <li class="ws-tab active" data-tab="fiscal" role="tab">Fiscal Settings</li>
+                <li class="ws-tab" data-tab="mappings" role="tab">Account Mappings</li>
+                <li class="ws-tab" data-tab="settings" role="tab">All Settings</li>
+            </ul>
+        </div>
+        <div class="ws-card-body">
+            <div class="ws-tab-content active" id="tab-fiscal">
+                <div id="fiscal-settings-form">
+                    <div class="ws-spinner"></div>
+                </div>
+            </div>
+            <div class="ws-tab-content" id="tab-mappings">
+                <div class="adm-toolbar">
+                    <button class="adm-btn adm-btn-primary" onclick="showMappingModal()">Add Mapping</button>
+                </div>
+                <table class="adm-table" id="mappings-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction Type</th>
+                            <th>Debit Account</th>
+                            <th>Credit Account</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="ws-tab-content" id="tab-settings">
+                <div class="adm-toolbar">
+                    <button class="adm-btn adm-btn-primary" onclick="showSettingModal()">Add Setting</button>
+                </div>
+                <table class="adm-table" id="settings-table">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ws-modal" id="mapping-modal" style="display:none">
+    <div class="ws-modal-overlay" onclick="closeMappingModal()"></div>
+    <div class="ws-modal-content ws-modal-md">
+        <div class="ws-modal-header">
+            <h3 id="mapping-modal-title">Account Mapping</h3>
+            <button class="ws-modal-close" onclick="closeMappingModal()">&times;</button>
+        </div>
+        <form id="mapping-form" class="ws-form">
+            <input type="hidden" id="mapping-id" value="0" />
+            <div class="ws-field">
+                <label class="ws-label">Transaction Type</label>
+                <select id="mapping-transaction-type" class="ws-input" required>
+                    <option value="">Select type...</option>
+                    <option value="FeeCollection">Fee Collection</option>
+                    <option value="FeeWaiver">Fee Waiver</option>
+                    <option value="FeeDiscount">Fee Discount</option>
+                    <option value="FeeRefund">Fee Refund</option>
+                    <option value="LateFee">Late Fee</option>
+                    <option value="Fine">Fine</option>
+                    <option value="BankReceipt">Bank Receipt</option>
+                    <option value="BankPayment">Bank Payment</option>
+                    <option value="AdmissionFee">Admission Fee</option>
+                    <option value="AdmissionRefund">Admission Refund</option>
+                    <option value="WriteOff">Write Off</option>
+                    <option value="BadDebt">Bad Debt</option>
+                </select>
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Debit Account Code</label>
+                <input type="text" id="mapping-debit" class="ws-input" placeholder="e.g. 1-001" required />
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Credit Account Code</label>
+                <input type="text" id="mapping-credit" class="ws-input" placeholder="e.g. 1-101" required />
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Description</label>
+                <input type="text" id="mapping-desc" class="ws-input" />
+            </div>
+            <div class="ws-field">
+                <label class="ws-checkbox">
+                    <input type="checkbox" id="mapping-active" checked />
+                    Active
+                </label>
+            </div>
+            <div class="ws-form-actions">
+                <button type="submit" class="adm-btn adm-btn-primary">Save</button>
+                <button type="button" class="adm-btn adm-btn-secondary" onclick="closeMappingModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="ws-modal" id="setting-modal" style="display:none">
+    <div class="ws-modal-overlay" onclick="closeSettingModal()"></div>
+    <div class="ws-modal-content ws-modal-md">
+        <div class="ws-modal-header">
+            <h3 id="setting-modal-title">Finance Setting</h3>
+            <button class="ws-modal-close" onclick="closeSettingModal()">&times;</button>
+        </div>
+        <form id="setting-form" class="ws-form">
+            <input type="hidden" id="setting-id" value="0" />
+            <div class="ws-field">
+                <label class="ws-label">Key</label>
+                <input type="text" id="setting-key" class="ws-input" required />
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Value</label>
+                <input type="text" id="setting-value" class="ws-input" required />
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Category</label>
+                <select id="setting-category" class="ws-input">
+                    <option value="General">General</option>
+                    <option value="Fiscal">Fiscal</option>
+                    <option value="Policy">Policy</option>
+                    <option value="Threshold">Threshold</option>
+                </select>
+            </div>
+            <div class="ws-field">
+                <label class="ws-label">Description</label>
+                <input type="text" id="setting-desc" class="ws-input" />
+            </div>
+            <div class="ws-form-actions">
+                <button type="submit" class="adm-btn adm-btn-primary">Save</button>
+                <button type="button" class="adm-btn adm-btn-secondary" onclick="closeSettingModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadFiscalSettings();
+            loadMappings();
+            loadSettings();
+
+            document.querySelectorAll('.ws-tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    document.querySelectorAll('.ws-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.ws-tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+                });
+            });
+
+            document.getElementById('mapping-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const id = parseInt(document.getElementById('mapping-id').value);
+                const dto = {
+                    id: id,
+                    transactionType: document.getElementById('mapping-transaction-type').value,
+                    debitAccountCode: document.getElementById('mapping-debit').value,
+                    creditAccountCode: document.getElementById('mapping-credit').value,
+                    description: document.getElementById('mapping-desc').value,
+                    isActive: document.getElementById('mapping-active').checked
+                };
+                const token = document.querySelector('[name=__RequestVerificationToken]')?.value || '';
+                const resp = await fetch('/Accounting/FinanceConfiguration/SaveMapping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify(dto)
+                });
+                if (resp.ok) { closeMappingModal(); loadMappings(); }
+            });
+
+            document.getElementById('setting-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const dto = {
+                    id: parseInt(document.getElementById('setting-id').value),
+                    key: document.getElementById('setting-key').value,
+                    value: document.getElementById('setting-value').value,
+                    category: document.getElementById('setting-category').value,
+                    description: document.getElementById('setting-desc').value
+                };
+                const token = document.querySelector('[name=__RequestVerificationToken]')?.value || '';
+                await fetch('/Accounting/FinanceConfiguration/SaveSetting', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify(dto)
+                });
+                closeSettingModal(); loadSettings();
+            });
+        });
+
+        async function loadFiscalSettings() {
+            const resp = await fetch('/Accounting/FinanceConfiguration/GetFiscalSettings');
+            const s = await resp.json();
+            const html = `
+                <div class="ws-form" style="max-width:600px">
+                    <div class="ws-field"><label class="ws-label">Fiscal Year Start</label><input class="ws-input" value="${s.fiscalYearStart}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Fiscal Year End</label><input class="ws-input" value="${s.fiscalYearEnd}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Auto-Create Periods</label><input class="ws-input" value="${s.autoCreatePeriods}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Grace Period Days</label><input class="ws-input" value="${s.gracePeriodDays}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Write-Off Threshold</label><input class="ws-input" value="${s.writeOffThreshold}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Default Due Day</label><input class="ws-input" value="${s.defaultDueDay}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Min Payment %</label><input class="ws-input" value="${s.minPaymentPercentage}" readonly /></div>
+                    <div class="ws-field"><label class="ws-label">Enforce Period Closing</label><input class="ws-input" value="${s.enforcePeriodClosing}" readonly /></div>
+                </div>
+                <p class="ws-help-text">Edit settings in the All Settings tab to change these values.</p>
+            `;
+            document.getElementById('fiscal-settings-form').innerHTML = html;
+        }
+
+        async function loadMappings() {
+            const resp = await fetch('/Accounting/FinanceConfiguration/GetAccountMappings');
+            const data = await resp.json();
+            const tbody = document.querySelector('#mappings-table tbody');
+            tbody.innerHTML = data.map(m => `
+                <tr>
+                    <td>${m.transactionType}</td>
+                    <td>${m.debitAccountCode} (${m.debitAccountName})</td>
+                    <td>${m.creditAccountCode} (${m.creditAccountName})</td>
+                    <td>${m.description || ''}</td>
+                    <td><span class="ws-badge ws-badge-${m.isActive ? 'success' : 'secondary'}">${m.isActive ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <button class="adm-btn-sm" onclick="editMapping(${m.id},'${m.transactionType}','${m.debitAccountCode}','${m.creditAccountCode}','${m.description || ''}',${m.isActive})">Edit</button>
+                        <button class="adm-btn-sm adm-btn-danger" onclick="deleteMapping(${m.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showMappingModal() {
+            document.getElementById('mapping-modal-title').textContent = 'Add Mapping';
+            document.getElementById('mapping-id').value = '0';
+            document.getElementById('mapping-transaction-type').value = '';
+            document.getElementById('mapping-debit').value = '';
+            document.getElementById('mapping-credit').value = '';
+            document.getElementById('mapping-desc').value = '';
+            document.getElementById('mapping-active').checked = true;
+            document.getElementById('mapping-modal').style.display = 'flex';
+        }
+
+        function editMapping(id, type, debit, credit, desc, active) {
+            document.getElementById('mapping-modal-title').textContent = 'Edit Mapping';
+            document.getElementById('mapping-id').value = id;
+            document.getElementById('mapping-transaction-type').value = type;
+            document.getElementById('mapping-debit').value = debit;
+            document.getElementById('mapping-credit').value = credit;
+            document.getElementById('mapping-desc').value = desc;
+            document.getElementById('mapping-active').checked = active;
+            document.getElementById('mapping-modal').style.display = 'flex';
+        }
+
+        function closeMappingModal() { document.getElementById('mapping-modal').style.display = 'none'; }
+
+        async function deleteMapping(id) {
+            if (!confirm('Delete this mapping?')) return;
+            const token = document.querySelector('[name=__RequestVerificationToken]')?.value || '';
+            await fetch('/Accounting/FinanceConfiguration/DeleteMapping?id=' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } });
+            loadMappings();
+        }
+
+        async function loadSettings() {
+            const resp = await fetch('/Accounting/FinanceConfiguration/GetSettings');
+            const data = await resp.json();
+            const tbody = document.querySelector('#settings-table tbody');
+            tbody.innerHTML = data.map(s => `
+                <tr>
+                    <td>${s.key}</td>
+                    <td>${s.value}</td>
+                    <td>${s.category}</td>
+                    <td>
+                        <button class="adm-btn-sm" onclick="editSetting(${s.id},'${s.key.replace(/'/g,"\\'")}','${s.value.replace(/'/g,"\\'")}','${s.category}','${(s.description||'').replace(/'/g,"\\'")}')">Edit</button>
+                        <button class="adm-btn-sm adm-btn-danger" onclick="deleteSetting(${s.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showSettingModal() {
+            document.getElementById('setting-modal-title').textContent = 'Add Setting';
+            document.getElementById('setting-id').value = '0';
+            document.getElementById('setting-key').value = '';
+            document.getElementById('setting-value').value = '';
+            document.getElementById('setting-category').value = 'General';
+            document.getElementById('setting-desc').value = '';
+            document.getElementById('setting-modal').style.display = 'flex';
+        }
+
+        function editSetting(id, key, value, category, desc) {
+            document.getElementById('setting-modal-title').textContent = 'Edit Setting';
+            document.getElementById('setting-id').value = id;
+            document.getElementById('setting-key').value = key;
+            document.getElementById('setting-value').value = value;
+            document.getElementById('setting-category').value = category;
+            document.getElementById('setting-desc').value = desc;
+            document.getElementById('setting-modal').style.display = 'flex';
+        }
+
+        function closeSettingModal() { document.getElementById('setting-modal').style.display = 'none'; }
+
+        async function deleteSetting(id) {
+            if (!confirm('Delete this setting?')) return;
+            const token = document.querySelector('[name=__RequestVerificationToken]')?.value || '';
+            await fetch('/Accounting/FinanceConfiguration/DeleteSetting?id=' + id, { method: 'POST', headers: { 'RequestVerificationToken': token } });
+            loadSettings();
+        }
+    </script>
+}

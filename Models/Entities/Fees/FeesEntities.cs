@@ -107,6 +107,13 @@ public class Payment : BaseEntity
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
+
+    public PostingStatus PostingStatus { get; set; } = PostingStatus.Pending;
+
+    public DateTime? PostedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? PostingError { get; set; }
 }
 
 public class FeeDiscount : BaseEntity

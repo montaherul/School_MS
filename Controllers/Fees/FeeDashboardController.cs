@@ -8,6 +8,7 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeDashboardController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeDashboard";
     private readonly IFeeDashboardService _service;
     private readonly IEnhancedFeeDashboardService _enhancedService;
     private readonly IFeeSecurityService _security;
@@ -17,7 +18,7 @@ public class FeeDashboardController : Controller
     public async Task<IActionResult> Index(int? academicYearId = null)
     {
         var data = await _enhancedService.GetDashboardAsync(academicYearId);
-        return View(data);
+        return View($"{ViewPath}/Index.cshtml", data);
     }
 
 }

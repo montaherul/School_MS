@@ -1,0 +1,199 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.FinanceAnalyticsDashboardDto
+@{
+    ViewData["Title"] = "Finance Analytics Dashboard";
+}
+
+<div class="adm-container">
+    <div class="adm-header">
+        <h1 class="adm-title">Finance Analytics Dashboard</h1>
+        <p class="adm-subtitle">AI-powered financial insights &amp; forecasts</p>
+    </div>
+
+    <div class="dash-grid dash-grid-4">
+        <div class="ws-card ws-card-stat">
+            <div class="ws-card-body">
+                <div class="ws-stat">
+                    <span class="ws-stat-label">Revenue Forecast</span>
+                    <span class="ws-stat-value">@Model.RevenueForecast.ProjectedRevenue.ToString("N0")</span>
+                    <span class="ws-stat-change @(Model.RevenueForecast.GrowthPercentage >= 0 ? "ws-stat-up" : "ws-stat-down")">
+                        @(Model.RevenueForecast.GrowthPercentage >= 0 ? "+" : "")@Model.RevenueForecast.GrowthPercentage%
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="ws-card ws-card-stat">
+            <div class="ws-card-body">
+                <div class="ws-stat">
+                    <span class="ws-stat-label">Collection Rate</span>
+                    <span class="ws-stat-value">@Model.CollectionPrediction.CollectionRate%</span>
+                    <span class="ws-stat-label">@Model.CollectionPrediction.InvoicesDue invoices due</span>
+                </div>
+            </div>
+        </div>
+        <div class="ws-card ws-card-stat">
+            <div class="ws-card-body">
+                <div class="ws-stat">
+                    <span class="ws-stat-label">Defaulters at Risk</span>
+                    <span class="ws-stat-value ws-text-danger">@Model.DefaulterPrediction.AtRiskStudents</span>
+                    <span class="ws-stat-label">@Model.DefaulterPrediction.AtRiskAmount.ToString("N0")</span>
+                </div>
+            </div>
+        </div>
+        <div class="ws-card ws-card-stat">
+            <div class="ws-card-body">
+                <div class="ws-stat">
+                    <span class="ws-stat-label">Cash Flow (Net)</span>
+                    <span class="ws-stat-value">@Model.CashFlowForecast.NetProjection.ToString("N0")</span>
+                    <span class="ws-stat-label">In: @Model.CashFlowForecast.ExpectedInflow.ToString("N0")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-grid dash-grid-2">
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Revenue Forecast</h3></div>
+            <div class="ws-card-body"><canvas id="revenueChart" height="250"></canvas></div>
+        </div>
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Cash Flow Projection</h3></div>
+            <div class="ws-card-body"><canvas id="cashflowChart" height="250"></canvas></div>
+        </div>
+    </div>
+
+    <div class="dash-grid dash-grid-2">
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Fee Trend (12 months)</h3></div>
+            <div class="ws-card-body"><canvas id="feeTrendChart" height="250"></canvas></div>
+        </div>
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Budget vs Actual</h3></div>
+            <div class="ws-card-body"><canvas id="budgetChart" height="250"></canvas></div>
+        </div>
+    </div>
+
+    <div class="dash-grid dash-grid-2">
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Defaulter Segments</h3></div>
+            <div class="ws-card-body">
+                <canvas id="defaulterChart" height="250"></canvas>
+                <div class="ws-table-responsive" style="margin-top:1rem">
+                    <table class="adm-table">
+                        <thead>
+                            <tr><th>Segment</th><th>Students</th><th>Total Due</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var seg in Model.DefaulterPrediction.Segments)
+                            {
+                                <tr>
+                                    <td>@seg.Segment</td>
+                                    <td>@seg.StudentCount</td>
+                                    <td>@seg.TotalDue.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="ws-card">
+            <div class="ws-card-header"><h3>Monthly Summary</h3></div>
+            <div class="ws-card-body">
+                <div class="ws-table-responsive">
+                    <table class="adm-table adm-table-sm">
+                        <thead>
+                            <tr><th>Month</th><th>Revenue</th><th>Collections</th><th>Outstanding</th><th>Invoices</th><th>Payments</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.MonthlySummaries.Take(6))
+                            {
+                                <tr>
+                                    <td>@m.Month @m.Year</td>
+                                    <td>@m.Revenue.ToString("N0")</td>
+                                    <td>@m.Collections.ToString("N0")</td>
+                                    <td>@m.Outstanding.ToString("N0")</td>
+                                    <td>@m.InvoiceCount</td>
+                                    <td>@m.PaymentCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const revenueData = @Json.Serialize(Model.RevenueForecast.MonthlyProjections);
+            const cashflowData = @Json.Serialize(Model.CashFlowForecast.Projections);
+            const feeTrendData = @Json.Serialize(Model.FeeTrend.Trends);
+            const budgetData = @Json.Serialize(Model.BudgetVsActual.Lines);
+            const defaulterData = @Json.Serialize(Model.DefaulterPrediction.Segments);
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: revenueData.map(d => d.month),
+                    datasets: [
+                        { label: 'Actual', data: revenueData.map(d => d.actual), backgroundColor: '#2563eb' },
+                        { label: 'Projected', data: revenueData.map(d => d.projected), backgroundColor: '#93c5fd' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+            });
+
+            new Chart(document.getElementById('cashflowChart'), {
+                type: 'line',
+                data: {
+                    labels: cashflowData.map(d => d.period),
+                    datasets: [
+                        { label: 'Inflow', data: cashflowData.map(d => d.inflow), borderColor: '#16a34a', fill: false },
+                        { label: 'Outflow', data: cashflowData.map(d => d.outflow), borderColor: '#dc2626', fill: false },
+                        { label: 'Balance', data: cashflowData.map(d => d.balance), borderColor: '#2563eb', fill: false }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+            });
+
+            new Chart(document.getElementById('feeTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: feeTrendData.map(d => d.month),
+                    datasets: [
+                        { label: 'Collected', data: feeTrendData.map(d => d.collected), borderColor: '#16a34a', fill: true, backgroundColor: 'rgba(22,163,74,0.1)' },
+                        { label: 'Target', data: feeTrendData.map(d => d.target), borderColor: '#dc2626', borderDash: [5,5], fill: false }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+            });
+
+            new Chart(document.getElementById('budgetChart'), {
+                type: 'bar',
+                data: {
+                    labels: budgetData.map(d => d.category),
+                    datasets: [
+                        { label: 'Budget', data: budgetData.map(d => d.budget), backgroundColor: '#93c5fd' },
+                        { label: 'Actual', data: budgetData.map(d => d.actual), backgroundColor: '#2563eb' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+            });
+
+            new Chart(document.getElementById('defaulterChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: defaulterData.map(d => d.segment),
+                    datasets: [{
+                        data: defaulterData.map(d => d.studentCount),
+                        backgroundColor: ['#22c55e', '#eab308', '#ef4444']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        });
+    </script>
+}

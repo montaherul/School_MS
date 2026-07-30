@@ -8,8 +8,8 @@ public interface IFeeInvoiceService
 {
     Task<PagedResult<FeeInvoiceListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, int? status = null, CancellationToken cancellationToken = default);
     Task<FeeInvoice?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
-    Task<int> CreateAsync(FeeInvoice invoice, string createdBy, CancellationToken cancellationToken = default);
-    Task UpdateAsync(FeeInvoice invoice, string updatedBy, CancellationToken cancellationToken = default);
+    Task<int> CreateAsync(FeeInvoiceUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
+    Task UpdateAsync(FeeInvoiceUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task<LateFeeEngineResultDto> ApplyLateFeesAsync(CancellationToken cancellationToken = default);

@@ -19,3 +19,5 @@ build-validation/
 errors.json
 build.log
 build_errors.log
+build_out*.txt
+build_err*.txt

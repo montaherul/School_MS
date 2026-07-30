@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeInvoiceItemController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeInvoiceItem";
     private readonly IFeeInvoiceItemService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public FeeInvoiceItemController(IFeeInvoiceItemService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeInvoiceItems.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeInvoiceItems.Create")]
@@ -31,9 +32,9 @@ public class FeeInvoiceItemController : Controller
 
     [HttpGet]
     [RequirePermission("FeeInvoiceItems.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? feeInvoiceId = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? feeInvoiceId = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search, feeInvoiceId);
+        var result = await _service.GetPagedAsync(page, pageSize, search, feeInvoiceId);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -65,9 +66,9 @@ public class FeeInvoiceItemController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
         }
-        return View(new FeeInvoiceItemViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeInvoiceItemViewModel());
     }
 
     [HttpPost]
@@ -76,7 +77,7 @@ public class FeeInvoiceItemController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeInvoiceItems.Update" : "FeeInvoiceItems.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Item updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Item created."; }
@@ -93,7 +94,7 @@ public class FeeInvoiceItemController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
+        return View($"{ViewPath}/Details.cshtml", new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
     }
 
     [HttpGet]
@@ -102,7 +103,7 @@ public class FeeInvoiceItemController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
+        return View($"{ViewPath}/Delete.cshtml", new FeeInvoiceItemViewModel { Id = dto.Id, FeeInvoiceId = dto.FeeInvoiceId, FeeStructureId = dto.FeeStructureId, FeeCategoryId = dto.FeeCategoryId, Description = dto.Description, Amount = dto.Amount, DiscountAmount = dto.DiscountAmount, NetAmount = dto.NetAmount });
     }
 
     [HttpPost]

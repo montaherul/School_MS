@@ -1,0 +1,28 @@
+@model SchoolManagementSystem.Models.ViewModels.Fees.PaymentAllocationViewModel
+@{
+    ViewData["Title"] = "Payment Allocation Details";
+    Layout = "_Layout";
+}
+<div class="ws-details-container">
+    <div class="ws-card">
+        <div class="ws-card-header">
+            <h2>Payment Allocation Details</h2>
+        </div>
+        <div class="ws-card-body">
+            <dl class="ws-dl">
+                <dt>Payment</dt>
+                <dd>@Model.PaymentId</dd>
+                <dt>Fee Invoice</dt>
+                <dd>@Model.FeeInvoiceId</dd>
+                <dt>Allocated Amount</dt>
+                <dd>@Model.AllocatedAmount.ToString("N2")</dd>
+                <dt>Remarks</dt>
+                <dd>@Model.Remarks</dd>
+            </dl>
+        </div>
+        <div class="ws-card-footer">
+            <a asp-action="Index" class="adm-btn adm-btn-secondary">Back to List</a>
+            <a asp-action="CreateEdit" asp-route-id="@Model.Id" class="adm-btn adm-btn-primary">Edit</a>
+        </div>
+    </div>
+</div>

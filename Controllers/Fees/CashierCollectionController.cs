@@ -71,14 +71,14 @@ public class CashierCollectionController : Controller
             Remarks = request.Remarks
         };
 
-        var result = await _service.ProcessPaymentAsync(studentId, request.InvoiceIds, paymentDto, userId);
-        if (result.Success && result.PaymentId > 0)
+        var paymentId = await _postingService.PostFeeCollectionFullAsync(studentId, request.InvoiceIds, paymentDto, userId, ct);
+
+        var result = new CashierPaymentResultDto
         {
-            foreach (var invoiceId in request.InvoiceIds)
-            {
-                await _postingService.PostFeeCollectionAsync(studentId, request.Amount, invoiceId, userId, ct);
-            }
-        }
+            Success = paymentId > 0,
+            PaymentId = paymentId,
+            ReceiptUrl = paymentId > 0 ? $"/FeePayment/Receipt/{paymentId}" : null
+        };
         return Json(result);
     }
 

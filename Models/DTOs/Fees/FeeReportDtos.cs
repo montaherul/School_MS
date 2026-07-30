@@ -95,3 +95,10 @@ public class ClassCollectionSummaryDto
     public int StudentCount { get; set; }
     public int TotalRecords { get; set; }
 }
+
+public class AcademicYearOptionDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public DateOnly StartsOn { get; set; }
+}

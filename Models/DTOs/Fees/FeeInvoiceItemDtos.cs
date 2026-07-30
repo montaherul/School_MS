@@ -38,3 +38,9 @@ public class FeeInvoiceItemUpsertDto
     public decimal DiscountAmount { get; set; }
     public decimal NetAmount { get; set; }
 }
+
+public class BillingItemDto
+{
+    public string Description { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+}

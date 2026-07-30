@@ -41,6 +41,12 @@ public class GuardianDetailsDto
     public string? EmergencyContactName { get; set; }
     public string? EmergencyContactNumber { get; set; }
     public bool PortalAccessEnabled { get; set; }
+    public bool ReceiveEmailNotifications { get; set; } = true;
+    public bool ReceiveSMSNotifications { get; set; } = true;
+    public bool ReceiveEventNotifications { get; set; } = true;
+    public bool ReceiveFeeNotifications { get; set; } = true;
+    public bool ReceiveExamNotifications { get; set; } = true;
+    public bool ReceiveAttendanceNotifications { get; set; } = true;
     public string Status { get; set; } = string.Empty;
     public string? Remarks { get; set; }
     public List<GuardianChildDto> Children { get; set; } = new();
@@ -133,6 +139,18 @@ public class GuardianUpsertDto
     public string? PermanentAddress { get; set; }
     
     public bool PortalAccessEnabled { get; set; } = true;
+
+    public bool ReceiveEmailNotifications { get; set; } = true;
+
+    public bool ReceiveSMSNotifications { get; set; } = true;
+
+    public bool ReceiveEventNotifications { get; set; } = true;
+
+    public bool ReceiveFeeNotifications { get; set; } = true;
+
+    public bool ReceiveExamNotifications { get; set; } = true;
+
+    public bool ReceiveAttendanceNotifications { get; set; } = true;
 }
 
 public class GuardianDashboardDataDto

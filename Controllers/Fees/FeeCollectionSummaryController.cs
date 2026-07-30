@@ -13,13 +13,14 @@ namespace SchoolManagementSystem.Controllers.Fees;
 [Authorize]
 public class FeeCollectionSummaryController : Controller
 {
+    private const string ViewPath = "~/Views/Fee/FeeCollectionSummary";
     private readonly IFeeCollectionSummaryService _service;
     private readonly IFeeSecurityService _security;
     private readonly IPdfGenerator _pdfGenerator;
     public FeeCollectionSummaryController(IFeeCollectionSummaryService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeCollectionSummaries.Read")]
-    public IActionResult Index() { return View(); }
+    public IActionResult Index() { return View($"{ViewPath}/Index.cshtml"); }
 
     [HttpGet]
     [RequirePermission("FeeCollectionSummaries.Create")]
@@ -31,9 +32,9 @@ public class FeeCollectionSummaryController : Controller
 
     [HttpGet]
     [RequirePermission("FeeCollectionSummaries.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, DateOnly? fromDate = null, DateOnly? toDate = null)
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, DateOnly? fromDate = null, DateOnly? toDate = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search, fromDate, toDate);
+        var result = await _service.GetPagedAsync(page, pageSize, search, fromDate, toDate);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -46,9 +47,9 @@ public class FeeCollectionSummaryController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            return View(new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
+            return View($"{ViewPath}/CreateEdit.cshtml", new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
         }
-        return View(new FeeCollectionSummaryViewModel());
+        return View($"{ViewPath}/CreateEdit.cshtml", new FeeCollectionSummaryViewModel());
     }
 
     [HttpPost]
@@ -57,7 +58,7 @@ public class FeeCollectionSummaryController : Controller
     {
         if (!_security.Can(User, vm.IsEditMode ? "FeeCollectionSummaries.Update" : "FeeCollectionSummaries.Create"))
             return Forbid();
-        if (!ModelState.IsValid) return View(vm);
+        if (!ModelState.IsValid) return View($"{ViewPath}/CreateEdit.cshtml", vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Summary updated."; }
         else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Summary created."; }
@@ -74,7 +75,7 @@ public class FeeCollectionSummaryController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
+        return View($"{ViewPath}/Details.cshtml", new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
     }
 
     [HttpGet]
@@ -83,7 +84,7 @@ public class FeeCollectionSummaryController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-        return View(new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
+        return View($"{ViewPath}/Delete.cshtml", new FeeCollectionSummaryViewModel { Id = dto.Id, CollectionDate = dto.CollectionDate, TotalCollected = dto.TotalCollected, TotalDiscounted = dto.TotalDiscounted, TotalRefunded = dto.TotalRefunded, TotalTransactions = dto.TotalTransactions, PaymentMethod = dto.PaymentMethod, IsDailySummary = dto.IsDailySummary });
     }
 
     [HttpPost]

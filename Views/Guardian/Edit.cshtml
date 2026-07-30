@@ -80,6 +80,48 @@
                                     <label asp-for="PortalAccessEnabled" class="form-check-label">Enable portal access</label>
                                 </div>
                             </div>
+                            <div class="col-12">
+                                <hr class="my-2" />
+                                <p class="fw-medium mb-2 text-muted small">Notification Preferences <i class="bi bi-info-circle" title="These settings control how this guardian receives notifications, independent of portal access."></i></p>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveEmailNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveEmailNotifications" class="form-check-label small">Email notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveSMSNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveSMSNotifications" class="form-check-label small">SMS notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveEventNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveEventNotifications" class="form-check-label small">Event notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveFeeNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveFeeNotifications" class="form-check-label small">Fee notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveExamNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveExamNotifications" class="form-check-label small">Exam notifications</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input asp-for="ReceiveAttendanceNotifications" class="form-check-input" />
+                                            <label asp-for="ReceiveAttendanceNotifications" class="form-check-label small">Attendance notifications</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-6">
                                 <label asp-for="PresentAddress" class="form-label"></label>
                                 <textarea asp-for="PresentAddress" class="form-control" rows="3"></textarea>

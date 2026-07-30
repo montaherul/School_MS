@@ -55,7 +55,7 @@ public class FeePaymentService : IFeePaymentService
             if (dto.Amount > remainingBalance)
                 throw new InvalidOperationException("Payment amount exceeds outstanding invoice balance.");
 
-            entity = new Payment { CreatedBy = createdBy, FeeInvoiceId = dto.FeeInvoiceId, Amount = dto.Amount, LateFee = dto.LateFee, DiscountAmount = dto.DiscountAmount, Method = (PaymentMethod)dto.Method, ReferenceNo = dto.ReferenceNo, PaidAt = dto.PaidAt, Remarks = dto.Remarks };
+            entity = new Payment { CreatedBy = createdBy, FeeInvoiceId = dto.FeeInvoiceId, Amount = dto.Amount, LateFee = dto.LateFee, DiscountAmount = dto.DiscountAmount, Method = (PaymentMethod)dto.Method, ReferenceNo = dto.ReferenceNo, PaidAt = dto.PaidAt, Remarks = dto.Remarks, PostingStatus = PostingStatus.Pending };
             await _unitOfWork.Repository<Payment>().AddAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await RecalculateInvoiceAsync(dto.FeeInvoiceId, cancellationToken);

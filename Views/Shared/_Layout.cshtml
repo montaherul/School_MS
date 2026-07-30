@@ -479,6 +479,7 @@
                             @if (Can("OnlinePayments.Read"))
                             {
                                 <a asp-controller="OnlinePaymentVerification" asp-action="Index" data-title="Online Payments"><i class="bi bi-globe"></i><span class="nav-text">Online Payments</span></a>
+                                <a asp-controller="OnlinePaymentVerification" asp-action="AllTransactions" data-title="All Online Payments"><i class="bi bi-credit-card"></i><span class="nav-text">All Transactions</span></a>
                             }
                             @if (Can("FeeDiscounts.Read"))
                             {
@@ -528,6 +529,10 @@
                             {
                                 <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Reports</span></a>
                             }
+                            @if (Can("FinanceReports.Read"))
+                            {
+                                <a asp-controller="FinanceAnalytics" asp-action="Index" data-title="Finance Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
+                            }
                         }
 
                         @if (CanAny("Accounting.View","Accounting.Post","Accounting.ClosePeriod","Accounting.Reconcile","Accounting.Export"))
@@ -545,26 +550,24 @@
                                 {
                                     <a asp-controller="FinancialPeriod" asp-action="Index" data-title="Financial Periods"><i class="bi bi-calendar-lock"></i><span class="nav-text">Financial Periods</span></a>
                                 }
+                                @if (Can("Accounting.View"))
+                                {
+                                    <a asp-controller="FinanceConfiguration" asp-action="Index" data-title="Finance Configuration"><i class="bi bi-gear"></i><span class="nav-text">Configuration</span></a>
+                                }
                             }
                         }
 
-                        @* ── SchoolPay Gateway (Admin/Principal) ── *@
+                        @if (Can("CashFlow.Read"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Cash Flow</span></span>
+                            <a asp-controller="CashFlow" asp-action="Index" data-title="Cash Flow"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Cash Flow</span></a>
+                        }
+
+                        @* ── SSLCommerz Transactions ── *@
                         @if (Can("Accounting.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">SchoolPay</span></span>
-                            <a asp-controller="ProviderManagement" asp-action="Index" data-title="Providers"><i class="bi bi-credit-card-2-front"></i><span class="nav-text">Payment Providers</span></a>
+                            <span class="nav-section-label"><span class="nav-text">SSLCommerz</span></span>
                             <a asp-controller="SchoolPayTransaction" asp-action="Index" data-title="Transactions"><i class="bi bi-credit-card"></i><span class="nav-text">Transactions</span></a>
-                            <a asp-controller="PaymentMethod" asp-action="Index" data-title="PaymentMethods"><i class="bi bi-wallet2"></i><span class="nav-text">Payment Methods</span></a>
-                            <a asp-controller="SchoolPaySettlement" asp-action="Index" data-title="Settlements"><i class="bi bi-cash-stack"></i><span class="nav-text">Settlements</span></a>
-                            <a asp-controller="SchoolPayReconciliation" asp-action="Index" data-title="Reconciliation"><i class="bi bi-arrow-left-right"></i><span class="nav-text">Reconciliation</span></a>
-                            <a asp-controller="RoutingRules" asp-action="Index" data-title="Routing"><i class="bi bi-diagram-3"></i><span class="nav-text">Routing Rules</span></a>
-                            <a asp-controller="SchoolPayAnalytics" asp-action="Index" data-title="Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
-                            <a asp-controller="SchoolPayOperations" asp-action="Index" data-title="Operations"><i class="bi bi-speedometer2"></i><span class="nav-text">Operations</span></a>
-                            <a asp-controller="Failover" asp-action="Index" data-title="Failover"><i class="bi bi-shield-check"></i><span class="nav-text">Failover</span></a>
-                            <a asp-controller="DeadLetterQueue" asp-action="Index" data-title="DLQ"><i class="bi bi-archive"></i><span class="nav-text">Dead Letter</span></a>
-                            <a asp-controller="Monitoring" asp-action="Index" data-title="Monitoring"><i class="bi bi-activity"></i><span class="nav-text">Monitoring</span></a>
-                            <a asp-controller="SchoolPaySecurity" asp-action="Index" data-title="Security"><i class="bi bi-shield-lock"></i><span class="nav-text">Security</span></a>
-                            <a asp-controller="Sandbox" asp-action="Index" data-title="Sandbox"><i class="bi bi-flask"></i><span class="nav-text">Sandbox</span></a>
                         }
 
                         @if (Can("Students.View"))
@@ -775,6 +778,12 @@
                             }
                         }
 
+                        @if (Can("CashFlow.Read"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Cash Flow</span></span>
+                            <a asp-controller="CashFlow" asp-action="Index" data-title="Cash Flow"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Cash Flow</span></a>
+                        }
+
                         @* ── 11. Accounting ── *@
                         @if (CanAny("Accounting.View","Accounting.Post","Accounting.ClosePeriod","Accounting.Reconcile","Accounting.Export"))
                         {
@@ -791,26 +800,18 @@
                                 {
                                     <a asp-controller="FinancialPeriod" asp-action="Index" data-title="Financial Periods"><i class="bi bi-calendar-lock"></i><span class="nav-text">Financial Periods</span></a>
                                 }
+                                @if (Can("Accounting.View"))
+                                {
+                                    <a asp-controller="FinanceConfiguration" asp-action="Index" data-title="Finance Configuration"><i class="bi bi-gear"></i><span class="nav-text">Configuration</span></a>
+                                }
                             }
                         }
 
-                        @* ── SchoolPay Gateway ── *@
+                        @* ── SSLCommerz Transactions ── *@
                         @if (Can("Accounting.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">SchoolPay</span></span>
-                            <a asp-controller="ProviderManagement" asp-action="Index" data-title="Providers"><i class="bi bi-credit-card-2-front"></i><span class="nav-text">Providers</span></a>
+                            <span class="nav-section-label"><span class="nav-text">SSLCommerz</span></span>
                             <a asp-controller="SchoolPayTransaction" asp-action="Index" data-title="Transactions"><i class="bi bi-credit-card"></i><span class="nav-text">Transactions</span></a>
-                            <a asp-controller="PaymentMethod" asp-action="Index" data-title="PaymentMethods"><i class="bi bi-wallet2"></i><span class="nav-text">Payment Methods</span></a>
-                            <a asp-controller="SchoolPaySettlement" asp-action="Index" data-title="Settlements"><i class="bi bi-cash-stack"></i><span class="nav-text">Settlements</span></a>
-                            <a asp-controller="SchoolPayReconciliation" asp-action="Index" data-title="Reconciliation"><i class="bi bi-arrow-left-right"></i><span class="nav-text">Reconciliation</span></a>
-                            <a asp-controller="RoutingRules" asp-action="Index" data-title="Routing"><i class="bi bi-diagram-3"></i><span class="nav-text">Routing Rules</span></a>
-                            <a asp-controller="SchoolPayAnalytics" asp-action="Index" data-title="Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
-                            <a asp-controller="SchoolPayOperations" asp-action="Index" data-title="Operations"><i class="bi bi-speedometer2"></i><span class="nav-text">Operations</span></a>
-                            <a asp-controller="Failover" asp-action="Index" data-title="Failover"><i class="bi bi-shield-check"></i><span class="nav-text">Failover</span></a>
-                            <a asp-controller="DeadLetterQueue" asp-action="Index" data-title="DLQ"><i class="bi bi-archive"></i><span class="nav-text">Dead Letter</span></a>
-                            <a asp-controller="Monitoring" asp-action="Index" data-title="Monitoring"><i class="bi bi-activity"></i><span class="nav-text">Monitoring</span></a>
-                            <a asp-controller="SchoolPaySecurity" asp-action="Index" data-title="Security"><i class="bi bi-shield-lock"></i><span class="nav-text">Security</span></a>
-                            <a asp-controller="Sandbox" asp-action="Index" data-title="Sandbox"><i class="bi bi-flask"></i><span class="nav-text">Sandbox</span></a>
                         }
 
                         @* ── 11.5. Finance ── *@
@@ -860,6 +861,7 @@
                             @if (Can("OnlinePayments.Read"))
                             {
                                 <a asp-controller="OnlinePaymentVerification" asp-action="Index" data-title="Online Payments"><i class="bi bi-globe"></i><span class="nav-text">Online Payments</span></a>
+                                <a asp-controller="OnlinePaymentVerification" asp-action="AllTransactions" data-title="All Online Payments"><i class="bi bi-credit-card"></i><span class="nav-text">All Transactions</span></a>
                             }
                             @if (Can("FeeDiscounts.Read"))
                             {
@@ -909,6 +911,10 @@
                             {
                                 <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Reports</span></a>
                             }
+                            @if (Can("FinanceReports.Read"))
+                            {
+                                <a asp-controller="FinanceAnalytics" asp-action="Index" data-title="Finance Analytics"><i class="bi bi-graph-up"></i><span class="nav-text">Analytics</span></a>
+                            }
                         }
 
                         @* ── 12. Library ── *@
@@ -923,6 +929,12 @@
                         {
                             <span class="nav-section-label"><span class="nav-text">Transport</span></span>
                             <a asp-controller="Transport" asp-action="Index" data-title="Transport"><i class="bi bi-bus-front"></i><span class="nav-text">Transport</span></a>
+                        }
+
+                        @* ── 13b. Portal Settings ── *@
+                        @if (Can("Settings.Manage"))
+                        {
+                            <a asp-controller="PortalSettings" asp-action="Index" data-title="Portal Settings"><i class="bi bi-laptop"></i><span class="nav-text">Portal Settings</span></a>
                         }
 
                         @* ── 14. Website CMS ── *@
